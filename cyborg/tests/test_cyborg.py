@@ -13,16 +13,16 @@
 # under the License.
 
 """
-test_nomad
+test_cyborg
 ----------------------------------
 
-Tests for `nomad` module.
+Tests for `cyborg` module.
 """
 
-from nomad.tests import base
+from cyborg.tests import base
 
 
-class TestNomad(base.TestCase):
+class TestCyborg(base.TestCase):
 
     def test_something(self):
         pass

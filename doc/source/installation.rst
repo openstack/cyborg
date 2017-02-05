@@ -4,9 +4,9 @@ Installation
 
 At the command line::
 
-    $ pip install nomad
+    $ pip install cyborg
 
 Or, if you have virtualenvwrapper installed::
 
-    $ mkvirtualenv nomad
-    $ pip install nomad
+    $ mkvirtualenv cyborg
+    $ pip install cyborg

@@ -2,6 +2,6 @@
 Usage
 ========
 
-To use nomad in a project::
+To use cyborg in a project::
 
-    import nomad
+    import cyborg
