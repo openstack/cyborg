@@ -14,9 +14,19 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+from sqlalchemy import Column, Integer, String
+from sqlalchemy.ext.declarative import declarative_base
+Base = declarative_base()
+
 
 # A common internal acclerator object for internal use.
-class accelerator(object):
+class accelerator(Base):
+    __tablename__ = 'accelerators'
+    accelerator_id = Column(String, primary_key=True)
+    device_type = Column(String)
+    remoteable = Column(Integer)
+    vender_id = Column(String)
+    product_id = Column(String)
 
     def __init__(self, **kwargs):
         self.accelerator_id = kwargs['accelerator_id']

@@ -25,4 +25,4 @@ default_opts = [
 
 
 def register_opts(conf):
-    conf.register_opts(default_opts)
+    conf.register_opts(default_opts, group='cyborg')

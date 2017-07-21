@@ -16,4 +16,4 @@ import pbr.version
 
 
 __version__ = pbr.version.VersionInfo(
-    'nomad').version_string()
+    'cyborg').version_string()
