@@ -13,15 +13,16 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from oslo_config import cfg
+# NOTE(comstud): You may scratch your head as you see code that imports
+# this module and then accesses attributes for objects such as Node,
+# etc, yet you do not see these attributes in here. Never fear, there is
+# a little bit of magic. When objects are registered, an attribute is set
+# on this module automatically, pointing to the newest/latest version of
+# the object.
 
-from cyborg.conf import api
-from cyborg.conf import database
-from cyborg.conf import default
 
-
-CONF = cfg.CONF
-
-api.register_opts(CONF)
-database.register_opts(CONF)
-default.register_opts(CONF)
+def register_all():
+    # NOTE(danms): You must make sure your object gets imported in this
+    # function in order for it to be registered by services that may
+    # need to receive it via RPC.
+    __import__('cyborg.objects.accelerator')

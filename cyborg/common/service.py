@@ -14,9 +14,12 @@
 #    under the License.
 
 from oslo_concurrency import processutils
+from oslo_context import context
 from oslo_log import log
+import oslo_messaging as messaging
 from oslo_service import service
 from oslo_service import wsgi
+from oslo_utils import importutils
 
 from cyborg.api import app
 from cyborg.common import config
@@ -24,9 +27,54 @@ from cyborg.common import exception
 from cyborg.common.i18n import _
 from cyborg.common import rpc
 from cyborg.conf import CONF
+from cyborg import objects
+from cyborg.objects import base as objects_base
 
 
 LOG = log.getLogger(__name__)
+
+
+class RPCService(service.Service):
+    def __init__(self, manager_module, manager_class, topic, host=None):
+        super(RPCService, self).__init__()
+        self.topic = topic
+        self.host = host or CONF.host
+        manager_module = importutils.try_import(manager_module)
+        manager_class = getattr(manager_module, manager_class)
+        self.manager = manager_class(self.topic, self.host)
+        self.rpcserver = None
+
+    def start(self):
+        super(RPCService, self).start()
+
+        target = messaging.Target(topic=self.topic, server=self.host)
+        endpoints = [self.manager]
+        serializer = objects_base.CyborgObjectSerializer()
+        self.rpcserver = rpc.get_server(target, endpoints, serializer)
+        self.rpcserver.start()
+
+        admin_context = context.get_admin_context()
+        self.tg.add_dynamic_timer(
+            self.manager.periodic_tasks,
+            periodic_interval_max=CONF.periodic_interval,
+            context=admin_context)
+
+        LOG.info('Created RPC server for service %(service)s on host '
+                 '%(host)s.',
+                 {'service': self.topic, 'host': self.host})
+
+    def stop(self, graceful=True):
+        try:
+            self.rpcserver.stop()
+            self.rpcserver.wait()
+        except Exception as e:
+            LOG.exception('Service error occurred when stopping the '
+                          'RPC server. Error: %s', e)
+
+        super(RPCService, self).stop(graceful=graceful)
+        LOG.info('Stopped RPC server for service %(service)s on host '
+                 '%(host)s.',
+                 {'service': self.topic, 'host': self.host})
 
 
 def prepare_service(argv=None):
@@ -39,6 +87,7 @@ def prepare_service(argv=None):
 
     log.setup(CONF, 'cyborg')
     rpc.init(CONF)
+    objects.register_all()
 
 
 def process_launcher():

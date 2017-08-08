@@ -21,6 +21,7 @@ from wsme import types as wtypes
 
 from cyborg.api.controllers import base
 from cyborg.api.controllers import link
+from cyborg.api.controllers.v1 import accelerators
 from cyborg.api import expose
 
 
@@ -48,6 +49,8 @@ class V1(base.APIBase):
 
 class Controller(rest.RestController):
     """Version 1 API controller root"""
+
+    accelerators = accelerators.AcceleratorsController()
 
     @expose.expose(V1)
     def get(self):

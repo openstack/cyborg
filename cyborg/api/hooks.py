@@ -14,7 +14,10 @@
 #    under the License.
 
 from oslo_config import cfg
+from oslo_context import context
 from pecan import hooks
+
+from cyborg.conductor import rpcapi
 
 
 class ConfigHook(hooks.PecanHook):
@@ -34,3 +37,24 @@ class PublicUrlHook(hooks.PecanHook):
     def before(self, state):
         state.request.public_url = (
             cfg.CONF.api.public_endpoint or state.request.host_url)
+
+
+class ConductorAPIHook(hooks.PecanHook):
+    """Attach the conductor_api object to the request."""
+
+    def __init__(self):
+        self.conductor_api = rpcapi.ConductorAPI()
+
+    def before(self, state):
+        state.request.conductor_api = self.conductor_api
+
+
+class ContextHook(hooks.PecanHook):
+    """Configures a request context and attaches it to the request."""
+
+    def __init__(self, public_api_routes):
+        self.public_api_routes = public_api_routes
+        super(ContextHook, self).__init__()
+
+    def before(self, state):
+        state.request.context = context.get_admin_context()

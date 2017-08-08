@@ -13,15 +13,27 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from oslo_config import cfg
+"""The Cyborg Conductor Service."""
 
-from cyborg.conf import api
-from cyborg.conf import database
-from cyborg.conf import default
+import sys
+
+from oslo_config import cfg
+from oslo_service import service
+
+from cyborg.common import constants
+from cyborg.common import service as cyborg_service
 
 
 CONF = cfg.CONF
 
-api.register_opts(CONF)
-database.register_opts(CONF)
-default.register_opts(CONF)
+
+def main():
+    # Parse config file and command line options, then start logging
+    cyborg_service.prepare_service(sys.argv)
+
+    mgr = cyborg_service.RPCService('cyborg.conductor.manager',
+                                    'ConductorManager',
+                                    constants.CONDUCTOR_TOPIC)
+
+    launcher = service.launch(CONF, mgr)
+    launcher.wait()

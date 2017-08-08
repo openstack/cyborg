@@ -13,15 +13,20 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from oslo_config import cfg
-
-from cyborg.conf import api
-from cyborg.conf import database
-from cyborg.conf import default
+from oslo_versionedobjects import fields as object_fields
 
 
-CONF = cfg.CONF
+class IntegerField(object_fields.IntegerField):
+    pass
 
-api.register_opts(CONF)
-database.register_opts(CONF)
-default.register_opts(CONF)
+
+class UUIDField(object_fields.UUIDField):
+    pass
+
+
+class StringField(object_fields.StringField):
+    pass
+
+
+class DateTimeField(object_fields.DateTimeField):
+    pass

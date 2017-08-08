@@ -13,15 +13,5 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from oslo_config import cfg
 
-from cyborg.conf import api
-from cyborg.conf import database
-from cyborg.conf import default
-
-
-CONF = cfg.CONF
-
-api.register_opts(CONF)
-database.register_opts(CONF)
-default.register_opts(CONF)
+CONDUCTOR_TOPIC = 'cyborg-conductor'

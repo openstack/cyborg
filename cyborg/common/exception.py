@@ -88,3 +88,24 @@ class CyborgException(Exception):
 
 class ConfigInvalid(CyborgException):
     _msg_fmt = _("Invalid configuration file. %(error_msg)s")
+
+
+class AcceleratorAlreadyExists(CyborgException):
+    _msg_fmt = _("Accelerator with uuid %(uuid)s already exists.")
+
+
+class Invalid(CyborgException):
+    _msg_fmt = _("Invalid parameters.")
+    code = http_client.BAD_REQUEST
+
+
+class InvalidIdentity(Invalid):
+    _msg_fmt = _("Expected a uuid/id but received %(identity)s.")
+
+
+class InvalidUUID(Invalid):
+    _msg_fmt = _("Expected a uuid but received %(uuid)s.")
+
+
+class InvalidJsonType(Invalid):
+    _msg_fmt = _("%(value)s is not JSON serializable.")
