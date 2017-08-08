@@ -38,6 +38,13 @@ opts = [
                        "the service, this option should be False; note, you "
                        "will want to change public API endpoint to represent "
                        "SSL termination URL with 'public_endpoint' option.")),
+    cfg.StrOpt('public_endpoint',
+               help=_("Public URL to use when building the links to the API "
+                      "resources (for example, \"https://cyborg.rocks:6666\")."
+                      " If None the links will be built using the request's "
+                      "host URL. If the API is operating behind a proxy, you "
+                      "will want to change this to represent the proxy's URL. "
+                      "Defaults to None.")),
 ]
 
 opt_group = cfg.OptGroup(name='api',
