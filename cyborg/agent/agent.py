@@ -31,7 +31,9 @@ LOG = logging.getLogger(__name__)
 logging.register_options(CONF)
 logging.setup(CONF, 'Cyborg.Agent')
 
-url = messaging.TransportURL.parse(CONF, url=CONF.transport_url)
+CONF(['--config-file', 'agent.conf'])
+
+url = messaging.TransportURL.parse(CONF, url=CONF.cyborg.transport_url)
 transport = messaging.get_notification_transport(CONF, url)
 
 notifier = messaging.Notifier(transport,
@@ -39,7 +41,8 @@ notifier = messaging.Notifier(transport,
                               publisher_id='Cyborg.Agent',
                               topic='info')
 
-rpc_targets = messaging.Target(topic='cyborg_control', server=CONF.server_id)
+rpc_targets = messaging.Target(topic='cyborg_control',
+                               server=CONF.cyborg.server_id)
 rpc_endpoints = [
     rpcapi.RPCEndpoint()
 ]

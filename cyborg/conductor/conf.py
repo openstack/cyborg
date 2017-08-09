@@ -17,7 +17,12 @@ import uuid
 default_opts = [
     cfg.StrOpt('transport_url',
                default='',
-               help='Transport url for messating'),
+               help='Transport url for messating, copy from transport_url= in \
+                     your Nova config default section'),
+    cfg.StrOpt('database_url',
+               default='',
+               help='Database url for storage, copy from connection= in your \
+                     Nova db config section'),
     cfg.StrOpt('server_id',
                default=uuid.uuid4(),
                help='Unique ID for this conductor instance'),
@@ -25,4 +30,4 @@ default_opts = [
 
 
 def register_opts(conf):
-    conf.register_opts(default_opts)
+    conf.register_opts(default_opts, group='cyborg')

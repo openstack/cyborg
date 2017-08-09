@@ -19,6 +19,7 @@ from oslo_config import cfg
 from oslo_log import log as logging
 import oslo_messaging as messaging
 import rpcapi
+from sqlalchemy import create_engine
 import time
 
 eventlet.monkey_patch()
@@ -30,7 +31,8 @@ LOG = logging.getLogger(__name__)
 logging.register_options(CONF)
 logging.setup(CONF, 'Cyborg.Conductor')
 
-url = messaging.TransportURL.parse(CONF, url=CONF.transport_url)
+CONF(['--config-file', 'conductor.conf'])
+url = messaging.TransportURL.parse(CONF, url=CONF.cyborg.transport_url)
 transport = messaging.get_notification_transport(CONF, url)
 
 message_endpoints = [
@@ -42,7 +44,8 @@ message_targets = [
     messaging.Target(topic='warn'),
     messaging.Target(topic='error')
 ]
-rpc_targets = messaging.Target(topic='cyborg_control', server=CONF.server_id)
+rpc_targets = messaging.Target(topic='cyborg_control',
+                               server=CONF.cyborg.server_id)
 rpc_endpoints = [
     rpcapi.RPCEndpoint()
 ]
@@ -58,6 +61,9 @@ message_server = messaging.get_notification_listener(transport,
                                                      message_endpoints,
                                                      executor='eventlet',
                                                      allow_requeue=True)
+
+engine = create_engine(CONF.cyborg.connection, echo=True)
+engine.connect()
 
 try:
     message_server.start()
