@@ -9,9 +9,9 @@ Please feel here a long description which must be at least 3 lines wrapped on
 Note that this is a hard requirement.
 
 * Free software: Apache license
-* Documentation: http://docs.openstack.org/developer/nomad
-* Source: http://git.openstack.org/cgit/openstack/nomad
-* Bugs: http://bugs.launchpad.net/nomad
+* Source: https://git.openstack.org/cgit/openstack/cyborg
+* Bugs: https://bugs.launchpad.net/openstack-cyborg
+* Blueprints: https://blueprints.launchpad.net/openstack-cyborg
 
 Features
 --------
