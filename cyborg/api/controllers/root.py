@@ -13,11 +13,16 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import pecan
 from pecan import rest
 from wsme import types as wtypes
 
 from cyborg.api.controllers import base
+from cyborg.api.controllers import v1
 from cyborg.api import expose
+
+
+VERSION1 = 'v1'
 
 
 class Root(base.APIBase):
@@ -42,6 +47,26 @@ class Root(base.APIBase):
 
 
 class RootController(rest.RestController):
+    _versions = [VERSION1]
+    """All supported API versions"""
+
+    _default_version = VERSION1
+    """The default API version"""
+
+    v1 = v1.Controller()
+
     @expose.expose(Root)
     def get(self):
         return Root.convert()
+
+    @pecan.expose()
+    def _route(self, args, request=None):
+        """Overrides the default routing behavior.
+
+        It redirects the request to the default version of the cyborg API
+        if the version number is not specified in the url.
+        """
+
+        if args[0] and args[0] not in self._versions:
+            args = [self._default_version] + args
+        return super(RootController, self)._route(args)
