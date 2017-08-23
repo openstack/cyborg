@@ -11,18 +11,27 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+"""The Cyborg Agent Service."""
+
+import sys
+
 from oslo_config import cfg
-import uuid
+from oslo_service import service
 
-default_opts = [
-    cfg.StrOpt('transport_url',
-               default='',
-               help='Transport url to use for messaging'),
-    cfg.StrOpt('server_id',
-               default=uuid.uuid4(),
-               help='Unique identifier for this agent'),
-]
+from cyborg.common import constants
+from cyborg.common import service as cyborg_service
 
 
-def register_opts(conf):
-    conf.register_opts(default_opts, group='cyborg')
+CONF = cfg.CONF
+
+
+def main():
+    # Parse config file and command line options, then start logging
+    cyborg_service.prepare_service(sys.argv)
+
+    mgr = cyborg_service.RPCService('cyborg.agent.manager',
+                                    'AgentManager',
+                                    constants.AGENT_TOPIC)
+
+    launcher = service.launch(CONF, mgr)
+    launcher.wait()

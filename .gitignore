@@ -1,4 +1,5 @@
 *.pyc
 *.tox
+*.retry
 *.testrepository
 cyborg.egg-info

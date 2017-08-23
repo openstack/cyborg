@@ -1,0 +1,13 @@
+[Unit]
+Description=OpenStack Accelerator management service
+After=syslog.target network.target
+
+[Service]
+Type=simple
+User=cyborg
+ExecStart=/usr/bin/cyborg-api
+PrivateTmp=true
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

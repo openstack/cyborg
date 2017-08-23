@@ -1,0 +1,3 @@
+[DEFAULT]
+connection=mysql+pymysql://cyborg:{{ lookup('password', 'credentials/cyborg/rabbitpassword length=15') }}@overcloud-controller-0.internalapi/nova?read_default_file=/etc/my.cnf.d/tripleo.cnf&read_default_group=tripleo
+transport_url=rabbit://cyborg:{{ lookup('password', 'credentials/cyborg/rabbitpassword length=15') }}@overcloud-controller-0.internalapi:5672/?ssl=0

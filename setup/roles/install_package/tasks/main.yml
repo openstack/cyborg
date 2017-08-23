@@ -1,0 +1,38 @@
+---
+
+- name: Check if pip is installed
+  shell: "which pip"
+  register: which_pip
+  ignore_errors: true
+
+- name: Install pip
+  package:
+    name: python-pip
+    state: present
+  when: which_pip|failed
+  become: true
+
+- name: Install rsync
+  package:
+    name: rsync
+    state: present
+  become: true
+
+- name: Copy cyborg to host
+  synchronize:
+    src: ../../../cyborg/
+    dest: /tmp/cyborg
+    use_ssh_args: yes
+
+- name: Remove old Cyborg if installed
+  pip:
+    name: cyborg
+    state: absent
+  become: true
+  ignore_errors: true
+
+- name: Install Cyborg using pip
+  pip:
+    name: /tmp/cyborg
+    state: present
+  become: true

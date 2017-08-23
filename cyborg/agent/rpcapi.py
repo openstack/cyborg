@@ -13,18 +13,40 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+"""Client side of the conductor RPC API."""
 
-class RPCEndpoint(object):
+from oslo_config import cfg
+import oslo_messaging as messaging
 
-    # Conductor functions exposed for external calls
-    def __init__(self):
-        pass
+from cyborg.common import constants
+from cyborg.common import rpc
+from cyborg.objects import base as objects_base
 
-    def list_accelerators(self, ctxt):
-        pass
 
-    def update_accelerator(self, ctxt, accelerator):
-        pass
+CONF = cfg.CONF
 
-    def discover_accelerators(self, ctxt):
+
+class AgentAPI(object):
+    """Client side of the Agent RPC API.
+
+    API version history:
+
+    |    1.0 - Initial version.
+
+    """
+
+    RPC_API_VERSION = '1.0'
+
+    def __init__(self, topic=None):
+        super(AgentAPI, self).__init__()
+        self.topic = topic or constants.AGENT_TOPIC
+        target = messaging.Target(topic=self.topic,
+                                  version='1.0')
+        serializer = objects_base.CyborgObjectSerializer()
+        self.client = rpc.get_client(target,
+                                     version_cap=self.RPC_API_VERSION,
+                                     serializer=serializer)
+
+    def hardware_list(self, context, values):
+        """Signal the agent to find local hardware."""
         pass

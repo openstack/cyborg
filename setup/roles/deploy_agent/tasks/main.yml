@@ -1,0 +1,22 @@
+---
+# Sets up Cyborg api to start at boot
+
+- name: Create Cyborg user
+  user:
+    name: cyborg
+    comment: "cyborg user"
+    createhome: no
+  become: true
+
+- name: Template service file for Cyborg Agent
+  template:
+    src: openstack-cyborg-agent.service.j2
+    dest: /usr/lib/systemd/system/openstack-cyborg-agent.service
+  become: true
+
+- name: Start service and set to run at boot
+  service:
+    name: openstack-cyborg-agent
+    state: started
+    enabled: yes
+  become: true
