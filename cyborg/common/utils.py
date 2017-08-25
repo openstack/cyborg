@@ -13,12 +13,27 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from cyborg.api.middleware import auth_token
-from cyborg.api.middleware import parsable_error
+"""Utilities and helper functions."""
+
+from oslo_log import log
+import six
 
 
-ParsableErrorMiddleware = parsable_error.ParsableErrorMiddleware
-AuthTokenMiddleware = auth_token.AuthTokenMiddleware
+LOG = log.getLogger(__name__)
 
-__all__ = ('ParsableErrorMiddleware',
-           'AuthTokenMiddleware')
+
+def safe_rstrip(value, chars=None):
+    """Removes trailing characters from a string if that does not make it empty
+
+    :param value: A string value that will be stripped.
+    :param chars: Characters to remove.
+    :return: Stripped value.
+
+    """
+    if not isinstance(value, six.string_types):
+        LOG.warning("Failed to remove trailing character. Returning "
+                    "original object. Supplied object is not a string: "
+                    "%s,", value)
+        return value
+
+    return value.rstrip(chars) or value
