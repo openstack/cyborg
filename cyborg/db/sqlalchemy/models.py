@@ -64,6 +64,8 @@ class Accelerator(Base):
     uuid = Column(String(36), nullable=False)
     name = Column(String(255), nullable=False)
     description = Column(String(255), nullable=True)
+    project_id = Column(String(36), nullable=True)
+    user_id = Column(String(36), nullable=True)
     device_type = Column(String(255), nullable=False)
     acc_type = Column(String(255), nullable=False)
     acc_capability = Column(String(255), nullable=False)

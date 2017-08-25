@@ -17,6 +17,7 @@ from oslo_config import cfg
 from oslo_context import context
 from pecan import hooks
 
+from cyborg.common import policy
 from cyborg.conductor import rpcapi
 
 
@@ -50,11 +51,53 @@ class ConductorAPIHook(hooks.PecanHook):
 
 
 class ContextHook(hooks.PecanHook):
-    """Configures a request context and attaches it to the request."""
+    """Configures a request context and attaches it to the request.
+
+    The following HTTP request headers are used:
+
+    X-User-Id or X-User:
+        Used for context.user.
+
+    X-Tenant-Id or X-Tenant:
+        Used for context.tenant.
+
+    X-Auth-Token:
+        Used for context.auth_token.
+
+    X-Roles:
+        Used for setting context.is_admin flag to either True or False.
+        The flag is set to True, if X-Roles contains either an administrator
+        or admin substring. Otherwise it is set to False.
+
+    """
 
     def __init__(self, public_api_routes):
         self.public_api_routes = public_api_routes
         super(ContextHook, self).__init__()
 
     def before(self, state):
-        state.request.context = context.get_admin_context()
+        headers = state.request.headers
+
+        creds = {
+            'user_name': headers.get('X-User-Name'),
+            'user': headers.get('X-User-Id'),
+            'project_name': headers.get('X-Project-Name'),
+            'tenant': headers.get('X-Project-Id'),
+            'domain': headers.get('X-User-Domain-Id'),
+            'domain_name': headers.get('X-User-Domain-Name'),
+            'auth_token': headers.get('X-Auth-Token'),
+            'roles': headers.get('X-Roles', '').split(','),
+        }
+
+        is_admin = policy.authorize('is_admin', creds, creds)
+        state.request.context = context.RequestContext(
+            is_admin=is_admin, **creds)
+
+    def after(self, state):
+        if state.request.context == {}:
+            # An incorrect url path will not create RequestContext
+            return
+        # RequestContext will generate a request_id if no one
+        # passing outside, so it always contain a request_id.
+        request_id = state.request.context.request_id
+        state.response.headers['Openstack-Request-Id'] = request_id

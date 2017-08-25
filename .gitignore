@@ -2,3 +2,6 @@
 *.tox
 *.testrepository
 cyborg.egg-info
+
+# Sample profile
+etc/cyborg/policy.json.sample

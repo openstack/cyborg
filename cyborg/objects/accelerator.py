@@ -31,6 +31,8 @@ class Accelerator(base.CyborgObject, object_base.VersionedObjectDictCompat):
         'uuid': object_fields.UUIDField(nullable=False),
         'name': object_fields.StringField(nullable=False),
         'description': object_fields.StringField(nullable=True),
+        'project_id': object_fields.UUIDField(nullable=True),
+        'user_id': object_fields.UUIDField(nullable=True),
         'device_type': object_fields.StringField(nullable=False),
         'acc_type': object_fields.StringField(nullable=False),
         'acc_capability': object_fields.StringField(nullable=False),
