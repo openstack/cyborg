@@ -13,17 +13,17 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from oslo_config import cfg
-
-from cyborg.common import rpc
-from cyborg import version
+"""Cyborg test utilities."""
 
 
-def parse_args(argv, default_config_files=None):
-    rpc.set_defaults(control_exchange='cyborg')
-    version_string = version.version_info.release_string()
-    cfg.CONF(argv[1:],
-             project='cyborg',
-             version=version_string,
-             default_config_files=default_config_files)
-    rpc.init(cfg.CONF)
+def get_test_accelerator(**kw):
+    return {
+        'name': kw.get('name', 'name'),
+        'description': kw.get('description', 'description'),
+        'device_type': kw.get('device_type', 'device_type'),
+        'acc_type': kw.get('acc_type', 'acc_type'),
+        'acc_capability': kw.get('acc_capability', 'acc_capability'),
+        'vendor_id': kw.get('vendor_id', 'vendor_id'),
+        'product_id': kw.get('product_id', 'product_id'),
+        'remotable': kw.get('remotable', 1),
+    }

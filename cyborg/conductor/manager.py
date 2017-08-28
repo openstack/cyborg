@@ -16,7 +16,6 @@
 import oslo_messaging as messaging
 
 from cyborg.conf import CONF
-from cyborg import objects
 
 
 class ConductorManager(object):
@@ -33,8 +32,12 @@ class ConductorManager(object):
     def periodic_tasks(self, context, raise_on_error=False):
         pass
 
-    def accelerator_create(self, context, values):
-        """Create a new accelerator."""
-        accelerator = objects.Accelerator(context, **values)
-        accelerator.create()
-        return accelerator
+    def accelerator_create(self, context, acc_obj):
+        """Create a new accelerator.
+
+        :param context: request context.
+        :param acc_obj: a changed (but not saved) accelerator object.
+        :returns: created accelerator object.
+        """
+        acc_obj.create()
+        return acc_obj

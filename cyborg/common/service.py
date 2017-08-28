@@ -79,14 +79,12 @@ class RPCService(service.Service):
 
 def prepare_service(argv=None):
     log.register_options(CONF)
-    log.set_defaults()
-    rpc.set_defaults(control_exchange='cyborg')
+    log.set_defaults(default_log_levels=CONF.default_log_levels)
 
     argv = argv or []
     config.parse_args(argv)
 
     log.setup(CONF, 'cyborg')
-    rpc.init(CONF)
     objects.register_all()
 
 

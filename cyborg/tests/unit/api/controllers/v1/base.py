@@ -13,17 +13,9 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from oslo_config import cfg
-
-from cyborg.common import rpc
-from cyborg import version
+from cyborg.tests.unit.api import base
 
 
-def parse_args(argv, default_config_files=None):
-    rpc.set_defaults(control_exchange='cyborg')
-    version_string = version.version_info.release_string()
-    cfg.CONF(argv[1:],
-             project='cyborg',
-             version=version_string,
-             default_config_files=default_config_files)
-    rpc.init(cfg.CONF)
+class APITestV1(base.BaseApiTest):
+
+    PATH_PREFIX = '/v1'
