@@ -37,6 +37,8 @@ def upgrade():
         sa.Column('uuid', sa.String(length=36), nullable=False),
         sa.Column('name', sa.String(length=255), nullable=False),
         sa.Column('description', sa.Text(), nullable=True),
+        sa.Column('project_id', sa.String(length=36), nullable=True),
+        sa.Column('user_id', sa.String(length=36), nullable=True),
         sa.Column('device_type', sa.Text(), nullable=False),
         sa.Column('acc_type', sa.Text(), nullable=False),
         sa.Column('acc_capability', sa.Text(), nullable=False),

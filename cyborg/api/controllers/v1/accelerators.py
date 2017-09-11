@@ -23,6 +23,7 @@ from cyborg.api.controllers import base
 from cyborg.api.controllers import link
 from cyborg.api.controllers.v1 import types
 from cyborg.api import expose
+from cyborg.common import policy
 from cyborg import objects
 
 
@@ -37,6 +38,8 @@ class Accelerator(base.APIBase):
     uuid = types.uuid
     name = wtypes.text
     description = wtypes.text
+    project_id = types.uuid
+    user_id = types.uuid
     device_type = wtypes.text
     acc_type = wtypes.text
     acc_capability = wtypes.text
@@ -67,9 +70,16 @@ class Accelerator(base.APIBase):
         return accelerator
 
 
-class AcceleratorsController(rest.RestController):
+class AcceleratorsControllerBase(rest.RestController):
+    def _get_resource(self, uuid):
+        self._resource = objects.Accelerator.get(pecan.request.context, uuid)
+        return self._resource
+
+
+class AcceleratorsController(AcceleratorsControllerBase):
     """REST controller for Accelerators."""
 
+    @policy.authorize_wsgi("cyborg:accelerator", "create", False)
     @expose.expose(Accelerator, body=types.jsontype,
                    status_code=http_client.CREATED)
     def post(self, values):
