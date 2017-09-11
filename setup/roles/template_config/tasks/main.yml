@@ -1,0 +1,13 @@
+---
+
+- name: Create cyborg config dir
+  file:
+    path: /etc/cyborg
+    state: directory
+  become: true
+
+- name: Template Cyborg.conf
+  template:
+    src: cyborg.conf.j2
+    dest: /etc/cyborg/cyborg.conf
+  become: true

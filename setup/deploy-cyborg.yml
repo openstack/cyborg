@@ -1,0 +1,22 @@
+---
+# This Ansible playbook deploys Cyborg services on an openstack cloud
+
+- hosts: controller
+  remote_user: heat-admin
+  roles:
+    - generate_credentials
+    - install_package
+    - template_config
+    - deploy_api
+    - deploy_conductor
+    - validate_api
+    - validate_conductor
+
+- hosts: compute
+  remote_user: heat-admin
+  roles:
+    - install_package
+    - template_config
+    - deploy_agent
+    - validate_agent
+    #- deploy_drivers

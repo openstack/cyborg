@@ -1,0 +1,13 @@
+---
+
+- name: Check Agent status
+  service:
+    name: openstack-cyborg-agent
+    state: started
+    enabled: yes
+  become: true
+  register: result
+
+- name: Fail if Agent is not up
+  fail: msg="Cyborg Agent did not start correctly!"
+  when: result.status.ActiveState == "failed"

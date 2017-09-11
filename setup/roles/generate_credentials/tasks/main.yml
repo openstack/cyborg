@@ -1,0 +1,20 @@
+---
+
+- name: Create Cyborg mysql user
+  mysql_user:
+    name: cyborg
+    password: "{{ lookup('password', 'credentials/cyborg/mysqlpassword length=15') }}" # Generates a password
+    priv: '*.*:ALL,GRANT' # Do we only need the cyborg database?
+    state: present
+  become: true
+
+- name: Create Cyborg rabbitmq user
+  rabbitmq_user:
+    user: cyborg
+    password: "{{ lookup('password', 'credentials/cyborg/rabbitpassword length=15') }}" # Generates a password
+    vhost: /
+    read_priv: .*
+    write_priv: .*
+    configure_priv: .*
+    state: present
+  become: true

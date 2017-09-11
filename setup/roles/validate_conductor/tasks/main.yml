@@ -1,0 +1,13 @@
+---
+
+- name: Check if Conductor is running
+  service:
+    name: openstack-cyborg-conductor
+    state: started
+    enabled: yes
+  become: true
+  register: result
+
+- name: Fail if Conductor is not running
+  fail: msg="Cyborg Conductor did not start correctly!"
+  when: result.status.ActiveState == "failed"

@@ -15,3 +15,4 @@
 
 
 CONDUCTOR_TOPIC = 'cyborg-conductor'
+AGENT_TOPIC = 'cyborg-agent'

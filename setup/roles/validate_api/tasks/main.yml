@@ -1,0 +1,21 @@
+---
+
+- name: Check API status
+  service:
+    name: openstack-cyborg-api
+    state: started
+    enabled: yes
+  become: true
+  register: result
+
+- name: Fail if API did not start
+  fail: msg="Cyborg API did not start correctly!"
+  when: result.status.ActiveState == "failed"
+
+- name: Make a request to the cyborg API endpoint
+  wait_for:
+    host: localhost
+    port: 6666
+    state: started
+    delay: 1
+    timeout: 60

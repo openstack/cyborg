@@ -1,0 +1,13 @@
+[Unit]
+Description=OpenStack Accelerator management service
+After=syslog.target network.target
+
+[Service]
+Type=simple
+User=glance
+ExecStart=/usr/bin/cyborg-conductor
+PrivateTmp=true
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
