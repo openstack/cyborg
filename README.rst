@@ -1,12 +1,11 @@
 ===============================
-cyborg
+Cyborg
 ===============================
 
-Distributed Acceleration Management as a Service
+OpenStack Acceleration as a Service
 
-Please feel here a long description which must be at least 3 lines wrapped on
-80 cols, so that distribution package maintainers can use it in their packages.
-Note that this is a hard requirement.
+Cyborg provides a general management framework for accelerators such as
+FPGA, GPU, SoCs, NVMe SSDs, CCIX caches, DPDK/SPDK, pmem  and so forth.
 
 * Free software: Apache license
 * Source: https://git.openstack.org/cgit/openstack/cyborg
@@ -16,4 +15,5 @@ Note that this is a hard requirement.
 Features
 --------
 
-* TODO
+* REST API for basic accelerator life cycle management
+* Generic driver for common accelerator support

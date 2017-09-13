@@ -154,8 +154,11 @@ Other Cyborg Specs
 History
 =======
 
+
 .. list-table:: Revisions
    :header-rows: 1
 
+   * - Release
+     - Description
    * - Pike
      - Introduced
