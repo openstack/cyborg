@@ -1,7 +1,7 @@
 cyborg Style Commandments
 ===============================================
 
-If you haven't already done so read the OpenStack Style Commandments http://docs.openstack.org/developer/hacking/
+If you haven't already done so read the OpenStack Style Commandments https://docs.openstack.org/hacking/latest/
 
 Before you commit your code run tox against your patch using the command.
 
