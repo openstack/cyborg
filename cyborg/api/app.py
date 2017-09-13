@@ -15,6 +15,8 @@
 
 import pecan
 
+from oslo_config import cfg
+
 from cyborg.api import config
 from cyborg.api import hooks
 from cyborg.api import middleware
@@ -47,6 +49,10 @@ def setup_app(pecan_config=None, extra_hooks=None):
         hooks=app_hooks,
         wrap_app=middleware.ParsableErrorMiddleware
     )
+
+    app = middleware.AuthTokenMiddleware(
+        app, dict(cfg.CONF),
+        public_api_routes=pecan_config.app.acl_public_routes)
 
     return app
 
