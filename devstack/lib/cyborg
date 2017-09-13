@@ -1,0 +1,346 @@
+#!/bin/bash
+#
+# lib/cyborg
+# Functions to control the configuration and operation of the **Cyborg** service
+
+# Dependencies:
+#
+# - ``functions`` file
+# - ``DEST``, ``DATA_DIR``, ``STACK_USER`` must be defined
+# - ``SERVICE_{TENANT_NAME|PASSWORD}`` must be defined
+# - ``SERVICE_HOST``
+# - ``KEYSTONE_TOKEN_FORMAT`` must be defined
+
+# ``stack.sh`` calls the entry points in this order:
+#
+# - install_cyborg
+# - init_cyborg
+# - start_cyborg
+# - stop_cyborg
+# - cleanup_cyborg
+
+
+# ensure we don't re-source this in the same environment
+[[ -z "$_CYBORG_DEVSTACK_LIB" ]] || return 0
+declare -r -g _CYBORG_DEVSTACK_LIB=1
+
+# Save xtrace and pipefail settings
+_XTRACE_CYBORG=$(set +o | grep xtrace)
+_PIPEFAIL_CYBORG=$(set +o | grep pipefail)
+set -o xtrace
+set +o pipefail
+
+# Defaults
+# --------
+
+# Set up default directories
+
+GITREPO["virtualbmc"]=${VIRTUALBMC_REPO:-${GIT_BASE}/openstack/virtualbmc.git}
+GITBRANCH["virtualbmc"]=${VIRTUALBMC_BRANCH:-master}
+GITDIR["virtualbmc"]=$DEST/virtualbmc
+
+CYBORG_DIR=$DEST/cyborg
+CYBORG_DEVSTACK_DIR=$CYBORG_DIR/devstack
+CYBORG_DEVSTACK_FILES_DIR=$CYBORG_DEVSTACK_DIR/files
+CYBORG_DATA_DIR=$DATA_DIR/cyborg
+CYBORG_STATE_PATH=/var/lib/cyborg
+CYBORG_AUTH_CACHE_DIR=${CYBORG_AUTH_CACHE_DIR:-/var/cache/cyborg}
+CYBORG_CONF_DIR=${CYBORG_CONF_DIR:-/etc/cyborg}
+CYBORG_CONF_FILE=$CYBORG_CONF_DIR/cyborg.conf
+CYBORG_ROOTWRAP_CONF=$CYBORG_CONF_DIR/rootwrap.conf
+CYBORG_POLICY_JSON=$CYBORG_CONF_DIR/policy.json
+
+# Deploy callback timeout can be changed from its default (1800), if required.
+CYBORG_CALLBACK_TIMEOUT=${CYBORG_CALLBACK_TIMEOUT:-}
+
+# driver / hardware type options
+
+if [[ "$CYBORG_VM_ENGINE" == "auto" ]]; then
+    sudo modprobe kvm || true
+    if [ ! -e /dev/kvm ]; then
+        echo "WARNING: Switching to QEMU"
+        CYBORG_VM_ENGINE=qemu
+        if [[ -z "$CYBORG_VM_EMULATOR" ]]; then
+            CYBORG_VM_EMULATOR='/usr/bin/qemu-system-x86_64'
+        fi
+    else
+        CYBORG_VM_ENGINE=kvm
+    fi
+fi
+
+if [[ "$CYBORG_VM_ENGINE" == "kvm" ]]; then
+    # Set this to empty, so configure-vm.py can autodetect location
+    # of KVM binary
+    CYBORG_VM_EMULATOR=""
+fi
+
+
+function setup_virtualbmc {
+    # Install pyghmi from source, if requested, otherwise it will be
+    # downloaded as part of the virtualbmc installation
+    if use_library_from_git "pyghmi"; then
+        git_clone_by_name "pyghmi"
+        setup_dev_lib "pyghmi"
+    fi
+
+    if use_library_from_git "virtualbmc"; then
+        git_clone_by_name "virtualbmc"
+        setup_dev_lib "virtualbmc"
+    else
+        pip_install_gr "virtualbmc"
+    fi
+
+    if [[ ! -d $(dirname $CYBORG_VBMC_CONFIG_FILE) ]]; then
+        mkdir -p $(dirname $CYBORG_VBMC_CONFIG_FILE)
+    fi
+
+    iniset $CYBORG_VBMC_CONFIG_FILE log debug True
+    iniset $CYBORG_VBMC_CONFIG_FILE log logfile $CYBORG_VBMC_LOGFILE
+}
+
+
+# install_cyborg() - Install the things!
+function install_cyborg {
+    # make sure all needed service were enabled
+    local req_services="key"
+    if is_service_enabled nova && [[ "$VIRT_DRIVER" == "cyborg" ]]; then
+        req_services+=" nova glance neutron"
+    fi
+    for srv in $req_services; do
+        if ! is_service_enabled "$srv"; then
+            die $LINENO "$srv should be enabled for Ironic."
+        fi
+    done
+
+    setup_develop $CYBORG_DIR
+}
+
+
+# cleanup_cyborg_config_files() - Remove residual cache/config/log files,
+# left over from previous runs that would need to clean up.
+function cleanup_cyborg_config_files {
+    sudo rm -rf $CYBORG_AUTH_CACHE_DIR $CYBORG_CONF_DIR
+    sudo rm -rf $CYBORG_VM_LOG_DIR/*
+}
+
+
+# cleanup_cyborg() - Clean everything left from Cyborg
+function cleanup_cyborg {
+    cleanup_cyborg_config_files
+}
+
+
+# configure_cyborg_dirs() - Create all directories required by Ironic and
+# associated services.
+function configure_cyborg_dirs {
+    sudo install -d -o $STACK_USER $CYBORG_CONF_DIR $STACK_USER $CYBORG_DATA_DIR \
+        $CYBORG_STATE_PATH
+    sudo chown -R $STACK_USER:$STACK_USER $CYBORG_TFTPBOOT_DIR
+
+    # Create the logs directory when saving the deploy logs to the filesystem
+    if [[ "$CYBORG_DEPLOY_LOGS_STORAGE_BACKEND" == "local" && "$CYBORG_DEPLOY_LOGS_COLLECT" != "never" ]]; then
+        install -d -o $STACK_USER $CYBORG_DEPLOY_LOGS_LOCAL_PATH
+    fi
+}
+
+
+# configure_cyborg() - Set config files, create data dirs, etc
+function configure_cyborg {
+    configure_cyborg_dirs
+
+    # Copy over cyborg configuration file and configure common parameters.
+    cp $CYBORG_DIR/etc/cyborg/cyborg.conf.sample $CYBORG_CONF_FILE
+    iniset $CYBORG_CONF_FILE DEFAULT debug True
+    inicomment $CYBORG_CONF_FILE DEFAULT log_file
+    iniset $CYBORG_CONF_FILE database connection `database_connection_url cyborg`
+    iniset $CYBORG_CONF_FILE DEFAULT state_path $CYBORG_STATE_PATH
+    iniset $CYBORG_CONF_FILE DEFAULT use_syslog $SYSLOG
+    iniset $CYBORG_CONF_FILE DEFAULT host $LOCAL_HOSTNAME
+
+    # Configure Ironic conductor, if it was enabled.
+    if is_service_enabled cyborg-cond; then
+        configure_cyborg_conductor
+    fi
+
+    # Configure Ironic API, if it was enabled.
+    if is_service_enabled cyborg-api; then
+        configure_cyborg_api
+    fi
+
+    # Format logging
+    setup_logging $CYBORG_CONF_FILE
+
+    if [[ "$os_VENDOR" =~ (Debian|Ubuntu) ]]; then
+        # The groups change with newer libvirt. Older Ubuntu used
+        # 'libvirtd', but now uses libvirt like Debian. Do a quick check
+        # to see if libvirtd group already exists to handle grenade's case.
+        LIBVIRT_GROUP=$(cut -d ':' -f 1 /etc/group | grep 'libvirtd$' || true)
+        LIBVIRT_GROUP=${LIBVIRT_GROUP:-libvirt}
+    else
+        LIBVIRT_GROUP=libvirtd
+    fi
+    if ! getent group $LIBVIRT_GROUP >/dev/null; then
+        sudo groupadd $LIBVIRT_GROUP
+    fi
+    # NOTE(vsaienko) Add stack to libvirt group when installing without nova.
+    if ! is_service_enabled nova; then
+        add_user_to_group $STACK_USER $LIBVIRT_GROUP
+
+        # This is the basic set of devices allowed / required by all virtual machines.
+        # Add /dev/net/tun to cgroup_device_acl, needed for type=ethernet interfaces
+        if ! sudo grep -q '^cgroup_device_acl' /etc/libvirt/qemu.conf; then
+            cat <<EOF | sudo tee -a /etc/libvirt/qemu.conf
+cgroup_device_acl = [
+    "/dev/null", "/dev/full", "/dev/zero",
+    "/dev/random", "/dev/urandom",
+    "/dev/ptmx", "/dev/kvm", "/dev/kqemu",
+    "/dev/rtc", "/dev/hpet","/dev/net/tun",
+    "/dev/vfio/vfio",
+]
+EOF
+            restart_libvirt
+        fi
+
+    fi
+}
+
+# configure_cyborg_api() - Is used by configure_cyborg(). Performs
+# API specific configuration.
+function configure_cyborg_api {
+    iniset $CYBORG_CONF_FILE DEFAULT auth_strategy $CYBORG_AUTH_STRATEGY
+    configure_auth_token_middleware $CYBORG_CONF_FILE cyborg $CYBORG_AUTH_CACHE_DIR/api
+    iniset $CYBORG_CONF_FILE oslo_policy policy_file $CYBORG_POLICY_JSON
+
+    iniset_rpc_backend cyborg $CYBORG_CONF_FILE
+
+    iniset $CYBORG_CONF_FILE conductor automated_clean $CYBORG_AUTOMATED_CLEAN_ENABLED
+
+    cp -p $CYBORG_DIR/etc/cyborg/policy.json $CYBORG_POLICY_JSON
+}
+
+function configure_auth_for {
+    local service_config_section
+    service_config_section=$1
+    iniset $CYBORG_CONF_FILE $service_config_section auth_type password
+    iniset $CYBORG_CONF_FILE $service_config_section auth_url $KEYSTONE_SERVICE_URI
+    iniset $CYBORG_CONF_FILE $service_config_section username cyborg
+    iniset $CYBORG_CONF_FILE $service_config_section password $SERVICE_PASSWORD
+    iniset $CYBORG_CONF_FILE $service_config_section project_name $SERVICE_PROJECT_NAME
+    iniset $CYBORG_CONF_FILE $service_config_section user_domain_id default
+    iniset $CYBORG_CONF_FILE $service_config_section project_domain_id default
+    iniset $CYBORG_CONF_FILE $service_config_section cafile $SSL_BUNDLE_FILE
+}
+
+# configure_cyborg_conductor() - Is used by configure_cyborg().
+# Sets conductor specific settings.
+function configure_cyborg_conductor {
+
+    # set keystone region for all services
+    iniset $CYBORG_CONF_FILE keystone region_name $REGION_NAME
+
+    # this one is needed for lookup of Cyborg API endpoint via Keystone
+    configure_auth_for service_catalog
+
+    cp $CYBORG_DIR/etc/cyborg/rootwrap.conf $CYBORG_ROOTWRAP_CONF
+    cp -r $CYBORG_DIR/etc/cyborg/rootwrap.d $CYBORG_CONF_DIR
+    local cyborg_rootwrap
+    cyborg_rootwrap=$(get_rootwrap_location cyborg)
+    local rootwrap_isudoer_cmd="$cyborg_rootwrap $CYBORG_CONF_DIR/rootwrap.conf *"
+
+    # Set up the rootwrap sudoers for cyborg
+    local tempfile
+    tempfile=`mktemp`
+    echo "$STACK_USER ALL=(root) NOPASSWD: $rootwrap_isudoer_cmd" >$tempfile
+    chmod 0440 $tempfile
+    sudo chown root:root $tempfile
+    sudo mv $tempfile /etc/sudoers.d/cyborg-rootwrap
+
+    # set up drivers / hardware types
+    iniset $CYBORG_CONF_FILE DEFAULT enabled_drivers $CYBORG_ENABLED_DRIVERS
+
+    if is_deployed_by_agent; then
+        iniset $CYBORG_CONF_FILE api ramdisk_heartbeat_timeout 30
+    fi
+}
+
+# create_cyborg_cache_dir() - Part of the init_cyborg() process
+function create_cyborg_cache_dir {
+    # Create cache dir
+    sudo mkdir -p $CYBORG_AUTH_CACHE_DIR/api
+    sudo chown $STACK_USER $CYBORG_AUTH_CACHE_DIR/api
+    rm -f $CYBORG_AUTH_CACHE_DIR/api/*
+    sudo mkdir -p $CYBORG_AUTH_CACHE_DIR/registry
+    sudo chown $STACK_USER $CYBORG_AUTH_CACHE_DIR/registry
+    rm -f $CYBORG_AUTH_CACHE_DIR/registry/*
+}
+
+# init_cyborg() - Initialize databases, etc.
+function init_cyborg {
+    # Migrate cyborg database
+    $CYBORG_BIN_DIR/cyborg-dbsync --config-file=$CYBORG_CONF_FILE
+    create_cyborg_cache_dir
+}
+
+
+# start_cyborg() - Start running processes, including screen
+function start_cyborg {
+    # Start Cyborg API server, if enabled.
+    if is_service_enabled cyborg-api; then
+        start_cyborg_api
+    fi
+
+    # Start Cyborg conductor, if enabled.
+    if is_service_enabled cyborg-cond; then
+        start_cyborg_conductor
+    fi
+
+    # Start Cyborg agent, if enabled.
+    if is_service_enabled cyborg-agent; then
+        start_cyborg_agent
+    fi
+}
+
+# start_cyborg_api() - Used by start_cyborg().
+# Starts Cyborg API server.
+function start_cyborg_api {
+    run_process cyborg-api "$CYBORG_BIN_DIR/cyborg-api --config-file=$CYBORG_CONF_FILE"
+}
+
+# start_cyborg_conductor() - Used by start_cyborg().
+# Starts Cyborg conductor.
+function start_cyborg_conductor {
+    run_process cyborg-cond "$CYBORG_BIN_DIR/cyborg-conductor --config-file=$CYBORG_CONF_FILE"
+}
+
+# start_cyborg_agent() - Used by start_cyborg().
+# Starts Cyborg agent.
+function start_cyborg_agent {
+    run_process cyborg-agent "$CYBORG_BIN_DIR/cyborg-agent --config-file=$CYBORG_CONF_FILE"
+}
+
+# stop_cyborg() - Stop running processes
+function stop_cyborg {
+    stop_process cyborg-api
+    stop_process cyborg-cond
+    stop_process cyborg-agent
+}
+
+        wait_for_nova_resources "count" $total_nodes
+        wait_for_nova_resources "vcpus" $total_cpus
+    fi
+}
+
+function die_if_module_not_loaded {
+    if ! grep -q $1 /proc/modules; then
+        die $LINENO "$1 kernel module is not loaded"
+    fi
+}
+
+# Restore xtrace + pipefail
+$_XTRACE_CYBORG
+$_PIPEFAIL_CYBORG
+
+# Tell emacs to use shell-script-mode
+## Local variables:
+## mode: shell-script
+## End:
