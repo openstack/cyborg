@@ -47,7 +47,12 @@ class ConductorAPI(object):
                                      version_cap=self.RPC_API_VERSION,
                                      serializer=serializer)
 
-    def accelerator_create(self, context, values):
-        """Signal to conductor service to create an accelerator."""
+    def accelerator_create(self, context, acc_obj):
+        """Signal to conductor service to create an accelerator.
+
+        :param context: request context.
+        :param acc_obj: a created (but not saved) accelerator object.
+        :returns: created accelerator object.
+        """
         cctxt = self.client.prepare(topic=self.topic, server=CONF.host)
-        return cctxt.call(context, 'accelerator_create', values=values)
+        return cctxt.call(context, 'accelerator_create', values=acc_obj)

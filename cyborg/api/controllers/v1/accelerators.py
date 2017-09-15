@@ -57,8 +57,8 @@ class Accelerator(base.APIBase):
             setattr(self, field, kwargs.get(field, wtypes.Unset))
 
     @classmethod
-    def convert_with_links(cls, db_accelerator):
-        accelerator = Accelerator(**db_accelerator.as_dict())
+    def convert_with_links(cls, rpc_acc):
+        accelerator = Accelerator(**rpc_acc.as_dict())
         url = pecan.request.public_url
         accelerator.links = [
             link.Link.make_link('self', url, 'accelerators',
@@ -82,14 +82,16 @@ class AcceleratorsController(AcceleratorsControllerBase):
     @policy.authorize_wsgi("cyborg:accelerator", "create", False)
     @expose.expose(Accelerator, body=types.jsontype,
                    status_code=http_client.CREATED)
-    def post(self, values):
+    def post(self, accelerator):
         """Create a new accelerator.
 
         :param accelerator: an accelerator within the request body.
         """
-        accelerator = pecan.request.conductor_api.accelerator_create(
-            pecan.request.context, values)
+        context = pecan.request.context
+        rpc_acc = objects.Accelerator(context, **accelerator)
+        new_acc = pecan.request.conductor_api.accelerator_create(
+            context, rpc_acc)
         # Set the HTTP Location Header
         pecan.response.location = link.build_url('accelerators',
-                                                 accelerator.uuid)
-        return Accelerator.convert_with_links(accelerator)
+                                                 new_acc.uuid)
+        return Accelerator.convert_with_links(new_acc)
