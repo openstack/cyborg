@@ -74,7 +74,28 @@ class ConductorAPI(object):
         :param obj_acc: an accelerator object to delete.
         """
         cctxt = self.client.prepare(topic=self.topic, server=CONF.host)
-        cctxt.call(context, 'accelerator_delete', obj_acc=obj_acc)
+        return cctxt.call(context, 'accelerator_delete', obj_acc=obj_acc)
+
+    def accelerator_list_one(self, context, obj_acc):
+        """Signal to conductor service to list an accelerator.
+
+        :param context: request context.
+        :param obj_acc: an accelerator object to list.
+        :returns: accelerator object.
+        """
+        cctxt = self.client.prepare(topic=self.topic, server=CONF.host)
+        cctxt.call(context, 'get_one', obj_acc=obj_acc)
+
+    def accelerator_list_all(self, context, obj_acc):
+        """Signal to conductor service to list all accelerators.
+
+        :param context: request context.
+        :param obj_acc: accelerator objects to list.
+        :returns: accelerator objects.
+
+        """
+        cctxt = self.client.prepare(topic=self.topic, server=CONF.host)
+        return cctxt.call(context, 'get_all', obj_acc=obj_acc)
 
     def deployable_create(self, context, obj_dep):
         """Signal to conductor service to create a deployable.
