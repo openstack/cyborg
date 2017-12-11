@@ -57,8 +57,8 @@ class Accelerator(base.APIBase):
             setattr(self, field, kwargs.get(field, wtypes.Unset))
 
     @classmethod
-    def convert_with_links(cls, rpc_acc):
-        accelerator = Accelerator(**rpc_acc.as_dict())
+    def convert_with_links(cls, acc_obj):
+        accelerator = Accelerator(**acc_obj.as_dict())
         url = pecan.request.public_url
         accelerator.links = [
             link.Link.make_link('self', url, 'accelerators',

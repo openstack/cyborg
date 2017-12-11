@@ -55,4 +55,4 @@ class ConductorAPI(object):
         :returns: created accelerator object.
         """
         cctxt = self.client.prepare(topic=self.topic, server=CONF.host)
-        return cctxt.call(context, 'accelerator_create', values=acc_obj)
+        return cctxt.call(context, 'accelerator_create', acc_obj=acc_obj)
