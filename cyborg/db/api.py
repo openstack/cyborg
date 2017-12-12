@@ -44,4 +44,21 @@ class Connection(object):
     # accelerator
     @abc.abstractmethod
     def accelerator_create(self, context, values):
-        """Create a new server type."""
+        """Create a new accelerator."""
+
+    @abc.abstractmethod
+    def accelerator_get(self, context, uuid):
+        """Get requested accelerator."""
+
+    @abc.abstractmethod
+    def accelerator_list(self, context, limit, marker, sort_key, sort_dir,
+                         project_only):
+        """Get requested list of accelerators."""
+
+    @abc.abstractmethod
+    def accelerator_update(self, context, uuid, values):
+        """Update an accelerator."""
+
+    @abc.abstractmethod
+    def accelerator_destroy(self, context, uuid):
+        """Delete an accelerator."""

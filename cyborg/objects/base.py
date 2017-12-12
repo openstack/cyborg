@@ -62,20 +62,27 @@ class CyborgObject(object_base.VersionedObject):
                     if hasattr(self, k))
 
     @staticmethod
-    def _from_db_object(context, obj, db_object):
+    def _from_db_object(obj, db_obj):
         """Converts a database entity to a formal object.
 
-        :param context: security context
         :param obj: An object of the class.
-        :param db_object: A DB model of the object
+        :param db_obj: A DB model of the object
         :return: The object of the class with the database entity added
         """
 
         for field in obj.fields:
-            obj[field] = db_object[field]
+            obj[field] = db_obj[field]
 
         obj.obj_reset_changes()
         return obj
+
+    @classmethod
+    def _from_db_object_list(cls, db_objs, context):
+        """Converts a list of database entities to a list of formal objects."""
+        objs = []
+        for db_obj in db_objs:
+            objs.append(cls._from_db_object(cls(context), db_obj))
+        return objs
 
 
 class CyborgObjectSerializer(object_base.VersionedObjectSerializer):

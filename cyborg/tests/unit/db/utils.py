@@ -13,7 +13,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-"""Cyborg test utilities."""
+"""Cyborg db test utilities."""
 
 
 def get_test_accelerator(**kw):
@@ -26,4 +26,6 @@ def get_test_accelerator(**kw):
         'vendor_id': kw.get('vendor_id', 'vendor_id'),
         'product_id': kw.get('product_id', 'product_id'),
         'remotable': kw.get('remotable', 1),
+        'project_id': kw.get('project_id', 'b492a6fb12964ae3bd291ce585107d48'),
+        'user_id': kw.get('user_id', '7009409e21614d1db1ef7a8c5ee101d8'),
     }

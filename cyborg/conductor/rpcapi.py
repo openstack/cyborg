@@ -47,12 +47,31 @@ class ConductorAPI(object):
                                      version_cap=self.RPC_API_VERSION,
                                      serializer=serializer)
 
-    def accelerator_create(self, context, acc_obj):
+    def accelerator_create(self, context, obj_acc):
         """Signal to conductor service to create an accelerator.
 
         :param context: request context.
-        :param acc_obj: a created (but not saved) accelerator object.
+        :param obj_acc: a created (but not saved) accelerator object.
         :returns: created accelerator object.
         """
         cctxt = self.client.prepare(topic=self.topic, server=CONF.host)
-        return cctxt.call(context, 'accelerator_create', acc_obj=acc_obj)
+        return cctxt.call(context, 'accelerator_create', obj_acc=obj_acc)
+
+    def accelerator_update(self, context, obj_acc):
+        """Signal to conductor service to update an accelerator.
+
+        :param context: request context.
+        :param obj_acc: an accelerator object to update.
+        :returns: updated accelerator object.
+        """
+        cctxt = self.client.prepare(topic=self.topic, server=CONF.host)
+        return cctxt.call(context, 'accelerator_update', obj_acc=obj_acc)
+
+    def accelerator_delete(self, context, obj_acc):
+        """Signal to conductor service to delete an accelerator.
+
+        :param context: request context.
+        :param obj_acc: an accelerator object to delete.
+        """
+        cctxt = self.client.prepare(topic=self.topic, server=CONF.host)
+        cctxt.call(context, 'accelerator_delete', obj_acc=obj_acc)

@@ -111,6 +111,16 @@ class InvalidJsonType(Invalid):
     _msg_fmt = _("%(value)s is not JSON serializable.")
 
 
+# Cannot be templated as the error syntax varies.
+# msg needs to be constructed when raised.
+class InvalidParameterValue(Invalid):
+    _msg_fmt = _("%(err)s")
+
+
+class PatchError(Invalid):
+    _msg_fmt = _("Couldn't apply patch '%(patch)s'. Reason: %(reason)s")
+
+
 class NotAuthorized(CyborgException):
     _msg_fmt = _("Not authorized.")
     code = http_client.FORBIDDEN
@@ -118,3 +128,21 @@ class NotAuthorized(CyborgException):
 
 class HTTPForbidden(NotAuthorized):
     _msg_fmt = _("Access was denied to the following resource: %(resource)s")
+
+
+class NotFound(CyborgException):
+    _msg_fmt = _("Resource could not be found.")
+    code = http_client.NOT_FOUND
+
+
+class AcceleratorNotFound(NotFound):
+    _msg_fmt = _("Accelerator %(uuid)s could not be found.")
+
+
+class Conflict(CyborgException):
+    _msg_fmt = _('Conflict.')
+    code = http_client.CONFLICT
+
+
+class DuplicateName(Conflict):
+    _msg_fmt = _("An accelerator with name %(name)s already exists.")
