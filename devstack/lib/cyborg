@@ -147,7 +147,6 @@ function configure_cyborg_conductor {
     configure_auth_for service_catalog
 
     sudo cp $CYBORG_DIR/etc/cyborg/rootwrap.conf $CYBORG_ROOTWRAP_CONF
-    sudo chmod 0440 $CYBORG_DIR
     sudo cp -r $CYBORG_DIR/etc/cyborg/rootwrap.d $CYBORG_CONF_DIR
     local cyborg_rootwrap
     cyborg_rootwrap=$(get_rootwrap_location cyborg)
@@ -157,7 +156,6 @@ function configure_cyborg_conductor {
     local tempfile
     tempfile=`mktemp`
     echo "$STACK_USER ALL=(root) NOPASSWD: $rootwrap_isudoer_cmd" >$tempfile
-    sudo chmod 0440 $tempfile
     sudo chown root:root $tempfile
     sudo mv $tempfile /etc/sudoers.d/cyborg-rootwrap
 
