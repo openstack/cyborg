@@ -135,3 +135,80 @@ class BaseApiTest(base.DbTestCase):
         }
 
         return headers
+
+    def get_json(self, path, expect_errors=False, headers=None,
+                 extra_environ=None, q=None, **params):
+        """Sends simulated HTTP GET request to Pecan test app.
+
+        :param path: url path of target service
+        :param expect_errors: Boolean value; whether an error is expected based
+                              on request
+        :param headers: a dictionary of headers to send along with the request
+        :param extra_environ: a dictionary of environ variables to send along
+                              with the request
+        :param q: list of queries consisting of: field, value, op, and type
+                  keys
+        :param path_prefix: prefix of the url path
+        :param params: content for wsgi.input of request
+        """
+        full_path = self.PATH_PREFIX + path
+        q = q or []
+        query_params = {
+            'q.field': [],
+            'q.value': [],
+            'q.op': [],
+            }
+        for query in q:
+            for name in ['field', 'op', 'value']:
+                query_params['q.%s' % name].append(query.get(name, ''))
+        all_params = {}
+        all_params.update(params)
+        if q:
+            all_params.update(query_params)
+        response = self.app.get(full_path,
+                                params=all_params,
+                                headers=headers,
+                                extra_environ=extra_environ,
+                                expect_errors=expect_errors)
+        if not expect_errors:
+            response = response.json
+        return response
+
+    def patch_json(self, path, params, expect_errors=False, headers=None,
+                   extra_environ=None, status=None):
+        """Sends simulated HTTP PATCH request to Pecan test app.
+
+        :param path: url path of target service
+        :param params: content for wsgi.input of request
+        :param expect_errors: Boolean value; whether an error is expected based
+                              on request
+        :param headers: a dictionary of headers to send along with the request
+        :param extra_environ: a dictionary of environ variables to send along
+                              with the request
+        :param status: expected status code of response
+        """
+        full_path = self.PATH_PREFIX + path
+        return self._request_json(path=full_path, params=params,
+                                  expect_errors=expect_errors,
+                                  headers=headers, extra_environ=extra_environ,
+                                  status=status, method="patch")
+
+    def delete(self, path, expect_errors=False, headers=None,
+               extra_environ=None, status=None):
+        """Sends simulated HTTP DELETE request to Pecan test app.
+
+        :param path: url path of target service
+        :param expect_errors: Boolean value; whether an error is expected based
+                              on request
+        :param headers: a dictionary of headers to send along with the request
+        :param extra_environ: a dictionary of environ variables to send along
+                              with the request
+        :param status: expected status code of response
+        """
+        full_path = self.PATH_PREFIX + path
+        response = self.app.delete(full_path,
+                                   headers=headers,
+                                   status=status,
+                                   extra_environ=extra_environ,
+                                   expect_errors=expect_errors)
+        return response

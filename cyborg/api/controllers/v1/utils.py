@@ -13,21 +13,23 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import datetime
-
+import jsonpatch
 import wsme
-from wsme import types as wtypes
 
 
-class APIBase(wtypes.Base):
-    created_at = wsme.wsattr(datetime.datetime, readonly=True)
-    """The time in UTC at which the object is created"""
+from cyborg.common.i18n import _
 
-    updated_at = wsme.wsattr(datetime.datetime, readonly=True)
-    """The time in UTC at which the object is updated"""
 
-    def as_dict(self):
-        """Render this object as a dict of its fields."""
-        return dict((k, getattr(self, k))
-                    for k in self.fields
-                    if hasattr(self, k) and getattr(self, k) != wsme.Unset)
+JSONPATCH_EXCEPTIONS = (jsonpatch.JsonPatchException,
+                        jsonpatch.JsonPointerException,
+                        KeyError)
+
+
+def apply_jsonpatch(doc, patch):
+    for p in patch:
+        if p['op'] == 'add' and p['path'].count('/') == 1:
+            if p['path'].lstrip('/') not in doc:
+                msg = _('Adding a new attribute (%s) to the root of '
+                        ' the resource is not allowed')
+                raise wsme.exc.ClientSideError(msg % p['path'])
+    return jsonpatch.apply_patch(doc, jsonpatch.JsonPatch(patch))
