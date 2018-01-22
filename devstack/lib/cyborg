@@ -39,7 +39,11 @@ CYBORG_CONF_DIR=${CYBORG_CONF_DIR:-/etc/cyborg}
 CYBORG_CONF_FILE=$CYBORG_CONF_DIR/cyborg.conf
 CYBORG_ROOTWRAP_CONF=$CYBORG_CONF_DIR/rootwrap.conf
 CYBORG_POLICY_JSON=$CYBORG_CONF_DIR/policy.json
-
+if [[ -d ${CYBORG_DIR}/bin ]]; then
+    CYBORG_BIN_DIR=${CYBORG_DIR}/bin
+else
+    CYBORG_BIN_DIR=$(get_python_exec_prefix)
+fi
 
 # install_cyborg() - Install the things!
 function install_cyborg {
@@ -178,8 +182,11 @@ function create_cyborg_cache_dir {
 
 # init_cyborg() - Initialize databases, etc.
 function init_cyborg {
+    # (re)create Cyborg database
+    recreate_database cyborg utf8
+
     # Migrate cyborg database
-    $CYBORG_BIN_DIR/cyborg-dbsync --config-file=$CYBORG_CONF_FILE
+    $CYBORG_BIN_DIR/cyborg-dbsync --config-file ${CYBORG_CONF_FILE} upgrade
     create_cyborg_cache_dir
 }
 
