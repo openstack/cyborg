@@ -1,5 +1,4 @@
 - project:
-    name: openstack/cyborg
     check:
       jobs:
         - cyborg-devstack
