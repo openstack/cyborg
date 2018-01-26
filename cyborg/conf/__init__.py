@@ -25,3 +25,4 @@ CONF = cfg.CONF
 api.register_opts(CONF)
 database.register_opts(CONF)
 default.register_opts(CONF)
+default.register_placement_opts(CONF)

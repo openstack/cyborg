@@ -61,8 +61,55 @@ path_opts = [
                help=_("Top-level directory for maintaining cyborg's state.")),
 ]
 
+PLACEMENT_CONF_SECTION = 'placement'
+
+placement_opts = [
+    cfg.StrOpt('region_name',
+               help=_('Name of placement region to use. Useful if keystone '
+                      'manages more than one region.')),
+    cfg.StrOpt('endpoint_type',
+               default='public',
+               choices=['public', 'admin', 'internal'],
+               help=_('Type of the placement endpoint to use.  This endpoint '
+                      'will be looked up in the keystone catalog and should '
+                      'be one of public, internal or admin.')),
+    cfg.BoolOpt('insecure',
+                default=False,
+                help="""
+                    If true, the vCenter server certificate is not verified.
+                    If false, then the default CA truststore is used for
+                    verification. Related options:
+                    * ca_file: This option is ignored if "ca_file" is set.
+                    """),
+    cfg.StrOpt('cafile',
+               default=None,
+               help="""
+                   Specifies the CA bundle file to be used in verifying the
+                   vCenter server certificate.
+                   """),
+    cfg.StrOpt('certfile',
+               default=None,
+               help="""
+                   Specifies the certificate file to be used in verifying
+                   the vCenter server certificate.
+                   """),
+    cfg.StrOpt('keyfile',
+               default=None,
+               help="""
+                   Specifies the key file to be used in verifying the vCenter
+                   server certificate.
+                   """),
+    cfg.IntOpt('timeout',
+               default=None,
+               help=_('Timeout for inactive connections (in seconds)')),
+]
+
 
 def register_opts(conf):
     conf.register_opts(exc_log_opts)
     conf.register_opts(service_opts)
     conf.register_opts(path_opts)
+
+
+def register_placement_opts(cfg=cfg.CONF):
+    cfg.register_opts(placement_opts, group=PLACEMENT_CONF_SECTION)
