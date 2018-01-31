@@ -146,3 +146,21 @@ class Conflict(CyborgException):
 
 class DuplicateName(Conflict):
     _msg_fmt = _("An accelerator with name %(name)s already exists.")
+
+
+class PlacementEndpointNotFound(NotFound):
+    message = _("Placement API endpoint not found")
+
+
+class PlacementResourceProviderNotFound(NotFound):
+    message = _("Placement resource provider not found %(resource_provider)s.")
+
+
+class PlacementInventoryNotFound(NotFound):
+    message = _("Placement inventory not found for resource provider "
+                "%(resource_provider)s, resource class %(resource_class)s.")
+
+
+class PlacementInventoryUpdateConflict(Conflict):
+    message = _("Placement inventory update conflict for resource provider "
+                "%(resource_provider)s, resource class %(resource_class)s.")
