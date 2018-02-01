@@ -26,3 +26,4 @@ def register_all():
     # function in order for it to be registered by services that may
     # need to receive it via RPC.
     __import__('cyborg.objects.accelerator')
+    __import__('cyborg.objects.deployable')

@@ -19,7 +19,7 @@ from oslo_db import options as db_options
 from oslo_db.sqlalchemy import models
 import six.moves.urllib.parse as urlparse
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import Column, String, Integer
+from sqlalchemy import Column, String, Integer, Boolean, ForeignKey, Index
 from sqlalchemy import schema
 
 from cyborg.common import paths
@@ -72,3 +72,32 @@ class Accelerator(Base):
     vendor_id = Column(String(255), nullable=False)
     product_id = Column(String(255), nullable=False)
     remotable = Column(Integer, nullable=False)
+
+
+class Deployable(Base):
+    """Represents the deployables."""
+
+    __tablename__ = 'deployables'
+    __table_args__ = (
+        schema.UniqueConstraint('uuid', name='uniq_deployables0uuid'),
+        Index('deployables_parent_uuid_idx', 'parent_uuid'),
+        Index('deployables_root_uuid_idx', 'root_uuid'),
+        table_args()
+    )
+
+    id = Column(Integer, primary_key=True)
+    uuid = Column(String(36), nullable=False)
+    name = Column(String(255), nullable=False)
+    parent_uuid = Column(String(36),
+                         ForeignKey('deployables.uuid'), nullable=True)
+    root_uuid = Column(String(36),
+                       ForeignKey('deployables.uuid'), nullable=True)
+    pcie_address = Column(String(255), nullable=False)
+    host = Column(String(255), nullable=False)
+    board = Column(String(255), nullable=False)
+    vendor = Column(String(255), nullable=False)
+    version = Column(String(255), nullable=False)
+    type = Column(String(255), nullable=False)
+    assignable = Column(Boolean, nullable=False)
+    instance_uuid = Column(String(36), nullable=True)
+    availability = Column(String(255), nullable=False)

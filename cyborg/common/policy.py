@@ -88,9 +88,27 @@ accelerator_policies = [
                        description='Update accelerator records'),
 ]
 
+deployable_policies = [
+    policy.RuleDefault('cyborg:deployable:get_one',
+                       'rule:allow',
+                       description='Show deployable detail'),
+    policy.RuleDefault('cyborg:deployable:get_all',
+                       'rule:allow',
+                       description='Retrieve all deployable records'),
+    policy.RuleDefault('cyborg:deployable:create',
+                       'rule:admin_api',
+                       description='Create deployable records'),
+    policy.RuleDefault('cyborg:deployable:delete',
+                       'rule:admin_api',
+                       description='Delete deployable records'),
+    policy.RuleDefault('cyborg:deployable:update',
+                       'rule:admin_api',
+                       description='Update deployable records'),
+]
+
 
 def list_policies():
-    return default_policies + accelerator_policies
+    return default_policies + accelerator_policies + deployable_policies
 
 
 @lockutils.synchronized('policy_enforcer', 'cyborg-')

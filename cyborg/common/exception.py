@@ -94,6 +94,10 @@ class AcceleratorAlreadyExists(CyborgException):
     _msg_fmt = _("Accelerator with uuid %(uuid)s already exists.")
 
 
+class DeployableAlreadyExists(CyborgException):
+    _msg_fmt = _("Deployable with uuid %(uuid)s already exists.")
+
+
 class Invalid(CyborgException):
     _msg_fmt = _("Invalid parameters.")
     code = http_client.BAD_REQUEST
@@ -139,13 +143,21 @@ class AcceleratorNotFound(NotFound):
     _msg_fmt = _("Accelerator %(uuid)s could not be found.")
 
 
+class DeployableNotFound(NotFound):
+    _msg_fmt = _("Deployable %(uuid)s could not be found.")
+
+
 class Conflict(CyborgException):
     _msg_fmt = _('Conflict.')
     code = http_client.CONFLICT
 
 
-class DuplicateName(Conflict):
+class DuplicateAcceleratorName(Conflict):
     _msg_fmt = _("An accelerator with name %(name)s already exists.")
+
+
+class DuplicateDeployableName(Conflict):
+    _msg_fmt = _("A deployable with name %(name)s already exists.")
 
 
 class PlacementEndpointNotFound(NotFound):
@@ -164,3 +176,7 @@ class PlacementInventoryNotFound(NotFound):
 class PlacementInventoryUpdateConflict(Conflict):
     message = _("Placement inventory update conflict for resource provider "
                 "%(resource_provider)s, resource class %(resource_class)s.")
+
+
+class ObjectActionError(CyborgException):
+    _msg_fmt = _('Object action %(action)s failed because: %(reason)s')

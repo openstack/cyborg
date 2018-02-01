@@ -153,7 +153,7 @@ class Connection(api.Connection):
             return self._do_update_accelerator(context, uuid, values)
         except db_exc.DBDuplicateEntry as e:
             if 'name' in e.columns:
-                raise exception.DuplicateName(name=values['name'])
+                raise exception.DuplicateAcceleratorName(name=values['name'])
 
     @oslo_db_api.retry_on_deadlock
     def _do_update_accelerator(self, context, uuid, values):
@@ -169,10 +169,78 @@ class Connection(api.Connection):
         return ref
 
     @oslo_db_api.retry_on_deadlock
-    def accelerator_destroy(self, context, uuid):
+    def accelerator_delete(self, context, uuid):
         with _session_for_write():
             query = model_query(context, models.Accelerator)
             query = add_identity_filter(query, uuid)
             count = query.delete()
             if count != 1:
                 raise exception.AcceleratorNotFound(uuid=uuid)
+
+    def deployable_create(self, context, values):
+        if not values.get('uuid'):
+            values['uuid'] = uuidutils.generate_uuid()
+
+        deployable = models.Deployable()
+        deployable.update(values)
+
+        with _session_for_write() as session:
+            try:
+                session.add(deployable)
+                session.flush()
+            except db_exc.DBDuplicateEntry:
+                raise exception.DeployableAlreadyExists(uuid=values['uuid'])
+            return deployable
+
+    def deployable_get(self, context, uuid):
+        query = model_query(
+            context,
+            models.Deployable).filter_by(uuid=uuid)
+        try:
+            return query.one()
+        except NoResultFound:
+            raise exception.DeployableNotFound(uuid=uuid)
+
+    def deployable_get_by_host(self, context, host):
+        query = model_query(
+            context,
+            models.Deployable).filter_by(host=host)
+        return query.all()
+
+    def deployable_list(self, context):
+        query = model_query(context, models.Deployable)
+        return query.all()
+
+    def deployable_update(self, context, uuid, values):
+        if 'uuid' in values:
+            msg = _("Cannot overwrite UUID for an existing Deployable.")
+            raise exception.InvalidParameterValue(err=msg)
+
+        try:
+            return self._do_update_deployable(context, uuid, values)
+        except db_exc.DBDuplicateEntry as e:
+            if 'name' in e.columns:
+                raise exception.DuplicateDeployableName(name=values['name'])
+
+    @oslo_db_api.retry_on_deadlock
+    def _do_update_deployable(self, context, uuid, values):
+        with _session_for_write():
+            query = model_query(context, models.Deployable)
+            query = add_identity_filter(query, uuid)
+            try:
+                ref = query.with_lockmode('update').one()
+            except NoResultFound:
+                raise exception.DeployableNotFound(uuid=uuid)
+
+            ref.update(values)
+        return ref
+
+    @oslo_db_api.retry_on_deadlock
+    def deployable_delete(self, context, uuid):
+        with _session_for_write():
+            query = model_query(context, models.Deployable)
+            query = add_identity_filter(query, uuid)
+            query.update({'root_uuid': None})
+            count = query.delete()
+            if count != 1:
+                raise exception.DeployableNotFound(uuid=uuid)

@@ -73,5 +73,5 @@ class Accelerator(base.CyborgObject, object_base.VersionedObjectDictCompat):
 
     def destroy(self, context):
         """Delete the Accelerator from the DB."""
-        self.dbapi.accelerator_destroy(context, self.uuid)
+        self.dbapi.accelerator_delete(context, self.uuid)
         self.obj_reset_changes()

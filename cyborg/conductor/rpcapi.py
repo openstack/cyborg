@@ -75,3 +75,61 @@ class ConductorAPI(object):
         """
         cctxt = self.client.prepare(topic=self.topic, server=CONF.host)
         cctxt.call(context, 'accelerator_delete', obj_acc=obj_acc)
+
+    def deployable_create(self, context, obj_dep):
+        """Signal to conductor service to create a deployable.
+
+        :param context: request context.
+        :param obj_dep: a created (but not saved) deployable object.
+        :returns: created deployable object.
+        """
+        cctxt = self.client.prepare(topic=self.topic, server=CONF.host)
+        return cctxt.call(context, 'deployable_create', obj_dep=obj_dep)
+
+    def deployable_update(self, context, obj_dep):
+        """Signal to conductor service to update a deployable.
+
+        :param context: request context.
+        :param obj_dep: a deployable object to update.
+        :returns: updated deployable object.
+        """
+        cctxt = self.client.prepare(topic=self.topic, server=CONF.host)
+        return cctxt.call(context, 'deployable_update', obj_dep=obj_dep)
+
+    def deployable_delete(self, context, obj_dep):
+        """Signal to conductor service to delete a deployable.
+
+        :param context: request context.
+        :param obj_dep: a deployable object to delete.
+        """
+        cctxt = self.client.prepare(topic=self.topic, server=CONF.host)
+        cctxt.call(context, 'deployable_delete', obj_dep=obj_dep)
+
+    def deployable_get(self, context, uuid):
+        """Signal to conductor service to get a deployable.
+
+        :param context: request context.
+        :param uuid: UUID of a deployable.
+        :returns: requested deployable object.
+        """
+        cctxt = self.client.prepare(topic=self.topic, server=CONF.host)
+        return cctxt.call(context, 'deployable_get', uuid=uuid)
+
+    def deployable_get_by_host(self, context, host):
+        """Signal to conductor service to get a deployable by host.
+
+        :param context: request context.
+        :param host: host on which the deployable is located.
+        :returns: requested deployable object.
+        """
+        cctxt = self.client.prepare(topic=self.topic, server=CONF.host)
+        return cctxt.call(context, 'deployable_get_by_host', host=host)
+
+    def deployable_list(self, context):
+        """Signal to conductor service to get a list of deployables.
+
+        :param context: request context.
+        :returns: a list of deployable objects.
+        """
+        cctxt = self.client.prepare(topic=self.topic, server=CONF.host)
+        return cctxt.call(context, 'deployable_list')

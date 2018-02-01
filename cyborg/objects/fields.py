@@ -16,17 +16,9 @@
 from oslo_versionedobjects import fields as object_fields
 
 
-class IntegerField(object_fields.IntegerField):
-    pass
-
-
-class UUIDField(object_fields.UUIDField):
-    pass
-
-
-class StringField(object_fields.StringField):
-    pass
-
-
-class DateTimeField(object_fields.DateTimeField):
-    pass
+# Import fields from oslo_versionedobjects
+IntegerField = object_fields.IntegerField
+UUIDField = object_fields.UUIDField
+StringField = object_fields.StringField
+DateTimeField = object_fields.DateTimeField
+BooleanField = object_fields.BooleanField

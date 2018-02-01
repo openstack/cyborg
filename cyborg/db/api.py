@@ -60,5 +60,30 @@ class Connection(object):
         """Update an accelerator."""
 
     @abc.abstractmethod
-    def accelerator_destroy(self, context, uuid):
+    def accelerator_delete(self, context, uuid):
         """Delete an accelerator."""
+
+    # deployable
+    @abc.abstractmethod
+    def deployable_create(self, context, values):
+        """Create a new deployable."""
+
+    @abc.abstractmethod
+    def deployable_get(self, context, uuid):
+        """Get requested deployable."""
+
+    @abc.abstractmethod
+    def deployable_get_by_host(self, context, host):
+        """Get requested deployable by host."""
+
+    @abc.abstractmethod
+    def deployable_list(self, context):
+        """Get requested list of deployables."""
+
+    @abc.abstractmethod
+    def deployable_update(self, context, uuid, values):
+        """Update a deployable."""
+
+    @abc.abstractmethod
+    def deployable_delete(self, context, uuid):
+        """Delete a deployable."""
