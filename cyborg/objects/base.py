@@ -15,6 +15,7 @@
 
 """Cyborg common internal object model"""
 
+import netaddr
 from oslo_utils import versionutils
 from oslo_versionedobjects import base as object_base
 
@@ -88,3 +89,57 @@ class CyborgObject(object_base.VersionedObject):
 class CyborgObjectSerializer(object_base.VersionedObjectSerializer):
     # Base class to use for object hydration
     OBJ_BASE_CLASS = CyborgObject
+
+
+CyborgObjectDictCompat = object_base.VersionedObjectDictCompat
+
+
+class CyborgPersistentObject(object):
+    """Mixin class for Persistent objects.
+
+    This adds the fields that we use in common for most persistent objects.
+    """
+    fields = {
+        'created_at': object_fields.DateTimeField(nullable=True),
+        'updated_at': object_fields.DateTimeField(nullable=True),
+        'deleted_at': object_fields.DateTimeField(nullable=True),
+        'deleted': object_fields.BooleanField(default=False),
+        }
+
+
+class ObjectListBase(object_base.ObjectListBase):
+
+    @classmethod
+    def _obj_primitive_key(cls, field):
+        return 'cyborg_object.%s' % field
+
+    @classmethod
+    def _obj_primitive_field(cls, primitive, field,
+                             default=object_fields.UnspecifiedDefault):
+        key = cls._obj_primitive_key(field)
+        if default == object_fields.UnspecifiedDefault:
+            return primitive[key]
+        else:
+            return primitive.get(key, default)
+
+
+def obj_to_primitive(obj):
+    """Recursively turn an object into a python primitive.
+
+    A CyborgObject becomes a dict, and anything that implements ObjectListBase
+    becomes a list.
+    """
+    if isinstance(obj, ObjectListBase):
+        return [obj_to_primitive(x) for x in obj]
+    elif isinstance(obj, CyborgObject):
+        result = {}
+        for key in obj.obj_fields:
+            if obj.obj_attr_is_set(key) or key in obj.obj_extra_fields:
+                result[key] = obj_to_primitive(getattr(obj, key))
+        return result
+    elif isinstance(obj, netaddr.IPAddress):
+        return str(obj)
+    elif isinstance(obj, netaddr.IPNetwork):
+        return str(obj)
+    else:
+        return obj
