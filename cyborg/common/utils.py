@@ -16,10 +16,14 @@
 """Utilities and helper functions."""
 
 from oslo_log import log
+from oslo_concurrency import lockutils
 import six
 
 
 LOG = log.getLogger(__name__)
+
+
+synchronized = lockutils.synchronized_with_prefix('cyborg-')
 
 
 def safe_rstrip(value, chars=None):
