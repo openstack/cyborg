@@ -24,7 +24,7 @@ from oslo_log import log as logging
 LOG = logging.getLogger(__name__)
 
 # NOTE (crushil): REQUIRED_PROPERTIES needs to be filled out.
-REQUIRED_PROPERTIES = {}
+REQUIRED_PROPERTIES = {'create', 'get', 'list', 'update', 'delete'}
 COMMON_PROPERTIES = REQUIRED_PROPERTIES
 
 
@@ -58,14 +58,14 @@ class GENERICDRIVER(base.BaseDriver):
         """
         return COMMON_PROPERTIES
 
-    def attach(self):
+    def attach(self, accelerator, instance):
 
-            def install(self):
+            def install(self, accelerator):
                 pass
 
-    def detach(self):
+    def detach(self, accelerator, instance):
 
-            def uninstall(self):
+            def uninstall(self, accelerator):
                 pass
 
             def delete(self):
@@ -77,5 +77,5 @@ class GENERICDRIVER(base.BaseDriver):
     def list(self):
         pass
 
-    def update(self):
+    def update(self, accelerator, **kwargs):
         pass
