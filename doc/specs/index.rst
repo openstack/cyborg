@@ -12,3 +12,4 @@ This section has a list of specs for Pike release.
    :glob:
 
    specs/pike/approved/*
+   specs/queens/approved/*

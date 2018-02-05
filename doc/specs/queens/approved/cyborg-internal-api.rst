@@ -176,11 +176,7 @@ N/A
 Other end user impact
 ---------------------
 
-Aside from the API, are there other ways a user will interact with this
-feature?
-
-* Does this change have an impact on python-cyborgclient? What does the user
-  interface there look like?
+This change might have an impact on python-cyborgclient
 
 Performance Impact
 ------------------
@@ -213,100 +209,49 @@ Implementation
 Assignee(s)
 -----------
 
-Who is leading the writing of the code? Or is this a blueprint where you're
-throwing it out there to see who picks it up?
-
-If more than one person is working on the implementation, please designate the
-primary author and contact.
 
 Primary assignee:
-  <launchpad-id or None>
+  jkilpatr
 
 Other contributors:
-  <launchpad-id or None>
+  zhuli
 
 Work Items
 ----------
 
-Work items or tasks -- break the feature up into the things that need to be
-done to implement it. Those parts might end up being done by different people,
-but we're mostly trying to understand the timeline for implementation.
+N/A
 
 
 Dependencies
 ============
 
-* Include specific references to specs and/or blueprints in cyborg, or in other
-  projects, that this one either depends on or is related to.
-
-* If this requires functionality of another project that is not currently used
-  by Cyborg, document that fact.
-
-* Does this feature require any new library dependencies or code otherwise not
-  included in OpenStack? Or does it depend on a specific version of library?
+N/A
 
 
 Testing
 =======
 
-Please discuss the important scenarios needed to test here, as well as
-specific edge cases we should be ensuring work correctly. For each
-scenario please specify if this requires specialized hardware, a full
-OpenStack environment, or can be simulated inside the Cyborg tree.
-
-Please discuss how the change will be tested. We especially want to know what
-tempest tests will be added. It is assumed that unit test coverage will be
-added so that doesn't need to be mentioned explicitly, but discussion of why
-you think unit tests are sufficient and we don't need to add more tempest
-tests would need to be included.
-
-Is this untestable in gate given current limitations (specific hardware /
-software configurations available)? If so, are there mitigation plans (3rd
-party testing, gate enhancements, etc).
+N/A
 
 
 Documentation Impact
 ====================
 
-Which audiences are affected most by this change, and which documentation
-titles on docs.openstack.org should be updated because of this change? Don't
-repeat details discussed above, but reference them here in the context of
-documentation for multiple audiences. For example, the Operations Guide targets
-cloud operators, and the End User Guide would need to be updated if the change
-offers a new feature available through the CLI or dashboard. If a config option
-changes or is deprecated, note here that the documentation needs to be updated
-to reflect this specification's change.
+N/A
 
 References
 ==========
 
-Please add any useful references here. You are not required to have any
-reference. Moreover, this specification should still make sense when your
-references are unavailable. Examples of what you could include are:
-
-* Links to mailing list or IRC discussions
-
-* Links to notes from a summit session
-
-* Links to relevant research, if appropriate
-
-* Related specifications as appropriate (e.g.  if it's an EC2 thing, link the
-  EC2 docs)
-
-* Anything else you feel it is worthwhile to refer to
+N/A
 
 
 History
 =======
-
-Optional section intended to be used each time the spec is updated to describe
-new design, API or any database schema updated. Useful to let reader understand
-what's happened along the time.
 
 .. list-table:: Revisions
    :header-rows: 1
 
    * - Release Name
      - Description
-   * - Pike
+   * - Queens
      - Introduced

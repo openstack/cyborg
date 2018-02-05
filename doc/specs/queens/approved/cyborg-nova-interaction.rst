@@ -179,5 +179,5 @@ History
 
    * - Release Name
      - Description
-   * - Pike
+   * - Queens
      - Introduced

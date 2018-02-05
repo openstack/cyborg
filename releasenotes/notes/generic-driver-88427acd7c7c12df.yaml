@@ -1,0 +1,6 @@
+---
+features:
+  - |
+    The cyborg generic driver provide a full implementation of CRUD operations,
+    for testing purpose only. This is only an examplary implementation of a driver
+    which specific accelerator driver could refer to.

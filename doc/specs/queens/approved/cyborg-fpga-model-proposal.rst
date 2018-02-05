@@ -332,4 +332,7 @@ History
 .. list-table:: Revisions
    :header-rows: 1
 
-
+   * - Release
+     - Description
+   * - Queens
+     - Introduced

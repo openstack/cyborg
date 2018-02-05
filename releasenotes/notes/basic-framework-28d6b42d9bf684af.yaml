@@ -1,9 +1,11 @@
 ---
 features:
   - |
-    The Cyborg framework consists of three core services:Api, Conductor
+    The cyborg framework consists of three core services - API, Conductor
     and Agent.
-    Cyborg Api supports GET/POST/PUT/DELETE operations for accelerators.
-    Cyborg conductor is responsible for handling all API requests that come in
+    cyborg-api supports GET/POST/PUT/DELETE operations for accelerators.
+    cyborg-conductor is responsible for handling all API requests that come in
     via the API service.
-    Cyborg Agent is responsible for all the Nova Cyborg interaction.
+    cyborg-agent is responsible for all the Nova Cyborg interaction.
+    It should be noted that for operations that are not associated with DB change,
+    the cyborg-api could directly call cyborg-agent.

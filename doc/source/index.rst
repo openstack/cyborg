@@ -14,8 +14,8 @@ Overview
 .. toctree::
     :maxdepth: 1
 
-    introduction
-    architecture
+    user/introduction
+    user/architecture
 
 User Documentation
 ----------
@@ -25,15 +25,14 @@ User Documentation
 .. toctree::
    :maxdepth: 1
 
-   userdoc/installation.rst
-   userdic/usage.rst
+   install/installation.rst
 
 **API**
 
 .. toctree::
    :maxdepth: 1
 
-   userdoc/api.rst
+   admin/api.rst
 
 Developer Documentation
 -----------------
@@ -41,12 +40,8 @@ Developer Documentation
 .. toctree::
    :maxdepth: 1
 
-   devdoc/contributing.rst
+   contributor/contributing.rst
 
-.. toctree::
-   :maxdepth: 2
-
-   devdoc/index
 
 Indices and tables
 ==================

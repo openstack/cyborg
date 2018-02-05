@@ -1,0 +1,8 @@
+---
+features:
+  - |
+    The cyborg-fpga-driver-proposal spec provides the first proposal of a cyborg
+    fpga driver. Two operations are supported - discover and program, although the
+    latter was not finished in Queens and will be in Rocky. The code implementation
+    starts with an Intel QAT card, but more vendor card support should be
+    added later and the driver support should be generalized.

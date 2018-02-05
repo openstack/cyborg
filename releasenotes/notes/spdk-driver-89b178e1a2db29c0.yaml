@@ -1,0 +1,9 @@
+---
+features:
+  - |
+    The cyborg-spdk-driver-proposal spec defines the first software accelerator
+    driver managed by Cyborg. SPDK is widely used in NVMe SSD user space driver
+    to have a high performance. In Queens only basic operations on SPDK (discover,
+    list, construct/delete subsystem for NVMeOF devices, add/delete ip address
+    for vhost) are supported, more completed operation support should be expected
+    in the next couple releases.

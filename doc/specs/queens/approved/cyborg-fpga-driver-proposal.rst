@@ -176,14 +176,13 @@ References
 
 History
 =======
-c
 
 .. list-table:: Revisions
    :header-rows: 1
 
    * - Release
      - Description
-   * - Pike
+   * - Queens
      - Introduced
 
 References

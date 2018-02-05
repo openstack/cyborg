@@ -1,0 +1,14 @@
+---
+features:
+  - |
+    Cyborg-Nova interaction was completed in Queens via three specs.
+    The cyborg-nova-interaction spec serves as the main spec defines the interaction
+    mechanism between Cyborg and Nova is via Placement to which cyborg-conductor
+    will periodically report the accelerator resource info, which is acquired via
+    resource tracker functionality in the agent.
+    The cyborg-internal-api spec defines the internal api that is mainly used for
+    internal communication between conductor/agent and driver.
+    The cyborg-fpga-model-proposal spec defines the first tryout of data modeling of
+    accelerator resources via resource provider. Two types of tables (accelerator
+    for base PF and deployable for VF) are defined there and nested resource
+    provider will be utilized in Rocky release.

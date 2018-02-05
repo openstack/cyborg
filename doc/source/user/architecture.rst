@@ -3,7 +3,7 @@ Cyborg architecture
 
 Cyborg design can be described by following diagram:
 
-.. image:: images/cyborg-architecture.png
+.. image:: figures/cyborg-architecture.png
     :width: 700 px
     :scale: 99 %
     :align: left

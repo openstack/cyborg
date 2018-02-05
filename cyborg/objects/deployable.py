@@ -36,16 +36,23 @@ class Deployable(base.CyborgObject, object_base.VersionedObjectDictCompat):
         'uuid': object_fields.UUIDField(nullable=False),
         'name': object_fields.StringField(nullable=False),
         'parent_uuid': object_fields.UUIDField(nullable=True),
+        # parent_uuid refers to the id of the VF's parent node
         'root_uuid': object_fields.UUIDField(nullable=True),
+        # root_uuid refers to the id of the VF's root which has to be a PF
         'pcie_address': object_fields.StringField(nullable=False),
         'host': object_fields.StringField(nullable=False),
         'board': object_fields.StringField(nullable=False),
+        # board refers to a specific acc board type, e.g P100 GPU card
         'vendor': object_fields.StringField(nullable=False),
         'version': object_fields.StringField(nullable=False),
         'type': object_fields.StringField(nullable=False),
+        # similar to the acc_type in accelerator.py
         'assignable': object_fields.BooleanField(nullable=False),
+        # identify if an accelerator is in use
         'instance_uuid': object_fields.UUIDField(nullable=True),
+        # The id of the virtualized accelerator instance
         'availability': object_fields.StringField(nullable=False),
+        # identify the state of acc, e.g released/claimed/...
     }
 
     def _get_parent_root_uuid(self):
