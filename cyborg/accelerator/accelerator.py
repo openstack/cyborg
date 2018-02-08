@@ -20,7 +20,7 @@ Base = declarative_base()
 
 
 # A common internal acclerator object for internal use.
-class accelerator(Base):
+class Accelerator(Base):
     __tablename__ = 'accelerators'
     accelerator_id = Column(String, primary_key=True)
     device_type = Column(String)
