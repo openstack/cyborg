@@ -20,6 +20,9 @@ from oslo_log import log as logging
 import six
 from six.moves import http_client
 
+from cyborg.common.i18n import _
+
+
 LOG = logging.getLogger(__name__)
 
 
