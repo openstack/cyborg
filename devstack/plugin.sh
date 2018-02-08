@@ -27,6 +27,7 @@ if is_service_enabled cyborg-api cyborg-cond; then
 
             echo_summary "Configuring Cyborg"
             configure_cyborg
+            create_cyborg_accounts
 
         elif [[ "$2" == "extra" ]]; then
         # stack/extra - Called near the end after layer 1 and 2 services have
