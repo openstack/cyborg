@@ -44,7 +44,7 @@ class GenericDriver(generic.GENERICDRIVER):
     def do_setup(self, context):
         """Any initialization the generic driver does while starting."""
         super(GenericDriver, self).do_setup(context)
-        self.acc = accelerator.accelerator()
+        self.acc = accelerator.Accelerator()
 
     def create_accelerator(self, context):
         """Creates accelerator."""
