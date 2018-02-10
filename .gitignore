@@ -2,7 +2,10 @@
 *.tox
 *.retry
 *.testrepository
-cyborg.egg-info
+openstack_cyborg.egg-info
+dist
+build
+*.DS_Store
 
 # Sample profile
 etc/cyborg/policy.json.sample
