@@ -40,6 +40,7 @@ Developer Documentation
    :maxdepth: 1
 
    contributor/contributing
+   contributor/devstack_setup
 
 
 Indices and tables
