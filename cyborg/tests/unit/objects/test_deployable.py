@@ -26,6 +26,7 @@ from cyborg.common import exception
 from cyborg import objects
 from cyborg.objects import base
 from cyborg import tests as test
+from cyborg.tests.unit import fake_accelerator
 from cyborg.tests.unit import fake_deployable
 from cyborg.tests.unit.objects import test_objects
 from cyborg.tests.unit.db.base import DbTestCase
@@ -34,49 +35,95 @@ from cyborg.tests.unit.db.base import DbTestCase
 class _TestDeployableObject(DbTestCase):
     @property
     def fake_deployable(self):
-        db_deploy = fake_deployable.fake_db_deployable(id=2)
+        db_deploy = fake_deployable.fake_db_deployable(id=1)
         return db_deploy
 
-    @mock.patch.object(db.api.Connection, 'deployable_create')
-    def test_create(self, mock_create):
-        mock_create.return_value = self.fake_deployable
+    @property
+    def fake_accelerator(self):
+        db_acc = fake_accelerator.fake_db_accelerator(id=2)
+        return db_acc
+
+    def test_create(self):
+        db_acc = self.fake_accelerator
+        acc = objects.Accelerator(context=self.context,
+                                  **db_acc)
+        acc.create(self.context)
+        acc_get = objects.Accelerator.get(self.context, acc.uuid)
+        db_dpl = self.fake_deployable
         dpl = objects.Deployable(context=self.context,
-                                 **mock_create.return_value)
+                                 **db_dpl)
+
+        dpl.accelerator_id = acc_get.id
         dpl.create(self.context)
 
-        self.assertEqual(self.fake_deployable['id'], dpl.id)
+        self.assertEqual(db_dpl['uuid'], dpl.uuid)
 
-    @mock.patch.object(db.api.Connection, 'deployable_get')
-    def test_get(self, mock_get):
-        mock_get.return_value = self.fake_deployable
+    def test_get(self):
+        db_acc = self.fake_accelerator
+        acc = objects.Accelerator(context=self.context,
+                                  **db_acc)
+        acc.create(self.context)
+        acc_get = objects.Accelerator.get(self.context, acc.uuid)
+        db_dpl = self.fake_deployable
         dpl = objects.Deployable(context=self.context,
-                                 **mock_get.return_value)
+                                 **db_dpl)
+
+        dpl.accelerator_id = acc_get.id
         dpl.create(self.context)
-        dpl_get = objects.Deployable.get(self.context, dpl['uuid'])
+        dpl_get = objects.Deployable.get(self.context, dpl.uuid)
         self.assertEqual(dpl_get.uuid, dpl.uuid)
 
-    @mock.patch.object(db.api.Connection, 'deployable_update')
-    def test_save(self, mock_save):
-        mock_save.return_value = self.fake_deployable
+    def test_get_by_filter(self):
+        db_acc = self.fake_accelerator
+        acc = objects.Accelerator(context=self.context,
+                                  **db_acc)
+        acc.create(self.context)
+        acc_get = objects.Accelerator.get(self.context, acc.uuid)
+        db_dpl = self.fake_deployable
         dpl = objects.Deployable(context=self.context,
-                                 **mock_save.return_value)
+                                 **db_dpl)
+
+        dpl.accelerator_id = acc_get.id
+        dpl.create(self.context)
+        query = {"uuid": dpl['uuid']}
+        dpl_get_list = objects.Deployable.get_by_filter(self.context, query)
+
+        self.assertEqual(dpl_get_list[0].uuid, dpl.uuid)
+
+    def test_save(self):
+        db_acc = self.fake_accelerator
+        acc = objects.Accelerator(context=self.context,
+                                  **db_acc)
+        acc.create(self.context)
+        acc_get = objects.Accelerator.get(self.context, acc.uuid)
+        db_dpl = self.fake_deployable
+        dpl = objects.Deployable(context=self.context,
+                                 **db_dpl)
+
+        dpl.accelerator_id = acc_get.id
         dpl.create(self.context)
         dpl.host = 'test_save'
         dpl.save(self.context)
-        dpl_get = objects.Deployable.get(self.context, dpl['uuid'])
+        dpl_get = objects.Deployable.get(self.context, dpl.uuid)
         self.assertEqual(dpl_get.host, 'test_save')
 
-    @mock.patch.object(db.api.Connection, 'deployable_delete')
-    def test_destroy(self, mock_destroy):
-        mock_destroy.return_value = self.fake_deployable
+    def test_destroy(self):
+        db_acc = self.fake_accelerator
+        acc = objects.Accelerator(context=self.context,
+                                  **db_acc)
+        acc.create(self.context)
+        acc_get = objects.Accelerator.get(self.context, acc.uuid)
+        db_dpl = self.fake_deployable
         dpl = objects.Deployable(context=self.context,
-                                 **mock_destroy.return_value)
+                                 **db_dpl)
+
+        dpl.accelerator_id = acc_get.id
         dpl.create(self.context)
-        self.assertEqual(self.fake_deployable['id'], dpl.id)
+        self.assertEqual(db_dpl['uuid'], dpl.uuid)
         dpl.destroy(self.context)
         self.assertRaises(exception.DeployableNotFound,
                           objects.Deployable.get, self.context,
-                          dpl['uuid'])
+                          dpl.uuid)
 
 
 class TestDeployableObject(test_objects._LocalTest,

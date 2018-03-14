@@ -17,7 +17,6 @@ import copy
 import datetime
 import inspect
 import os
-import pprint
 
 import fixtures
 import mock

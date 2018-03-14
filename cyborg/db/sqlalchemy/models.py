@@ -20,6 +20,7 @@ from oslo_db.sqlalchemy import models
 import six.moves.urllib.parse as urlparse
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Column, String, Integer, Boolean, ForeignKey, Index
+from sqlalchemy import Text
 from sqlalchemy import schema
 
 from cyborg.common import paths
@@ -82,6 +83,7 @@ class Deployable(Base):
         schema.UniqueConstraint('uuid', name='uniq_deployables0uuid'),
         Index('deployables_parent_uuid_idx', 'parent_uuid'),
         Index('deployables_root_uuid_idx', 'root_uuid'),
+        Index('deployables_accelerator_id_idx', 'accelerator_id'),
         table_args()
     )
 
@@ -101,3 +103,23 @@ class Deployable(Base):
     assignable = Column(Boolean, nullable=False)
     instance_uuid = Column(String(36), nullable=True)
     availability = Column(String(255), nullable=False)
+    accelerator_id = Column(Integer,
+                            ForeignKey('accelerators.id', ondelete="CASCADE"),
+                            nullable=False)
+
+
+class Attribute(Base):
+    __tablename__ = 'attributes'
+    __table_args__ = (
+        schema.UniqueConstraint('uuid', name='uniq_attributes0uuid'),
+        Index('attributes_deployable_id_idx', 'deployable_id'),
+        table_args()
+    )
+
+    id = Column(Integer, primary_key=True)
+    uuid = Column(String(36), nullable=False)
+    deployable_id = Column(Integer,
+                           ForeignKey('deployables.id', ondelete="CASCADE"),
+                           nullable=False)
+    key = Column(Text, nullable=False)
+    value = Column(Text, nullable=False)

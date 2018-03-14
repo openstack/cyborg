@@ -19,52 +19,54 @@ from oslo_utils import uuidutils
 
 from cyborg import objects
 from cyborg.objects import fields
+from cyborg.objects import virtual_function
 
 
-def fake_db_deployable(**updates):
+def fake_db_virtual_function(**updates):
     root_uuid = uuidutils.generate_uuid()
-    db_deployable = {
+    db_virtual_function = {
         'id': 1,
         'deleted': False,
         'uuid': root_uuid,
         'name': 'dp_name',
         'parent_uuid': None,
         'root_uuid': root_uuid,
-        'pcie_address': '00:7f:0b.2',
+        'pcie_address': '00:7f:bb.2',
         'host': 'host_name',
         'board': 'KU115',
         'vendor': 'Xilinx',
         'version': '1.0',
-        'type': 'pf',
+        'type': 'vf',
         'assignable': True,
         'instance_uuid': None,
         'availability': 'Available',
         'accelerator_id': 1
         }
 
-    for name, field in objects.Deployable.fields.items():
-        if name in db_deployable:
+    for name, field in virtual_function.VirtualFunction.fields.items():
+        if name in db_virtual_function:
             continue
         if field.nullable:
-            db_deployable[name] = None
+            db_virtual_function[name] = None
         elif field.default != fields.UnspecifiedDefault:
-            db_deployable[name] = field.default
+            db_virtual_function[name] = field.default
         else:
-            raise Exception('fake_db_deployable needs help with %s' % name)
+            raise Exception('fake_db_virtual_function needs help with %s'
+                            % name)
 
     if updates:
-        db_deployable.update(updates)
+        db_virtual_function.update(updates)
 
-    return db_deployable
+    return db_virtual_function
 
 
-def fake_deployable_obj(context, obj_dpl_class=None, **updates):
-    if obj_dpl_class is None:
-        obj_dpl_class = objects.Deployable
+def fake_virtual_function_obj(context, obj_vf_class=None, **updates):
+    if obj_vf_class is None:
+        obj_vf_class = objects.VirtualFunction
     expected_attrs = updates.pop('expected_attrs', None)
-    deploy = obj_dpl_class._from_db_object(context,
-                                           obj_dpl_class(),
-                                           fake_db_deployable(**updates),
-                                           expected_attrs=expected_attrs)
-    deploy.obj_reset_changes()
-    return deploy
+    vf = obj_vf_class._from_db_object(context,
+                                      obj_vf_class(),
+                                      fake_db_virtual_function(**updates),
+                                      expected_attrs=expected_attrs)
+    vf.obj_reset_changes()
+    return vf

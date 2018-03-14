@@ -32,6 +32,7 @@ class Accelerator(base.CyborgObject, object_base.VersionedObjectDictCompat):
     dbapi = dbapi.get_instance()
 
     fields = {
+        'id': object_fields.IntegerField(nullable=False),
         'uuid': object_fields.UUIDField(nullable=False),
         'name': object_fields.StringField(nullable=False),
         'description': object_fields.StringField(nullable=True),
