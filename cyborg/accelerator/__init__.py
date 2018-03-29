@@ -16,4 +16,4 @@ import pbr.version
 
 
 __version__ = pbr.version.VersionInfo(
-    'cyborg').version_string()
+    'openstack-cyborg').version_string()

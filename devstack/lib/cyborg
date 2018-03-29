@@ -113,7 +113,6 @@ function configure_cyborg {
     configure_cyborg_dirs
 
     # Copy over cyborg configuration file and configure common parameters.
-    cp $CYBORG_DIR/etc/cyborg/cyborg.conf.sample $CYBORG_CONF_FILE
     iniset $CYBORG_CONF_FILE DEFAULT debug True
     inicomment $CYBORG_CONF_FILE DEFAULT log_file
     iniset $CYBORG_CONF_FILE database connection `database_connection_url cyborg`

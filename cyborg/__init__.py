@@ -17,6 +17,6 @@ import pbr.version
 
 
 __version__ = pbr.version.VersionInfo(
-    'cyborg').version_string()
+    'openstack-cyborg').version_string()
 
 eventlet.monkey_patch(os=False)
