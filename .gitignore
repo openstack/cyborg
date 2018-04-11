@@ -10,3 +10,4 @@ ChangeLog
 
 # Sample profile
 etc/cyborg/policy.json.sample
+.idea/*
