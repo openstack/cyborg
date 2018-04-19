@@ -87,3 +87,31 @@ class Connection(object):
     @abc.abstractmethod
     def deployable_delete(self, context, uuid):
         """Delete a deployable."""
+
+    @abc.abstractmethod
+    def deployable_get_by_filters(self, context,
+                                  filters, sort_key='created_at',
+                                  sort_dir='desc', limit=None,
+                                  marker=None, columns_to_join=None):
+        """Get requested deployable by filters."""
+
+    # attributes
+    @abc.abstractmethod
+    def attribute_create(self, context, key, value):
+        """Create a new attribute."""
+
+    @abc.abstractmethod
+    def attribute_get(self, context, uuid):
+        """Get requested attribute."""
+
+    @abc.abstractmethod
+    def attribute_get_by_deployable_uuid(self, context, deployable_uuid):
+        """Get requested deployable by deployable uuid."""
+
+    @abc.abstractmethod
+    def attribute_update(self, context, uuid, key, value):
+        """Update an attribute's key value pair."""
+
+    @abc.abstractmethod
+    def attribute_delete(self, context, uuid):
+        """Delete an attribute."""

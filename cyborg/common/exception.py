@@ -147,6 +147,10 @@ class DeployableNotFound(NotFound):
     _msg_fmt = _("Deployable %(uuid)s could not be found.")
 
 
+class InvalidDeployType(CyborgException):
+    _msg_fmt = _("Deployable have an invalid type")
+
+
 class Conflict(CyborgException):
     _msg_fmt = _('Conflict.')
     code = http_client.CONFLICT
@@ -180,3 +184,15 @@ class PlacementInventoryUpdateConflict(Conflict):
 
 class ObjectActionError(CyborgException):
     _msg_fmt = _('Object action %(action)s failed because: %(reason)s')
+
+
+class AttributeNotFound(NotFound):
+    _msg_fmt = _("Attribute %(uuid)s could not be found.")
+
+
+class AttributeInvalid(CyborgException):
+    _msg_fmt = _("Attribute is invalid")
+
+
+class AttributeAlreadyExists(CyborgException):
+    _msg_fmt = _("Attribute with uuid %(uuid)s already exists.")

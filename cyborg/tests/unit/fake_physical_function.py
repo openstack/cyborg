@@ -19,11 +19,12 @@ from oslo_utils import uuidutils
 
 from cyborg import objects
 from cyborg.objects import fields
+from cyborg.objects import physical_function
 
 
-def fake_db_deployable(**updates):
+def fake_db_physical_function(**updates):
     root_uuid = uuidutils.generate_uuid()
-    db_deployable = {
+    db_physical_function = {
         'id': 1,
         'deleted': False,
         'uuid': root_uuid,
@@ -42,29 +43,30 @@ def fake_db_deployable(**updates):
         'accelerator_id': 1
         }
 
-    for name, field in objects.Deployable.fields.items():
-        if name in db_deployable:
+    for name, field in physical_function.PhysicalFunction.fields.items():
+        if name in db_physical_function:
             continue
         if field.nullable:
-            db_deployable[name] = None
+            db_physical_function[name] = None
         elif field.default != fields.UnspecifiedDefault:
-            db_deployable[name] = field.default
+            db_physical_function[name] = field.default
         else:
-            raise Exception('fake_db_deployable needs help with %s' % name)
+            raise Exception('fake_db_physical_function needs help with %s'
+                            % name)
 
     if updates:
-        db_deployable.update(updates)
+        db_physical_function.update(updates)
 
-    return db_deployable
+    return db_physical_function
 
 
-def fake_deployable_obj(context, obj_dpl_class=None, **updates):
-    if obj_dpl_class is None:
-        obj_dpl_class = objects.Deployable
+def fake_physical_function_obj(context, obj_pf_class=None, **updates):
+    if obj_pf_class is None:
+        obj_pf_class = objects.VirtualFunction
     expected_attrs = updates.pop('expected_attrs', None)
-    deploy = obj_dpl_class._from_db_object(context,
-                                           obj_dpl_class(),
-                                           fake_db_deployable(**updates),
-                                           expected_attrs=expected_attrs)
-    deploy.obj_reset_changes()
-    return deploy
+    pf = obj_pf_class._from_db_object(context,
+                                      obj_pf_class(),
+                                      fake_db_physical_function(**updates),
+                                      expected_attrs=expected_attrs)
+    pf.obj_reset_changes()
+    return vf

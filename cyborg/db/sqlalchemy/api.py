@@ -16,6 +16,7 @@
 """SQLAlchemy storage backend."""
 
 import threading
+import copy
 
 from oslo_db import api as oslo_db_api
 from oslo_db import exception as db_exc
@@ -180,7 +181,8 @@ class Connection(api.Connection):
     def deployable_create(self, context, values):
         if not values.get('uuid'):
             values['uuid'] = uuidutils.generate_uuid()
-
+        if values.get('id'):
+            values.pop('id', None)
         deployable = models.Deployable()
         deployable.update(values)
 
@@ -226,7 +228,8 @@ class Connection(api.Connection):
     def _do_update_deployable(self, context, uuid, values):
         with _session_for_write():
             query = model_query(context, models.Deployable)
-            query = add_identity_filter(query, uuid)
+            # query = add_identity_filter(query, uuid)
+            query = query.filter_by(uuid=uuid)
             try:
                 ref = query.with_lockmode('update').one()
             except NoResultFound:
@@ -244,3 +247,193 @@ class Connection(api.Connection):
             count = query.delete()
             if count != 1:
                 raise exception.DeployableNotFound(uuid=uuid)
+
+    def deployable_get_by_filters(self, context,
+                                  filters, sort_key='created_at',
+                                  sort_dir='desc', limit=None,
+                                  marker=None, join_columns=None):
+        """Return list of deployables matching all filters sorted by
+        the sort_key. See deployable_get_by_filters_sort for
+        more information.
+        """
+        return self.deployable_get_by_filters_sort(context, filters,
+                                                   limit=limit, marker=marker,
+                                                   join_columns=join_columns,
+                                                   sort_keys=[sort_key],
+                                                   sort_dirs=[sort_dir])
+
+    def _exact_deployable_filter(self, query, filters, legal_keys):
+        """Applies exact match filtering to a deployable query.
+        Returns the updated query.  Modifies filters argument to remove
+        filters consumed.
+        :param query: query to apply filters to
+        :param filters: dictionary of filters; values that are lists,
+                        tuples, sets, or frozensets cause an 'IN' test to
+                        be performed, while exact matching ('==' operator)
+                        is used for other values
+        :param legal_keys: list of keys to apply exact filtering to
+        """
+
+        filter_dict = {}
+        model = models.Deployable
+
+        # Walk through all the keys
+        for key in legal_keys:
+            # Skip ones we're not filtering on
+            if key not in filters:
+                continue
+
+            # OK, filtering on this key; what value do we search for?
+            value = filters.pop(key)
+
+            if isinstance(value, (list, tuple, set, frozenset)):
+                if not value:
+                    return None
+                # Looking for values in a list; apply to query directly
+                column_attr = getattr(model, key)
+                query = query.filter(column_attr.in_(value))
+            else:
+                filter_dict[key] = value
+        # Apply simple exact matches
+        if filter_dict:
+            query = query.filter(*[getattr(models.Deployable, k) == v
+                                   for k, v in filter_dict.items()])
+        return query
+
+    def deployable_get_by_filters_sort(self, context, filters, limit=None,
+                                       marker=None, join_columns=None,
+                                       sort_keys=None, sort_dirs=None):
+        """Return deployables that match all filters sorted by the given
+        keys. Deleted deployables will be returned by default, unless
+        there's a filter that says otherwise.
+        """
+
+        if limit == 0:
+            return []
+
+        sort_keys, sort_dirs = self.process_sort_params(sort_keys,
+                                                        sort_dirs,
+                                                        default_dir='desc')
+
+        query_prefix = model_query(context, models.Deployable)
+        filters = copy.deepcopy(filters)
+
+        exact_match_filter_names = ['uuid', 'name',
+                                    'parent_uuid', 'root_uuid',
+                                    'pcie_address', 'host',
+                                    'board', 'vendor', 'version',
+                                    'type', 'assignable', 'instance_uuid',
+                                    'availability', 'accelerator_id']
+
+        # Filter the query
+        query_prefix = self._exact_deployable_filter(query_prefix,
+                                                     filters,
+                                                     exact_match_filter_names)
+        if query_prefix is None:
+            return []
+        deployables = query_prefix.all()
+        return deployables
+
+    def attribute_create(self, context, key, value):
+        update_fields = {'key': key, 'value': value}
+        update_fields['uuid'] = uuidutils.generate_uuid()
+
+        attribute = models.Attribute()
+        attribute.update(update_fields)
+
+        with _session_for_write() as session:
+            try:
+                session.add(attribute)
+                session.flush()
+            except db_exc.DBDuplicateEntry:
+                raise exception.AttributeAlreadyExists(
+                    uuid=update_fields['uuid'])
+            return attribute
+
+    def attribute_get(self, context, uuid):
+        query = model_query(
+            context,
+            models.Attribute).filter_by(uuid=uuid)
+        try:
+            return query.one()
+        except NoResultFound:
+            raise exception.AttributeNotFound(uuid=uuid)
+
+    def attribute_get_by_deployable_uuid(self, context, deployable_uuid):
+        query = model_query(
+            context,
+            models.Attribute).filter_by(deployable_uuid=deployable_uuid)
+        try:
+            return query.all()
+        except NoResultFound:
+            raise exception.AttributeNotFound(uuid=uuid)
+
+    def attribute_update(self, context, uuid, key, value):
+        return self._do_update_attribute(context, uuid, key, value)
+
+    @oslo_db_api.retry_on_deadlock
+    def _do_update_attribute(self, context, uuid, key, value):
+        update_fields = {'key': key, 'value': value}
+        with _session_for_write():
+            query = model_query(context, models.Attribute)
+            query = add_identity_filter(query, uuid)
+            try:
+                ref = query.with_lockmode('update').one()
+            except NoResultFound:
+                raise exception.AttributeNotFound(uuid=uuid)
+
+            ref.update(update_fields)
+        return ref
+
+    def attribute_delete(self, context, uuid):
+        with _session_for_write():
+            query = model_query(context, models.Attribute)
+            query = add_identity_filter(query, uuid)
+            count = query.delete()
+            if count != 1:
+                raise exception.AttributeNotFound(uuid=uuid)
+
+    def process_sort_params(self, sort_keys, sort_dirs,
+                            default_keys=['created_at', 'id'],
+                            default_dir='asc'):
+
+        # Determine direction to use for when adding default keys
+        if sort_dirs and len(sort_dirs) != 0:
+            default_dir_value = sort_dirs[0]
+        else:
+            default_dir_value = default_dir
+
+        # Create list of keys (do not modify the input list)
+        if sort_keys:
+            result_keys = list(sort_keys)
+        else:
+            result_keys = []
+
+        # If a list of directions is not provided,
+        # use the default sort direction for all provided keys
+        if sort_dirs:
+            result_dirs = []
+            # Verify sort direction
+            for sort_dir in sort_dirs:
+                if sort_dir not in ('asc', 'desc'):
+                    msg = _("Unknown sort direction, must be 'desc' or 'asc'")
+                    raise exception.InvalidInput(reason=msg)
+                result_dirs.append(sort_dir)
+        else:
+            result_dirs = [default_dir_value for _sort_key in result_keys]
+
+        # Ensure that the key and direction length match
+        while len(result_dirs) < len(result_keys):
+            result_dirs.append(default_dir_value)
+        # Unless more direction are specified, which is an error
+        if len(result_dirs) > len(result_keys):
+            msg = _("Sort direction size exceeds sort key size")
+            raise exception.InvalidInput(reason=msg)
+
+        # Ensure defaults are included
+        for key in default_keys:
+            if key not in result_keys:
+                result_keys.append(key)
+                result_dirs.append(default_dir_value)
+
+        return result_keys, result_dirs
