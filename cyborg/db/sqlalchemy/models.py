@@ -17,11 +17,14 @@
 
 from oslo_db import options as db_options
 from oslo_db.sqlalchemy import models
+from oslo_utils import timeutils
 import six.moves.urllib.parse as urlparse
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Column, String, Integer, Boolean, ForeignKey, Index
 from sqlalchemy import Text
 from sqlalchemy import schema
+from sqlalchemy import DateTime
+from sqlalchemy import orm
 
 from cyborg.common import paths
 from cyborg.conf import CONF
@@ -47,6 +50,18 @@ class CyborgBase(models.TimestampMixin, models.ModelBase):
         for c in self.__table__.columns:
             d[c.name] = self[c.name]
         return d
+
+    @staticmethod
+    def delete_values():
+        return {'deleted': True,
+                'deleted_at': timeutils.utcnow()}
+
+    def delete(self, session):
+        """Delete this object."""
+        updated_values = self.delete_values()
+        self.update(updated_values)
+        self.save(session=session)
+        return updated_values
 
 
 Base = declarative_base(cls=CyborgBase)
@@ -124,3 +139,54 @@ class Attribute(Base):
                            nullable=False)
     key = Column(Text, nullable=False)
     value = Column(Text, nullable=False)
+
+
+class QuotaUsage(Base):
+    """Represents the current usage for a given resource."""
+
+    __tablename__ = 'quota_usages'
+    __table_args__ = (
+        Index('ix_quota_usages_project_id', 'project_id'),
+        Index('ix_quota_usages_user_id', 'user_id'),
+    )
+    id = Column(Integer, primary_key=True)
+
+    project_id = Column(String(255))
+    user_id = Column(String(255))
+    resource = Column(String(255), nullable=False)
+
+    in_use = Column(Integer, nullable=False)
+    reserved = Column(Integer, nullable=False)
+
+    @property
+    def total(self):
+        return self.in_use + self.reserved
+
+    until_refresh = Column(Integer)
+
+
+class Reservation(Base):
+    """Represents a resource reservation for quotas."""
+
+    __tablename__ = 'reservations'
+    __table_args__ = (
+        Index('ix_reservations_project_id', 'project_id'),
+        Index('reservations_uuid_idx', 'uuid'),
+        Index('ix_reservations_user_id', 'user_id'),
+    )
+    id = Column(Integer, primary_key=True, nullable=False)
+    uuid = Column(String(36), nullable=False)
+
+    usage_id = Column(Integer, ForeignKey('quota_usages.id'), nullable=False)
+
+    project_id = Column(String(255))
+    user_id = Column(String(255))
+    resource = Column(String(255))
+
+    delta = Column(Integer, nullable=False)
+    expire = Column(DateTime)
+
+    usage = orm.relationship(
+        "QuotaUsage",
+        foreign_keys=usage_id,
+        primaryjoin=usage_id == QuotaUsage.id)

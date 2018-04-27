@@ -17,6 +17,7 @@
 
 import threading
 import copy
+import uuid
 
 from oslo_db import api as oslo_db_api
 from oslo_db import exception as db_exc
@@ -24,8 +25,12 @@ from oslo_db.sqlalchemy import enginefacade
 from oslo_db.sqlalchemy import utils as sqlalchemyutils
 from oslo_log import log
 from oslo_utils import strutils
+from oslo_utils import timeutils
 from oslo_utils import uuidutils
+from sqlalchemy.orm import load_only
 from sqlalchemy.orm.exc import NoResultFound
+from sqlalchemy.sql import func
+
 
 from cyborg.common import exception
 from cyborg.common.i18n import _
@@ -36,6 +41,8 @@ from sqlalchemy import and_
 
 _CONTEXT = threading.local()
 LOG = log.getLogger(__name__)
+
+main_context_manager = enginefacade.transaction_context()
 
 
 def get_backend():
@@ -49,6 +56,11 @@ def _session_for_read():
 
 def _session_for_write():
     return enginefacade.writer.using(_CONTEXT)
+
+
+def get_session(use_slave=False, **kwargs):
+    return main_context_manager._factory.get_legacy_facade().get_session(
+        use_slave=use_slave, **kwargs)
 
 
 def model_query(context, model, *args, **kwargs):
@@ -497,6 +509,185 @@ class Connection(api.Connection):
             count = query.delete()
             if count != 1:
                 raise exception.AttributeNotFound(uuid=uuid)
+
+    def _get_quota_usages(self, context, project_id, resources=None):
+        # Broken out for testability
+        query = model_query(context, models.QuotaUsage,).filter_by(
+            project_id=project_id)
+        if resources:
+            query = query.filter(models.QuotaUsage.resource.in_(
+                list(resources)))
+        rows = query.order_by(models.QuotaUsage.id.asc()). \
+            with_for_update().all()
+        return {row.resource: row for row in rows}
+
+    def _quota_usage_create(self, project_id, resource, until_refresh,
+                            in_use, reserved, session=None):
+
+        quota_usage_ref = models.QuotaUsage()
+        quota_usage_ref.project_id = project_id
+        quota_usage_ref.resource = resource
+        quota_usage_ref.in_use = in_use
+        quota_usage_ref.reserved = reserved
+        quota_usage_ref.until_refresh = until_refresh
+        quota_usage_ref.save(session=session)
+
+        return quota_usage_ref
+
+    def _reservation_create(self, uuid, usage, project_id, resource, delta,
+                            expire, session=None):
+        usage_id = usage['id'] if usage else None
+        reservation_ref = models.Reservation()
+        reservation_ref.uuid = uuid
+        reservation_ref.usage_id = usage_id
+        reservation_ref.project_id = project_id
+        reservation_ref.resource = resource
+        reservation_ref.delta = delta
+        reservation_ref.expire = expire
+        reservation_ref.save(session=session)
+        return reservation_ref
+
+    def _get_reservation_resources(self, context, reservation_ids):
+        """Return the relevant resources by reservations."""
+
+        reservations = model_query(context, models.Reservation). \
+            options(load_only('resource')). \
+            filter(models.Reservation.uuid.in_(reservation_ids)). \
+            all()
+        return {r.resource for r in reservations}
+
+    def _quota_reservations(self, session, context, reservations):
+        """Return the relevant reservations."""
+
+        # Get the listed reservations
+        return model_query(context, models.Reservation). \
+            filter(models.Reservation.uuid.in_(reservations)). \
+            with_lockmode('update'). \
+            all()
+
+    def quota_reserve(self, context, resources, deltas, expire,
+                      until_refresh, max_age, project_id=None,
+                      is_allocated_reserve=False):
+        """ Create reservation record in DB according to params"""
+        with _session_for_write() as session:
+            if project_id is None:
+                project_id = context.project_id
+            usages = self._get_quota_usages(context, project_id,
+                                            resources=deltas.keys())
+            work = set(deltas.keys())
+            while work:
+                resource = work.pop()
+
+                # Do we need to refresh the usage?
+                refresh = False
+                # create quota usage in DB if there is no record of this type
+                # of resource
+                if resource not in usages:
+                    usages[resource] = self._quota_usage_create(project_id,
+                                                                resource,
+                                                                until_refresh
+                                                                or None,
+                                                                in_use=0,
+                                                                reserved=0,
+                                                                session=session
+                                                                )
+                    refresh = True
+                elif usages[resource].in_use < 0:
+                    # Negative in_use count indicates a desync, so try to
+                    # heal from that...
+                    refresh = True
+                elif usages[resource].until_refresh is not None:
+                    usages[resource].until_refresh -= 1
+                    if usages[resource].until_refresh <= 0:
+                        refresh = True
+                elif max_age and usages[resource].updated_at is not None and (
+                    (timeutils.utcnow() -
+                        usages[resource].updated_at).total_seconds() >=
+                        max_age):
+                    refresh = True
+
+                # refresh the usage
+                if refresh:
+                    # Grab the sync routine
+                    updates = self._sync_acc_res(context, resource, project_id)
+                    for res, in_use in updates.items():
+                        # Make sure we have a destination for the usage!
+                        if res not in usages:
+                            usages[res] = self._quota_usage_create(
+                                project_id,
+                                res,
+                                until_refresh or None,
+                                in_use=0,
+                                reserved=0,
+                                session=session
+                            )
+
+                        # Update the usage
+                        usages[res].in_use = in_use
+                        usages[res].until_refresh = until_refresh or None
+
+                        # Because more than one resource may be refreshed
+                        # by the call to the sync routine, and we don't
+                        # want to double-sync, we make sure all refreshed
+                        # resources are dropped from the work set.
+                        work.discard(res)
+
+                        # NOTE(Vek): We make the assumption that the sync
+                        #            routine actually refreshes the
+                        #            resources that it is the sync routine
+                        #            for.  We don't check, because this is
+                        #            a best-effort mechanism.
+
+            unders = [r for r, delta in deltas.items()
+                      if delta < 0 and delta + usages[r].in_use < 0]
+            reservations = []
+            for resource, delta in deltas.items():
+                usage = usages[resource]
+                reservation = self._reservation_create(
+                    str(uuid.uuid4()), usage, project_id, resource,
+                    delta, expire, session=session)
+                reservations.append(reservation.uuid)
+                usages[resource].reserved += delta
+            session.flush()
+        if unders:
+            LOG.warning("Change will make usage less than 0 for the following "
+                        "resources: %s", unders)
+        return reservations
+
+    def _sync_acc_res(self, context, resource, project_id):
+        """Quota sync funciton"""
+        res_in_use = self._accelerator_data_get_for_project(context, resource,
+                                                            project_id)
+        return {resource: res_in_use}
+
+    def _accelerator_data_get_for_project(self, context, resource, project_id):
+        """Return the number of resource which is being used by a project"""
+        query = model_query(context, models.Accelerator).\
+            filter_by(project_id=project_id).filter_by(device_type=resource)
+
+        return query.count()
+
+    def _dict_with_usage_id(self, usages):
+        return {row.id: row for row in usages.values()}
+
+    def reservation_commit(self, context, reservations, project_id=None):
+        """Commit quota reservation to quota usage table"""
+        with _session_for_write() as session:
+            quota_usage = self._get_quota_usages(
+                context, project_id,
+                resources=self._get_reservation_resources(context,
+                                                          reservations))
+            usages = self._dict_with_usage_id(quota_usage)
+
+            for reservation in self._quota_reservations(session, context,
+                                                        reservations):
+
+                usage = usages[reservation.usage_id]
+                if reservation.delta >= 0:
+                    usage.reserved -= reservation.delta
+                usage.in_use += reservation.delta
+                session.flush()
+                reservation.delete(session=session)
 
     def process_sort_params(self, sort_keys, sort_dirs,
                             default_keys=['created_at', 'id'],

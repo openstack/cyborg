@@ -230,9 +230,8 @@ class AcceleratorsController(AcceleratorsControllerBase):
     @expose.expose(None, types.uuid, status_code=http_client.NO_CONTENT)
     def delete(self, uuid):
         """Delete an accelerator.
-
         :param uuid: UUID of an accelerator.
         """
-        obj_acc = self._resource or self._get_resource(uuid)
         context = pecan.request.context
+        obj_acc = self._resource or self._get_resource(uuid)
         pecan.request.conductor_api.accelerator_delete(context, obj_acc)

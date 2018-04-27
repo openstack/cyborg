@@ -123,3 +123,13 @@ class Connection(object):
     @abc.abstractmethod
     def attribute_delete(self, context, uuid):
         """Delete an attribute."""
+
+    @abc.abstractmethod
+    def quota_reserve(self, context, resources, deltas, expire,
+                      until_refresh, max_age, project_id=None,
+                      is_allocated_reserve=False):
+        """Check quotas and create appropriate reservations."""
+
+    @abc.abstractmethod
+    def reservation_commit(self, context, reservations, project_id=None):
+        """Check quotas and create appropriate reservations."""

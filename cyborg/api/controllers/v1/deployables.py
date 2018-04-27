@@ -27,6 +27,7 @@ from cyborg.api import expose
 from cyborg.common import exception
 from cyborg.common import policy
 from cyborg import objects
+from cyborg.quota import QUOTAS
 
 
 class Deployable(base.APIBase):
@@ -226,12 +227,28 @@ class DeployablesController(base.CyborgController):
         :param patch: a json PATCH document to apply to this deployable.
         """
         context = pecan.request.context
+        reservations = None
+
         obj_dep = objects.Deployable.get(context, uuid)
         try:
+            # TODO(xinran): need more discussion on quota's granularity.
+            # Now we count by board.
+            for p in patch:
+                if p["path"] == "/instance_uuid" and p["op"] == "replace":
+                    if not p["value"]:
+                        obj_dep["assignable"] = True
+                        reserve_opts = {obj_dep["board"]: -1}
+                    else:
+                        obj_dep["assignable"] = False
+                        reserve_opts = {obj_dep["board"]: 1}
+                    reservations = QUOTAS.reserve(context, reserve_opts)
             api_dep = Deployable(
                 **api_utils.apply_jsonpatch(obj_dep.as_dict(), patch))
         except api_utils.JSONPATCH_EXCEPTIONS as e:
+            QUOTAS.rollback(context, reservations, project_id=None)
             raise exception.PatchError(patch=patch, reason=e)
+
+        QUOTAS.commit(context, reservations)
 
         # Update only the fields that have changed
         for field in objects.Deployable.fields:
