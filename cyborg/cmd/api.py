@@ -32,6 +32,5 @@ def main():
     # Build and start the WSGI app
     launcher = cyborg_service.process_launcher()
     server = cyborg_service.WSGIService('cyborg_api', CONF.api.enable_ssl_api)
-    launcher.launch_service(server, workers=server.workers,
-                            restart_method='mutate')
+    launcher.launch_service(server, workers=server.workers)
     launcher.wait()
