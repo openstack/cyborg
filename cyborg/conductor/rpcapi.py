@@ -54,7 +54,7 @@ class ConductorAPI(object):
         :param obj_acc: a created (but not saved) accelerator object.
         :returns: created accelerator object.
         """
-        cctxt = self.client.prepare(topic=self.topic, server=CONF.host)
+        cctxt = self.client.prepare(topic=self.topic)
         return cctxt.call(context, 'accelerator_create', obj_acc=obj_acc)
 
     def accelerator_update(self, context, obj_acc):
@@ -64,7 +64,7 @@ class ConductorAPI(object):
         :param obj_acc: an accelerator object to update.
         :returns: updated accelerator object.
         """
-        cctxt = self.client.prepare(topic=self.topic, server=CONF.host)
+        cctxt = self.client.prepare(topic=self.topic)
         return cctxt.call(context, 'accelerator_update', obj_acc=obj_acc)
 
     def accelerator_delete(self, context, obj_acc):
@@ -73,7 +73,7 @@ class ConductorAPI(object):
         :param context: request context.
         :param obj_acc: an accelerator object to delete.
         """
-        cctxt = self.client.prepare(topic=self.topic, server=CONF.host)
+        cctxt = self.client.prepare(topic=self.topic)
         return cctxt.call(context, 'accelerator_delete', obj_acc=obj_acc)
 
     def accelerator_list_one(self, context, obj_acc):
@@ -83,7 +83,7 @@ class ConductorAPI(object):
         :param obj_acc: an accelerator object to list.
         :returns: accelerator object.
         """
-        cctxt = self.client.prepare(topic=self.topic, server=CONF.host)
+        cctxt = self.client.prepare(topic=self.topic)
         cctxt.call(context, 'get_one', obj_acc=obj_acc)
 
     def accelerator_list_all(self, context, obj_acc):
@@ -94,7 +94,7 @@ class ConductorAPI(object):
         :returns: accelerator objects.
 
         """
-        cctxt = self.client.prepare(topic=self.topic, server=CONF.host)
+        cctxt = self.client.prepare(topic=self.topic)
         return cctxt.call(context, 'get_all', obj_acc=obj_acc)
 
     def deployable_create(self, context, obj_dep):
@@ -104,7 +104,7 @@ class ConductorAPI(object):
         :param obj_dep: a created (but not saved) deployable object.
         :returns: created deployable object.
         """
-        cctxt = self.client.prepare(topic=self.topic, server=CONF.host)
+        cctxt = self.client.prepare(topic=self.topic)
         return cctxt.call(context, 'deployable_create', obj_dep=obj_dep)
 
     def deployable_update(self, context, obj_dep):
@@ -114,7 +114,7 @@ class ConductorAPI(object):
         :param obj_dep: a deployable object to update.
         :returns: updated deployable object.
         """
-        cctxt = self.client.prepare(topic=self.topic, server=CONF.host)
+        cctxt = self.client.prepare(topic=self.topic)
         return cctxt.call(context, 'deployable_update', obj_dep=obj_dep)
 
     def deployable_delete(self, context, obj_dep):
@@ -123,7 +123,7 @@ class ConductorAPI(object):
         :param context: request context.
         :param obj_dep: a deployable object to delete.
         """
-        cctxt = self.client.prepare(topic=self.topic, server=CONF.host)
+        cctxt = self.client.prepare(topic=self.topic)
         cctxt.call(context, 'deployable_delete', obj_dep=obj_dep)
 
     def deployable_get(self, context, uuid):
@@ -133,7 +133,7 @@ class ConductorAPI(object):
         :param uuid: UUID of a deployable.
         :returns: requested deployable object.
         """
-        cctxt = self.client.prepare(topic=self.topic, server=CONF.host)
+        cctxt = self.client.prepare(topic=self.topic)
         return cctxt.call(context, 'deployable_get', uuid=uuid)
 
     def deployable_get_by_host(self, context, host):
@@ -143,7 +143,7 @@ class ConductorAPI(object):
         :param host: host on which the deployable is located.
         :returns: requested deployable object.
         """
-        cctxt = self.client.prepare(topic=self.topic, server=CONF.host)
+        cctxt = self.client.prepare(topic=self.topic)
         return cctxt.call(context, 'deployable_get_by_host', host=host)
 
     def deployable_list(self, context):
@@ -152,5 +152,5 @@ class ConductorAPI(object):
         :param context: request context.
         :returns: a list of deployable objects.
         """
-        cctxt = self.client.prepare(topic=self.topic, server=CONF.host)
+        cctxt = self.client.prepare(topic=self.topic)
         return cctxt.call(context, 'deployable_list')
