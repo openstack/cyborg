@@ -17,7 +17,7 @@
 Cyborg Generic driver implementation.
 """
 
-from modules import generic
+from cyborg.accelerator.drivers.modules import generic
 from oslo_config import cfg
 from oslo_log import log
 

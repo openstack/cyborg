@@ -40,6 +40,7 @@ CYBORG_CONF_FILE=$CYBORG_CONF_DIR/cyborg.conf
 CYBORG_ROOTWRAP_CONF=$CYBORG_CONF_DIR/rootwrap.conf
 CYBORG_POLICY_JSON=$CYBORG_CONF_DIR/policy.json
 CYBORG_SERVICE_HOST=${CYBORG_SERVICE_HOST:-$SERVICE_HOST}
+CYBORG_SERVICE_PORT=${CYBORG_SERVICE_PORT:-6666}
 CYBORG_SERVICE_PROTOCOL=${CYBORG_SERVICE_PROTOCOL:-$SERVICE_PROTOCOL}
 if [[ -d ${CYBORG_DIR}/bin ]]; then
     CYBORG_BIN_DIR=${CYBORG_DIR}/bin
@@ -99,12 +100,12 @@ function configure_cyborg_dirs {
 # service     cyborg      admin
 function create_cyborg_accounts {
     create_service_user "cyborg" "admin"
-    get_or_create_service "cyborg" "cyborg" "Cyborg Accelerators Service"
+    get_or_create_service "cyborg" "acceleration" "Cyborg Accelerators Service"
     get_or_create_endpoint "cyborg" \
         "$REGION_NAME" \
-        "${CYBORG_SERVICE_PROTOCOL}://${CYBORG_SERVICE_HOST}/cyborg/v1" \
-        "${CYBORG_SERVICE_PROTOCOL}://${CYBORG_SERVICE_HOST}/cyborg/v1" \
-        "${CYBORG_SERVICE_PROTOCOL}://${CYBORG_SERVICE_HOST}/cyborg/v1"
+        "${CYBORG_SERVICE_PROTOCOL}://${CYBORG_SERVICE_HOST}:${CYBORG_SERVICE_PORT}/v1" \
+        "${CYBORG_SERVICE_PROTOCOL}://${CYBORG_SERVICE_HOST}:${CYBORG_SERVICE_PORT}/v1" \
+        "${CYBORG_SERVICE_PROTOCOL}://${CYBORG_SERVICE_HOST}:${CYBORG_SERVICE_PORT}/v1"
 }
 
 
