@@ -31,7 +31,8 @@ from cyborg.common import exception
 from cyborg.common.i18n import _
 from cyborg.db import api
 from cyborg.db.sqlalchemy import models
-
+from sqlalchemy import or_
+from sqlalchemy import and_
 
 _CONTEXT = threading.local()
 LOG = log.getLogger(__name__)
@@ -248,6 +249,38 @@ class Connection(api.Connection):
             if count != 1:
                 raise exception.DeployableNotFound(uuid=uuid)
 
+    def deployable_get_by_filters_with_attributes(self, context,
+                                                  filters):
+
+        exact_match_filter_names = ['uuid', 'name',
+                                    'parent_uuid', 'root_uuid',
+                                    'pcie_address', 'host',
+                                    'board', 'vendor', 'version',
+                                    'type', 'assignable', 'instance_uuid',
+                                    'availability', 'accelerator_id']
+        attribute_filters = {}
+        filters_copy = copy.deepcopy(filters)
+        for key, value in filters_copy.iteritems():
+            if key not in exact_match_filter_names:
+                # This key is not in the deployable regular fields
+                value = filters.pop(key)
+                attribute_filters.update({key: value})
+
+        query_prefix = model_query(context, models.Deployable)
+        filters = copy.deepcopy(filters)
+
+        # Filter the query
+        query_prefix = self._exact_deployable_filter_with_attributes(
+            query_prefix,
+            filters,
+            exact_match_filter_names,
+            attribute_filters
+            )
+        if query_prefix is None:
+            return []
+        deployables = query_prefix.all()
+        return deployables
+
     def deployable_get_by_filters(self, context,
                                   filters, sort_key='created_at',
                                   sort_dir='desc', limit=None,
@@ -261,6 +294,52 @@ class Connection(api.Connection):
                                                    join_columns=join_columns,
                                                    sort_keys=[sort_key],
                                                    sort_dirs=[sort_dir])
+
+    def _exact_deployable_filter_with_attributes(self, query,
+                                                 dpl_filters, legal_keys,
+                                                 attribute_filters):
+        """Applies exact match filtering to a deployable query.
+        Returns the updated query.  Modifies dpl_filters argument to remove
+        dpl_filters consumed.
+        :param query: query to apply dpl_filters and attribute_filters to
+        :param dpl_filters: dictionary of filters; values that are lists,
+                        tuples, sets, or frozensets cause an 'IN' test to
+                        be performed, while exact matching ('==' operator)
+                        is used for other values
+        :param legal_keys: list of keys to apply exact filtering to
+        :param attribute_filters: dictionary of attribute filters
+        """
+
+        filter_dict = {}
+        model = models.Deployable
+
+        # Walk through all the keys
+        for key in legal_keys:
+            # Skip ones we're not filtering on
+            if key not in dpl_filters:
+                continue
+
+            # OK, filtering on this key; what value do we search for?
+            value = dpl_filters.pop(key)
+
+            if isinstance(value, (list, tuple, set, frozenset)):
+                if not value:
+                    return None
+                # Looking for values in a list; apply to query directly
+                column_attr = getattr(model, key)
+                query = query.filter(column_attr.in_(value))
+            else:
+                filter_dict[key] = value
+        # Apply simple exact matches
+        if filter_dict:
+            query = query.filter(*[getattr(models.Deployable, k) == v
+                                   for k, v in filter_dict.items()])
+        if attribute_filters:
+            query = query.outerjoin(models.Attribute)
+            query = query.filter(or_(*[and_(models.Attribute.key == k,
+                                       models.Attribute.value == v)
+                                       for k, v in attribute_filters.items()]))
+        return query
 
     def _exact_deployable_filter(self, query, filters, legal_keys):
         """Applies exact match filtering to a deployable query.
@@ -334,12 +413,13 @@ class Connection(api.Connection):
         deployables = query_prefix.all()
         return deployables
 
-    def attribute_create(self, context, key, value):
-        update_fields = {'key': key, 'value': value}
-        update_fields['uuid'] = uuidutils.generate_uuid()
-
+    def attribute_create(self, context, values):
+        if not values.get('uuid'):
+            values['uuid'] = uuidutils.generate_uuid()
+        if values.get('id'):
+            values.pop('id', None)
         attribute = models.Attribute()
-        attribute.update(update_fields)
+        attribute.update(values)
 
         with _session_for_write() as session:
             try:
@@ -359,14 +439,41 @@ class Connection(api.Connection):
         except NoResultFound:
             raise exception.AttributeNotFound(uuid=uuid)
 
-    def attribute_get_by_deployable_uuid(self, context, deployable_uuid):
+    def attribute_get_by_deployable_id(self, context, deployable_id):
         query = model_query(
             context,
-            models.Attribute).filter_by(deployable_uuid=deployable_uuid)
+            models.Attribute).filter_by(deployable_id=deployable_id)
         try:
             return query.all()
         except NoResultFound:
             raise exception.AttributeNotFound(uuid=uuid)
+
+    def attribute_get_by_filter(self, context, filters):
+        """Return attributes that matches the filters
+        """
+        query_prefix = model_query(context, models.Attribute)
+
+        # Filter the query
+        query_prefix = self._exact_attribute_by_filter(query_prefix,
+                                                       filters)
+        if query_prefix is None:
+            return []
+
+        return query_prefix.all()
+
+    def _exact_attribute_by_filter(self, query, filters):
+        """Applies exact match filtering to a atrtribute query.
+        Returns the updated query.
+        :param filters: The filters specified by a dict of kv pairs
+        """
+
+        model = models.Attribute
+        filter_dict = filters
+
+        # Apply simple exact matches
+        query = query.filter(*[getattr(models.Attribute, k) == v
+                               for k, v in filter_dict.items()])
+        return query
 
     def attribute_update(self, context, uuid, key, value):
         return self._do_update_attribute(context, uuid, key, value)
