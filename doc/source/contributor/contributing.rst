@@ -135,10 +135,11 @@ Finally, push the patch for review using,
 Adding functionality
 --------------------
 
-If you are adding new functionality to Cyborg please add testing for that functionality
-and provide a detailed commit message outlining the goals of your commit and how you
-achived them.
+If you are adding new functionality to Cyborg please add testing for that
+functionality and provide a detailed commit message outlining the goals of
+your commit and how you achived them.
 
-If the functionality you wish to add doesn't fix in an existing part of the Cyborg
-achitecture diagram drop by our team meetings to disscuss how it could be implemented
+If the functionality you wish to add doesn't fix in an existing part of the
+Cyborg achitecture diagram drop by our team meetings to disscuss how it
+could be implemented
 

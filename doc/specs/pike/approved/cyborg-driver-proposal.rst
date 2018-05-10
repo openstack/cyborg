@@ -66,14 +66,15 @@ REST API impact
 ---------------
 
 This blueprint proposes to add the following APIs:
-*cyborg install-driver <driver_id>
-*cyborg uninstall-driver <driver_id>
-*cyborg attach-instance <instance_id>
-*cyborg detach-instance <instance_id>
-*cyborg service-list
-*cyborg driver-list
-*cyborg update-driver <driver_id>
-*cyborg discover-services
+
+* cyborg install-driver <driver_id>
+* cyborg uninstall-driver <driver_id>
+* cyborg attach-instance <instance_id>
+* cyborg detach-instance <instance_id>
+* cyborg service-list
+* cyborg driver-list
+* cyborg update-driver <driver_id>
+* cyborg discover-services
 
 Security impact
 ---------------
@@ -119,6 +120,7 @@ Work Items
 ----------
 
 This change would entail the following:
+
 * Add a feature to identify and discover attached accelerator backends.
 * Add a feature to list services running on the backend
 * Add a feature to attach accelerators to the generic backend.

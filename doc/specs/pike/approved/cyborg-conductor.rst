@@ -30,23 +30,24 @@ Proposed change
 Cyborg Conductor will reside on the control node and will be
 responsible for stateful actions taken by Cyborg. Acting as both a cache to
 the database and as a method of combining reads and writes to the database.
-All other Cyborg components will go through the conductor for database operations.
+All other Cyborg components will go through the conductor for database
+operations.
 
 Alternatives
 ------------
 
 Having each Cyborg Agent instance hit the database on it's own is a possible
-alternative, and it may even be feasible if the accelerator load monitoring rate is
-very low and the vast majority of operations are reads. But since we intend to store
-metadata about accelerator usage updated regularly this model probably will not scale
-well.
+alternative, and it may even be feasible if the accelerator load monitoring
+rate is very low and the vast majority of operations are reads. But since we
+intend to store metadata about accelerator usage updated regularly this model
+probably will not scale well.
 
 Data model impact
 -----------------
 
-Using the conductor 'properly' will result in little or no per instance state and stateful
-operations moving through the conductor with the exception of some local caching where it
-can be garunteed to work well.
+Using the conductor 'properly' will result in little or no per instance state
+and stateful operations moving through the conductor with the exception of
+some local caching where it can be garunteed to work well.
 
 REST API impact
 ---------------
@@ -120,8 +121,8 @@ CI using the dummy driver.
 Documentation Impact
 ====================
 
-Some configuration values tuning save out rate and other parameters on the controller
-will need to be documented for end users
+Some configuration values tuning save out rate and other parameters on the
+controller will need to be documented for end users
 
 References
 ==========

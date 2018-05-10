@@ -28,42 +28,44 @@ Use of accelerators attached to virtual machine instances in OpenStack
 Proposed change
 ===============
 
-Cyborg Agent resides on various compute hosts and monitors them for accelerators.
-On it's first run Cyborg Agent will run the detect accelerator functions of all
-it's installed drivers. The resulting list of accelerators available on the host
-will be reported to the conductor where it will be stored into the database and
-listed during API requests. By default accelerators will be inserted into the
-database in a inactive state. It will be up to the operators to manually set
-an accelerator to 'ready' at which point cyborg agent will be responsible for
-calling the drivers install function and ensuring that the accelerator is ready
-for use.
+Cyborg Agent resides on various compute hosts and monitors them for
+accelerators. On it's first run Cyborg Agent will run the detect
+accelerator functions of all it's installed drivers. The resulting list
+of accelerators available on the host will be reported to the conductor
+where it will be stored into the database and listed during API requests.
+By default accelerators will be inserted into the database in a inactive
+state. It will be up to the operators to manually set an accelerator to
+'ready' at which point cyborg agent will be responsible for calling the
+drivers install function and ensuring that the accelerator is ready for use.
 
 In order to mirror the current Nova model of using the placement API each Agent
-will send updates on it's resources directly to the placement API endpoint as well
-as to the conductor for usage aggregation. This should keep placement API up to date
-on accelerators and their usage.
+will send updates on it's resources directly to the placement API endpoint
+as well as to the conductor for usage aggregation. This should keep placement
+API up to date on accelerators and their usage.
 
 Alternatives
 ------------
 
 There are lots of alternate ways to lay out the communication between the Agent
-and the API endpoint or the driver. Almost all of them involving exactly where we
-draw the line between the driver, Conductor , and Agent. I've written my proposal
-with the goal of having the Agent act mostly as a monitoring tool, reporting to
-the cloud operator or other Cyborg components to take action. A more active role
-for Cyborg Agent is possible but either requires significant synchronization with
-the Conductor or potentially steps on the toes of operators.
+and the API endpoint or the driver. Almost all of them involving exactly where
+we draw the line between the driver, Conductor , and Agent. I've written my
+proposal with the goal of having the Agent act mostly as a monitoring tool,
+reporting to the cloud operator or other Cyborg components to take action.
+A more active role for Cyborg Agent is possible but either requires significant
+synchronization with the Conductor or potentially steps on the toes of
+operators.
 
 Data model impact
 -----------------
 
-Cyborg Agent will create new entries in the database for accelerators it detects
-it will also update those entries with the current status of the accelerator
-at a high level. More temporary data like the current usage of a given accelerator
-will be broadcast via a message passing system and won't be stored.
+Cyborg Agent will create new entries in the database for accelerators it
+detects it will also update those entries with the current status of the
+accelerator at a high level. More temporary data like the current usage of
+a given accelerator will be broadcast via a message passing system and won't
+be stored.
 
-Cyborg Agent will retain a local cache of this data with the goal of not losing accelerator
-state on system interruption or loss of connection.
+Cyborg Agent will retain a local cache of this data with the goal of not losing
+accelerator state on system interruption or loss of connection.
 
 
 REST API impact

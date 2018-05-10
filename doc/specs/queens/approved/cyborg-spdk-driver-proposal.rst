@@ -24,14 +24,14 @@ Use Cases
 ---------
 
 * When Cinder uses Ceph as its backend, the user should be able to
-use the Cyborg SPDK driver to discover the SPDK accelerator backend,
-enumerate the list of the Ceph nodes that have installed the SPDK.
+  use the Cyborg SPDK driver to discover the SPDK accelerator backend,
+  enumerate the list of the Ceph nodes that have installed the SPDK.
 * When Cinder directly uses SPDK's BlobStore as its backend, the user
-should be able to accomplish the same life cycle management operations
-for SPDK as mentioned above. After enumerating the SPDK, the user can
-attach (install) SPDK on that node. When the task completes, the user
-can also detach the SPDK from the node. Last but not least the user
-should be able to update the latest and available SPDK.
+  should be able to accomplish the same life cycle management operations
+  for SPDK as mentioned above. After enumerating the SPDK, the user can
+  attach (install) SPDK on that node. When the task completes, the user
+  can also detach the SPDK from the node. Last but not least the user
+  should be able to update the latest and available SPDK.
 
 Proposed change
 ===============
@@ -42,18 +42,18 @@ discover/list/update/attach/detach operations for SPDK framework.
 SPDK framework
 --------------
 
-The SPDK framework comprises of the following components:
+The SPDK framework comprises of the following components::
 
-      +-----------userspace--------+  +--------------+
-      | +------+ +------+ +------+ | | +-----------+ |
-+---+ | |DPDK  | |NVMe  | |NVMe  | | | |   Ceph    | |
-| N +-+-+NIC   | |Target| |Driver+-+-+ |NVMe Device| |
-| I | | |Driver| |      | |      | | | +-----------+ |
-| C | | +------+ +------+ +------+ | | +-----------+ |
-+---+ | +------------------------+ | | | Blobstore | |
-      | |     DPDK Libraries     | | | |NVMe Device| |
-      | +------------------------+ | | +-----------+ |
-      +----------------------------+ +---------------+
+        +-----------userspace--------+  +--------------+
+        | +------+ +------+ +------+ | | +-----------+ |
+  +---+ | |DPDK  | |NVMe  | |NVMe  | | | |   Ceph    | |
+  | N +-+-+NIC   | |Target| |Driver+-+-+ |NVMe Device| |
+  | I | | |Driver| |      | |      | | | +-----------+ |
+  | C | | +------+ +------+ +------+ | | +-----------+ |
+  +---+ | +------------------------+ | | | Blobstore | |
+        | |     DPDK Libraries     | | | |NVMe Device| |
+        | +------------------------+ | | +-----------+ |
+        +----------------------------+ +---------------+
 
 BlobStore NVMe Device Format
 ----------------------------
@@ -87,25 +87,25 @@ avoids the filesystem, which improves efficiency.
 Life Cycle Management Phases
 ----------------------------
 * We should be able to add a judgement whether the backend node has SPDK kit
-in generic driver module. If true, initialize the DPDK environment (such as
-hugepage).
+  in generic driver module. If true, initialize the DPDK environment (such as
+  hugepage).
 * Import the generic driver module, and then we should be able to
-discover (probe) the system for SPDK.
+  discover (probe) the system for SPDK.
 * Determined by the backend storage scenario, enumerate (list) the optimal
-SPDK node, returning a boolean value to judge whether the SPDK should be
-attached.
+  SPDK node, returning a boolean value to judge whether the SPDK should be
+  attached.
 * After the node where SPDK will be running is attached, we can now send a
-request about the information of namespaces, and then create an I/O queue
-pair to submit read/write requests to a namespace.
+  request about the information of namespaces, and then create an I/O queue
+  pair to submit read/write requests to a namespace.
 * When Ceph is used as the backend, as the latest Ceph (such as Luminous)
-uses the BlueStore to be the storage engine, BlueStore and BlobStore are
-very similar things. We will not be able to use BlobStore to accelerate
-Ceph, but we can use Ioat and poller to boost speed for storage.
+  uses the BlueStore to be the storage engine, BlueStore and BlobStore are
+  very similar things. We will not be able to use BlobStore to accelerate
+  Ceph, but we can use Ioat and poller to boost speed for storage.
 * When SPDK is used as the backend, we should be able to use BlobStore to
-improve performance.
+  improve performance.
 * Whenever user requests, we should be able to detach the SPDK device.
 * Whenever user requests, we should be able to update SPDK to the latest and
-stable release.
+  stable release.
 
 Alternatives
 ------------
@@ -116,19 +116,20 @@ Data model impact
 -----------------
 
 * The Cyborg SPDK driver will notify Cyborg Agent to update the database
-when discover/list/update/attach/detach operations take place.
+  when discover/list/update/attach/detach operations take place.
 
 REST API impact
 ---------------
 
 This blueprint proposes to add the following APIs:
-*cyborg discover-driver（driver_type）
-*cyborg driver-list(driver_type)
-*cyborg install-driver(driver_id, driver_type)
-*cyborg attach-instance <instance_id>
-*cyborg detach-instance <instance_id>
-*cyborg uninstall-driver(driver_id, driver_type)
-*cyborg update-driver <driver_id, driver_type>
+
+* cyborg discover-driver（driver_type）
+* cyborg driver-list(driver_type)
+* cyborg install-driver(driver_id, driver_type)
+* cyborg attach-instance <instance_id>
+* cyborg detach-instance <instance_id>
+* cyborg uninstall-driver(driver_id, driver_type)
+* cyborg update-driver <driver_id, driver_type>
 
 Security impact
 ---------------
@@ -176,7 +177,7 @@ Work Items
 
 * Implement the cyborg-spdk-driver in this spec.
 * Propose SPDK to py-spdk. The py-spdk is designed as a SPDK client
-which provides the python binding.
+  which provides the python binding.
 
 
 Dependencies
@@ -192,10 +193,10 @@ Testing
 
 * Unit tests will be added to test Cyborg SPDK driver.
 * Functional tests will be added to test Cyborg SPDK driver. For example:
-discover-->list-->attach，whether the workflow can be passed successfully.
+  discover-->list-->attach，whether the workflow can be passed successfully.
 
 Documentation Impact
-===================
+====================
 
 Document SPDK driver in the Cyborg project
 

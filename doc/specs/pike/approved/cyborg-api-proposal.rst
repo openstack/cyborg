@@ -23,11 +23,11 @@ Use Cases
 ---------
 
 * As a user I want to be able to spawn VM with dedicated hardware, so
-that I can utilize provided hardware.
+  that I can utilize provided hardware.
 * As a compute service I need to know how requested resource should be
-attached to the VM.
+  attached to the VM.
 * As a scheduler service I'd like to know on which resource provider
-requested resource can be found.
+  requested resource can be found.
 
 Proposed change
 ===============
@@ -38,26 +38,28 @@ for Cyborg.
 Life Cycle Management Phases
 ----------------------------
 
-For cyborg, LCM phases include typical create, retrieve, update, delete operations.
-One thing should be noted that deprovisioning mainly refers to detach(delete) operation
-which deactivate an acceleration capability but preserve the resource itself
-for future usage. For Cyborg, from functional point of view, the LCM includes provision,
-attach,update,list, and detach. There is no notion of deprovisioning for Cyborg API
-in a sense that we decomission or disconnect an entire accelerator device from
-the bus.
+For cyborg, LCM phases include typical create, retrieve, update, delete
+operations. One thing should be noted that deprovisioning mainly refers to
+detach(delete) operation which deactivate an acceleration capability but
+preserve the resource itself for future usage. For Cyborg, from functional
+point of view, the LCM includes provision, attach,update,list, and detach.
+There is no notion of deprovisioning for Cyborg API in a sense that we
+decomission or disconnect an entire accelerator device from the bus.
 
 Difference between Provision and Attach/Detach
 ----------------------------------------------
 
-Noted that while the APIs support provisioning via CRUD operations, attach/detach
-are considered different:
+Noted that while the APIs support provisioning via CRUD operations,
+attach/detach are considered different:
 
 * Provision operations (create) will involve api->
-conductor->agent->driver workflow, where as attach/detach (update/delete) could be taken
-care of at the driver layer without the involvement of the pre-mentioned workflow. This
-is similar to the difference between create a volume and attach/detach a volume in Cinder.
+  conductor->agent->driver workflow, where as attach/detach (update/delete)
+  could be taken care of at the driver layer without the involvement of the
+  pre-mentioned workflow. This is similar to the difference between create a
+  volume and attach/detach a volume in Cinder.
 
-* The attach/detach in Cyborg API will mainly involved in DB status modification.
+* The attach/detach in Cyborg API will mainly involved in DB status
+  modification.
 
 Difference between Attach/Detach To VM and Host
 -----------------------------------------------
@@ -66,23 +68,23 @@ Moreover there are also differences when we attach an accelerator to a VM or
 a host, similar to Cinder.
 
 * When the attachment happens to a VM, we are expecting that Nova could call
-the virt driver to perform the action for the instance. In this case Nova
-needs to support the acc-attach and acc-detach action.
+  the virt driver to perform the action for the instance. In this case Nova
+  needs to support the acc-attach and acc-detach action.
 
 * When the attachment happens to a host, we are expecting that Cyborg could
-take care of the action itself via Cyborg driver. Althrough currently there
-is the generic driver to accomplish the job, we should consider a os-brick
-like standalone lib for accelerator attach/detach operations.
+  take care of the action itself via Cyborg driver. Althrough currently there
+  is the generic driver to accomplish the job, we should consider a os-brick
+  like standalone lib for accelerator attach/detach operations.
 
 Alternatives
 ------------
 
 * For attaching an accelerator to a VM, we could let Cyborg perform the action
-itself, however it runs into the risk of tight-coupling with Nova of which Cyborg
-needs to get instance related information.
-* For attaching an accelerator to a host, we could consider to use Ironic drivers
-however it might not bode well with the standalone accelerator rack scenarios where
-accelerators are not attached to server at all.
+  itself, however it runs into the risk of tight-coupling with Nova of which
+  Cyborg needs to get instance related information.
+* For attaching an accelerator to a host, we could consider to use Ironic
+  drivers however it might not bode well with the standalone accelerator rack
+  scenarios where accelerators are not attached to server at all.
 
 Data model impact
 -----------------
@@ -177,7 +179,7 @@ Example message body of the response to the GET operation::
     }
 
 'GET /accelerators/{uuid}'
-*************************
+**************************
 
 Retrieve a certain accelerator info indetified by '{uuid}'
 
@@ -210,7 +212,7 @@ If the accelerator does not exist a `404 Not Found` must be
 returned.
 
 'POST /accelerators/{uuid}'
-*******************
+***************************
 
 Create a new accelerator
 
@@ -252,7 +254,7 @@ A `409 Conflict` response code will be returned if another accelerator
 exists with the provided name.
 
 'PUT /accelerators/{uuid}/{acc_spec}'
-*************************
+*************************************
 
 Update the spec for the accelerator identified by `{uuid}`.
 
@@ -289,7 +291,7 @@ The returned HTTP response code will be one of the following:
 
 
 'PUT /accelerators/{uuid}'
-*************************
+**************************
 
 Attach the accelerator identified by `{uuid}`.
 
@@ -322,11 +324,13 @@ The body of the request and the response is empty.
 
 The returned HTTP response code will be one of the following:
 
-* `204 No Content` if the request was successful and the accelerator was detached.
+* `204 No Content` if the request was successful and the accelerator was
+  detached.
 * `404 Not Found` if the accelerator identified by `{uuid}` was
   not found.
 * `409 Conflict` if there exist allocations records for any of the
-  accelerator resource that would be detached as a result of detaching the accelerator.
+  accelerator resource that would be detached as a result of detaching
+  the accelerator.
 
 
 Security impact
@@ -373,7 +377,7 @@ Work Items
 
 * Implement the APIs specified in this spec
 * Proposal to Nova about the new accelerator
-attach/detach api
+  attach/detach api
 * Implement the DB specified in this spec
 
 

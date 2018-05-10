@@ -119,7 +119,8 @@ It will speed up your installation if you have a local GIT_BASE.
 ##### Command line
 
 You can `source openrc YOUR_USER YOUR_USER (e.g. source openrc admin admin)` in
-your shell, and then use the `openstack` command line tool to manage your devstack.
+your shell, and then use the `openstack` command line tool to manage your
+devstack.
 
 ##### Horizon
 

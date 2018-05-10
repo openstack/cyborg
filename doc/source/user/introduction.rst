@@ -6,8 +6,10 @@ Background Story
 
 OpenStack Acceleration  Discussion Started from Telco Requirements:
 
-* High level requirements first drafted in the standard organization ETSI NFV ISG
-* High level requirements transformed into detailed requirements in OPNFV DPACC project.
+* High level requirements first drafted in the standard organization
+  ETSI NFV ISG
+* High level requirements transformed into detailed requirements in
+  OPNFV DPACC project.
 * New project called Nomad established to address the requirements.
 * BoF discussions back in OpenStack Austin Summit.
 

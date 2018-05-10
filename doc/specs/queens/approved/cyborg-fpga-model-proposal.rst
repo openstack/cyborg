@@ -11,32 +11,35 @@
 Blueprint url is not available yet
 https://blueprints.launchpad.net/openstack-cyborg/+spec/cyborg-fpga-modelling
 
-This spec proposes the DB modelling schema for tracking reprogrammable resources
+This spec proposes the DB modelling schema for tracking reprogrammable
+resources
 
 Problem description
 ===================
 
 A field-programmable gate array (FPGA) is an integrated circuit designed to be
-configured by a customer or a designer after manufacturing. Their advantage lies
-in that they are sometimes significantly faster for some applications because of
-their parallel nature and optimality in terms of the number of gates used for a
-certain process. Hence, using FPGA for application acceleration in cloud has been
-becoming desirable. Cyborg as a management framwork for heterogeneous accelerators
-,tracking and deploying FPGAs are much needed features.
+configured by a customer or a designer after manufacturing. Their advantage
+lies in that they are sometimes significantly faster for some applications
+because of their parallel nature and optimality in terms of the number of gates
+used for a certain process. Hence, using FPGA for application acceleration in
+cloud has been becoming desirable. Cyborg as a management framwork for
+heterogeneous accelerators, tracking and deploying FPGAs are much needed
+features.
 
 
 Use Cases
 ---------
 
-When user requests FPGA resources, scheduler will use placement agent [1]_ to select
-appropriate hosts that have the requested FPGA resources.
+When user requests FPGA resources, scheduler will use placement agent [1]_ to
+select appropriate hosts that have the requested FPGA resources.
 
-When a FPGA type resource is allocated to a VM, Cyborg needs to track down which
-exact device has been assigned in the database. On the other hand, when the
-resource is released, Cyborg will need to be detached and free the exact resource.
+When a FPGA type resource is allocated to a VM, Cyborg needs to track down
+which exact device has been assigned in the database. On the other hand, when
+the resource is released, Cyborg will need to be detached and free the exact
+resource.
 
-When a new device is plugged in to the system(host), Cyborg needs to discover it
-and store it into the database
+When a new device is plugged in to the system(host), Cyborg needs to discover
+it and store it into the database
 
 Proposed change
 ===============
@@ -45,13 +48,14 @@ We need to add 2 more tables to Cyborg database, one for tracking all the
 deployables and one for arbitrary key-value pairs of deplyable associated
 attirbutes. These tables are named as Deployables and Attributes.
 
-Deployables table consists of all the common attributes columns as well as a parent_id
-and a root_id. The parent_id will point to the associated parent deployable and the
-root_id will point to the associated root deployable. By doing this, we can form a
-nested tree structure to represent different hierarchies. In addition, there will a
-foreign key named accelerator_id reference to the accelerators table. For the case
-where FPGA has not been loaded any bitstreams on it, they will still be tracked as
-a Deployable but no other Deployables referencing to it. For instance, a network of
+Deployables table consists of all the common attributes columns as well as
+a parent_id and a root_id. The parent_id will point to the associated parent
+deployable and the root_id will point to the associated root deployable.
+By doing this, we can form a nested tree structure to represent different
+hierarchies. In addition, there will a foreign key named accelerator_id
+reference to the accelerators table. For the case where FPGA has not been
+loaded any bitstreams on it, they will still be tracked as a Deployable but
+no other Deployables referencing to it. For instance, a network of
 FPGA hierarchies can be formed using deployables in following scheme::
 
                             -------------------
@@ -71,17 +75,18 @@ FPGA hierarchies can be formed using deployables in following scheme::
     -----------------      -----------------
 
 
-Attributes table consists of a key and a value columns to represent arbitrary k-v pairs.
+Attributes table consists of a key and a value columns to represent arbitrary
+k-v pairs.
 
-For instance, bitstream_id and function kpi can be tracked in this table.In addition,
-a foreign key deployable_id refers to the Deployables table and a parent_attribute_id
-to form nested structured attribute relationships.
+For instance, bitstream_id and function kpi can be tracked in this table.
+In addition, a foreign key deployable_id refers to the Deployables table and
+a parent_attribute_id to form nested structured attribute relationships.
 
-Cyborg needs to have object classes to represent different types of deployables(e.g.
-FPGA, Physical Functions, Virtual Functions etc).
+Cyborg needs to have object classes to represent different types of
+deployables(e.g. FPGA, Physical Functions, Virtual Functions etc).
 
-Cyborg Agent needs to add feature to discover the FPGA resources from FPGA driver
-and report them to the Cyborg DB through the conductor.
+Cyborg Agent needs to add feature to discover the FPGA resources from FPGA
+driver and report them to the Cyborg DB through the conductor.
 
 Conductor needs to add couple of sets of APIs for different types of deployable
 resources.
@@ -89,21 +94,23 @@ resources.
 Alternatives
 ------------
 
-Alternativly, instead of having a flat table to track arbitrary hierarchies, we can use
-two different tables in Cyborg database, one for physical functions and one for virtual
-functions. physical_functions should have a foreign key constraint to reference the id in
-Accelerators table. In addition, virtual_functions should have a foreign key constraint
-to reference the id in physical_functions.
+Alternativly, instead of having a flat table to track arbitrary hierarchies, we
+can use two different tables in Cyborg database, one for physical functions and
+one for virtual functions. physical_functions should have a foreign key
+constraint to reference the id in Accelerators table. In addition,
+virtual_functions should have a foreign key constraint to reference the id
+in physical_functions.
 
-The problems with this design are as follows. First, it can only track up to 3 hierarchies
-of resources. In case we need to add another layer, a lot of migaration work will
-be required. Second, even if we only need to add some new attribute to the existing
-resource type, we need to create new migration scripts for them. Overall the maintenance
-work is tedious.
+The problems with this design are as follows. First, it can only track up to
+3 hierarchies of resources. In case we need to add another layer, a lot of
+migaration work will be required. Second, even if we only need to add some new
+attribute to the existing resource type, we need to create new migration
+scripts for them. Overall the maintenance work is tedious.
 
 Data model impact
 -----------------
-As discussed in previous sections, two tables will be added: Deployables and Attributes::
+As discussed in previous sections, two tables will be added: Deployables and
+Attributes::
 
 
     CREATE TABLE Deployables
@@ -143,7 +150,8 @@ As discussed in previous sections, two tables will be added: Deployables and Att
 
 RPC API impact
 ---------------
-Two sets of conductor APIs need to be added. 1 set for physical functions, 1 set for virtual functions
+Two sets of conductor APIs need to be added. 1 set for physical functions,
+1 set for virtual functions
 
 Physical function apis::
 
@@ -161,9 +169,9 @@ Virtual function apis::
 
 REST API impact
 ---------------
-Since these tables are not exposed to users for modifying/adding/deleting, Cyborg
-will only add two extra REST APIs to allow user query information related to
-deployables and their attributes.
+Since these tables are not exposed to users for modifying/adding/deleting,
+Cyborg will only add two extra REST APIs to allow user query information
+related to deployables and their attributes.
 
 API for retrieving Deployable's information::
 
