@@ -100,7 +100,7 @@ function configure_cyborg_dirs {
 # service     cyborg      admin
 function create_cyborg_accounts {
     create_service_user "cyborg" "admin"
-    get_or_create_service "cyborg" "acceleration" "Cyborg Accelerators Service"
+    get_or_create_service "cyborg" "accelerator" "Cyborg Accelerators Service"
     get_or_create_endpoint "cyborg" \
         "$REGION_NAME" \
         "${CYBORG_SERVICE_PROTOCOL}://${CYBORG_SERVICE_HOST}:${CYBORG_SERVICE_PORT}/v1" \
