@@ -37,6 +37,7 @@ CYBORG_STATE_PATH=/var/lib/cyborg
 CYBORG_AUTH_CACHE_DIR=${CYBORG_AUTH_CACHE_DIR:-/var/cache/cyborg}
 CYBORG_CONF_DIR=${CYBORG_CONF_DIR:-/etc/cyborg}
 CYBORG_CONF_FILE=$CYBORG_CONF_DIR/cyborg.conf
+CYBORG_API_PASTE_INI=$CYBORG_CONF_DIR/api-paste.ini
 CYBORG_ROOTWRAP_CONF=$CYBORG_CONF_DIR/rootwrap.conf
 CYBORG_POLICY_JSON=$CYBORG_CONF_DIR/policy.json
 CYBORG_SERVICE_HOST=${CYBORG_SERVICE_HOST:-$SERVICE_HOST}
@@ -173,6 +174,7 @@ function configure_cyborg_conductor {
 
     sudo cp $CYBORG_DIR/etc/cyborg/rootwrap.conf $CYBORG_ROOTWRAP_CONF
     sudo cp -r $CYBORG_DIR/etc/cyborg/rootwrap.d $CYBORG_CONF_DIR
+    sudo cp -p $CYBORG_DIR/etc/cyborg/api-paste.ini $CYBORG_API_PASTE_INI
     local cyborg_rootwrap
     cyborg_rootwrap=$(get_rootwrap_location cyborg)
     local rootwrap_isudoer_cmd="$cyborg_rootwrap $CYBORG_CONF_DIR/rootwrap.conf *"
