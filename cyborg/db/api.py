@@ -95,6 +95,10 @@ class Connection(object):
                                   marker=None, columns_to_join=None):
         """Get requested deployable by filters."""
 
+    @abc.abstractmethod
+    def deployable_get_by_filters_with_attributes(self, context,
+                                                  filters):
+        """Get requested deployable by filters with attributes."""
     # attributes
     @abc.abstractmethod
     def attribute_create(self, context, key, value):
@@ -105,8 +109,12 @@ class Connection(object):
         """Get requested attribute."""
 
     @abc.abstractmethod
-    def attribute_get_by_deployable_uuid(self, context, deployable_uuid):
-        """Get requested deployable by deployable uuid."""
+    def attribute_get_by_deployable_id(self, context, deployable_id):
+        """Get requested attribute by attribute id."""
+
+    @abc.abstractmethod
+    def attribute_get_by_filter(self, context, filters):
+        """Get requested attribute by kv pair and attribute id."""
 
     @abc.abstractmethod
     def attribute_update(self, context, uuid, key, value):

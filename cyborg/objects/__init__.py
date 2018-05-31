@@ -27,3 +27,4 @@ def register_all():
     # need to receive it via RPC.
     __import__('cyborg.objects.accelerator')
     __import__('cyborg.objects.deployable')
+    __import__('cyborg.objects.attribute')

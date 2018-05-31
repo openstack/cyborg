@@ -33,9 +33,9 @@ class Attribute(base.CyborgObject, object_base.VersionedObjectDictCompat):
     dbapi = dbapi.get_instance()
 
     fields = {
-        'id': fields.IntegerField(nullable=False),
+        'id': object_fields.IntegerField(nullable=False),
         'uuid': object_fields.UUIDField(nullable=False),
-        'deployable_id': fields.IntegerField(nullable=False),
+        'deployable_id': object_fields.IntegerField(nullable=False),
         'key': object_fields.StringField(nullable=False),
         'value': object_fields.StringField(nullable=False)
     }
@@ -47,26 +47,31 @@ class Attribute(base.CyborgObject, object_base.VersionedObjectDictCompat):
 
         values = self.obj_get_changes()
         db_attr = self.dbapi.attribute_create(context,
-                                              self.key,
-                                              self.value)
+                                              values)
         self._from_db_object(self, db_attr)
 
     @classmethod
     def get(cls, context, uuid):
-        """Find a DB Deployable and return an Obj Deployable."""
+        """Find a DB attribute and return an Obj Deployable."""
         db_attr = cls.dbapi.attribute_get(context, uuid)
         obj_attr = cls._from_db_object(cls(context), db_attr)
         return obj_attr
 
     @classmethod
-    def attribute_get_by_deployable_uuid(cls, context, deployable_uuid):
-        """Get a Deployable by host."""
-        db_attr = cls.dbapi.attribute_get_by_deployable_uuid(context,
-                                                             deployable_uuid)
+    def get_by_deployable_id(cls, context, deployable_id):
+        """Get a attribute by deployable_id"""
+        db_attr = cls.dbapi.attribute_get_by_deployable_id(context,
+                                                           deployable_id)
+        return cls._from_db_object_list(db_attr, context)
+
+    @classmethod
+    def get_by_filter(cls, context, filters):
+        """Get a attribute by specified filters"""
+        db_attr = cls.dbapi.attribute_get_by_filter(context, filters)
         return cls._from_db_object_list(db_attr, context)
 
     def save(self, context):
-        """Update a Deployable record in the DB."""
+        """Update a attribute record in the DB."""
         updates = self.obj_get_changes()
         db_attr = self.dbapi.attribute_update(context,
                                               self.uuid,
@@ -75,7 +80,7 @@ class Attribute(base.CyborgObject, object_base.VersionedObjectDictCompat):
         self._from_db_object(self, db_attr)
 
     def destroy(self, context):
-        """Delete a Deployable from the DB."""
+        """Delete a attribute from the DB."""
         self.dbapi.attribute_delete(context, self.uuid)
         self.obj_reset_changes()
 
