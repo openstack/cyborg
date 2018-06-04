@@ -278,6 +278,23 @@ class _TestDeployableObject(DbTestCase):
         self.assertEqual(len(dpl_get_list), 1)
         self.assertEqual(dpl_get_list[0].uuid, dpl2.uuid)
 
+    def test_get_by_host(self):
+        dep1 = self.fake_deployable
+        dep2 = self.fake_deployable2
+        fake_hostname = 'host_name'
+        dep_obj1 = objects.Deployable(context=self.context,
+                                      **dep1)
+        dep_obj2 = objects.Deployable(context=self.context,
+                                      **dep2)
+        dep_obj1.create(self.context)
+        dep_obj2.create(self.context)
+
+        dep_obj1.save(self.context)
+        dep_obj2.save(self.context)
+        dep_objs = objects.Deployable.get_by_host(self.context, fake_hostname)
+        self.assertEqual(dep_objs[0].host, fake_hostname)
+        self.assertEqual(dep_objs[1].host, fake_hostname)
+
 
 class TestDeployableObject(test_objects._LocalTest,
                            _TestDeployableObject):

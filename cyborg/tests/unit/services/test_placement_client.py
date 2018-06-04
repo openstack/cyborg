@@ -42,6 +42,8 @@ class PlacementAPIClientTestCase(base.DietTestCase):
         load_auth_mock.assert_called_once_with(cfg.CONF, 'placement')
         ks_sess_mock.assert_called_once_with(auth=load_auth_mock.return_value,
                                              cert=None,
+                                             collect_timing=False,
+                                             split_loggers=False,
                                              timeout=None,
                                              verify=True)
 
