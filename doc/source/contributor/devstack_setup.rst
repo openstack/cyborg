@@ -10,25 +10,31 @@ cloud images such as “ubuntu” or “cloud-user” are usually fine).
 
 You can quickly create a separate stack user to run DevStack with.
 
-`bash`
+.. code-block:: console
 
-`$ sudo useradd -s /bin/bash -d /opt/stack -m stack`
+   $ sudo useradd -s /bin/bash -d /opt/stack -m stack
 
 Since this user will be making many changes to your system, it should have sudo
 privileges:
 
-`bash`
+.. code-block:: console
 
-`$ echo "stack ALL=(ALL) NOPASSWD: ALL" | sudo tee /etc/sudoers.d/stack`
+   $ echo "stack ALL=(ALL) NOPASSWD: ALL" | sudo tee /etc/sudoers.d/stack
 
-`$ sudo su - stack`
+.. code-block:: console
+
+   $ sudo su - stack
 
 Download DevStack
 -----------------
 
-`$ git clone https://git.openstack.org/openstack-dev/devstack`
+.. code-block:: console
 
-`$ cd devstack`
+   $ git clone https://git.openstack.org/openstack-dev/devstack
+
+.. code-block:: console
+
+   $ cd devstack
 
 The `devstack` repo contains a script that installs OpenStack.
 
@@ -107,12 +113,17 @@ Enable services
 
 - The devstack logs will appear in $LOGDIR
 
-  ​
+.. note::
+
+  If you got version conflicts, please set `PIP_UPGRADE` to `True` in local.conf
+
 
 Run DevStack
 ------------
 
-`./stack.sh`
+.. code-block:: console
+
+   $ ./stack.sh
 
 This will take a 30-40 minutes, largely depending on the speed of your internet
 connection. Many git trees and packages will be installed during this process.
