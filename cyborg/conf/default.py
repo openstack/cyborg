@@ -102,6 +102,14 @@ placement_opts = [
     cfg.IntOpt('timeout',
                default=None,
                help=_('Timeout for inactive connections (in seconds)')),
+    cfg.BoolOpt('split_loggers',
+                default=False,
+                help=_('Split the logging of requests across multiple loggers '
+                       'instead of just one. Defaults to False.')),
+    cfg.IntOpt('collect_timing',
+               default=False,
+               help=_('Whether or not to collect per-method timing information'
+                      ' for each API call. (optional,defaults to False')),
 ]
 
 

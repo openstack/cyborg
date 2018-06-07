@@ -97,11 +97,13 @@ class Deployable(base.CyborgObject, object_base.VersionedObjectDictCompat):
     def get_by_host(cls, context, host):
         """Get a Deployable by host."""
         db_deps = cls.dbapi.deployable_get_by_host(context, host)
-        query = {"deployable_id": db_deps.id}
-        attr_get_list = Attribute.get_by_filter(context,
-                                                query)
-        db_deps.attributes_list = attr_get_list
-        return cls._from_db_object_list(db_deps, context)
+        obj_dpl_list = cls._from_db_object_list(db_deps, context)
+        for obj_dpl in obj_dpl_list:
+            query = {"deployable_id": obj_dpl.id}
+            attr_get_list = Attribute.get_by_filter(context,
+                                                    query)
+            obj_dpl.attributes_list = attr_get_list
+        return obj_dpl_list
 
     @classmethod
     def list(cls, context):
