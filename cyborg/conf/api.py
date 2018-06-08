@@ -45,6 +45,9 @@ opts = [
                       "host URL. If the API is operating behind a proxy, you "
                       "will want to change this to represent the proxy's URL. "
                       "Defaults to None.")),
+    cfg.StrOpt('api_paste_config',
+               default="api-paste.ini",
+               help="Configuration file for WSGI definition of API."),
 ]
 
 opt_group = cfg.OptGroup(name='api',

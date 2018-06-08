@@ -92,12 +92,3 @@ class ContextHook(hooks.PecanHook):
         is_admin = policy.authorize('is_admin', creds, creds)
         state.request.context = context.RequestContext(
             is_admin=is_admin, **creds)
-
-    def after(self, state):
-        if state.request.context == {}:
-            # An incorrect url path will not create RequestContext
-            return
-        # RequestContext will generate a request_id if no one
-        # passing outside, so it always contain a request_id.
-        request_id = state.request.context.request_id
-        state.response.headers['Openstack-Request-Id'] = request_id

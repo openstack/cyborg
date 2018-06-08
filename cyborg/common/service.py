@@ -103,7 +103,7 @@ class WSGIService(service.ServiceBase):
         :returns: None
         """
         self.name = name
-        self.app = app.VersionSelectorApplication()
+        self.app = app.load_app()
         self.workers = (CONF.api.api_workers or
                         processutils.get_worker_count())
         if self.workers and self.workers < 1:
