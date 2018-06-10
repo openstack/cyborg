@@ -1,4 +1,4 @@
-# Copyright 2018 Intel, Inc.
+# Copyright 2018 Beijing Lenovo Software Ltd.
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -14,39 +14,46 @@
 
 
 """
-Cyborg FPGA driver implementation.
+Cyborg GPU driver implementation.
 """
+from oslo_log import log as logging
 
-from cyborg.accelerator.drivers.fpga import utils
-
-
-VENDOR_MAPS = {"0x8086": "intel"}
+from cyborg.accelerator.drivers.gpu import utils
 
 
-class FPGADriver(object):
-    """Base class for FPGA drivers.
+LOG = logging.getLogger(__name__)
 
-       This is just a virtual FPGA drivers interface.
+VENDOR_MAPS = {"10de": "nvidia", "102b": "matrox"}
+
+
+class GPUDriver(object):
+    """Base class for GPU drivers.
+
+       This is just a virtual GPU drivers interface.
        Vendor should implement their specific drivers.
     """
 
     @classmethod
     def create(cls, vendor, *args, **kwargs):
         for sclass in cls.__subclasses__():
-            vendor = VENDOR_MAPS.get(vendor, vendor)
-            if vendor == sclass.VENDOR:
+            vendor_name = VENDOR_MAPS.get(vendor, vendor)
+            if vendor_name == sclass.VENDOR:
                 return sclass(*args, **kwargs)
-        raise LookupError("Not find the FPGA driver for vendor %s" % vendor)
-
-    def __init__(self, *args, **kwargs):
-        pass
+        raise LookupError("Not find the GPU driver for vendor %s" % vendor)
 
     def discover(self):
-        raise NotImplementedError()
+        """
+        Discover GPU information of current vendor(Identified by class).
 
-    def program(self, device_path, image):
+        :return: List of GPU information dict.
+        """
         raise NotImplementedError()
 
     @classmethod
     def discover_vendors(cls):
+        """
+        Discover GPU vendors of current node.
+
+        :return: GPU vendor ID list.
+        """
         return utils.discover_vendors()
