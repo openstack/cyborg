@@ -121,3 +121,13 @@ def register_opts(conf):
 
 def register_placement_opts(cfg=cfg.CONF):
     cfg.register_opts(placement_opts, group=PLACEMENT_CONF_SECTION)
+
+
+DEFAULT_OPTS = (exc_log_opts + service_opts + path_opts)
+PLACEMENT_OPTS = (placement_opts)
+
+
+def list_opts():
+    return {
+        PLACEMENT_CONF_SECTION: PLACEMENT_OPTS, 'DEFAULT': DEFAULT_OPTS
+    }

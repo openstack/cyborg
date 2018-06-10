@@ -30,3 +30,12 @@ opt_group = cfg.OptGroup(name='database',
 
 def register_opts(conf):
     conf.register_opts(opts, group=opt_group)
+
+
+DB_OPTS = (opts)
+
+
+def list_opts():
+    return {
+        opt_group: DB_OPTS
+    }
