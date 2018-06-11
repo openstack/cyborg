@@ -17,6 +17,7 @@ import os
 import socket
 
 from oslo_config import cfg
+from keystoneauth1 import loading as k_loading
 
 from cyborg.common.i18n import _
 
@@ -73,43 +74,6 @@ placement_opts = [
                help=_('Type of the placement endpoint to use.  This endpoint '
                       'will be looked up in the keystone catalog and should '
                       'be one of public, internal or admin.')),
-    cfg.BoolOpt('insecure',
-                default=False,
-                help="""
-                    If true, the vCenter server certificate is not verified.
-                    If false, then the default CA truststore is used for
-                    verification. Related options:
-                    * ca_file: This option is ignored if "ca_file" is set.
-                    """),
-    cfg.StrOpt('cafile',
-               default=None,
-               help="""
-                   Specifies the CA bundle file to be used in verifying the
-                   vCenter server certificate.
-                   """),
-    cfg.StrOpt('certfile',
-               default=None,
-               help="""
-                   Specifies the certificate file to be used in verifying
-                   the vCenter server certificate.
-                   """),
-    cfg.StrOpt('keyfile',
-               default=None,
-               help="""
-                   Specifies the key file to be used in verifying the vCenter
-                   server certificate.
-                   """),
-    cfg.IntOpt('timeout',
-               default=None,
-               help=_('Timeout for inactive connections (in seconds)')),
-    cfg.BoolOpt('split_loggers',
-                default=False,
-                help=_('Split the logging of requests across multiple loggers '
-                       'instead of just one. Defaults to False.')),
-    cfg.IntOpt('collect_timing',
-               default=False,
-               help=_('Whether or not to collect per-method timing information'
-                      ' for each API call. (optional,defaults to False')),
 ]
 
 
@@ -120,6 +84,8 @@ def register_opts(conf):
 
 
 def register_placement_opts(cfg=cfg.CONF):
+    cfg.register_opts(k_loading.get_session_conf_options(),
+                      group=PLACEMENT_CONF_SECTION)
     cfg.register_opts(placement_opts, group=PLACEMENT_CONF_SECTION)
 
 
