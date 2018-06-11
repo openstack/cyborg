@@ -54,6 +54,15 @@ opt_group = cfg.OptGroup(name='api',
                          title='Options for the cyborg-api service')
 
 
+API_OPTS = (opts)
+
+
 def register_opts(conf):
     conf.register_group(opt_group)
     conf.register_opts(opts, group=opt_group)
+
+
+def list_opts():
+    return {
+        opt_group: API_OPTS
+    }
