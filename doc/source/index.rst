@@ -41,7 +41,7 @@ Developer Documentation
 
    contributor/contributing
    contributor/devstack_setup
-
+   specs/index
 
 Indices and tables
 ==================

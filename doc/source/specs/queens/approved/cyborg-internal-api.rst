@@ -71,7 +71,7 @@ Driver 'POST /discovery'
 
 Trigger the discovery and setup process for a specific driver
 
-.. code_block:: init
+.. code-block:: ini
 
     Content-Type: application/json
 
@@ -87,7 +87,7 @@ ready to use entires available by the public API. Hardware are
 physical devices on nodes that may or may not be ready to use or
 even fully supported.
 
-.. code_block:: init
+.. code-block:: ini
 
     200 OK
     Content-Type: application/json
@@ -129,7 +129,7 @@ Driver 'POST /hello'
 Registers that a driver has been installed on the machine and is ready to use.
 As well as it's endpoint and hardware support.
 
-.. code_block:: init
+.. code-block:: ini
 
     Content-Type: application/json
 
@@ -160,7 +160,7 @@ Conductor 'POST /hello'
 
 Registers that an Agent has been installed on the machine and is ready to use.
 
-.. code_block:: init
+.. code-block:: ini
 
     Content-Type: application/json
 
