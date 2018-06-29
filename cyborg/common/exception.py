@@ -139,6 +139,15 @@ class NotFound(CyborgException):
     code = http_client.NOT_FOUND
 
 
+class ServiceNotFound(NotFound):
+    msg_fmt = _("Service %(service_id)s could not be found.")
+
+
+class ConfGroupForServiceTypeNotFound(ServiceNotFound):
+    msg_fmt = _("No conf group name could be found for service type "
+                "%(stype)s.")
+
+
 class AcceleratorNotFound(NotFound):
     _msg_fmt = _("Accelerator %(uuid)s could not be found.")
 
@@ -196,3 +205,87 @@ class AttributeInvalid(CyborgException):
 
 class AttributeAlreadyExists(CyborgException):
     _msg_fmt = _("Attribute with uuid %(uuid)s already exists.")
+
+
+# An exception with this name is used on both sides of the placement/
+# cyborg interaction.
+class ResourceProviderInUse(CyborgException):
+    msg_fmt = _("Resource provider has allocations.")
+
+
+class ResourceProviderRetrievalFailed(CyborgException):
+    msg_fmt = _("Failed to get resource provider with UUID %(uuid)s")
+
+
+class ResourceProviderAggregateRetrievalFailed(CyborgException):
+    msg_fmt = _("Failed to get aggregates for resource provider with UUID"
+                " %(uuid)s")
+
+
+class ResourceProviderTraitRetrievalFailed(CyborgException):
+    msg_fmt = _("Failed to get traits for resource provider with UUID"
+                " %(uuid)s")
+
+
+class ResourceProviderCreationFailed(CyborgException):
+    msg_fmt = _("Failed to create resource provider %(name)s")
+
+
+class ResourceProviderDeletionFailed(CyborgException):
+    msg_fmt = _("Failed to delete resource provider %(uuid)s")
+
+
+class ResourceProviderUpdateFailed(CyborgException):
+    msg_fmt = _("Failed to update resource provider via URL %(url)s: "
+                "%(error)s")
+
+
+class ResourceProviderNotFound(NotFound):
+    msg_fmt = _("No such resource provider %(name_or_uuid)s.")
+
+
+class ResourceProviderSyncFailed(CyborgException):
+    msg_fmt = _("Failed to synchronize the placement service with resource "
+                "provider information supplied by the compute host.")
+
+
+class PlacementAPIConnectFailure(CyborgException):
+    msg_fmt = _("Unable to communicate with the Placement API.")
+
+
+class PlacementAPIConflict(CyborgException):
+    """Any 409 error from placement APIs should use (a subclass of) this
+    exception.
+    """
+    msg_fmt = _("A conflict was encountered attempting to invoke the "
+                "placement API at URL %(url)s: %(error)s")
+
+
+class ResourceProviderUpdateConflict(PlacementAPIConflict):
+    """A 409 caused by generation mismatch from attempting to update an
+    existing provider record or its associated data (aggregates, traits, etc.).
+    """
+    msg_fmt = _("A conflict was encountered attempting to update resource "
+                "provider %(uuid)s (generation %(generation)d): %(error)s")
+
+
+class InvalidResourceClass(Invalid):
+    msg_fmt = _("Resource class '%(resource_class)s' invalid.")
+
+
+class InvalidResourceAmount(Invalid):
+    msg_fmt = _("Resource amounts must be integers. Received '%(amount)s'.")
+
+
+class InvalidInventory(Invalid):
+    msg_fmt = _("Inventory for '%(resource_class)s' on "
+                "resource provider '%(resource_provider)s' invalid.")
+
+
+# An exception with this name is used on both sides of the placement/
+# cyborg interaction.
+class InventoryInUse(InvalidInventory):
+    # NOTE(mriedem): This message cannot change without impacting the
+    # cyborg.services.client.report._RE_INV_IN_USE regex.
+    msg_fmt = _("Inventory for '%(resource_classes)s' on "
+                "resource provider '%(resource_provider)s' in use.")

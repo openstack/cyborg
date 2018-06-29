@@ -162,6 +162,26 @@ function configure_auth_for {
     iniset $CYBORG_CONF_FILE $service_config_section cafile $SSL_BUNDLE_FILE
 }
 
+function configure_cyborg_placement {
+    # Use the provided config file path or default to $CYBORG_CONF.
+    local section=${1:-placement}
+    local auth_section=${2:-keystone_authtoken}
+    iniset $CYBORG_CONF_FILE $section auth_section $auth_section
+    iniset $CYBORG_CONF_FILE $section auth_type "password"
+    iniset $CYBORG_CONF_FILE $section auth_url "$KEYSTONE_SERVICE_URI"
+    iniset $CYBORG_CONF_FILE $section username $section
+    iniset $CYBORG_CONF_FILE $section password "$SERVICE_PASSWORD"
+    iniset $CYBORG_CONF_FILE $section user_domain_name "$SERVICE_DOMAIN_NAME"
+    iniset $CYBORG_CONF_FILE $section project_name "$SERVICE_TENANT_NAME"
+    iniset $CYBORG_CONF_FILE $section project_domain_name "$SERVICE_DOMAIN_NAME"
+    # TODO(cdent): auth_strategy, which is common to see in these
+    # blocks is not currently used here. For the time being the
+    # placement api uses the auth_strategy configuration setting
+    # established by the nova api. This avoids, for the time, being,
+    # creating redundant configuration items that are just used for
+    # testing.
+}
+
 # configure_cyborg_conductor() - Is used by configure_cyborg().
 # Sets conductor specific settings.
 function configure_cyborg_conductor {
@@ -171,6 +191,7 @@ function configure_cyborg_conductor {
 
     # this one is needed for lookup of Cyborg API endpoint via Keystone
     configure_auth_for service_catalog
+    configure_cyborg_placement
 
     sudo cp $CYBORG_DIR/etc/cyborg/rootwrap.conf $CYBORG_ROOTWRAP_CONF
     sudo cp -r $CYBORG_DIR/etc/cyborg/rootwrap.d $CYBORG_CONF_DIR
