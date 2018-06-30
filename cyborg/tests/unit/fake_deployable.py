@@ -62,10 +62,7 @@ def fake_db_deployable(**updates):
 def fake_deployable_obj(context, obj_dpl_class=None, **updates):
     if obj_dpl_class is None:
         obj_dpl_class = objects.Deployable
-    expected_attrs = updates.pop('expected_attrs', None)
-    deploy = obj_dpl_class._from_db_object(context,
-                                           obj_dpl_class(),
-                                           fake_db_deployable(**updates),
-                                           expected_attrs=expected_attrs)
+    deploy = obj_dpl_class._from_db_object(obj_dpl_class(),
+                                           fake_db_deployable(**updates))
     deploy.obj_reset_changes()
     return deploy
