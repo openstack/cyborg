@@ -5,7 +5,6 @@
 .coveragerc
 .coverage.*
 .venv
-*.testrepository
 .stestr/
 
 openstack_cyborg.egg-info
