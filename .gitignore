@@ -1,13 +1,34 @@
 *.pyc
 *.tox
 *.retry
+.coverage
+.coveragerc
+.coverage.*
+.venv
 *.testrepository
+.stestr/
+
 openstack_cyborg.egg-info
 dist
-build
+build/*
 *.DS_Store
 ChangeLog
 
 # Sample profile
 etc/cyborg/policy.json.sample
+etc/cyborg/cyborg.conf.sample
 .idea/*
+
+# Editors
+*.sublime-workspace
+*.swp
+*.swo
+
+doc/source/_static/*.sample
+doc/build/*
+doc/source/api/*
+api-ref/build/*
+
+AUTHORS
+Authors
+ChangeLog
