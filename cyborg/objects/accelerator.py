@@ -40,9 +40,9 @@ class Accelerator(base.CyborgObject, object_base.VersionedObjectDictCompat):
         'user_id': object_fields.UUIDField(nullable=True),
         'device_type': object_fields.StringField(nullable=False),
         # The type of the accelerator device, e.g GPU, FPGA, ...
-        'acc_type': object_fields.StringField(nullable=False),
+        'acc_type': object_fields.StringField(nullable=True),
         # acc_type defines the usage of the accelerator, e.g Crypto
-        'acc_capability': object_fields.StringField(nullable=False),
+        'acc_capability': object_fields.StringField(nullable=True),
         # acc_capability defines the specific capability, e.g AES
         'vendor_id': object_fields.StringField(nullable=False),
         # vendor_id refers to ids like NVIDIA, XILINX, INTEL,...

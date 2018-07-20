@@ -49,8 +49,8 @@ class Deployable(base.APIBase):
     root_uuid = types.uuid
     """The root UUID of the deployable"""
 
-    pcie_address = wtypes.text
-    """The pcie address of the deployable"""
+    address = wtypes.text
+    """The address(pci/mdev) of the deployable"""
 
     host = wtypes.text
     """The host on which the deployable is located"""
@@ -66,6 +66,9 @@ class Deployable(base.APIBase):
 
     type = wtypes.text
     """The type of the deployable"""
+
+    interface_type = wtypes.text
+    """The interface type of deployable"""
 
     assignable = types.boolean
     """Whether the deployable is assignable"""
@@ -119,7 +122,7 @@ class DeployablePatchType(types.JsonPatchType):
     @staticmethod
     def internal_attrs():
         defaults = types.JsonPatchType.internal_attrs()
-        return defaults + ['/pcie_address', '/host', '/type']
+        return defaults + ['/address', '/host', '/type']
 
 
 class DeployablesController(rest.RestController):

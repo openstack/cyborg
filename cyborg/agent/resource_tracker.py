@@ -36,7 +36,7 @@ DEPLOYABLE_VERSION = "1.0"
 
 # need to change the driver field name
 DEPLOYABLE_HOST_MAPS = {"assignable": "assignable",
-                        "pcie_address": "devices",
+                        "address": "devices",
                         "board": "product_id",
                         "type": "function",
                         "vendor": "vendor_id",
@@ -98,8 +98,8 @@ class ResourceTracker(object):
         deployables = self.conductor_api.deployable_get_by_host(
             context, self.host)
 
-        # NOTE(Shaohe Feng) when no "pcie_address" in deployable?
-        accls = dict([(v["pcie_address"], v) for v in deployables])
+        # NOTE(Shaohe Feng) when no "address" in deployable?
+        accls = dict([(v["address"], v) for v in deployables])
         accl_bdfs = set(accls.keys())
 
         # Firstly update

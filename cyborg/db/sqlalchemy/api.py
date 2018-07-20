@@ -254,10 +254,11 @@ class Connection(api.Connection):
 
         exact_match_filter_names = ['uuid', 'name',
                                     'parent_uuid', 'root_uuid',
-                                    'pcie_address', 'host',
+                                    'address', 'host',
                                     'board', 'vendor', 'version',
-                                    'type', 'assignable', 'instance_uuid',
-                                    'availability', 'accelerator_id']
+                                    'type', 'interface_type', 'assignable',
+                                    'instance_uuid', 'availability',
+                                    'accelerator_id']
         attribute_filters = {}
         filters_copy = copy.deepcopy(filters)
         for key, value in filters_copy.iteritems():
@@ -399,10 +400,11 @@ class Connection(api.Connection):
 
         exact_match_filter_names = ['uuid', 'name',
                                     'parent_uuid', 'root_uuid',
-                                    'pcie_address', 'host',
+                                    'address', 'host',
                                     'board', 'vendor', 'version',
-                                    'type', 'assignable', 'instance_uuid',
-                                    'availability', 'accelerator_id']
+                                    'type', 'interface_type', 'assignable',
+                                    'instance_uuid', 'availability',
+                                    'accelerator_id']
 
         # Filter the query
         query_prefix = self._exact_deployable_filter(query_prefix,

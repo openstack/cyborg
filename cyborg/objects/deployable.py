@@ -42,14 +42,17 @@ class Deployable(base.CyborgObject, object_base.VersionedObjectDictCompat):
         # parent_uuid refers to the id of the VF's parent node
         'root_uuid': object_fields.UUIDField(nullable=True),
         # root_uuid refers to the id of the VF's root which has to be a PF
-        'pcie_address': object_fields.StringField(nullable=False),
+        'address': object_fields.StringField(nullable=False),
+        # if interface_type is pci(/mdev), address is the pci_address(/path)
         'host': object_fields.StringField(nullable=False),
         'board': object_fields.StringField(nullable=False),
         # board refers to a specific acc board type, e.g P100 GPU card
         'vendor': object_fields.StringField(nullable=False),
         'version': object_fields.StringField(nullable=False),
         'type': object_fields.StringField(nullable=False),
-        # similar to the acc_type in accelerator.py
+        # type of deployable, e.g, pf/vf/*f
+        'interface_type': object_fields.StringField(nullable=False),
+        # interface to hypervisor(libvirt), e.g, pci/mdev...
         'assignable': object_fields.BooleanField(nullable=False),
         # identify if an accelerator is in use
         'instance_uuid': object_fields.UUIDField(nullable=True),
