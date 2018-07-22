@@ -13,12 +13,11 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import json
 import pecan
-from pecan import rest
 from six.moves import http_client
 import wsme
 from wsme import types as wtypes
-import json
 
 from cyborg.api.controllers import base
 from cyborg.api.controllers import link
@@ -186,23 +185,48 @@ class DeployablesController(base.CyborgController):
 
     @policy.authorize_wsgi("cyborg:deployable", "get_all")
     @expose.expose(DeployableCollection, int, types.uuid, wtypes.text,
-                   wtypes.text, types.boolean)
-    def get_all(self):
+                   wtypes.text, wtypes.ArrayType(types.FilterType))
+    # TODO(wangzhh): Remove limit, marker, sort_key, sort_dir in next release.
+    # They are used to compatible with R release client.
+    def get_all(self, limit=None, marker=None, sort_key='id', sort_dir='asc',
+                filters=None):
         """Retrieve a list of deployables."""
-        obj_deps = objects.Deployable.list(pecan.request.context)
+        filters_dict = {}
+        self._generate_filters(limit, sort_key, sort_dir, filters_dict)
+        if filters:
+            for filter in filters:
+                filters_dict.update(filter.as_dict())
+        context = pecan.request.context
+        if marker:
+            marker_obj = objects.Deployable.get(context, marker)
+            filters_dict["marker_obj"] = marker_obj
+        obj_deps = objects.Deployable.list(context, filters=filters_dict)
         return DeployableCollection.convert_with_links(obj_deps)
+
+    def _generate_filters(self, limit, sort_key, sort_dir, filters_dict):
+        """This method are used to compatible with R release client."""
+        if limit:
+            filters_dict["limit"] = limit
+        if sort_key:
+            filters_dict["sort_key"] = sort_key
+        if sort_dir:
+            filters_dict["sort_dir"] = sort_dir
 
     @policy.authorize_wsgi("cyborg:deployable", "update")
     @expose.expose(Deployable, types.uuid, body=[DeployablePatchType])
     def patch(self, uuid, patch):
         """Update a deployable.
 
+        Usage: curl -X PATCH {ip}:{port}/v1/accelerators/deployables/
+        {deployable_uuid} -d '[{"path":"/instance_uuid","value":
+        {instance_uuid}, "op":"replace"}]'  -H "Content-type:
+        application/json"
+
         :param uuid: UUID of a deployable.
         :param patch: a json PATCH document to apply to this deployable.
         """
         context = pecan.request.context
         obj_dep = objects.Deployable.get(context, uuid)
-
         try:
             api_dep = Deployable(
                 **api_utils.apply_jsonpatch(obj_dep.as_dict(), patch))

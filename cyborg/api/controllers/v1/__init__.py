@@ -22,7 +22,6 @@ from wsme import types as wtypes
 from cyborg.api.controllers import base
 from cyborg.api.controllers import link
 from cyborg.api.controllers.v1 import accelerators
-from cyborg.api.controllers.v1 import deployables
 from cyborg.api import expose
 
 
@@ -52,7 +51,6 @@ class Controller(rest.RestController):
     """Version 1 API controller root"""
 
     accelerators = accelerators.AcceleratorsController()
-    deployables = deployables.DeployablesController()
 
     @expose.expose(V1)
     def get(self):

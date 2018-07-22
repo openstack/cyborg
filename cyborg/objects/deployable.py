@@ -109,10 +109,12 @@ class Deployable(base.CyborgObject, object_base.VersionedObjectDictCompat):
         return obj_dpl_list
 
     @classmethod
-    def list(cls, context):
+    def list(cls, context, filters={}):
         """Return a list of Deployable objects."""
-        db_deps = cls.dbapi.deployable_list(context)
-
+        if filters:
+            db_deps = cls.dbapi.deployable_get_by_filters(context, filters)
+        else:
+            db_deps = cls.dbapi.deployable_list(context)
         obj_dpl_list = cls._from_db_object_list(db_deps, context)
         for obj_dpl in obj_dpl_list:
             query = {"deployable_id": obj_dpl.id}

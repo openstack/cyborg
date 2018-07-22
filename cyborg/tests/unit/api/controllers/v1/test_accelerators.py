@@ -18,6 +18,7 @@ import mock
 from oslo_utils import timeutils
 from six.moves import http_client
 
+from cyborg.api.controllers.v1.accelerators import Accelerator
 from cyborg.conductor import rpcapi
 from cyborg.tests.unit.api.controllers.v1 import base as v1_test
 from cyborg.tests.unit.db import utils as db_utils
@@ -80,19 +81,8 @@ class TestList(v1_test.APITestV1):
         data = self.get_json('/accelerators/%s' % self.acc.uuid,
                              headers=self.headers)
         self.assertEqual(self.acc.uuid, data['uuid'])
-        self.assertIn('acc_capability', data)
-        self.assertIn('acc_type', data)
-        self.assertIn('created_at', data)
-        self.assertIn('description', data)
-        self.assertIn('device_type', data)
-        self.assertIn('links', data)
-        self.assertIn('name', data)
-        self.assertIn('product_id', data)
-        self.assertIn('project_id', data)
-        self.assertIn('remotable', data)
-        self.assertIn('updated_at', data)
-        self.assertIn('user_id', data)
-        self.assertIn('vendor_id', data)
+        for attr in Accelerator._wsme_attributes:
+            self.assertIn(attr.name, data)
 
     def test_get_all(self):
         data = self.get_json('/accelerators', headers=self.headers)

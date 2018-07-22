@@ -14,16 +14,15 @@
 #    under the License.
 
 import pecan
-from pecan import rest
 from six.moves import http_client
 import wsme
 from wsme import types as wtypes
 
 from cyborg.api.controllers import base
 from cyborg.api.controllers import link
+from cyborg.api.controllers.v1 import deployables
 from cyborg.api.controllers.v1 import types
 from cyborg.api.controllers.v1 import utils as api_utils
-from cyborg.api.controllers.v1 import deployables
 from cyborg.api import expose
 from cyborg.common import exception
 from cyborg.common import policy
@@ -77,6 +76,10 @@ class Accelerator(base.APIBase):
     def __init__(self, **kwargs):
         super(Accelerator, self).__init__(**kwargs)
         self.fields = []
+        # NOTE(wangzhh): It not worked here. Because the response contain a
+        # white_list named _wsme_attributes. See wsme.types.list_attributes.
+        # Attribute which is not in the list will be ignored.
+        # We have no disscussion about it, so just left it here now.
         for field in objects.Accelerator.fields:
             self.fields.append(field)
             setattr(self, field, kwargs.get(field, wtypes.Unset))

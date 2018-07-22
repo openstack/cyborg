@@ -13,8 +13,8 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import inspect
 import json
+import inspect
 
 from oslo_utils import strutils
 from oslo_utils import uuidutils
@@ -23,6 +23,44 @@ from wsme import types as wtypes
 
 from cyborg.common import exception
 from cyborg.common.i18n import _
+
+
+class FilterType(wtypes.UserType):
+    """Query filter."""
+    name = 'filtertype'
+    basetype = wtypes.text
+
+    _supported_fields = wtypes.Enum(wtypes.text, 'parent_uuid', 'root_uuid',
+                                    'vender', 'host', 'board', 'availability',
+                                    'assignable', 'interface_type',
+                                    'instance_uuid', 'limit', 'marker',
+                                    'sort_key', 'sort_dir')
+
+    field = wsme.wsattr(_supported_fields, mandatory=True)
+    value = wsme.wsattr(wtypes.text, mandatory=True)
+
+    def __repr__(self):
+        # for logging calls
+        return '<Query %s %s>' % (self.field,
+                                  self.value)
+
+    @classmethod
+    def sample(cls):
+        return cls(field='interface_type',
+                   value='pci')
+
+    def as_dict(self):
+        d = dict()
+        d[getattr(self, 'field')] = getattr(self, 'value')
+        return d
+
+    @staticmethod
+    def validate(filters):
+        for filter in filters:
+            if filter.field not in FilterType._supported_fields:
+                msg = _("'%s' is an unsupported field for querying.")
+                raise wsme.exc.ClientSideError(msg % filter.field)
+        return filters
 
 
 class UUIDType(wtypes.UserType):
