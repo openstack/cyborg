@@ -23,7 +23,11 @@ sys.path.insert(0, os.path.abspath('../..'))
 extensions = [
     'sphinx.ext.autodoc',
     #'sphinx.ext.intersphinx',
-    'oslosphinx'
+    'openstackdocstheme',
+    'oslo_config.sphinxconfiggen',
+    'oslo_config.sphinxext',
+    'oslo_policy.sphinxext',
+    'oslo_policy.sphinxpolicygen',
 ]
 
 # autodoc generation is a bit aggressive and a nuisance when doing heavy
@@ -39,6 +43,20 @@ master_doc = 'index'
 # General information about the project.
 project = u'cyborg'
 copyright = u'2013, OpenStack Foundation'
+
+# openstackdocstheme options
+repository_name = 'openstack/cyborg'
+bug_project = 'cyborg'
+bug_tag = ''
+html_last_updated_fmt = '%Y-%m-%d %H:%M'
+
+config_generator_config_file = '../../tools/config/cyborg-config-generator.conf'
+sample_config_basename = '_static/cyborg'
+
+policy_generator_config_file = [
+    ('../../tools/config/cyborg-policy-generator.conf',
+     '_static/cyborg'),
+]
 
 # If true, '()' will be appended to :func: etc. cross-reference text.
 add_function_parentheses = True
@@ -56,7 +74,10 @@ pygments_style = 'sphinx'
 # Sphinx are currently 'default' and 'sphinxdoc'.
 # html_theme_path = ["."]
 # html_theme = '_theme'
-# html_static_path = ['static']
+# Add any paths that contain custom static files (such as style sheets) here,
+# relative to this directory. They are copied after the builtin static files,
+# so a file named "default.css" will overwrite the builtin "default.css".
+html_static_path = ['_static']
 
 # Output file base name for HTML help builder.
 htmlhelp_basename = '%sdoc' % project

@@ -14,6 +14,14 @@ Overview
     user/architecture
     user/usage
 
+Configuration
+-------------------
+
+.. toctree::
+    :maxdepth: 1
+
+    configuration/index
+
 User Documentation
 -------------------
 
