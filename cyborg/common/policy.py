@@ -104,11 +104,29 @@ deployable_policies = [
     policy.RuleDefault('cyborg:deployable:update',
                        'rule:admin_api',
                        description='Update deployable records'),
+    policy.RuleDefault('cyborg:deployable:program',
+                       'rule:allow',
+                       description='Program deployable(FPGA) records'),
+]
+
+fpga_policies = [
+    policy.RuleDefault('cyborg:fpga:get_one',
+                       'rule:allow',
+                       description='Show fpga detail'),
+    policy.RuleDefault('cyborg:fpga:get_all',
+                       'rule:allow',
+                       description='Retrieve all fpga records'),
+    policy.RuleDefault('cyborg:fpga:update',
+                       'rule:allow',
+                       description='Update fpga records'),
 ]
 
 
 def list_policies():
-    return default_policies + accelerator_policies + deployable_policies
+    return default_policies \
+        + accelerator_policies \
+        + deployable_policies \
+        + fpga_policies
 
 
 @lockutils.synchronized('policy_enforcer', 'cyborg-')

@@ -73,7 +73,7 @@ class Deployable(base.CyborgObject, object_base.VersionedObjectDictCompat):
             raise exception.ObjectActionError(action='create',
                                               reason='uuid is required')
 
-        if self.parent_uuid is None:
+        if not hasattr(self, 'parent_uuid') or self.parent_uuid is None:
             self.root_uuid = self.uuid
         else:
             self.root_uuid = self._get_parent_root_uuid()
@@ -126,6 +126,10 @@ class Deployable(base.CyborgObject, object_base.VersionedObjectDictCompat):
         updates = self.obj_get_changes()
         db_dep = self.dbapi.deployable_update(context, self.uuid, updates)
         self._from_db_object(self, db_dep)
+        query = {"deployable_id": self.id}
+        attr_get_list = Attribute.get_by_filter(context,
+                                                query)
+        self.attributes_list = attr_get_list
 
     def destroy(self, context):
         """Delete a Deployable from the DB."""
@@ -133,19 +137,28 @@ class Deployable(base.CyborgObject, object_base.VersionedObjectDictCompat):
         self.dbapi.deployable_delete(context, self.uuid)
         self.obj_reset_changes()
 
-    def add_attribute(self, attribute):
+    def add_attribute(self, context, key, value):
         """add a attribute object to the attribute_list.
         If the attribute already exists, it will update the value,
         otherwise, the vf will be appended to the list
         """
 
         for exist_attr in self.attributes_list:
-            if base.obj_equal_prims(attribute, exist_attr):
+            if key == exist_attr.key:
                 LOG.warning("The attribute already exists")
+                if value != exist_attr.value:
+                    exist_attr.value = attribute.value
+                    exist_attr.save(context)
                 return None
-        attribute.deployable_id = self.id
-        attribute_copy = copy.deepcopy(attribute)
-        self.attributes_list.append(attribute_copy)
+        # The attribute does not exist yet. Create it.
+        attr_vals = {
+            'deployable_id': self.id,
+            'key': key,
+            'value': value
+        }
+        attr = Attribute(context, **attr_vals)
+        attr.create(context)
+        self.attributes_list.append(attr)
 
     def delete_attribute(self, context, attribute):
         """remove an attribute from the attributes_list

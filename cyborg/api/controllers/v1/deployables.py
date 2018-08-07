@@ -18,6 +18,7 @@ from pecan import rest
 from six.moves import http_client
 import wsme
 from wsme import types as wtypes
+import json
 
 from cyborg.api.controllers import base
 from cyborg.api.controllers import link
@@ -79,6 +80,9 @@ class Deployable(base.APIBase):
     availability = wtypes.text
     """The availability of the deployable"""
 
+    attributes_list = wtypes.text
+    """The json list of attributes of the deployable"""
+
     links = wsme.wsattr([link.Link], readonly=True)
     """A list containing a self link"""
 
@@ -98,6 +102,13 @@ class Deployable(base.APIBase):
             link.Link.make_link('bookmark', url, 'deployables', api_dep.uuid,
                                 bookmark=True)
             ]
+        query = {"deployable_id": obj_dep.id}
+        attr_get_list = objects.Attribute.get_by_filter(pecan.request.context,
+                                                        query)
+        attributes_list = []
+        for exist_attr in attr_get_list:
+            attributes_list.append({exist_attr.key: exist_attr.value})
+        api_dep.attributes_list = json.dumps(attributes_list)
         return api_dep
 
 
@@ -125,8 +136,26 @@ class DeployablePatchType(types.JsonPatchType):
         return defaults + ['/address', '/host', '/type']
 
 
-class DeployablesController(rest.RestController):
+class DeployablesController(base.CyborgController):
     """REST controller for Deployables."""
+
+    _custom_actions = {'program': ['PATCH']}
+
+    @policy.authorize_wsgi("cyborg:deployable", "program", False)
+    @expose.expose(Deployable, types.uuid, body=[DeployablePatchType])
+    def program(self, uuid, program_info):
+        """Program a new deployable(FPGA).
+
+        :param uuid: The uuid of the target deployable.
+        :param program_info: JSON string containing what to program.
+        """
+
+        image_uuid = program_info[0]['value'][0]['image_uuid']
+        obj_dep = objects.Deployable.get(pecan.request.context, uuid)
+        # Set attribute of the new bitstream/image information
+        obj_dep.add_attribute(pecan.request.context, 'image_uuid', image_uuid)
+        # TODO (Li Liu) Trigger the program api in Agnet.
+        return Deployable.convert_with_links(obj_dep)
 
     @policy.authorize_wsgi("cyborg:deployable", "create", False)
     @expose.expose(Deployable, body=types.jsontype,

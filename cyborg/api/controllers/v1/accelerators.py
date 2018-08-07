@@ -23,6 +23,7 @@ from cyborg.api.controllers import base
 from cyborg.api.controllers import link
 from cyborg.api.controllers.v1 import types
 from cyborg.api.controllers.v1 import utils as api_utils
+from cyborg.api.controllers.v1 import deployables
 from cyborg.api import expose
 from cyborg.common import exception
 from cyborg.common import policy
@@ -118,7 +119,7 @@ class AcceleratorPatchType(types.JsonPatchType):
                            '/product_id', '/remotable']
 
 
-class AcceleratorsControllerBase(rest.RestController):
+class AcceleratorsControllerBase(base.CyborgController):
 
     _resource = None
 
@@ -129,6 +130,8 @@ class AcceleratorsControllerBase(rest.RestController):
 
 class AcceleratorsController(AcceleratorsControllerBase):
     """REST controller for Accelerators."""
+
+    deployables = deployables.DeployablesController()
 
     @policy.authorize_wsgi("cyborg:accelerator", "create", False)
     @expose.expose(Accelerator, body=types.jsontype,
