@@ -19,6 +19,7 @@ from six.moves import http_client
 from cyborg.api.controllers.v1.deployables import Deployable
 from cyborg.tests.unit.api.controllers.v1 import base as v1_test
 from cyborg.tests.unit import fake_deployable
+from cyborg.tests.unit.objects import utils as obj_utils
 
 
 class TestDeployableController(v1_test.APITestV1):
@@ -26,7 +27,8 @@ class TestDeployableController(v1_test.APITestV1):
     def setUp(self):
         super(TestDeployableController, self).setUp()
         self.headers = self.gen_headers(self.context)
-        self.deployable_uuids = ['10efe63d-dfea-4a37-ad94-4116fba50981']
+        self.deployable_uuids = ['10efe63d-dfea-4a37-ad94-4116fba50981',
+                                 '10efe63d-dfea-4a37-ad94-4116fba50982']
 
     @mock.patch('cyborg.objects.Deployable.get')
     def test_get_one(self, mock_get_dep):
@@ -74,3 +76,18 @@ class TestDeployableController(v1_test.APITestV1):
         data = response.json_body
         self.assertEqual(instance_uuid, data['instance_uuid'])
         mock_deployable_update.assert_called_once()
+
+    def test_get_all_with_sort(self):
+        dps = []
+        for uuid in self.deployable_uuids:
+            dp = obj_utils.create_test_deployable(self.context,
+                                                  uuid=uuid)
+            dps.append(dp)
+        data = self.get_json('/accelerators/deployables?'
+                             'filters.field=sort_key&filters.value=created_at'
+                             '&filters.field=sort_dir&filters.value=desc',
+                             headers=self.headers)
+        self.assertEqual(self.deployable_uuids[1],
+                         data['deployables'][0]['uuid'])
+        self.assertEqual(self.deployable_uuids[0],
+                         data['deployables'][1]['uuid'])

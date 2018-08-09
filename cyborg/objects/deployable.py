@@ -112,7 +112,15 @@ class Deployable(base.CyborgObject, object_base.VersionedObjectDictCompat):
     def list(cls, context, filters={}):
         """Return a list of Deployable objects."""
         if filters:
-            db_deps = cls.dbapi.deployable_get_by_filters(context, filters)
+            sort_dir = filters.pop('sort_dir', 'desc')
+            sort_key = filters.pop('sort_key', 'create_at')
+            limit = filters.pop('limit', None)
+            marker = filters.pop('marker_obj', None)
+            db_deps = cls.dbapi.deployable_get_by_filters(context, filters,
+                                                          sort_dir=sort_dir,
+                                                          sort_key=sort_key,
+                                                          limit=limit,
+                                                          marker=marker)
         else:
             db_deps = cls.dbapi.deployable_list(context)
         obj_dpl_list = cls._from_db_object_list(db_deps, context)

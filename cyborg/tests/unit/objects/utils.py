@@ -39,3 +39,23 @@ def create_test_accelerator(ctxt, **kw):
     acc = get_test_accelerator(ctxt, **kw)
     acc.create(ctxt)
     return acc
+
+
+def get_test_deployable(ctxt, **kw):
+    """Return an Deployable object with appropriate attributes.
+
+    NOTE: The object leaves the attributes marked as changed, such
+    that a create() could be used to commit it to the DB.
+    """
+    test_dp = db_utils.get_test_deployable(**kw)
+    return objects.Deployable(ctxt, **test_dp)
+
+
+def create_test_deployable(ctxt, **kw):
+    """Create and return a test deployable object.
+
+    Create an deployable in the DB and return an Deployable object with
+    appropriate attributes.
+    """
+    dp = get_test_deployable(ctxt, **kw)
+    return dp.create(ctxt)

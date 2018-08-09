@@ -29,3 +29,23 @@ def get_test_accelerator(**kw):
         'project_id': kw.get('project_id', 'b492a6fb12964ae3bd291ce585107d48'),
         'user_id': kw.get('user_id', '7009409e21614d1db1ef7a8c5ee101d8'),
     }
+
+
+def get_test_deployable(**kw):
+    return {
+        'uuid': kw.get('uuid', '10efe63d-dfea-4a37-ad94-4116fba5098'),
+        'deleted': False,
+        'name': kw.get('name', 'name'),
+        'parent_uuid': kw.get('parent_uuid', None),
+        'address': kw.get('address', '00:7f:0b.2'),
+        'host': kw.get('host', 'host'),
+        'board': kw.get('board', 'KU115'),
+        'vendor': kw.get('vendor', 'Xilinx'),
+        'version': kw.get('version', '1.0'),
+        'type': kw.get('type', '1.0'),
+        'interface_type': 'pci',
+        'assignable': True,
+        'instance_uuid': None,
+        'availability': 'Available',
+        'accelerator_id': kw.get('accelerator_id', 1),
+    }

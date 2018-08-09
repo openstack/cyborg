@@ -293,8 +293,8 @@ class Connection(api.Connection):
         return self.deployable_get_by_filters_sort(context, filters,
                                                    limit=limit, marker=marker,
                                                    join_columns=join_columns,
-                                                   sort_keys=[sort_key],
-                                                   sort_dirs=[sort_dir])
+                                                   sort_key=sort_key,
+                                                   sort_dir=sort_dir)
 
     def _exact_deployable_filter_with_attributes(self, query,
                                                  dpl_filters, legal_keys,
@@ -382,7 +382,7 @@ class Connection(api.Connection):
 
     def deployable_get_by_filters_sort(self, context, filters, limit=None,
                                        marker=None, join_columns=None,
-                                       sort_keys=None, sort_dirs=None):
+                                       sort_key=None, sort_dir=None):
         """Return deployables that match all filters sorted by the given
         keys. Deleted deployables will be returned by default, unless
         there's a filter that says otherwise.
@@ -390,10 +390,6 @@ class Connection(api.Connection):
 
         if limit == 0:
             return []
-
-        sort_keys, sort_dirs = self.process_sort_params(sort_keys,
-                                                        sort_dirs,
-                                                        default_dir='desc')
 
         query_prefix = model_query(context, models.Deployable)
         filters = copy.deepcopy(filters)
@@ -412,8 +408,8 @@ class Connection(api.Connection):
                                                      exact_match_filter_names)
         if query_prefix is None:
             return []
-        deployables = query_prefix.all()
-        return deployables
+        return _paginate_query(context, models.Deployable, limit, marker,
+                               sort_key, sort_dir, query_prefix)
 
     def attribute_create(self, context, values):
         if not values.get('uuid'):
