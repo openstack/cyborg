@@ -82,6 +82,11 @@ html_static_path = ['_static']
 # Output file base name for HTML help builder.
 htmlhelp_basename = '%sdoc' % project
 
+# The name for this set of Sphinx documents. If None, it defaults to
+# "<project> v<release> documentation".
+html_title = 'Cyborg'
+html_theme = 'openstackdocs'
+
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass
 # [howto/manual]).
