@@ -5,6 +5,7 @@ Welcome to Cyborg Release Notes documentation!
    :maxdepth: 2
 
    unreleased
+   rocky
    queens
 
 
