@@ -101,7 +101,7 @@ class Connection(object):
         """Get requested deployable by filters with attributes."""
     # attributes
     @abc.abstractmethod
-    def attribute_create(self, context, key, value):
+    def attribute_create(self, context, values):
         """Create a new attribute."""
 
     @abc.abstractmethod

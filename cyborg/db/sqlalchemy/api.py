@@ -425,7 +425,7 @@ class Connection(api.Connection):
                 session.flush()
             except db_exc.DBDuplicateEntry:
                 raise exception.AttributeAlreadyExists(
-                    uuid=update_fields['uuid'])
+                    uuid=values['uuid'])
             return attribute
 
     def attribute_get(self, context, uuid):
@@ -441,10 +441,7 @@ class Connection(api.Connection):
         query = model_query(
             context,
             models.Attribute).filter_by(deployable_id=deployable_id)
-        try:
-            return query.all()
-        except NoResultFound:
-            raise exception.AttributeNotFound(uuid=uuid)
+        return query.all()
 
     def attribute_get_by_filter(self, context, filters):
         """Return attributes that matches the filters

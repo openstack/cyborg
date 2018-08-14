@@ -12,20 +12,12 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import datetime
 
 import mock
-import netaddr
 from oslo_db import exception as db_exc
-from oslo_serialization import jsonutils
-from oslo_utils import timeutils
-from oslo_context import context
 
-from cyborg import db
 from cyborg.common import exception
 from cyborg import objects
-from cyborg.objects import base
-from cyborg import tests as test
 from cyborg.tests.unit import fake_accelerator
 from cyborg.tests.unit import fake_deployable
 from cyborg.tests.unit import fake_attribute
@@ -167,6 +159,18 @@ class _TestDeployableObject(DbTestCase):
 
         dpl_get = objects.Deployable.get(self.context, dpl.uuid)
         self.assertEqual(len(dpl_get.attributes_list), 1)
+        self.assertEqual(dpl_get.attributes_list[0].key,
+                         db_attr['key'])
+        self.assertEqual(dpl_get.attributes_list[0].value,
+                         db_attr['value'])
+
+        dpl.add_attribute(self.context, db_attr['key'], 'change_value')
+        dpl_get = objects.Deployable.get(self.context, dpl.uuid)
+        self.assertEqual(len(dpl_get.attributes_list), 1)
+        self.assertEqual(dpl_get.attributes_list[0].key,
+                         db_attr['key'])
+        self.assertEqual(dpl_get.attributes_list[0].value,
+                         'change_value')
 
     def test_delete_attribute(self):
         db_acc = self.fake_accelerator
