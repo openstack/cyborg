@@ -1,4 +1,9 @@
 - project:
+    templates:
+      - openstack-python-jobs
+      - check-requirements
+      - release-notes-jobs
+      - publish-openstack-docs-pti
     check:
       jobs:
         - cyborg-devstack
