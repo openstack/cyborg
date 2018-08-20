@@ -12,24 +12,12 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import datetime
 
-import mock
-import netaddr
-from oslo_db import exception as db_exc
-from oslo_serialization import jsonutils
-from oslo_utils import timeutils
-from oslo_context import context
-
-from cyborg import db
 from cyborg.common import exception
 from cyborg import objects
-from cyborg.objects import base
-from cyborg import tests as test
 from cyborg.tests.unit import fake_attribute
 from cyborg.tests.unit import fake_deployable
 from cyborg.tests.unit import fake_accelerator
-from cyborg.tests.unit.objects import test_objects
 from cyborg.tests.unit.db.base import DbTestCase
 
 
@@ -205,3 +193,29 @@ class _TestDeployableObject(DbTestCase):
         attr_get_list = objects.Attribute.get_by_filter(
             self.context, attr_filter)
         self.assertEqual(len(attr_get_list), 0)
+
+    def test_create_exists(self):
+        db_acc = self.fake_accelerator
+        acc = objects.Accelerator(context=self.context,
+                                  **db_acc)
+        acc.create(self.context)
+        acc_get = objects.Accelerator.get(self.context, acc.uuid)
+
+        db_dpl = self.fake_deployable
+        dpl = objects.Deployable(context=self.context,
+                                 **db_dpl)
+
+        dpl.accelerator_id = acc_get.id
+        dpl.create(self.context)
+        dpl_get = objects.Deployable.get(self.context, dpl.uuid)
+
+        db_attr = self.fake_attribute
+        attr = objects.Attribute(context=self.context,
+                                 **db_attr)
+        attr.deployable_id = dpl_get.id
+        attr.create(self.context)
+        attr2 = objects.Attribute(context=self.context,
+                                  **db_attr)
+        attr2.deployable_id = dpl_get.id
+        self.assertRaises(exception.AttributeAlreadyExists,
+                          attr2.create, self.context)

@@ -13,7 +13,6 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import copy
 from oslo_log import log as logging
 from oslo_versionedobjects import base as object_base
 
@@ -157,7 +156,7 @@ class Deployable(base.CyborgObject, object_base.VersionedObjectDictCompat):
             if key == exist_attr.key:
                 LOG.warning("The attribute already exists")
                 if value != exist_attr.value:
-                    exist_attr.value = attribute.value
+                    exist_attr.value = value
                     exist_attr.save(context)
                 return None
         # The attribute does not exist yet. Create it.
