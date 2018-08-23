@@ -1,5 +1,9 @@
 import json
 
+from oslo_log import log as logging
+
+LOG = logging.getLogger(__name__)
+
 
 class VhostTgt(object):
 
@@ -49,12 +53,12 @@ class VhostTgt(object):
     def delete_bdev(self, name):
         sub_args = [name]
         res = self.py.exec_rpc('delete_bdev', '127.0.0.1', sub_args=sub_args)
-        print res
+        LOG.info(res)
 
     def kill_instance(self, sig_name):
         sub_args = [sig_name]
         res = self.py.exec_rpc('kill_instance', '127.0.0.1', sub_args=sub_args)
-        print res
+        LOG.info(res)
 
     def construct_aio_bdev(self, filename, name, block_size):
         sub_args = [filename, name, str(block_size)]
@@ -62,7 +66,7 @@ class VhostTgt(object):
             'construct_aio_bdev',
             '127.0.0.1',
             sub_args=sub_args)
-        print res
+        LOG.info(res)
 
     def construct_error_bdev(self, basename):
         sub_args = [basename]
@@ -70,7 +74,7 @@ class VhostTgt(object):
             'construct_error_bdev',
             '127.0.0.1',
             sub_args=sub_args)
-        print res
+        LOG.info(res)
 
     def construct_nvme_bdev(
             self,
@@ -113,7 +117,7 @@ class VhostTgt(object):
             'construct_malloc_bdev',
             '10.0.2.15',
             sub_args=sub_args)
-        print res
+        LOG.info(res)
 
     def _get_json_objs(self, method, server_ip):
         res = self.py.exec_rpc(method, server_ip)

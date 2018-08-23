@@ -1,5 +1,9 @@
 import json
 
+from oslo_log import log as logging
+
+LOG = logging.getLogger(__name__)
+
 
 class NvmfTgt(object):
 
@@ -20,12 +24,12 @@ class NvmfTgt(object):
     def delete_bdev(self, name):
         sub_args = [name]
         res = self.py.exec_rpc('delete_bdev', '10.0.2.15', sub_args=sub_args)
-        print res
+        LOG.info(res)
 
     def kill_instance(self, sig_name):
         sub_args = [sig_name]
         res = self.py.exec_rpc('kill_instance', '10.0.2.15', sub_args=sub_args)
-        print res
+        LOG.info(res)
 
     def construct_aio_bdev(self, filename, name, block_size):
         sub_args = [filename, name, str(block_size)]
@@ -33,7 +37,7 @@ class NvmfTgt(object):
             'construct_aio_bdev',
             '10.0.2.15',
             sub_args=sub_args)
-        print res
+        LOG.info(res)
 
     def construct_error_bdev(self, basename):
         sub_args = [basename]
@@ -41,7 +45,7 @@ class NvmfTgt(object):
             'construct_error_bdev',
             '10.0.2.15',
             sub_args=sub_args)
-        print res
+        LOG.info(res)
 
     def construct_nvme_bdev(
             self,
@@ -84,7 +88,7 @@ class NvmfTgt(object):
             'construct_malloc_bdev',
             '10.0.2.15',
             sub_args=sub_args)
-        print res
+        LOG.info(res)
 
     def delete_nvmf_subsystem(self, nqn):
         sub_args = [nqn]
@@ -92,7 +96,7 @@ class NvmfTgt(object):
             'delete_nvmf_subsystem',
             '10.0.2.15',
             sub_args=sub_args)
-        print res
+        LOG.info(res)
 
     def construct_nvmf_subsystem(
             self,
@@ -106,7 +110,7 @@ class NvmfTgt(object):
             'construct_nvmf_subsystem',
             '10.0.2.15',
             sub_args=sub_args)
-        print res
+        LOG.info(res)
 
     def get_nvmf_subsystems(self):
         subsystems = self._get_json_objs(
