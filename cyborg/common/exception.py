@@ -327,3 +327,7 @@ class ImageNotFound(NotFound):
 class ImageBadRequest(Invalid):
     msg_fmt = _("Request of image %(image_id)s got BadRequest response: "
                 "%(response)s")
+
+
+class InvalidDriver(Invalid):
+    _msg_fmt = _("Found an invalid driver: %(name)s")
