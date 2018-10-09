@@ -92,7 +92,7 @@ Enable services
   enable_service q-dhcp
   enable_service q-l3
   enable_service q-meta
-  enable_service quantum
+  enable_service neutron
   enable_service n-novnc
   enable_plugin cyborg git://git.openstack.org/openstack/cyborg
   NOVA_VNC_ENABLED=True
