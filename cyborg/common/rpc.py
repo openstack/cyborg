@@ -14,7 +14,7 @@
 #    under the License.
 
 from oslo_config import cfg
-from oslo_context import context as cyborg_context
+from cyborg import context as cyborg_context
 import oslo_messaging as messaging
 from oslo_messaging.rpc import dispatcher
 

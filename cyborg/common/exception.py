@@ -305,3 +305,25 @@ class QuotaResourceUnknown(QuotaNotFound):
 
 class InvalidReservationExpiration(Invalid):
     message = _("Invalid reservation expiration %(expire)s.")
+
+
+class GlanceConnectionFailed(CyborgException):
+    msg_fmt = _("Connection to glance host %(server)s failed: "
+                "%(reason)s")
+
+
+class ImageUnacceptable(Invalid):
+    msg_fmt = _("Image %(image_id)s is unacceptable: %(reason)s")
+
+
+class ImageNotAuthorized(CyborgException):
+    msg_fmt = _("Not authorized for image %(image_id)s.")
+
+
+class ImageNotFound(NotFound):
+    msg_fmt = _("Image %(image_id)s could not be found.")
+
+
+class ImageBadRequest(Invalid):
+    msg_fmt = _("Request of image %(image_id)s got BadRequest response: "
+                "%(response)s")

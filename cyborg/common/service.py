@@ -14,7 +14,7 @@
 #    under the License.
 
 from oslo_concurrency import processutils
-from oslo_context import context
+from cyborg import context
 from oslo_log import log
 import oslo_messaging as messaging
 from oslo_service import service

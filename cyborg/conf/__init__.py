@@ -18,7 +18,9 @@ from oslo_config import cfg
 from cyborg.conf import api
 from cyborg.conf import database
 from cyborg.conf import default
-
+from cyborg.conf import service_token
+from cyborg.conf import glance
+from cyborg.conf import keystone
 
 CONF = cfg.CONF
 
@@ -26,3 +28,6 @@ api.register_opts(CONF)
 database.register_opts(CONF)
 default.register_opts(CONF)
 default.register_placement_opts(CONF)
+service_token.register_opts(CONF)
+glance.register_opts(CONF)
+keystone.register_opts(CONF)
