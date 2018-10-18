@@ -21,7 +21,7 @@ import oslo_messaging as messaging
 from cyborg.common import constants
 from cyborg.common import rpc
 from cyborg.objects import base as objects_base
-
+from cyborg import objects
 
 CONF = cfg.CONF
 
@@ -50,3 +50,20 @@ class AgentAPI(object):
     def hardware_list(self, context, values):
         """Signal the agent to find local hardware."""
         pass
+
+    def program_fpga_with_bitstream(self,
+                                    context,
+                                    deployable_uuid,
+                                    bitstream_uuid):
+        """Actiion to program a target FPGA"""
+        version = '1.0'
+
+        dpl_get = objects.Deployable.get(context, deployable_uuid)
+        if not dpl_get:
+            # TODO (Li Liu) throw an exception here
+            return 0
+
+        cctxt = self.client.prepare(server=dpl_get.host, version=version)
+        return cctxt.call(context, 'fpga_program',
+                          deployable_uuid=deployable_uuid,
+                          image_uuid=bitstream_uuid)

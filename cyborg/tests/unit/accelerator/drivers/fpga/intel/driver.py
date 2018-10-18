@@ -80,7 +80,7 @@ class TestIntelFPGADriver(base.TestCase):
         b = "0x5e"
         d = "0x00"
         f = "0x0"
-        expect_cmd = ['sudo', 'fpgaconf', '-b', b,
+        expect_cmd = ['sudo', '/usr/bin/fpgaconf', '-b', b,
                       '-d', d, '-f', f, '/path/image']
         mock_popen.return_value = p()
         intel = IntelFPGADriver()
