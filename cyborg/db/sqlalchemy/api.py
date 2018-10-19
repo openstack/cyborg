@@ -273,7 +273,7 @@ class Connection(api.Connection):
                                     'accelerator_id']
         attribute_filters = {}
         filters_copy = copy.deepcopy(filters)
-        for key, value in filters_copy.iteritems():
+        for key, value in filters_copy.items():
             if key not in exact_match_filter_names:
                 # This key is not in the deployable regular fields
                 value = filters.pop(key)
