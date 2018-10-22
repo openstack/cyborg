@@ -18,7 +18,6 @@ Track resources like FPGA GPU and QAT for a host.  Provides the
 conductor with useful information about availability through the accelerator
 model.
 """
-
 from oslo_log import log as logging
 from oslo_messaging.rpc.client import RemoteError
 from oslo_utils import uuidutils
@@ -40,7 +39,9 @@ DEPLOYABLE_HOST_MAPS = {"assignable": "assignable",
                         "board": "product_id",
                         "type": "function",
                         "vendor": "vendor_id",
-                        "name": "name"}
+                        "name": "name",
+                        "interface_type": "interface_type"
+                        }
 
 
 class ResourceTracker(object):
@@ -68,7 +69,35 @@ class ResourceTracker(object):
                 acclerator[k] = host_dev[v]
         return need_updated
 
-    def _gen_deployable_from_host_dev(self, host_dev):
+    def _gen_accelerator_for_deployable(
+            self, context, name, vendor, productor, desc="", dev_type="pf",
+            acc_type="FPGA", acc_cap="", remotable=0):
+        """
+        The type of the accelerator device, e.g GPU, FPGA, ...
+        acc_type defines the usage of the accelerator, e.g Crypto
+        acc_capability defines the specific capability, e.g AES
+        """
+        db_acc = {
+            'deleted': False,
+            'uuid': uuidutils.generate_uuid(),
+            'name': name,
+            'description': desc,
+            'project_id': pecan.request.context.project_id,
+            'user_id': pecan.request.context.user_id,
+            'device_type': dev_type,
+            'acc_type': acc_type,
+            'acc_capability': acc_cap,
+            'vendor_id': vendor,
+            'product_id': productor,
+            'remotable': remotable
+            }
+
+        acc = objects.Accelerator(context, **db_acc)
+        acc = self.conductor_api.accelerator_create(context, acc)
+        return acc
+
+    def _gen_deployable_from_host_dev(self, host_dev, acc_id,
+                                      parent_uuid=None, root_uuid=None):
         dep = {}
         for k, v in DEPLOYABLE_HOST_MAPS.items():
             dep[k] = host_dev[v]
@@ -76,6 +105,9 @@ class ResourceTracker(object):
         dep["version"] = DEPLOYABLE_VERSION
         dep["availability"] = "free"
         dep["uuid"] = uuidutils.generate_uuid()
+        dep["parent_uuid"] = parent_uuid
+        dep["root_uuid"] = root_uuid
+        dep["accelerator_id"] = acc_id
         return dep
 
     @utils.synchronized(AGENT_RESOURCE_SEMAPHORE)
@@ -83,9 +115,9 @@ class ResourceTracker(object):
         """Update the resource usage and stats after a change in an
         instance
         """
-        def create_deployable(fpgas, bdf, parent_uuid=None):
+        def create_deployable(fpgas, bdf, acc_id, parent_uuid=None):
             fpga = fpgas[bdf]
-            dep = self._gen_deployable_from_host_dev(fpga)
+            dep = self._gen_deployable_from_host_dev(fpga, acc_id)
             # if parent_uuid:
             dep["parent_uuid"] = parent_uuid
             obj_dep = objects.Deployable(context, **dep)
@@ -114,20 +146,33 @@ class ResourceTracker(object):
         new = bdfs - accl_bdfs
         new_pf = set([n for n in new if fpgas[n]["function"] == "pf"])
         for n in new_pf:
-            new_dep = create_deployable(fpgas, n)
+            fpga = fpgas[n]
+            acc = self._gen_accelerator_for_deployable(
+                context, fpga["name"], fpga["vendor_id"], fpga["product_id"],
+                "FPGA device on %s" % self.host, "pf", "FPGA")
+            new_dep = create_deployable(fpgas, n, acc.id)
             accls[n] = new_dep
             sub_vf = set()
             if "regions" in n:
                 sub_vf = set([sub["devices"] for sub in fpgas[n]["regions"]])
             for vf in sub_vf & new:
-                new_dep = create_deployable(fpgas, vf, new_dep["uuid"])
+                fpga = fpgas[n]
+                acc = self._gen_accelerator_for_deployable(
+                    context, fpga["name"], fpga["vendor_id"],
+                    fpga["product_id"], "FPGA device on %s" % self.host,
+                    "vf", "FPGA")
+                new_dep = create_deployable(fpgas, vf, acc.id, new_dep["uuid"])
                 accls[vf] = new_dep
                 new.remove(vf)
         for n in new - new_pf:
             p_bdf = fpgas[n]["parent_devices"]
             p_accl = accls[p_bdf]
             p_uuid = p_accl["uuid"]
-            new_dep = create_deployable(fpgas, n, p_uuid)
+            fpga = fpgas[n]
+            acc = self._gen_accelerator_for_deployable(
+                context, fpga["name"], fpga["vendor_id"], fpga["product_id"],
+                "FPGA device on %s" % self.host, "pf", "FPGA")
+            new_dep = create_deployable(fpgas, n, acc.id, p_uuid)
 
         # Delete
         for obsolete in accl_bdfs - bdfs:

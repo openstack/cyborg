@@ -142,7 +142,8 @@ def fpga_tree():
         fpga = {"path": path, "function": func,
                 "devices": bdf, "assignable": True,
                 "parent_devices": pf_bdf,
-                "name": name}
+                "name": name,
+                "interface_type": "pci"}
         d_info = fpga_device(dpath)
         fpga.update(d_info)
         return fpga

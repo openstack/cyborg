@@ -61,12 +61,19 @@ class TestResourceTracker(base.TestCase):
     def test_get_fpga_devices(self):
         expect = {
             '0000:5e:00.0': {
-                'function': 'pf', 'assignable': False, 'pr_num': '1',
-                'name': 'intel-fpga-dev.0', 'vendor_id': '0x8086',
+                'function': 'pf',
+                'assignable': False,
+                'pr_num': '1',
+                'name': 'intel-fpga-dev.0',
+                'interface_type': 'pci',
+                'vendor_id': '0x8086',
                 'devices': '0000:5e:00.0',
                 'regions': [{
-                    'function': 'vf', 'assignable': True,
-                    'name': 'intel-fpga-dev.2', 'vendor_id': '0x8086',
+                    'function': 'vf',
+                    'assignable': True,
+                    'name': 'intel-fpga-dev.2',
+                    'interface_type': 'pci',
+                    'vendor_id': '0x8086',
                     'devices': '0000:5e:00.1',
                     'parent_devices': '0000:5e:00.0',
                     'path': '%s/intel-fpga-dev.2' % sysinfo.SYS_FPGA,
@@ -75,17 +82,26 @@ class TestResourceTracker(base.TestCase):
                 'path': '%s/intel-fpga-dev.0' % sysinfo.SYS_FPGA,
                 'product_id': '0xbcc0'},
             '0000:5e:00.1': {
-                'function': 'vf', 'assignable': True,
-                'name': 'intel-fpga-dev.2', 'vendor_id': '0x8086',
+                'function': 'vf',
+                'assignable': True,
+                'name': 'intel-fpga-dev.2',
+                'interface_type': 'pci',
+                'vendor_id': '0x8086',
                 'devices': '0000:5e:00.1',
                 'parent_devices': '0000:5e:00.0',
                 'path': '%s/intel-fpga-dev.2' % sysinfo.SYS_FPGA,
                 'product_id': '0xbcc1'},
             '0000:be:00.0': {
-                'function': 'pf', 'assignable': True, 'pr_num': '0',
-                'name': 'intel-fpga-dev.1', 'vendor_id': '0x8086',
-                'devices': '0000:be:00.0', 'parent_devices': '',
+                'function': 'pf',
+                'assignable': True,
+                'pr_num': '0',
+                'name': 'intel-fpga-dev.1',
+                'interface_type': 'pci',
+                'vendor_id': '0x8086',
+                'devices': '0000:be:00.0',
+                'parent_devices': '',
                 'path': '%s/intel-fpga-dev.1' % sysinfo.SYS_FPGA,
                 'product_id': '0xbcc0'}}
+
         fpgas = self.rt._get_fpga_devices()
         self.assertDictEqual(expect, fpgas)
