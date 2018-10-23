@@ -43,10 +43,23 @@ CYBORG_POLICY_JSON=$CYBORG_CONF_DIR/policy.json
 CYBORG_SERVICE_HOST=${CYBORG_SERVICE_HOST:-$SERVICE_HOST}
 CYBORG_SERVICE_PORT=${CYBORG_SERVICE_PORT:-6666}
 CYBORG_SERVICE_PROTOCOL=${CYBORG_SERVICE_PROTOCOL:-$SERVICE_PROTOCOL}
+
 if [[ -d ${CYBORG_DIR}/bin ]]; then
     CYBORG_BIN_DIR=${CYBORG_DIR}/bin
 else
     CYBORG_BIN_DIR=$(get_python_exec_prefix)
+fi
+
+# Toggle for deploying Cyborg-API under a wsgi server
+CYBORG_USE_UWSGI=${CYBORG_USE_UWSGI:-True}
+
+CYBORG_UWSGI=$CYBORG_BIN_DIR/cyborg-wsgi-api
+CYBORG_UWSGI_CONF=$CYBORG_CONF_DIR/cyborg-api-uwsgi.ini
+
+if [[ "$CYBORG_USE_UWSGI" == "True" ]]; then
+    CYBORG_API_URL="$CYBORG_SERVICE_PROTOCOL://$CYBORG_SERVICE_HOST/accelerator"
+else
+    CYBORG_API_URL="$CYBORG_SERVICE_PROTOCOL://$CYBORG_SERVICE_HOST:$CYBORG_SERVICE_PORT"
 fi
 
 # install_cyborg() - Install the things!
@@ -75,6 +88,9 @@ function cleanup_cyborg_config_files {
 # cleanup_cyborg() - Clean everything left from Cyborg
 function cleanup_cyborg {
     cleanup_cyborg_config_files
+    if [[ "$CYBORG_USE_UWSGI" == "True" ]]; then
+        remove_uwsgi_config "$CYBORG_UWSGI_CONF" "$CYBORG_UWSGI"
+    fi
 }
 
 
@@ -104,9 +120,9 @@ function create_cyborg_accounts {
     get_or_create_service "cyborg" "accelerator" "Cyborg Accelerators Service"
     get_or_create_endpoint "cyborg" \
         "$REGION_NAME" \
-        "${CYBORG_SERVICE_PROTOCOL}://${CYBORG_SERVICE_HOST}:${CYBORG_SERVICE_PORT}/v1" \
-        "${CYBORG_SERVICE_PROTOCOL}://${CYBORG_SERVICE_HOST}:${CYBORG_SERVICE_PORT}/v1" \
-        "${CYBORG_SERVICE_PROTOCOL}://${CYBORG_SERVICE_HOST}:${CYBORG_SERVICE_PORT}/v1"
+        "$CYBORG_API_URL/v1" \
+        "$CYBORG_API_URL/v1" \
+        "$CYBORG_API_URL/v1"
 }
 
 
@@ -147,6 +163,10 @@ function configure_cyborg_api {
     iniset_rpc_backend cyborg $CYBORG_CONF_FILE
 
     iniset $CYBORG_CONF_FILE conductor automated_clean $CYBORG_AUTOMATED_CLEAN_ENABLED
+
+    if [ "$CYBORG_USE_UWSGI" == "True" ]; then
+        write_uwsgi_config "$CYBORG_UWSGI_CONF" "$CYBORG_UWSGI" "/accelerator"
+    fi
 }
 
 function configure_auth_for {
@@ -256,7 +276,11 @@ function start_cyborg {
 # start_cyborg_api() - Used by start_cyborg().
 # Starts Cyborg API server.
 function start_cyborg_api {
-    run_process cyborg-api "$CYBORG_BIN_DIR/cyborg-api --config-file=$CYBORG_CONF_FILE"
+    if [ "$CYBORG_USE_UWSGI" == "True" ]; then
+        run_process cyborg-api "$CYBORG_BIN_DIR/uwsgi --ini $CYBORG_UWSGI_CONF"
+    else
+        run_process cyborg-api "$CYBORG_BIN_DIR/cyborg-api --config-file $CYBORG_CONF_FILE"
+    fi
 }
 
 # start_cyborg_conductor() - Used by start_cyborg().
@@ -273,7 +297,12 @@ function start_cyborg_agent {
 
 # stop_cyborg() - Stop running processes
 function stop_cyborg {
-    stop_process cyborg-api
+    if [ "$CYBORG_USE_UWSGI" == "True" ]; then
+        disable_apache_site cyborg-api
+        restart_apache_server
+    else
+        stop_process cyborg-api
+    fi
     stop_process cyborg-cond
     stop_process cyborg-agent
 }
