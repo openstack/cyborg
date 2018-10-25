@@ -17,6 +17,7 @@
 
 import six
 
+from keystoneauth1 import exceptions as ks_exc
 from keystoneauth1 import loading as ks_loading
 from os_service_types import service_types
 from oslo_concurrency import lockutils
