@@ -32,6 +32,7 @@ Installation
    :maxdepth: 1
 
    install/installation
+   admin/config-wsgi
 
 API
 ~~~
