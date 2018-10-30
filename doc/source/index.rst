@@ -42,6 +42,19 @@ API
 
    admin/api
 
+CLI Reference
+-------------
+
+Information on the commands available through Cyborg's Command Line
+Interface (CLI) can be found in this section of documentation.
+
+
+.. toctree::
+   :maxdepth: 1
+
+   cli/index
+
+
 Developer Documentation
 -----------------------
 
