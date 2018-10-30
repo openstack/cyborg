@@ -13,8 +13,8 @@ from cyborg.accelerator import configuration
 from cyborg.accelerator.common import exception
 from cyborg.accelerator.drivers.spdk.util.pyspdk.py_spdk import PySPDK
 from cyborg.common.i18n import _
-from pyspdk.nvmf_client import NvmfTgt
-from pyspdk.vhost_client import VhostTgt
+from cyborg.accelerator.drivers.spdk.util.pyspdk.nvmf_client import NvmfTgt
+from cyborg.accelerator.drivers.spdk.util.pyspdk.vhost_client import VhostTgt
 
 LOG = logging.getLogger(__name__)
 
