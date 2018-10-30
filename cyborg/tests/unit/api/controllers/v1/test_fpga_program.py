@@ -19,6 +19,7 @@ from six.moves import http_client
 from cyborg.api.controllers.v1.deployables import Deployable
 from cyborg.tests.unit.api.controllers.v1 import base as v1_test
 from cyborg.tests.unit import fake_deployable
+from cyborg.agent.rpcapi import AgentAPI
 
 
 class TestFPGAProgramController(v1_test.APITestV1):
@@ -29,13 +30,15 @@ class TestFPGAProgramController(v1_test.APITestV1):
         self.deployable_uuids = ['0acbf8d6-e02a-4394-aae3-57557d209498']
 
     @mock.patch('cyborg.objects.Deployable.get')
-    def test_program(self, mock_get_dep):
+    @mock.patch('cyborg.agent.rpcapi.AgentAPI.program_fpga_with_bitstream')
+    def test_program(self, mock_program, mock_get_dep):
         self.headers['X-Roles'] = 'admin'
         self.headers['Content-Type'] = 'application/json'
         dep_uuid = self.deployable_uuids[0]
         fake_dep = fake_deployable.fake_deployable_obj(self.context,
                                                        uuid=dep_uuid)
         mock_get_dep.return_value = fake_dep
+        mock_program.return_value = None
         body = [{"image_uuid": "9a17439a-85d0-4c53-a3d3-0f68a2eac896"}]
         response = self.\
             patch_json('/accelerators/deployables/%s/program' % dep_uuid,

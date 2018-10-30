@@ -46,7 +46,7 @@ class IntelFPGADriver(FPGADriver):
         else:
             bdf = sysinfo.get_bdf_by_path(path)
         bdfs = sysinfo.split_bdf(bdf)
-        cmd = ["sudo", "fpgaconf"]
+        cmd = ["sudo", "/usr/bin/fpgaconf"]
         for i in zip(["-b", "-d", "-f"], bdfs):
             cmd.extend(i)
         cmd.append(image)

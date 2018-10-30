@@ -28,6 +28,7 @@ from cyborg.common import exception
 from cyborg.common import policy
 from cyborg import objects
 from cyborg.quota import QUOTAS
+from cyborg.agent.rpcapi import AgentAPI
 
 
 class Deployable(base.APIBase):
@@ -151,10 +152,14 @@ class DeployablesController(base.CyborgController):
         """
 
         image_uuid = program_info[0]['value'][0]['image_uuid']
+        agent_api = AgentAPI()
         obj_dep = objects.Deployable.get(pecan.request.context, uuid)
         # Set attribute of the new bitstream/image information
         obj_dep.add_attribute(pecan.request.context, 'image_uuid', image_uuid)
         # TODO (Li Liu) Trigger the program api in Agnet.
+        agent_api.program_fpga_with_bitstream(pecan.request.context,
+                                              uuid,
+                                              image_uuid)
         return Deployable.convert_with_links(obj_dep)
 
     @policy.authorize_wsgi("cyborg:deployable", "create", False)
