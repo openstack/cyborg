@@ -430,7 +430,7 @@ Dependencies
 ============
 
 * `Nested Resource Providers
-  <http://specs.openstack.org/openstack/nova-specs/specs/rocky/approved/nested-resource-providers-allocation-candidates.html>`_
+  <https://specs.openstack.org/openstack/nova-specs/specs/rocky/approved/nested-resource-providers-allocation-candidates.html>`_
 
 * `Nova Granular Requests
   <https://specs.openstack.org/openstack/nova-specs/specs/rocky/approved/granular-resource-requests.html>`_
@@ -454,7 +454,7 @@ References
 
 .. [#os-acc] `Specification for Compute Node <https://review.openstack.org/#/c/566798/>`_
 
-.. [#nRP] `Nested RPs in Rocky <http://specs.openstack.org/openstack/nova-specs/specs/rocky/approved/nested-resource-providers-allocation-candidates.html>`_
+.. [#nRP] `Nested RPs in Rocky <https://specs.openstack.org/openstack/nova-specs/specs/rocky/approved/nested-resource-providers-allocation-candidates.html>`_
 
 .. [#drv-api] `Specification for Cyborg Agent-Driver API <https://review.openstack.org/#/c/561849/>`_
 
@@ -466,7 +466,7 @@ References
 
 .. [#multifn] `Detailed Cyborg/Nova scheduling <https://etherpad.openstack.org/p/Cyborg-Nova-Multifunction>`_
 
-.. [#mails] `Openstack-dev email discussion <http://lists.openstack.org/pipermail/openstack-dev/2018-April/128951.html>`_
+.. [#mails] `Openstack-dev email discussion <https://lists.openstack.org/pipermail/openstack-dev/2018-April/128951.html>`_
 
 
 

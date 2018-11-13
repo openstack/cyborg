@@ -149,7 +149,7 @@ Dependencies
 
 This design depends on the changes which may or may not be accepted in Nova
 project. Other than that is ongoing work on Nested resource providers:
-http://specs.openstack.org/openstack/nova-specs/specs/ocata/approved/nested-resource-providers.html
+https://specs.openstack.org/openstack/nova-specs/specs/ocata/approved/nested-resource-providers.html
 Which would be an essential feature in Placement API, which will be leveraged
 by Cyborg.
 
