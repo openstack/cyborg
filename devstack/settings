@@ -1,1 +1,11 @@
 enable_service cyborg cyborg-api cyborg-cond cyborg-agent
+
+# OPAE settings
+# OPAE packages are not yet upstreamed into OS repos
+# We need to download them from OPAE releases page on GitHub
+OPAE_VERSION=${OPAE_VERSION:-"1.1.0-2"}
+OPAE_GITHUB=${OPAE_GITHUB:-"https://github.com/OPAE/opae-sdk/releases/download/$OPAE_VERSION"}
+OPAE_DEVEL_PKG=${OPAE_DEVEL_PKG:-"opae-devel"}
+OPAE_DEVEL=${OPAE_DEVEL:-"${OPAE_DEVEL_PKG}-$OPAE_VERSION.x86_64"}
+OPAE_LIBS_PKG=${OPAE_LIBS_PKG:-"opae-libs"}
+OPAE_LIBS=${OPAE_LIBS:-"${OPAE_LIBS_PKG}-$OPAE_VERSION.x86_64"}
