@@ -165,7 +165,11 @@ class AcceleratorsController(AcceleratorsControllerBase):
     @expose.expose(AcceleratorCollection, int, types.uuid, wtypes.text,
                    wtypes.text, types.boolean)
     def get_all(self, limit=None, marker=None, sort_key='id', sort_dir='asc',
-                all_tenants=None):
+                all_tenants=True):
+        # FIXME(Yumeng) we changed the default option of all-tenants to True
+        # to avoid an error where accelerator_list returns none all the time.
+        # we'll fix it when acc's project related info ready.
+
         """Retrieve a list of accelerators.
 
         :param limit: Optional, to determinate the maximum number of
