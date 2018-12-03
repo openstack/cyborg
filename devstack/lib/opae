@@ -1,0 +1,61 @@
+#!/bin/bash
+#
+# lib/opae
+# Functions to download, install, or remove OPAE packages
+
+# Dependencies:
+#
+
+# ensure we don't re-source this in the same environment
+[[ -z "$_OPAE_PKG_FNS" ]] || return 0
+declare -r -g _OPAE_PKG_FNS=1
+
+function setup_distro_vars {
+    PKG_EXT=""
+    if is_fedora; then
+        PKG_EXT="rpm"
+    elif is_ubuntu ; then
+        # NOTE(Sundar): OPAE packages depend on libjson0, which is
+        #   not available after Ubuntu 16.04. After OPAE packages are
+        #   updated, this check can be removed.
+        [[ $os_RELEASE == "16.04" ]] && PKG_EXT="deb"
+    fi
+}
+setup_distro_vars
+
+function install_opae_pkg {
+    local pkg=$1
+    local url=$2
+    local CURL="curl -sSfL --retry 2"
+    local tmpfile="/tmp/$pkg.$PKG_EXT"
+    local retval=0
+
+    # NOTE(Sundar): After OPAE libraries become part of the distro
+    # repos, we can skip the download with curl.
+    if ! is_package_installed $pkg; then
+       $CURL -o $tmpfile $url; retval=$?
+       if [[ $? -eq 0 ]]; then
+           install_package $tmpfile; retval=$?
+           [[ $? -ne 0 ]] && echo "WARNING: Could not install $pkg"
+       else
+           echo "WARNING: Could not download $url"
+       fi
+       /bin/rm -f $tmpfile
+    fi
+    return $retval
+}
+
+function install_opae_packages {
+    local libs_url="$OPAE_GITHUB/$OPAE_LIBS.$PKG_EXT"
+    local devel_url="$OPAE_GITHUB/$OPAE_DEVEL.$PKG_EXT"
+
+    [[ "$PKG_EXT" == "" ]]  && return 1
+    install_opae_pkg "$OPAE_LIBS_PKG" $libs_url && \
+        install_opae_pkg "$OPAE_DEVEL_PKG" $devel_url
+    # return value is the exit code of last command
+}
+
+function uninstall_opae_packages {
+    uninstall_package "$OPAE_DEVEL_PKG"
+    uninstall_package "$OPAE_LIBS_PKG"
+}
