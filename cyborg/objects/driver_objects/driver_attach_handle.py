@@ -1,4 +1,4 @@
-# Copyright 2017 Huawei Technologies Co.,LTD.
+# Copyright 2018 Lenovo (Beijing) Co.,LTD.
 # All Rights Reserved.
 #
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -13,15 +13,19 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-
-CONDUCTOR_TOPIC = 'cyborg-conductor'
-AGENT_TOPIC = 'cyborg-agent'
-DEVICE_GPU = 'GPU'
-DEVICE_FPGA = 'FPGA'
+from oslo_versionedobjects import base as object_base
+from cyborg.objects import fields as object_fields
+from cyborg.objects import base
 
 
-ARQ_STATES = (ARQINITIAL, ARQBOUND, ARQUNBOUND, ARQBINDFAILED) = \
-    ('Initial', 'Bound', 'Unbound', 'BindFailed')
+@base.CyborgObjectRegistry.register
+class DriverAttachHandle(base.DriverObjectBase,
+                         object_base.VersionedObjectDictCompat):
+    # Version 1.0: Initial version
+    VERSION = '1.0'
 
-# Device type
-DEVICE_TYPE = (DEVICE_GPU, DEVICE_FPGA)
+    fields = {
+        'attach_type': object_fields.StringField(nullable=False),
+        # PCI BDF or mediated device ID...
+        'attach_info': object_fields.StringField(nullable=False),
+    }

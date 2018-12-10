@@ -33,3 +33,4 @@ def register_all():
     __import__('cyborg.objects.control_path')
     __import__('cyborg.objects.device')
     __import__('cyborg.objects.device_profile')
+    __import__('cyborg.objects.driver_objects')

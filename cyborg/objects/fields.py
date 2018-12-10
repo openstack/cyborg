@@ -42,3 +42,7 @@ class ARQState(object_fields.Enum):
 
 class ARQStateField(object_fields.BaseEnumField):
     AUTO_TYPE = ARQState()
+
+
+class DeviceTypeField(object_fields.AutoTypedField):
+    AUTO_TYPE = object_fields.Enum(valid_values=constants.DEVICE_TYPE)
