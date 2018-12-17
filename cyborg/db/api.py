@@ -41,27 +41,26 @@ class Connection(object):
     def __init__(self):
         """Constructor."""
 
-    # accelerator
+    # device
     @abc.abstractmethod
-    def accelerator_create(self, context, values):
-        """Create a new accelerator."""
+    def device_create(self, context, values):
+        """Create a new device when device is inserted into the host."""
 
     @abc.abstractmethod
-    def accelerator_get(self, context, uuid):
-        """Get requested accelerator."""
+    def device_get(self, context, uuid):
+        """Get requested device."""
 
     @abc.abstractmethod
-    def accelerator_list(self, context, limit, marker, sort_key, sort_dir,
-                         project_only):
-        """Get requested list of accelerators."""
+    def device_list(self, context, limit, marker, sort_key, sort_dir):
+        """Get requested list of devices."""
 
     @abc.abstractmethod
-    def accelerator_update(self, context, uuid, values):
-        """Update an accelerator."""
+    def device_update(self, context, uuid, values):
+        """Update a device."""
 
     @abc.abstractmethod
-    def accelerator_delete(self, context, uuid):
-        """Delete an accelerator."""
+    def device_delete(self, context, uuid):
+        """Delete a device when device is removed from the host."""
 
     # deployable
     @abc.abstractmethod

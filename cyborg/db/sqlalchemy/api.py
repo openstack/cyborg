@@ -127,69 +127,69 @@ class Connection(api.Connection):
     def __init__(self):
         pass
 
-    def accelerator_create(self, context, values):
+    def device_create(self, context, values):
         if not values.get('uuid'):
             values['uuid'] = uuidutils.generate_uuid()
 
-        accelerator = models.Accelerator()
-        accelerator.update(values)
+        device = models.Device()
+        device.update(values)
 
         with _session_for_write() as session:
             try:
-                session.add(accelerator)
+                session.add(device)
                 session.flush()
             except db_exc.DBDuplicateEntry:
-                raise exception.AcceleratorAlreadyExists(uuid=values['uuid'])
-            return accelerator
+                raise exception.DeviceAlreadyExists(uuid=values['uuid'])
+            return device
 
-    def accelerator_get(self, context, uuid):
+    def device_get(self, context, uuid):
         query = model_query(
             context,
-            models.Accelerator).filter_by(uuid=uuid)
+            models.Device).filter_by(uuid=uuid)
         try:
             return query.one()
         except NoResultFound:
-            raise exception.AcceleratorNotFound(uuid=uuid)
+            raise exception.DeviceNotFound(uuid=uuid)
 
-    def accelerator_list(self, context, limit, marker, sort_key, sort_dir,
-                         project_only):
-        query = model_query(context, models.Accelerator,
+    def device_list(self, context, limit, marker, sort_key, sort_dir,
+                    project_only):
+        query = model_query(context, models.Device,
                             project_only=project_only)
-        return _paginate_query(context, models.Accelerator, limit, marker,
+        return _paginate_query(context, models.Device, limit, marker,
                                sort_key, sort_dir, query)
 
-    def accelerator_update(self, context, uuid, values):
+    def device_update(self, context, uuid, values):
         if 'uuid' in values:
-            msg = _("Cannot overwrite UUID for an existing Accelerator.")
+            msg = _("Cannot overwrite UUID for an existing Device.")
             raise exception.InvalidParameterValue(err=msg)
 
         try:
-            return self._do_update_accelerator(context, uuid, values)
+            return self._do_update_device(context, uuid, values)
         except db_exc.DBDuplicateEntry as e:
             if 'name' in e.columns:
-                raise exception.DuplicateAcceleratorName(name=values['name'])
+                raise exception.DuplicateDeviceName(name=values['name'])
 
     @oslo_db_api.retry_on_deadlock
-    def _do_update_accelerator(self, context, uuid, values):
+    def _do_update_device(self, context, uuid, values):
         with _session_for_write():
-            query = model_query(context, models.Accelerator)
+            query = model_query(context, models.Device)
             query = add_identity_filter(query, uuid)
             try:
                 ref = query.with_lockmode('update').one()
             except NoResultFound:
-                raise exception.AcceleratorNotFound(uuid=uuid)
+                raise exception.DeviceNotFound(uuid=uuid)
 
             ref.update(values)
         return ref
 
     @oslo_db_api.retry_on_deadlock
-    def accelerator_delete(self, context, uuid):
+    def device_delete(self, context, uuid):
         with _session_for_write():
-            query = model_query(context, models.Accelerator)
+            query = model_query(context, models.Device)
             query = add_identity_filter(query, uuid)
             count = query.delete()
             if count != 1:
-                raise exception.AcceleratorNotFound(uuid=uuid)
+                raise exception.DeviceNotFound(uuid=uuid)
 
     def deployable_create(self, context, values):
         if not values.get('uuid'):
@@ -265,12 +265,8 @@ class Connection(api.Connection):
                                                   filters):
 
         exact_match_filter_names = ['uuid', 'name',
-                                    'parent_uuid', 'root_uuid',
-                                    'address', 'host',
-                                    'board', 'vendor', 'version',
-                                    'type', 'interface_type', 'assignable',
-                                    'instance_uuid', 'availability',
-                                    'accelerator_id']
+                                    'parent_id', 'root_id',
+                                    'num_accelerators', 'device_id']
         attribute_filters = {}
         filters_copy = copy.deepcopy(filters)
         for key, value in filters_copy.items():
@@ -407,12 +403,8 @@ class Connection(api.Connection):
         filters = copy.deepcopy(filters)
 
         exact_match_filter_names = ['uuid', 'name',
-                                    'parent_uuid', 'root_uuid',
-                                    'address', 'host',
-                                    'board', 'vendor', 'version',
-                                    'type', 'interface_type', 'assignable',
-                                    'instance_uuid', 'availability',
-                                    'accelerator_id']
+                                    'parent_id', 'root_id',
+                                    'num_accelerators', 'device_id']
 
         # Filter the query
         query_prefix = self._exact_deployable_filter(query_prefix,
@@ -653,14 +645,13 @@ class Connection(api.Connection):
 
     def _sync_acc_res(self, context, resource, project_id):
         """Quota sync funciton"""
-        res_in_use = self._accelerator_data_get_for_project(context, resource,
-                                                            project_id)
+        res_in_use = self._device_data_get_for_project(context, resource,
+                                                       project_id)
         return {resource: res_in_use}
 
-    def _accelerator_data_get_for_project(self, context, resource, project_id):
+    def _device_data_get_for_project(self, context, resource, project_id):
         """Return the number of resource which is being used by a project"""
-        query = model_query(context, models.Accelerator).\
-            filter_by(project_id=project_id).filter_by(device_type=resource)
+        query = model_query(context, models.Device).filter_by(type=resource)
 
         return query.count()
 

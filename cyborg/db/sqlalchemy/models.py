@@ -20,7 +20,7 @@ from oslo_db.sqlalchemy import models
 from oslo_utils import timeutils
 import six.moves.urllib.parse as urlparse
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import Column, String, Integer, Boolean, ForeignKey, Index
+from sqlalchemy import Column, String, Integer, Enum, ForeignKey, Index
 from sqlalchemy import Text
 from sqlalchemy import schema
 from sqlalchemy import DateTime
@@ -67,27 +67,23 @@ class CyborgBase(models.TimestampMixin, models.ModelBase):
 Base = declarative_base(cls=CyborgBase)
 
 
-class Accelerator(Base):
-    """Represents the accelerators."""
+class Device(Base):
+    """Represents the devices."""
 
-    __tablename__ = 'accelerators'
+    __tablename__ = 'devices'
     __table_args__ = (
-        schema.UniqueConstraint('uuid', name='uniq_accelerators0uuid'),
+        schema.UniqueConstraint('uuid', name='uniq_devices0uuid'),
         table_args()
     )
 
     id = Column(Integer, primary_key=True)
     uuid = Column(String(36), nullable=False)
-    name = Column(String(255), nullable=False)
-    description = Column(String(255), nullable=True)
-    project_id = Column(String(36), nullable=True)
-    user_id = Column(String(36), nullable=True)
-    device_type = Column(String(255), nullable=False)
-    acc_type = Column(String(255), nullable=True)
-    acc_capability = Column(String(255), nullable=True)
-    vendor_id = Column(String(255), nullable=False)
-    product_id = Column(String(255), nullable=False)
-    remotable = Column(Integer, nullable=False)
+    type = Column(String(255), nullable=False)
+    vendor = Column(String(255), nullable=False)
+    model = Column(String(255), nullable=False)
+    std_board_info = Column(Text, nullable=True)
+    vendor_board_info = Column(Text, nullable=True)
+    hostname = Column(String(255), nullable=False)
 
 
 class Deployable(Base):
@@ -96,32 +92,20 @@ class Deployable(Base):
     __tablename__ = 'deployables'
     __table_args__ = (
         schema.UniqueConstraint('uuid', name='uniq_deployables0uuid'),
-        Index('deployables_parent_uuid_idx', 'parent_uuid'),
-        Index('deployables_root_uuid_idx', 'root_uuid'),
-        Index('deployables_accelerator_id_idx', 'accelerator_id'),
+        Index('deployables_parent_id_idx', 'parent_id'),
+        Index('deployables_root_id_idx', 'root_id'),
+        Index('deployables_device_id_idx', 'device_id'),
         table_args()
     )
 
     id = Column(Integer, primary_key=True)
     uuid = Column(String(36), nullable=False)
-    name = Column(String(255), nullable=False)
-    parent_uuid = Column(String(36),
-                         ForeignKey('deployables.uuid'), nullable=True)
-    root_uuid = Column(String(36),
-                       ForeignKey('deployables.uuid'), nullable=True)
-    address = Column(String(255), nullable=False)
-    host = Column(String(255), nullable=False)
-    board = Column(String(255), nullable=False)
-    vendor = Column(String(255), nullable=False)
-    version = Column(String(255), nullable=False)
-    type = Column(String(255), nullable=False)
-    interface_type = Column(String(255), nullable=False)
-    assignable = Column(Boolean, nullable=False)
-    instance_uuid = Column(String(36), nullable=True)
-    availability = Column(String(255), nullable=False)
-    accelerator_id = Column(Integer,
-                            ForeignKey('accelerators.id', ondelete="CASCADE"),
-                            nullable=False)
+    parent_id = Column(Integer, ForeignKey('deployables.id'), nullable=True)
+    root_id = Column(Integer, ForeignKey('deployables.id'), nullable=True)
+    name = Column(String(32), nullable=False)
+    num_accelerators = Column(Integer, nullable=False)
+    device_id = Column(Integer, ForeignKey('devices.id', ondelete="RESTRICT"),
+                       nullable=False)
 
 
 class Attribute(Base):
@@ -135,10 +119,103 @@ class Attribute(Base):
     id = Column(Integer, primary_key=True)
     uuid = Column(String(36), nullable=False)
     deployable_id = Column(Integer,
-                           ForeignKey('deployables.id', ondelete="CASCADE"),
+                           ForeignKey('deployables.id', ondelete="RESTRICT"),
                            nullable=False)
     key = Column(Text, nullable=False)
     value = Column(Text, nullable=False)
+
+
+class ControlpathID(Base):
+    """Identifier for the Device when driver reporting to agent, IDs is
+    needed especially when multiple PFs exist in one Devices."""
+
+    __tablename__ = 'controlpath_ids'
+    __table_args__ = (
+        schema.UniqueConstraint('uuid', name='uniq_controlpath_ids0uuid'),
+        Index('controlpath_ids_device_id_idx', 'device_id'),
+        table_args()
+    )
+
+    id = Column(Integer, primary_key=True)
+    uuid = Column(String(36), nullable=False)
+    device_id = Column(Integer,
+                       ForeignKey('devices.id', ondelete="RESTRICT"),
+                       nullable=False)
+    cpid_type = Column(Enum('PCI', name='control_type'), nullable=False)
+    cpid_info = Column(Text, nullable=False)
+
+
+class AttachHandle(Base):
+    """Reprensents device's VFs and PFs which can be attached to a VM."""
+
+    __tablename__ = 'attach_handles'
+    __table_args__ = (
+        schema.UniqueConstraint('uuid', name='uniq_attach_handles0uuid'),
+        Index('attach_handles_deployable_id_idx', 'deployable_id'),
+        table_args()
+    )
+
+    id = Column(Integer, primary_key=True)
+    uuid = Column(String(36), nullable=False)
+    deployable_id = Column(Integer,
+                           ForeignKey('deployables.id', ondelete="RESTRICT"),
+                           nullable=False)
+    cpid_id = Column(Integer,
+                     ForeignKey('controlpath_ids.id', ondelete="RESTRICT"),
+                     nullable=False)
+    attach_type = Column(Enum('PCI', 'MDEV', name='attach_type'),
+                         nullable=False)
+    attach_info = Column(Text, nullable=False)
+
+
+class DeviceProfile(Base):
+    """Represents users' specific requirements."""
+
+    __tablename__ = 'device_profiles'
+    __table_args__ = (
+        schema.UniqueConstraint('uuid', name='uniq_device_profiles0uuid'),
+        table_args()
+    )
+
+    id = Column(Integer, primary_key=True)
+    uuid = Column(String(36), nullable=False)
+    name = Column(String(255), nullable=False)
+    profile_json = Column(Text, nullable=False)
+
+
+class ExternalAcceleratorRequest(Base):
+    """Represents external nova requests for attach related operations."""
+
+    __tablename__ = 'external_accelerator_requests'
+    __table_args__ = (
+        schema.UniqueConstraint('uuid', name='uniq_ext_arqs0uuid'),
+        Index('external_accelerator_requests_project_id_idx', 'project_id'),
+        Index('external_accelerator_requests_device_profile_id_idx',
+              'device_profile_id'),
+        Index('external_accelerator_requests_device_rp_uuid_idx',
+              'device_rp_uuid'),
+        Index('external_accelerator_requests_device_instance_uuid_idx',
+              'device_instance_uuid'),
+        Index('external_accelerator_requests_attach_handle_id_idx',
+              'attach_handle_id'),
+        table_args()
+    )
+
+    id = Column(Integer, primary_key=True)
+    uuid = Column(String(36), nullable=False)
+    project_id = Column(String(255), nullable=False)
+    state = Column(Enum('Initial', 'Bound', 'BindFailed', name='state'),
+                   nullable=False)
+    substate = Column(Enum('Initial', name='substate'), nullable=False),
+    device_profile_id = Column(Integer, ForeignKey('device_profiles.id',
+                                                   ondelete="RESTRICT"),
+                               nullable=False)
+    hostname = Column(String(255), nullable=True)
+    device_rp_uuid = Column(String(36), nullable=True)
+    device_instance_uuid = Column(String(36), nullable=True)
+    attach_handle_id = Column(Integer(), ForeignKey('attach_handles.id',
+                                                    ondelete="RESTRICT"),
+                              nullable=True)
 
 
 class QuotaUsage(Base):

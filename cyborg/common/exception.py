@@ -90,8 +90,8 @@ class ConfigInvalid(CyborgException):
     _msg_fmt = _("Invalid configuration file. %(error_msg)s")
 
 
-class AcceleratorAlreadyExists(CyborgException):
-    _msg_fmt = _("Accelerator with uuid %(uuid)s already exists.")
+class DeviceAlreadyExists(CyborgException):
+    _msg_fmt = _("Device with uuid %(uuid)s already exists.")
 
 
 class DeployableAlreadyExists(CyborgException):
@@ -148,8 +148,8 @@ class ConfGroupForServiceTypeNotFound(ServiceNotFound):
                 "%(stype)s.")
 
 
-class AcceleratorNotFound(NotFound):
-    _msg_fmt = _("Accelerator %(uuid)s could not be found.")
+class DeviceNotFound(NotFound):
+    _msg_fmt = _("Device %(uuid)s could not be found.")
 
 
 class DeployableNotFound(NotFound):
@@ -165,8 +165,8 @@ class Conflict(CyborgException):
     code = http_client.CONFLICT
 
 
-class DuplicateAcceleratorName(Conflict):
-    _msg_fmt = _("An accelerator with name %(name)s already exists.")
+class DuplicateDeviceName(Conflict):
+    _msg_fmt = _("A device with name %(name)s already exists.")
 
 
 class DuplicateDeployableName(Conflict):
