@@ -2,6 +2,12 @@
 DevStack Quick Start
 ====================
 
+.. note::
+
+   Because OPAE packages depend on libjson0, which is not available
+   after Ubuntu 16.04, so cyborg can't be installed on Ubuntu
+   higher than 16.04 now.
+
 Create stack user (optional)
 ----------------------------
 
