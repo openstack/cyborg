@@ -98,6 +98,10 @@ class DeployableAlreadyExists(CyborgException):
     _msg_fmt = _("Deployable with uuid %(uuid)s already exists.")
 
 
+class ExtArqAlreadyExists(CyborgException):
+    _msg_fmt = _("ExtArq with uuid %(uuid)s already exists.")
+
+
 class Invalid(CyborgException):
     _msg_fmt = _("Invalid parameters.")
     code = http_client.BAD_REQUEST
@@ -154,6 +158,10 @@ class DeviceNotFound(NotFound):
 
 class DeployableNotFound(NotFound):
     _msg_fmt = _("Deployable %(uuid)s could not be found.")
+
+
+class ExtArqNotFound(NotFound):
+    _msg_fmt = _("ExtArq %(uuid)s could not be found.")
 
 
 class InvalidDeployType(CyborgException):

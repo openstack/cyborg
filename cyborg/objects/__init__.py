@@ -28,3 +28,5 @@ def register_all():
     __import__('cyborg.objects.accelerator')
     __import__('cyborg.objects.deployable')
     __import__('cyborg.objects.attribute')
+    __import__('cyborg.objects.arq')
+    __import__('cyborg.objects.ext_arq')

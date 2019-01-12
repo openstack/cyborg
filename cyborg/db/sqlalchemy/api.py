@@ -499,6 +499,63 @@ class Connection(api.Connection):
             if count != 1:
                 raise exception.AttributeNotFound(uuid=uuid)
 
+    def extarq_create(self, context, values):
+        if not values.get('uuid'):
+            values['uuid'] = uuidutils.generate_uuid()
+        if values.get('id'):
+            values.pop('id', None)
+        extarq = models.ExtArq()
+        extarq.update(values)
+
+        with _session_for_write() as session:
+            try:
+                session.add(extarq)
+                session.flush()
+            except db_exc.DBDuplicateEntry:
+                raise exception.ExtArqAlreadyExists(uuid=values['uuid'])
+            return extarq
+
+    @oslo_db_api.retry_on_deadlock
+    def extarq_delete(self, context, uuid):
+        with _session_for_write():
+            query = model_query(context, models.ExtArq)
+            query = add_identity_filter(query, uuid)
+            count = query.delete()
+            if count != 1:
+                raise exception.ExtArqNotFound(uuid=uuid)
+
+    def extarq_update(self, context, uuid, values):
+        if 'uuid' in values:
+            msg = _("Cannot overwrite UUID for an existing ExtArq.")
+            raise exception.InvalidParameterValue(err=msg)
+        return self._do_update_extarq(context, uuid, values)
+
+    @oslo_db_api.retry_on_deadlock
+    def _do_update_extarq(self, context, uuid, values):
+        with _session_for_write():
+            query = model_query(context, models.ExtArq)
+            query = query.filter_by(uuid=uuid)
+            try:
+                ref = query.with_lockmode('update').one()
+            except NoResultFound:
+                raise exception.ExtArqNotFound(uuid=uuid)
+            ref.update(values)
+        return ref
+
+    def extarq_list(self, context, limit, marker, sort_key, sort_dir):
+        query = model_query(context, models.ExtArq)
+        return _paginate_query(context, models.Device, limit, marker,
+                               sort_key, sort_dir, query)
+
+    def extarq_get(self, context, uuid):
+        query = model_query(
+            context,
+            models.ExtArq).filter_by(uuid=uuid)
+        try:
+            return query.one()
+        except NoResultFound:
+            raise exception.ExtArqNotFound(uuid=uuid)
+
     def _get_quota_usages(self, context, project_id, resources=None):
         # Broken out for testability
         query = model_query(context, models.QuotaUsage,).filter_by(
