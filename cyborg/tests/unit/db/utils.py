@@ -86,3 +86,27 @@ def get_test_arq(**kwargs):
         'updated_at': kwargs.get('updated_at', None),
         'substate': kwargs.get('substate', 'Initial'),
     }
+
+
+def get_test_attach_handle(**kw):
+    return {
+        'uuid': kw.get('uuid', '10efe63d-dfea-4a37-ad94-4116fba5098'),
+        'id': kw.get('id', 1),
+        'deployable_id': kw.get('deployable_id', 1),
+        'attach_type': kw.get('attach_type', "PCI"),
+        'attach_info': kw.get('attach_info', "attach_info"),
+        'created_at': kw.get('create_at', None),
+        'updated_at': kw.get('updated_at', None),
+    }
+
+
+def get_test_control_path(**kw):
+    return {
+        'uuid': kw.get('uuid', '10efe63d-dfea-4a37-ad94-4116fba5098'),
+        'id': kw.get('id', 1),
+        'deployable_id': kw.get('deployable_id', 1),
+        'cpid_type': kw.get('cpid_type', "PCI"),
+        'cpid_info': kw.get('cpid_info', "cpid_info"),
+        'created_at': kw.get('create_at', None),
+        'updated_at': kw.get('updated_at', None),
+    }

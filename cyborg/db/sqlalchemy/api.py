@@ -127,6 +127,213 @@ class Connection(api.Connection):
     def __init__(self):
         pass
 
+    def attach_handle_create(self, context, values):
+        if not values.get('uuid'):
+            values['uuid'] = uuidutils.generate_uuid()
+
+        attach_handle = models.AttachHandle()
+        attach_handle.update(values)
+
+        with _session_for_write() as session:
+            try:
+                session.add(attach_handle)
+                session.flush()
+            except db_exc.DBDuplicateEntry:
+                raise exception.AttachHandleAlreadyExists(uuid=values['uuid'])
+            return attach_handle
+
+    def attach_handle_get_by_uuid(self, context, uuid):
+        query = model_query(
+            context,
+            models.AttachHandle).filter_by(uuid=uuid)
+        try:
+            return query.one()
+        except NoResultFound:
+            raise exception.AttachHandleNotFound(uuid=uuid)
+
+    def attach_handle_get_by_id(self, context, id):
+        query = model_query(
+            context,
+            models.AttachHandle).filter_by(id=id)
+        try:
+            return query.one()
+        except NoResultFound:
+            raise exception.NotFound()
+
+    def attach_handle_get_by_filters(self, context,
+                                     filters, sort_key='created_at',
+                                     sort_dir='desc', limit=None,
+                                     marker=None, join_columns=None):
+        """Return attach_handle that match all filters sorted by the given
+        keys. Deleted attach_handle will be returned by default, unless
+        there's a filter that says otherwise.
+        """
+
+        if limit == 0:
+            return []
+
+        query_prefix = model_query(context, models.AttachHandle)
+        filters = copy.deepcopy(filters)
+
+        exact_match_filter_names = ['uuid', 'id', 'deployable_id']
+
+        # Filter the query
+        query_prefix = self._exact_filter(models.AttachHandle, query_prefix,
+                                          filters, exact_match_filter_names)
+        if query_prefix is None:
+            return []
+        return _paginate_query(context, models.AttachHandle, limit, marker,
+                               sort_key, sort_dir, query_prefix)
+
+    def _exact_filter(self, model, query, filters, legal_keys=[]):
+        """Applies exact match filtering to a deployable query.
+        Returns the updated query.  Modifies filters argument to remove
+        filters consumed.
+        :param model: DB model
+        :param query: query to apply filters to
+        :param filters: dictionary of filters; values that are lists,
+                        tuples, sets, or frozensets cause an 'IN' test to
+                        be performed, while exact matching ('==' operator)
+                        is used for other values
+        :param legal_keys: list of keys to apply exact filtering to
+        """
+
+        filter_dict = {}
+
+        # Walk through all the keys
+        for key in legal_keys:
+            # Skip ones we're not filtering on
+            if key not in filters:
+                continue
+
+            # OK, filtering on this key; what value do we search for?
+            value = filters.pop(key)
+
+            if isinstance(value, (list, tuple, set, frozenset)):
+                if not value:
+                    return None
+                # Looking for values in a list; apply to query directly
+                column_attr = getattr(model, key)
+                query = query.filter(column_attr.in_(value))
+            else:
+                filter_dict[key] = value
+        # Apply simple exact matches
+        if filter_dict:
+            query = query.filter(*[getattr(model, k) == v
+                                   for k, v in filter_dict.items()])
+        return query
+
+    def attach_handle_list(self, context):
+        query = model_query(context, models.AttachHandle)
+        return _paginate_query(context, models.AttachHandle)
+
+    def attach_handle_update(self, context, uuid, values):
+        if 'uuid' in values:
+            msg = _("Cannot overwrite UUID for an existing AttachHandle.")
+            raise exception.InvalidParameterValue(err=msg)
+        return self._do_update_attach_handle(context, uuid, values)
+
+    @oslo_db_api.retry_on_deadlock
+    def _do_update_attach_handle(self, context, uuid, values):
+        with _session_for_write():
+            query = model_query(context, models.AttachHandle)
+            query = add_identity_filter(query, uuid)
+            try:
+                ref = query.with_lockmode('update').one()
+            except NoResultFound:
+                raise exception.AttachHandleNotFound(uuid=uuid)
+            ref.update(values)
+        return ref
+
+    @oslo_db_api.retry_on_deadlock
+    def attach_handle_delete(self, context, uuid):
+        with _session_for_write():
+            query = model_query(context, models.AttachHandle)
+            query = add_identity_filter(query, uuid)
+            count = query.delete()
+            if count != 1:
+                raise exception.AttachHandleNotFound(uuid=uuid)
+
+    def control_path_create(self, context, values):
+        if not values.get('uuid'):
+            values['uuid'] = uuidutils.generate_uuid()
+
+        control_path_id = models.ControlpathID()
+        control_path_id.update(values)
+
+        with _session_for_write() as session:
+            try:
+                session.add(control_path_id)
+                session.flush()
+            except db_exc.DBDuplicateEntry:
+                raise exception.ControlpathIDAlreadyExists(uuid=values['uuid'])
+            return control_path_id
+
+    def control_path_get_by_uuid(self, context, uuid):
+        query = model_query(
+            context,
+            models.ControlpathID).filter_by(uuid=uuid)
+        try:
+            return query.one()
+        except NoResultFound:
+            raise exception.ControlpathIDNotFound(uuid=uuid)
+
+    def control_path_get_by_filters(self, context,
+                                    filters, sort_key='created_at',
+                                    sort_dir='desc', limit=None,
+                                    marker=None, join_columns=None):
+        """Return attach_handle that match all filters sorted by the given
+        keys. Deleted attach_handle will be returned by default, unless
+        there's a filter that says otherwise.
+        """
+
+        if limit == 0:
+            return []
+
+        query_prefix = model_query(context, models.AttachHandle)
+        filters = copy.deepcopy(filters)
+
+        exact_match_filter_names = ['uuid', 'id', 'deployable_id']
+
+        # Filter the query
+        query_prefix = self._exact_filter(models.ControlpathID, query_prefix,
+                                          filters, exact_match_filter_names)
+        if query_prefix is None:
+            return []
+        return _paginate_query(context, models.ControlpathID, limit, marker,
+                               sort_key, sort_dir, query_prefix)
+
+    def control_path_list(self, context):
+        query = model_query(context, models.ControlpathID)
+        return _paginate_query(context, models.ControlpathID)
+
+    def control_path_update(self, context, uuid, values):
+        if 'uuid' in values:
+            msg = _("Cannot overwrite UUID for an existing ControlpathID.")
+            raise exception.InvalidParameterValue(err=msg)
+        return self._do_update_control_path(context, uuid, values)
+
+    @oslo_db_api.retry_on_deadlock
+    def _do_update_control_path(self, context, uuid, values):
+        with _session_for_write():
+            query = model_query(context, models.ControlpathID)
+            query = add_identity_filter(query, uuid)
+            try:
+                ref = query.with_lockmode('update').one()
+            except NoResultFound:
+                raise exception.ControlpathIDNotFound(uuid=uuid)
+            ref.update(values)
+        return ref
+
+    @oslo_db_api.retry_on_deadlock
+    def control_path_delete(self, context, uuid):
+        with _session_for_write():
+            query = model_query(context, models.ControlpathID)
+            query = add_identity_filter(query, uuid)
+            count = query.delete()
+            if count != 1:
+                raise exception.ControlpathNotFound(uuid=uuid)
+
     def device_create(self, context, values):
         if not values.get('uuid'):
             values['uuid'] = uuidutils.generate_uuid()
@@ -350,44 +557,6 @@ class Connection(api.Connection):
                                        for k, v in attribute_filters.items()]))
         return query
 
-    def _exact_deployable_filter(self, query, filters, legal_keys):
-        """Applies exact match filtering to a deployable query.
-        Returns the updated query.  Modifies filters argument to remove
-        filters consumed.
-        :param query: query to apply filters to
-        :param filters: dictionary of filters; values that are lists,
-                        tuples, sets, or frozensets cause an 'IN' test to
-                        be performed, while exact matching ('==' operator)
-                        is used for other values
-        :param legal_keys: list of keys to apply exact filtering to
-        """
-
-        filter_dict = {}
-        model = models.Deployable
-
-        # Walk through all the keys
-        for key in legal_keys:
-            # Skip ones we're not filtering on
-            if key not in filters:
-                continue
-
-            # OK, filtering on this key; what value do we search for?
-            value = filters.pop(key)
-
-            if isinstance(value, (list, tuple, set, frozenset)):
-                if not value:
-                    return None
-                # Looking for values in a list; apply to query directly
-                column_attr = getattr(model, key)
-                query = query.filter(column_attr.in_(value))
-            else:
-                filter_dict[key] = value
-        # Apply simple exact matches
-        if filter_dict:
-            query = query.filter(*[getattr(models.Deployable, k) == v
-                                   for k, v in filter_dict.items()])
-        return query
-
     def deployable_get_by_filters_sort(self, context, filters, limit=None,
                                        marker=None, join_columns=None,
                                        sort_key=None, sort_dir=None):
@@ -407,9 +576,9 @@ class Connection(api.Connection):
                                     'num_accelerators', 'device_id']
 
         # Filter the query
-        query_prefix = self._exact_deployable_filter(query_prefix,
-                                                     filters,
-                                                     exact_match_filter_names)
+        query_prefix = self._exact_filter(models.Deployable, query_prefix,
+                                          filters,
+                                          exact_match_filter_names)
         if query_prefix is None:
             return []
         return _paginate_query(context, models.Deployable, limit, marker,
@@ -453,26 +622,26 @@ class Connection(api.Connection):
         query_prefix = model_query(context, models.Attribute)
 
         # Filter the query
-        query_prefix = self._exact_attribute_by_filter(query_prefix,
-                                                       filters)
+        query_prefix = self._exact_filter(models.Attribute, query_prefix,
+                                          filters)
         if query_prefix is None:
             return []
 
         return query_prefix.all()
 
-    def _exact_attribute_by_filter(self, query, filters):
-        """Applies exact match filtering to a atrtribute query.
-        Returns the updated query.
-        :param filters: The filters specified by a dict of kv pairs
-        """
-
-        model = models.Attribute
-        filter_dict = filters
-
-        # Apply simple exact matches
-        query = query.filter(*[getattr(models.Attribute, k) == v
-                               for k, v in filter_dict.items()])
-        return query
+    # def _exact_attribute_by_filter(self, query, filters):
+    #     """Applies exact match filtering to a atrtribute query.
+    #     Returns the updated query.
+    #     :param filters: The filters specified by a dict of kv pairs
+    #     """
+    #
+    #     model = models.Attribute
+    #     filter_dict = filters
+    #
+    #     # Apply simple exact matches
+    #     query = query.filter(*[getattr(models.Attribute, k) == v
+    #                            for k, v in filter_dict.items()])
+    #     return query
 
     def attribute_update(self, context, uuid, key, value):
         return self._do_update_attribute(context, uuid, key, value)

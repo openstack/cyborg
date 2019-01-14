@@ -123,6 +123,7 @@ class Connection(object):
     def attribute_delete(self, context, uuid):
         """Delete an attribute."""
 
+    # quota
     @abc.abstractmethod
     def quota_reserve(self, context, resources, deltas, expire,
                       until_refresh, max_age, project_id=None,
@@ -153,3 +154,63 @@ class Connection(object):
     @abc.abstractmethod
     def extarq_get(self, context, uuid):
         """Get requested extarq."""
+
+    # attach_handle
+    @abc.abstractmethod
+    def attach_handle_create(self, context, values):
+        """Create a new attach_handle"""
+
+    @abc.abstractmethod
+    def attach_handle_get_by_uuid(self, context, uuid):
+        """Get requested attach_handle"""
+
+    @abc.abstractmethod
+    def attach_handle_get_by_id(self, context, id):
+        """Get requested attach_handle"""
+
+    @abc.abstractmethod
+    def attach_handle_get_by_filters(self, context,
+                                     filters, sort_key='created_at',
+                                     sort_dir='desc', limit=None,
+                                     marker=None, columns_to_join=None):
+        """Get requested deployable by filters."""
+
+    @abc.abstractmethod
+    def attach_handle_list(self, context):
+        """Get requested list of attach_handles"""
+
+    @abc.abstractmethod
+    def attach_handle_delete(self, context, uuid):
+        """Delete an attach_handle"""
+
+    @abc.abstractmethod
+    def attach_handle_update(self, context, uuid, values):
+        """Update an attach_handle"""
+
+    # control_path_id
+    @abc.abstractmethod
+    def control_path_create(self, context, values):
+        """Create a new control path id"""
+
+    @abc.abstractmethod
+    def control_path_get_by_uuid(self, context, uuid):
+        """Get requested control path id"""
+
+    @abc.abstractmethod
+    def control_path_get_by_filters(self, context,
+                                    filters, sort_key='created_at',
+                                    sort_dir='desc', limit=None,
+                                    marker=None, columns_to_join=None):
+        """Get requested deployable by filters."""
+
+    @abc.abstractmethod
+    def control_path_list(self, context):
+        """Get requested list of control path ids"""
+
+    @abc.abstractmethod
+    def control_path_delete(self, context, uuid):
+        """Delete a control path id"""
+
+    @abc.abstractmethod
+    def control_path_update(self, context, uuid, values):
+        """Update a control path id"""

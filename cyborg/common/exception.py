@@ -86,6 +86,14 @@ class CyborgException(Exception):
         return unicode(self.args[0])
 
 
+class AttachHandleAlreadyExists(CyborgException):
+    _msg_fmt = _("AttachHandle with uuid %(uuid)s already exists.")
+
+
+class ControlpathIDAlreadyExists(CyborgException):
+    _msg_fmt = _("ControlpathID with uuid %(uuid)s already exists.")
+
+
 class ConfigInvalid(CyborgException):
     _msg_fmt = _("Invalid configuration file. %(error_msg)s")
 
@@ -145,6 +153,14 @@ class NotFound(CyborgException):
 
 class ServiceNotFound(NotFound):
     msg_fmt = _("Service %(service_id)s could not be found.")
+
+
+class AttachHandleNotFound(NotFound):
+    _msg_fmt = _("AttachHandle %(uuid)s could not be found.")
+
+
+class ControlpathIDNotFound(NotFound):
+    _msg_fmt = _("ControlpathID %(uuid)s could not be found.")
 
 
 class ConfGroupForServiceTypeNotFound(ServiceNotFound):
