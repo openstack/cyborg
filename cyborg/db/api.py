@@ -55,12 +55,51 @@ class Connection(object):
         """Get requested list of devices."""
 
     @abc.abstractmethod
+    def device_list_by_filters(self, context,
+                               filters, sort_key='created_at',
+                               sort_dir='desc', limit=None,
+                               marker=None, columns_to_join=None):
+        """Get requested devices by filters."""
+
+    @abc.abstractmethod
     def device_update(self, context, uuid, values):
         """Update a device."""
 
     @abc.abstractmethod
     def device_delete(self, context, uuid):
         """Delete a device when device is removed from the host."""
+
+    # device_profile
+    @abc.abstractmethod
+    def device_profile_create(self, context, values):
+        """Create a new device_profile."""
+
+    @abc.abstractmethod
+    def device_profile_get_by_uuid(self, context, uuid):
+        """Get requested device_profile by uuid."""
+
+    @abc.abstractmethod
+    def device_profile_get_by_id(self, context, id):
+        """Get requested device_profile by id."""
+
+    @abc.abstractmethod
+    def device_profile_list(self, context):
+        """Get requested list of device_profiles."""
+
+    @abc.abstractmethod
+    def device_profile_list_by_filters(self, context,
+                                       filters, sort_key='created_at',
+                                       sort_dir='desc', limit=None,
+                                       marker=None, columns_to_join=None):
+        """Get requested list of device_profiles by filters."""
+
+    @abc.abstractmethod
+    def device_profile_update(self, context, uuid, values):
+        """Update a device_profile."""
+
+    @abc.abstractmethod
+    def device_profile_delete(self, context, uuid):
+        """Delete a device_profile."""
 
     # deployable
     @abc.abstractmethod

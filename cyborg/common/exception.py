@@ -102,6 +102,10 @@ class DeviceAlreadyExists(CyborgException):
     _msg_fmt = _("Device with uuid %(uuid)s already exists.")
 
 
+class DeviceProfileAlreadyExists(CyborgException):
+    _msg_fmt = _("DeviceProfile with uuid %(uuid)s already exists.")
+
+
 class DeployableAlreadyExists(CyborgException):
     _msg_fmt = _("Deployable with uuid %(uuid)s already exists.")
 
@@ -172,6 +176,10 @@ class DeviceNotFound(NotFound):
     _msg_fmt = _("Device %(uuid)s could not be found.")
 
 
+class DeviceProfileNotFound(NotFound):
+    _msg_fmt = _("DeviceProfile %(uuid)s could not be found.")
+
+
 class DeployableNotFound(NotFound):
     _msg_fmt = _("Deployable %(uuid)s could not be found.")
 
@@ -191,6 +199,10 @@ class Conflict(CyborgException):
 
 class DuplicateDeviceName(Conflict):
     _msg_fmt = _("A device with name %(name)s already exists.")
+
+
+class DuplicateDeviceProfileName(Conflict):
+    _msg_fmt = _("A device_profile with name %(name)s already exists.")
 
 
 class DuplicateDeployableName(Conflict):

@@ -110,3 +110,38 @@ def get_test_control_path(**kw):
         'created_at': kw.get('create_at', None),
         'updated_at': kw.get('updated_at', None),
     }
+
+
+def get_test_device(**kw):
+    return {
+        'id': kw.get('id', 1),
+        'uuid': kw.get('uuid', '83f92afa-1aa8-4548-a3a3-d218ff71d768'),
+        'type': kw.get('type', 'FPGA'),
+        'vendor': kw.get('vendor', 'Intel'),
+        # FIXME(Yumeng) should give details of std_board_info,
+        # vendor_board_info examples once they are determined.
+        'model': kw.get('model', 'PAC Arria 10'),
+        'std_board_info': kw.get('std_board_info',
+                                 'dictionary with standard fields'),
+        'vendor_board_info': kw.get('vendor_board_info',
+                                    'dictionary with vendor specific fields'),
+        'hostname': kw.get('hostname', 'hostname'),
+        'created_at': kw.get('create_at', None),
+        'updated_at': kw.get('updated_at', None),
+    }
+
+
+def get_test_device_profile(**kw):
+    return {
+        'id': kw.get('id', 1),
+        'uuid': kw.get('uuid', 'c0f43d55-03bf-4831-8639-9bbdb6be2478'),
+        'name': kw.get('name', 'name'),
+        'profile_json': kw.get(
+            'profile_json',
+            '{"version": "1.0", \
+             "groups": [{"resources:CUSTOM_ACCELERATOR_FPGA": "1"}, \
+             {"trait:CUSTOM_FPGA_INTEL_PAC_ARRIA10": "required"}, \
+             {"trait:CUSTOM_FUNCTION_ID_3AFB": "required"}]}'),
+        'created_at': kw.get('create_at', None),
+        'updated_at': kw.get('updated_at', None),
+    }

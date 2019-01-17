@@ -358,12 +358,32 @@ class Connection(api.Connection):
         except NoResultFound:
             raise exception.DeviceNotFound(uuid=uuid)
 
-    def device_list(self, context, limit, marker, sort_key, sort_dir,
-                    project_only):
-        query = model_query(context, models.Device,
-                            project_only=project_only)
+    def device_list_by_filters(self, context,
+                               filters, sort_key='created_at',
+                               sort_dir='desc', limit=None,
+                               marker=None, join_columns=None):
+        """Return devices that match all filters sorted by the given keys."""
+
+        if limit == 0:
+            return []
+
+        query_prefix = model_query(context, models.Device)
+        filters = copy.deepcopy(filters)
+
+        exact_match_filter_names = ['uuid', 'id', 'type',
+                                    'vendor', 'model', 'hostname']
+
+        # Filter the query
+        query_prefix = self._exact_filter(models.Device, query_prefix,
+                                          filters, exact_match_filter_names)
+        if query_prefix is None:
+            return []
         return _paginate_query(context, models.Device, limit, marker,
-                               sort_key, sort_dir, query)
+                               sort_key, sort_dir, query_prefix)
+
+    def device_list(self, context):
+        query = model_query(context, models.Device)
+        return _paginate_query(context, models.Device)
 
     def device_update(self, context, uuid, values):
         if 'uuid' in values:
@@ -397,6 +417,95 @@ class Connection(api.Connection):
             count = query.delete()
             if count != 1:
                 raise exception.DeviceNotFound(uuid=uuid)
+
+    def device_profile_create(self, context, values):
+        if not values.get('uuid'):
+            values['uuid'] = uuidutils.generate_uuid()
+
+        device_profile = models.DeviceProfile()
+        device_profile.update(values)
+
+        with _session_for_write() as session:
+            try:
+                session.add(device_profile)
+                session.flush()
+            except db_exc.DBDuplicateEntry:
+                raise exception.DeviceProfileAlreadyExists(uuid=values['uuid'])
+            return device_profile
+
+    def device_profile_get_by_uuid(self, context, uuid):
+        query = model_query(
+            context,
+            models.DeviceProfile).filter_by(uuid=uuid)
+        try:
+            return query.one()
+        except NoResultFound:
+            raise exception.DeviceProfileNotFound(uuid=uuid)
+
+    def device_profile_get_by_id(self, context, id):
+        query = model_query(
+            context,
+            models.DeviceProfile).filter_by(id=id)
+        try:
+            return query.one()
+        except NoResultFound:
+            raise exception.DeviceProfileNotFound(id=id)
+
+    def device_profile_list_by_filters(
+            self, context, filters, sort_key='created_at', sort_dir='desc',
+            limit=None, marker=None, join_columns=None):
+        if limit == 0:
+            return []
+
+        query_prefix = model_query(context, models.DeviceProfile)
+        filters = copy.deepcopy(filters)
+
+        exact_match_filter_names = ['uuid', 'id', 'name']
+
+        # Filter the query
+        query_prefix = self._exact_filter(models.DeviceProfile, query_prefix,
+                                          filters, exact_match_filter_names)
+        if query_prefix is None:
+            return []
+        return _paginate_query(context, models.DeviceProfile, limit, marker,
+                               sort_key, sort_dir, query_prefix)
+
+    def device_profile_list(self, context):
+        query = model_query(context, models.DeviceProfile)
+        return _paginate_query(context, models.DeviceProfile)
+
+    def device_profile_update(self, context, uuid, values):
+        if 'uuid' in values:
+            msg = _("Cannot overwrite UUID for an existing DeviceProfile.")
+            raise exception.InvalidParameterValue(err=msg)
+
+        try:
+            return self._do_update_device_profile(context, uuid, values)
+        except db_exc.DBDuplicateEntry as e:
+            if 'name' in e.columns:
+                raise exception.DuplicateDeviceProfileName(name=values['name'])
+
+    @oslo_db_api.retry_on_deadlock
+    def _do_update_device_profile(self, context, uuid, values):
+        with _session_for_write():
+            query = model_query(context, models.DeviceProfile)
+            query = add_identity_filter(query, uuid)
+            try:
+                ref = query.with_lockmode('update').one()
+            except NoResultFound:
+                raise exception.DeviceProfileNotFound(uuid=uuid)
+
+            ref.update(values)
+        return ref
+
+    @oslo_db_api.retry_on_deadlock
+    def device_profile_delete(self, context, uuid):
+        with _session_for_write():
+            query = model_query(context, models.DeviceProfile)
+            query = add_identity_filter(query, uuid)
+            count = query.delete()
+            if count != 1:
+                raise exception.DeviceProfileNotFound(uuid=uuid)
 
     def deployable_create(self, context, values):
         if not values.get('uuid'):
