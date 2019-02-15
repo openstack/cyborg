@@ -16,3 +16,6 @@
 
 CONDUCTOR_TOPIC = 'cyborg-conductor'
 AGENT_TOPIC = 'cyborg-agent'
+
+ARQ_STATES = (ARQINITIAL, ARQBOUND, ARQUNBOUND, ARQBINDFAILED) = \
+    ('Initial', 'Bound', 'Unbound', 'BindFailed')

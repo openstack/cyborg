@@ -132,3 +132,24 @@ class Connection(object):
     @abc.abstractmethod
     def reservation_commit(self, context, reservations, project_id=None):
         """Check quotas and create appropriate reservations."""
+
+    # extarq
+    @abc.abstractmethod
+    def extarq_create(self, context, values):
+        """Create a new extarq."""
+
+    @abc.abstractmethod
+    def extarq_delete(self, context, uuid):
+        """Delete an extarq."""
+
+    @abc.abstractmethod
+    def extarq_update(self, context, uuid, values):
+        """Update an extarq."""
+
+    @abc.abstractmethod
+    def extarq_list(self, context, limit, marker, sort_key, sort_dir):
+        """Get requested list of extarqs."""
+
+    @abc.abstractmethod
+    def extarq_get(self, context, uuid):
+        """Get requested extarq."""

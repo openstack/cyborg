@@ -49,3 +49,40 @@ def get_test_deployable(**kw):
         'availability': 'Available',
         'accelerator_id': kw.get('accelerator_id', 1),
     }
+
+
+def get_test_extarq(**kwargs):
+    return {
+        'uuid': kwargs.get('uuid', '10efe63d-dfea-4a37-ad94-4116fba5098'),
+        'id': kwargs.get('id', 1),
+        'state': kwargs.get('state', 'bound'),
+        'device_profile_id': kwargs.get('id', 1),
+        'hostname': kwargs.get('hostname', 'testnode1'),
+        'device_rp_uuid': kwargs.get('device_rp_uuid',
+                                     'f2b96c5f-242a-41a0-a736-b6e1fada071b'),
+        'device_instance_uuid':
+            kwargs.get('device_rp_uuid',
+                       '6219e0fb-2935-4db2-a3c7-86a2ac3ac84e'),
+        'attach_handle_id': kwargs.get('id', 1),
+        'created_at': kwargs.get('created_at', None),
+        'updated_at': kwargs.get('updated_at', None)
+    }
+
+
+def get_test_arq(**kwargs):
+    return {
+        'uuid': kwargs.get('uuid', '10efe63d-dfea-4a37-ad94-4116fba5098'),
+        'id': kwargs.get('id', 1),
+        'state': kwargs.get('state', 'Initial'),
+        'device_profile': kwargs.get('device_profile', None),
+        'hostname': kwargs.get('hostname', 'testnode1'),
+        'device_rp_uuid': kwargs.get('device_rp_uuid',
+                                     'f2b96c5f-242a-41a0-a736-b6e1fada071b'),
+        'device_instance_uuid':
+            kwargs.get('device_rp_uuid',
+                       '6219e0fb-2935-4db2-a3c7-86a2ac3ac84e'),
+        'attach_handle': kwargs.get('attach_handle', None),
+        'created_at': kwargs.get('created_at', None),
+        'updated_at': kwargs.get('updated_at', None),
+        'substate': kwargs.get('substate', 'Initial'),
+    }
