@@ -171,8 +171,9 @@ class DeviceProfile(Base):
     profile_json = Column(Text, nullable=False)
 
 
-class ExtendedAcceleratorRequest(Base):
-    """Represents extended nova requests for attach related operations."""
+class ExtArq(Base):
+    """ExtArq is the abbreviation of ExtendedAcceleratorRequest, it represents
+    extended nova requests for attach related operations."""
 
     __tablename__ = 'extended_accelerator_requests'
     __table_args__ = (
@@ -187,7 +188,7 @@ class ExtendedAcceleratorRequest(Base):
 
     id = Column(Integer, primary_key=True)
     uuid = Column(String(36), nullable=False, unique=True)
-    project_id = Column(String(255), nullable=False)
+    project_id = Column(String(255), nullable=True)
     state = Column(Enum('Initial', 'Bound', 'BindFailed', name='state'),
                    nullable=False)
     device_profile_id = Column(Integer, ForeignKey('device_profiles.id',

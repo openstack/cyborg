@@ -143,7 +143,9 @@ def upgrade():
         sa.Column('updated_at', sa.DateTime(), nullable=True),
         sa.Column('id', sa.Integer(), nullable=False),
         sa.Column('uuid', sa.String(length=36), nullable=False, unique=True),
-        sa.Column('project_id', sa.String(length=255), nullable=False),
+        # NOTICE: we don't have project related constraints in Stein Release,
+        # set nullable=True but keep this field for further expansion.
+        sa.Column('project_id', sa.String(length=255), nullable=True),
         sa.Column('state', state, nullable=False, default='Initial'),
         sa.Column('device_profile_id', sa.Integer(),
                   sa.ForeignKey('device_profiles.id', ondelete="RESTRICT"),
