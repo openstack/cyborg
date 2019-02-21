@@ -18,6 +18,8 @@ state = sa.Enum('Initial', 'Bound', 'BindFailed', name='state')
 substate = sa.Enum('Initial', name='substate')
 attach_type = sa.Enum('PCI', 'MDEV', name='attach_type')
 cpid_type = sa.Enum('PCI', name='cpid_type')
+control_type = sa.Enum('PCI', name='control_type')
+device_type = sa.Enum('GPU', 'FPGA', name='device_type')
 
 
 def upgrade():
@@ -32,7 +34,7 @@ def upgrade():
         sa.Column('updated_at', sa.DateTime(), nullable=True),
         sa.Column('id', sa.Integer(), nullable=False),
         sa.Column('uuid', sa.String(length=36), nullable=False, unique=True),
-        sa.Column('type', sa.String(length=255), nullable=False),
+        sa.Column('type', device_type, nullable=False),
         sa.Column('vendor', sa.String(length=255), nullable=False),
         sa.Column('model', sa.String(length=255), nullable=False),
         sa.Column('std_board_info', sa.Text(), nullable=True),
