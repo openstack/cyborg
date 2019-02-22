@@ -111,10 +111,6 @@ class Connection(object):
         """Get requested deployable."""
 
     @abc.abstractmethod
-    def deployable_get_by_host(self, context, host):
-        """Get requested deployable by host."""
-
-    @abc.abstractmethod
     def deployable_list(self, context):
         """Get requested list of deployables."""
 

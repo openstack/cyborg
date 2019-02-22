@@ -532,12 +532,6 @@ class Connection(api.Connection):
         except NoResultFound:
             raise exception.DeployableNotFound(uuid=uuid)
 
-    def deployable_get_by_host(self, context, host):
-        query = model_query(
-            context,
-            models.Deployable).filter_by(host=host)
-        return query.all()
-
     def deployable_list(self, context):
         query = model_query(context, models.Deployable)
         return query.all()
@@ -572,7 +566,7 @@ class Connection(api.Connection):
         with _session_for_write():
             query = model_query(context, models.Deployable)
             query = add_identity_filter(query, uuid)
-            query.update({'root_uuid': None})
+            query.update({'root_id': None})
             count = query.delete()
             if count != 1:
                 raise exception.DeployableNotFound(uuid=uuid)
@@ -580,7 +574,7 @@ class Connection(api.Connection):
     def deployable_get_by_filters_with_attributes(self, context,
                                                   filters):
 
-        exact_match_filter_names = ['uuid', 'name',
+        exact_match_filter_names = ['id', 'uuid', 'name',
                                     'parent_id', 'root_id',
                                     'num_accelerators', 'device_id']
         attribute_filters = {}
@@ -680,7 +674,7 @@ class Connection(api.Connection):
         query_prefix = model_query(context, models.Deployable)
         filters = copy.deepcopy(filters)
 
-        exact_match_filter_names = ['uuid', 'name',
+        exact_match_filter_names = ['id', 'uuid', 'name',
                                     'parent_id', 'root_id',
                                     'num_accelerators', 'device_id']
 

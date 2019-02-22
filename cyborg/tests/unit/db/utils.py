@@ -33,21 +33,15 @@ def get_test_accelerator(**kw):
 
 def get_test_deployable(**kw):
     return {
-        'uuid': kw.get('uuid', '10efe63d-dfea-4a37-ad94-4116fba5098'),
-        'deleted': False,
+        'id': kw.get('id', 1),
+        'uuid': kw.get('uuid', '10efe63d-dfea-4a37-ad94-4116fba5011'),
+        'parent_id': kw.get('parent_id', None),
+        'root_id': kw.get('root_id', 0),
         'name': kw.get('name', 'name'),
-        'parent_uuid': kw.get('parent_uuid', None),
-        'address': kw.get('address', '00:7f:0b.2'),
-        'host': kw.get('host', 'host'),
-        'board': kw.get('board', 'KU115'),
-        'vendor': kw.get('vendor', 'Xilinx'),
-        'version': kw.get('version', '1.0'),
-        'type': kw.get('type', '1.0'),
-        'interface_type': 'pci',
-        'assignable': True,
-        'instance_uuid': None,
-        'availability': 'Available',
-        'accelerator_id': kw.get('accelerator_id', 1),
+        'num_accelerators': kw.get('num_accelerators', 4),
+        'device_id': kw.get('device_id', 0),
+        'created_at': kw.get('created_at', None),
+        'updated_at': kw.get('updated_at', None)
     }
 
 

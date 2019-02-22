@@ -136,16 +136,6 @@ class ConductorAPI(object):
         cctxt = self.client.prepare(topic=self.topic)
         return cctxt.call(context, 'deployable_get', uuid=uuid)
 
-    def deployable_get_by_host(self, context, host):
-        """Signal to conductor service to get a deployable by host.
-
-        :param context: request context.
-        :param host: host on which the deployable is located.
-        :returns: requested deployable object.
-        """
-        cctxt = self.client.prepare(topic=self.topic)
-        return cctxt.call(context, 'deployable_get_by_host', host=host)
-
     def deployable_list(self, context):
         """Signal to conductor service to get a list of deployables.
 

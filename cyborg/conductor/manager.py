@@ -103,15 +103,6 @@ class ConductorManager(object):
         """
         return objects.Deployable.get(context, uuid)
 
-    def deployable_get_by_host(self, context, host):
-        """Retrieve a deployable.
-
-        :param context: request context.
-        :param host: host on which the deployable is located.
-        :returns: requested deployable object.
-        """
-        return objects.Deployable.get_by_host(context, host)
-
     def deployable_list(self, context):
         """Retrieve a list of deployables.
 

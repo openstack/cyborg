@@ -28,7 +28,7 @@ LOG = logging.getLogger(__name__)
 @base.CyborgObjectRegistry.register
 class Deployable(base.CyborgObject, object_base.VersionedObjectDictCompat):
     # Version 1.0: Initial version
-    VERSION = '1.0'
+    VERSION = '2.0'
 
     dbapi = dbapi.get_instance()
     attributes_list = []
@@ -36,35 +36,21 @@ class Deployable(base.CyborgObject, object_base.VersionedObjectDictCompat):
     fields = {
         'id': object_fields.IntegerField(nullable=False),
         'uuid': object_fields.UUIDField(nullable=False),
+        'parent_id': object_fields.IntegerField(nullable=True),
+        # parent_id refers to the id of the deployable's parent node
+        'root_id': object_fields.IntegerField(nullable=True),
+        # root_id refers to the id of the deployable's root to for nested tree
         'name': object_fields.StringField(nullable=False),
-        'parent_uuid': object_fields.UUIDField(nullable=True),
-        # parent_uuid refers to the id of the VF's parent node
-        'root_uuid': object_fields.UUIDField(nullable=True),
-        # root_uuid refers to the id of the VF's root which has to be a PF
-        'address': object_fields.StringField(nullable=False),
-        # if interface_type is pci(/mdev), address is the pci_address(/path)
-        'host': object_fields.StringField(nullable=False),
-        'board': object_fields.StringField(nullable=False),
-        # board refers to a specific acc board type, e.g P100 GPU card
-        'vendor': object_fields.StringField(nullable=False),
-        'version': object_fields.StringField(nullable=False),
-        'type': object_fields.StringField(nullable=False),
-        # type of deployable, e.g, pf/vf/*f
-        'interface_type': object_fields.StringField(nullable=False),
-        # interface to hypervisor(libvirt), e.g, pci/mdev...
-        'assignable': object_fields.BooleanField(nullable=False),
-        # identify if an accelerator is in use
-        'instance_uuid': object_fields.UUIDField(nullable=True),
-        # The id of the virtualized accelerator instance
-        'availability': object_fields.StringField(nullable=False),
-        # identify the state of acc, e.g released/claimed/...
-        'accelerator_id': object_fields.IntegerField(nullable=False)
-        # Foreign key constrain to reference accelerator table
+        # name of the deplyable
+        'num_accelerators': object_fields.IntegerField(nullable=False),
+        # number of accelerators spawned by this deplyable
+        'device_id': object_fields.IntegerField(nullable=False)
+        # Foreign key constrain to reference device table
     }
 
-    def _get_parent_root_uuid(self):
-        obj_dep = Deployable.get(None, self.parent_uuid)
-        return obj_dep.root_uuid
+    def _get_parent_root_uuid(self, context):
+        obj_dep = Deployable.get_by_id(context, self.parent_id)
+        return obj_dep.root_id
 
     def create(self, context):
         """Create a Deployable record in the DB."""
@@ -72,40 +58,40 @@ class Deployable(base.CyborgObject, object_base.VersionedObjectDictCompat):
             raise exception.ObjectActionError(action='create',
                                               reason='uuid is required')
 
-        if not hasattr(self, 'parent_uuid') or self.parent_uuid is None:
-            self.root_uuid = self.uuid
+        if not hasattr(self, 'parent_id') or self.parent_id is None:
+            self.root_id = self.id
         else:
-            self.root_uuid = self._get_parent_root_uuid()
+            self.root_uuid = self._get_parent_root_uuid(context)
 
         values = self.obj_get_changes()
 
         db_dep = self.dbapi.deployable_create(context, values)
         self._from_db_object(self, db_dep)
+        self.obj_reset_changes()
         del self.attributes_list[:]
 
     @classmethod
-    def get(cls, context, uuid):
+    def get(cls, context, uuid, with_attribute_list=True):
         """Find a DB Deployable and return an Obj Deployable."""
         db_dep = cls.dbapi.deployable_get(context, uuid)
         obj_dep = cls._from_db_object(cls(context), db_dep)
         # retrieve all the attrobutes for this deployable
-        query = {"deployable_id": obj_dep.id}
-        attr_get_list = Attribute.get_by_filter(context,
-                                                query)
-        obj_dep.attributes_list = attr_get_list
+        if with_attribute_list:
+            query = {"deployable_id": obj_dep.id}
+            attr_get_list = Attribute.get_by_filter(context,
+                                                    query)
+            obj_dep.attributes_list = attr_get_list
+
+        obj_dep.obj_reset_changes()
         return obj_dep
 
     @classmethod
-    def get_by_host(cls, context, host):
-        """Get a Deployable by host."""
-        db_deps = cls.dbapi.deployable_get_by_host(context, host)
-        obj_dpl_list = cls._from_db_object_list(db_deps, context)
-        for obj_dpl in obj_dpl_list:
-            query = {"deployable_id": obj_dpl.id}
-            attr_get_list = Attribute.get_by_filter(context,
-                                                    query)
-            obj_dpl.attributes_list = attr_get_list
-        return obj_dpl_list
+    def get_by_id(cls, context, id):
+        """Find a DB Deployable and return an Obj Deployable."""
+        dpl_query = {"id": id}
+        obj_dep = Deployable.get_by_filter(context, id)[0]
+        obj_dep.obj_reset_changes()
+        return obj_dep
 
     @classmethod
     def list(cls, context, filters={}):
@@ -134,6 +120,7 @@ class Deployable(base.CyborgObject, object_base.VersionedObjectDictCompat):
         """Update a Deployable record in the DB."""
         updates = self.obj_get_changes()
         db_dep = self.dbapi.deployable_update(context, self.uuid, updates)
+        self.obj_reset_changes()
         self._from_db_object(self, db_dep)
         query = {"deployable_id": self.id}
         attr_get_list = Attribute.get_by_filter(context,
@@ -202,15 +189,16 @@ class Deployable(base.CyborgObject, object_base.VersionedObjectDictCompat):
 
         return obj_dpl_list
 
-    @classmethod
-    def _from_db_object(cls, obj, db_obj):
+    @staticmethod
+    def _from_db_object(obj, db_obj):
         """Converts a deployable to a formal object.
 
         :param obj: An object of the class.
         :param db_obj: A DB model of the object
         :return: The object of the class with the database entity added
         """
-        obj = base.CyborgObject._from_db_object(obj, db_obj)
+        for field in obj.fields:
+            obj[field] = db_obj[field]
         obj.attributes_list = []
 
         return obj

@@ -21,38 +21,39 @@ from cyborg import objects
 from cyborg.objects import fields
 
 
-def fake_db_deployable(**updates):
+def fake_db_device(**updates):
     root_uuid = uuidutils.generate_uuid()
-    db_deployable = {
+    db_device = {
         'id': 1,
         'uuid': root_uuid,
-        'name': 'dp_name',
-        'parent_id': None,
-        'root_id': 1,
-        'num_accelerators': 4,
-        'device_id': 0
+        'type': 'FPGA',
+        'vendor': "vendor",
+        'model': "model",
+        'std_board_info': "std_board_info",
+        'vendor_board_info': "vendor_board_info",
+        'hostname': "hostname"
         }
 
-    for name, field in objects.Deployable.fields.items():
-        if name in db_deployable:
+    for name, field in objects.Device.fields.items():
+        if name in db_device:
             continue
         if field.nullable:
-            db_deployable[name] = None
+            db_device[name] = None
         elif field.default != fields.UnspecifiedDefault:
-            db_deployable[name] = field.default
+            db_device[name] = field.default
         else:
-            raise Exception('fake_db_deployable needs help with %s' % name)
+            raise Exception('fake_db_device needs help with %s' % name)
 
     if updates:
-        db_deployable.update(updates)
+        db_device.update(updates)
 
-    return db_deployable
+    return db_device
 
 
-def fake_deployable_obj(context, obj_dpl_class=None, **updates):
-    if obj_dpl_class is None:
-        obj_dpl_class = objects.Deployable
-    deploy = obj_dpl_class._from_db_object(obj_dpl_class(),
-                                           fake_db_deployable(**updates))
-    deploy.obj_reset_changes()
-    return deploy
+def fake_device_obj(context, obj_device_class=None, **updates):
+    if obj_device_class is None:
+        obj_device_class = objects.Device
+    device = obj_device_class._from_db_object(obj_device_class(),
+                                              fake_db_device(**updates))
+    device.obj_reset_changes()
+    return device
