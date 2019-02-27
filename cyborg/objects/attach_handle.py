@@ -36,14 +36,17 @@ class AttachHandle(base.CyborgObject, object_base.VersionedObjectDictCompat):
         'id': object_fields.IntegerField(nullable=False),
         'uuid': object_fields.UUIDField(nullable=False),
         'deployable_id': object_fields.IntegerField(nullable=False),
+        'cpid_id': object_fields.IntegerField(nullable=False),
         'attach_type': object_fields.EnumField(valid_values=ATTACH_TYPE,
                                                nullable=False),
         # attach_info should be JSON here.
-        'attach_info': object_fields.StringField(nullable=False)
+        'attach_info': object_fields.StringField(nullable=False),
+        'in_use': object_fields.BooleanField(nullable=False)
     }
 
     def create(self, context):
         """Create a AttachHandle record in the DB."""
+        self.in_use = False
         values = self.obj_get_changes()
         db_ah = self.dbapi.attach_handle_create(context, values)
         self._from_db_object(self, db_ah)
