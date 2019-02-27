@@ -175,7 +175,7 @@ class Connection(api.Connection):
         query_prefix = model_query(context, models.AttachHandle)
         filters = copy.deepcopy(filters)
 
-        exact_match_filter_names = ['uuid', 'id', 'deployable_id']
+        exact_match_filter_names = ['uuid', 'id', 'deployable_id', 'cpid_id']
 
         # Filter the query
         query_prefix = self._exact_filter(models.AttachHandle, query_prefix,
@@ -293,7 +293,7 @@ class Connection(api.Connection):
         query_prefix = model_query(context, models.AttachHandle)
         filters = copy.deepcopy(filters)
 
-        exact_match_filter_names = ['uuid', 'id', 'deployable_id']
+        exact_match_filter_names = ['uuid', 'id', 'device_id']
 
         # Filter the query
         query_prefix = self._exact_filter(models.ControlpathID, query_prefix,

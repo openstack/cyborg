@@ -35,7 +35,7 @@ class ControlpathID(base.CyborgObject, object_base.VersionedObjectDictCompat):
     fields = {
         'id': object_fields.IntegerField(nullable=False),
         'uuid': object_fields.UUIDField(nullable=False),
-        'deployable_id': object_fields.IntegerField(nullable=False),
+        'device_id': object_fields.IntegerField(nullable=False),
         'cpid_type': object_fields.EnumField(valid_values=CPID_TYPE,
                                              nullable=False),
         'cpid_info': object_fields.StringField(nullable=False)

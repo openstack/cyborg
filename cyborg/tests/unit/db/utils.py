@@ -87,6 +87,8 @@ def get_test_attach_handle(**kw):
         'uuid': kw.get('uuid', '10efe63d-dfea-4a37-ad94-4116fba5098'),
         'id': kw.get('id', 1),
         'deployable_id': kw.get('deployable_id', 1),
+        'cpid_id': kw.get('cpid_id', 1),
+        'in_use': kw.get('in_use', False),
         'attach_type': kw.get('attach_type', "PCI"),
         'attach_info': kw.get('attach_info', "attach_info"),
         'created_at': kw.get('create_at', None),
@@ -98,7 +100,7 @@ def get_test_control_path(**kw):
     return {
         'uuid': kw.get('uuid', '10efe63d-dfea-4a37-ad94-4116fba5098'),
         'id': kw.get('id', 1),
-        'deployable_id': kw.get('deployable_id', 1),
+        'device_id': kw.get('device_id', 1),
         'cpid_type': kw.get('cpid_type', "PCI"),
         'cpid_info': kw.get('cpid_info', "cpid_info"),
         'created_at': kw.get('create_at', None),
