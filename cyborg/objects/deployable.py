@@ -41,27 +41,24 @@ class Deployable(base.CyborgObject, object_base.VersionedObjectDictCompat):
         'root_id': object_fields.IntegerField(nullable=True),
         # root_id refers to the id of the deployable's root to for nested tree
         'name': object_fields.StringField(nullable=False),
-        # name of the deplyable
+        # name of the deployable
         'num_accelerators': object_fields.IntegerField(nullable=False),
-        # number of accelerators spawned by this deplyable
+        # number of accelerators spawned by this deployable
         'device_id': object_fields.IntegerField(nullable=False)
         # Foreign key constrain to reference device table
     }
 
-    def _get_parent_root_uuid(self, context):
+    def _get_parent_root_id(self, context):
         obj_dep = Deployable.get_by_id(context, self.parent_id)
         return obj_dep.root_id
 
     def create(self, context):
         """Create a Deployable record in the DB."""
-        if 'uuid' not in self:
-            raise exception.ObjectActionError(action='create',
-                                              reason='uuid is required')
 
         if not hasattr(self, 'parent_id') or self.parent_id is None:
             self.root_id = self.id
         else:
-            self.root_uuid = self._get_parent_root_uuid(context)
+            self.root_id = self._get_parent_root_id(context)
 
         values = self.obj_get_changes()
 
@@ -89,7 +86,7 @@ class Deployable(base.CyborgObject, object_base.VersionedObjectDictCompat):
     def get_by_id(cls, context, id):
         """Find a DB Deployable and return an Obj Deployable."""
         dpl_query = {"id": id}
-        obj_dep = Deployable.get_by_filter(context, id)[0]
+        obj_dep = Deployable.get_by_filter(context, dpl_query)[0]
         obj_dep.obj_reset_changes()
         return obj_dep
 
@@ -134,9 +131,9 @@ class Deployable(base.CyborgObject, object_base.VersionedObjectDictCompat):
         self.obj_reset_changes()
 
     def add_attribute(self, context, key, value):
-        """add a attribute object to the attribute_list.
+        """Add an attribute object to the attribute_list.
         If the attribute already exists, it will update the value,
-        otherwise, the vf will be appended to the list
+        otherwise, the attribute will be appended to the list
         """
 
         for exist_attr in self.attributes_list:
@@ -157,7 +154,7 @@ class Deployable(base.CyborgObject, object_base.VersionedObjectDictCompat):
         self.attributes_list.append(attr)
 
     def delete_attribute(self, context, attribute):
-        """remove an attribute from the attributes_list
+        """Remove an attribute from the attributes_list
         if the attribute does not exist, ignore it
         """
 
