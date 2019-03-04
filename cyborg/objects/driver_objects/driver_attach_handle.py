@@ -28,4 +28,6 @@ class DriverAttachHandle(base.DriverObjectBase,
         'attach_type': object_fields.StringField(nullable=False),
         # PCI BDF or mediated device ID...
         'attach_info': object_fields.StringField(nullable=False),
+        # The status of attach_handle, is in use or not.
+        'in_use': object_fields.BooleanField(nullable=False, default=False)
     }

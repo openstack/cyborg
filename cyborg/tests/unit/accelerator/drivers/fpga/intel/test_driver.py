@@ -40,33 +40,60 @@ class TestIntelFPGADriver(base.TestCase):
         sysinfo.SYS_FPGA = self.syspath
 
     def test_discover(self):
-        expect = [{'function': 'pf', 'assignable': False, 'pr_num': '1',
-                   'vendor_id': '0x8086', 'devices': '0000:5e:00.0',
-                   'regions': [{
-                       'function': 'vf', 'assignable': True,
-                       'product_id': '0xbcc1',
-                       'name': 'intel-fpga-dev.2',
-                       'parent_devices': '0000:5e:00.0',
-                       'path': '%s/intel-fpga-dev.2' % sysinfo.SYS_FPGA,
-                       'vendor_id': '0x8086',
-                       'devices': '0000:5e:00.1'}],
-                   'name': 'intel-fpga-dev.0',
-                   'parent_devices': '',
-                   'path': '%s/intel-fpga-dev.0' % sysinfo.SYS_FPGA,
-                   'product_id': '0xbcc0'},
-                  {'function': 'pf', 'assignable': True, 'pr_num': '0',
-                   'vendor_id': '0x8086', 'devices': '0000:be:00.0',
-                   'parent_devices': '',
-                   'name': 'intel-fpga-dev.1',
-                   'path': '%s/intel-fpga-dev.1' % sysinfo.SYS_FPGA,
-                   'product_id': '0xbcc0'}]
-        expect.sort()
-
+        attach_handle_list = [
+            [
+                {'attach_type': 'pci',
+                 'attach_info': '0000:be:00.0',
+                 'in_use': False}
+            ],
+            [
+                {'attach_type': 'pci',
+                 'attach_info': '0000:5e:00.1',
+                 'in_use': False}
+            ]
+        ]
+        expected = [{'vendor': '0x8086',
+                     'type': 'FPGA',
+                     'model': '0xbcc0',
+                     'deployable_list':
+                         [
+                             {'num_accelerators': 1,
+                              'name': 'intel-fpga-dev.1',
+                              'attach_handle_list': attach_handle_list[0]
+                              },
+                         ],
+                     'controlpath_id':
+                         {'cpid_info': '0000:be:00.0',
+                          'cpid_type': 'pci'}},
+                    {'vendor': '0x8086',
+                     'type': 'FPGA',
+                     'model': '0xbcc0',
+                     'deployable_list':
+                         [
+                             {'num_accelerators': 1,
+                              'name': 'intel-fpga-dev.2',
+                              'attach_handle_list': attach_handle_list[1]
+                              },
+                         ],
+                     'controlpath_id':
+                         {'cpid_info': '0000:5e:00.0',
+                          'cpid_type': 'pci'}}]
         intel = IntelFPGADriver()
         fpgas = intel.discover()
-        fpgas.sort()
         self.assertEqual(2, len(fpgas))
-        self.assertEqual(fpgas, expect)
+        for i in range(len(fpgas)):
+            fpga_dict = fpgas[i].as_dict()
+            fpga_dep_list = fpga_dict['deployable_list']
+            fpga_attach_handle_list = \
+                fpga_dep_list[0].as_dict()['attach_handle_list']
+            self.assertEqual(expected[i]['vendor'], fpga_dict['vendor'])
+            self.assertEqual(expected[i]['controlpath_id'],
+                             fpga_dict['controlpath_id'].as_dict())
+            self.assertEqual(expected[i]['deployable_list'][0]
+                             ['num_accelerators'],
+                             fpga_dep_list[0].as_dict()['num_accelerators'])
+            self.assertEqual(attach_handle_list[i][0],
+                             fpga_attach_handle_list[0].as_dict())
 
     @mock.patch.object(subprocess, 'Popen', autospec=True)
     def test_intel_program(self, mock_popen):
