@@ -13,6 +13,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from oslo_log import log
 import pecan
 from six.moves import http_client
 import wsme
@@ -27,6 +28,8 @@ from cyborg.api import expose
 from cyborg.common import exception
 from cyborg.common import policy
 from cyborg import objects
+
+LOG = log.getLogger(__name__)
 
 
 class Accelerator(base.APIBase):
@@ -80,19 +83,10 @@ class Accelerator(base.APIBase):
         # white_list named _wsme_attributes. See wsme.types.list_attributes.
         # Attribute which is not in the list will be ignored.
         # We have no disscussion about it, so just left it here now.
-        for field in objects.Accelerator.fields:
-            self.fields.append(field)
-            setattr(self, field, kwargs.get(field, wtypes.Unset))
 
     @classmethod
     def convert_with_links(cls, obj_acc):
-        api_acc = cls(**obj_acc.as_dict())
-        url = pecan.request.public_url
-        api_acc.links = [
-            link.Link.make_link('self', url, 'accelerators', api_acc.uuid),
-            link.Link.make_link('bookmark', url, 'accelerators', api_acc.uuid,
-                                bookmark=True)
-            ]
+        api_acc = cls()
         return api_acc
 
 
@@ -105,8 +99,6 @@ class AcceleratorCollection(base.APIBase):
     @classmethod
     def convert_with_links(cls, obj_accs):
         collection = cls()
-        collection.accelerators = [Accelerator.convert_with_links(obj_acc)
-                                   for obj_acc in obj_accs]
         return collection
 
 
@@ -127,7 +119,6 @@ class AcceleratorsControllerBase(base.CyborgController):
     _resource = None
 
     def _get_resource(self, uuid):
-        self._resource = objects.Accelerator.get(pecan.request.context, uuid)
         return self._resource
 
 
@@ -144,12 +135,8 @@ class AcceleratorsController(AcceleratorsControllerBase):
 
         :param acc: an accelerator within the request body.
         """
-        context = pecan.request.context
-        obj_acc = objects.Accelerator(context, **acc)
-        new_acc = pecan.request.conductor_api.accelerator_create(context,
-                                                                 obj_acc)
-        # Set the HTTP Location Header
-        pecan.response.location = link.build_url('accelerators', new_acc.uuid)
+        new_acc = None
+        LOG.warning("v1 APIs for accelerator objects are deprecated.")
         return Accelerator.convert_with_links(new_acc)
 
     @policy.authorize_wsgi("cyborg:accelerator", "get")
@@ -159,7 +146,8 @@ class AcceleratorsController(AcceleratorsControllerBase):
 
         :param uuid: UUID of an accelerator.
         """
-        obj_acc = self._resource or self._get_resource(uuid)
+        obj_acc = None
+        LOG.warning("v1 APIs for accelerator objects are deprecated.")
         return Accelerator.convert_with_links(obj_acc)
 
     @expose.expose(AcceleratorCollection, int, types.uuid, wtypes.text,
@@ -185,17 +173,8 @@ class AcceleratorsController(AcceleratorsControllerBase):
                             the accelerators associated with the calling
                             tenant are included in the response.
         """
-        context = pecan.request.context
-        project_only = True
-        if context.is_admin and all_tenants:
-            project_only = False
-
-        marker_obj = None
-        if marker:
-            marker_obj = objects.Accelerator.get(context, marker)
-
-        obj_accs = objects.Accelerator.list(context, limit, marker_obj,
-                                            sort_key, sort_dir, project_only)
+        LOG.warning("v1 APIs for accelerator objects are deprecated.")
+        obj_accs = AcceleratorCollection()
         return AcceleratorCollection.convert_with_links(obj_accs)
 
     @policy.authorize_wsgi("cyborg:accelerator", "update")
@@ -206,36 +185,15 @@ class AcceleratorsController(AcceleratorsControllerBase):
         :param uuid: UUID of an accelerator.
         :param patch: a json PATCH document to apply to this accelerator.
         """
-        obj_acc = self._resource or self._get_resource(uuid)
-        try:
-            api_acc = Accelerator(
-                **api_utils.apply_jsonpatch(obj_acc.as_dict(), patch))
-        except api_utils.JSONPATCH_EXCEPTIONS as e:
-            raise exception.PatchError(patch=patch, reason=e)
-
-        # Update only the fields that have changed
-        for field in objects.Accelerator.fields:
-            try:
-                patch_val = getattr(api_acc, field)
-            except AttributeError:
-                # Ignore fields that aren't exposed in the API
-                continue
-            if patch_val == wtypes.Unset:
-                patch_val = None
-            if obj_acc[field] != patch_val:
-                obj_acc[field] = patch_val
-
-        context = pecan.request.context
-        new_acc = pecan.request.conductor_api.accelerator_update(context,
-                                                                 obj_acc)
-        return Accelerator.convert_with_links(new_acc)
+        LOG.warning("v1 APIs for accelerator objects are deprecated.")
+        return None
 
     @policy.authorize_wsgi("cyborg:accelerator", "delete")
-    @expose.expose(None, types.uuid, status_code=http_client.NO_CONTENT)
+    @expose.expose(Accelerator, types.uuid, status_code=http_client.NO_CONTENT)
     def delete(self, uuid):
         """Delete an accelerator.
         :param uuid: UUID of an accelerator.
         """
+        LOG.warning("v1 APIs for accelerator objects are deprecated.")
         context = pecan.request.context
         obj_acc = self._resource or self._get_resource(uuid)
-        pecan.request.conductor_api.accelerator_delete(context, obj_acc)
