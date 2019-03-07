@@ -55,13 +55,10 @@ class Deployable(base.CyborgObject, object_base.VersionedObjectDictCompat):
     def create(self, context):
         """Create a Deployable record in the DB."""
 
-        if not hasattr(self, 'parent_id') or self.parent_id is None:
-            self.root_id = self.id
-        else:
-            self.root_id = self._get_parent_root_id(context)
+        # FIXME: Add parent_uuid and root_uuid constrains when DB change to
+        # parent_uuid & root_uuid
 
         values = self.obj_get_changes()
-
         db_dep = self.dbapi.deployable_create(context, values)
         self._from_db_object(self, db_dep)
         self.obj_reset_changes()
@@ -72,7 +69,7 @@ class Deployable(base.CyborgObject, object_base.VersionedObjectDictCompat):
         """Find a DB Deployable and return an Obj Deployable."""
         db_dep = cls.dbapi.deployable_get(context, uuid)
         obj_dep = cls._from_db_object(cls(context), db_dep)
-        # retrieve all the attrobutes for this deployable
+        # retrieve all the attributes for this deployable
         if with_attribute_list:
             query = {"deployable_id": obj_dep.id}
             attr_get_list = Attribute.get_by_filter(context,
@@ -95,7 +92,7 @@ class Deployable(base.CyborgObject, object_base.VersionedObjectDictCompat):
         """Return a list of Deployable objects."""
         if filters:
             sort_dir = filters.pop('sort_dir', 'desc')
-            sort_key = filters.pop('sort_key', 'create_at')
+            sort_key = filters.pop('sort_key', 'created_at')
             limit = filters.pop('limit', None)
             marker = filters.pop('marker_obj', None)
             db_deps = cls.dbapi.deployable_get_by_filters(context, filters,
@@ -199,3 +196,18 @@ class Deployable(base.CyborgObject, object_base.VersionedObjectDictCompat):
         obj.attributes_list = []
 
         return obj
+
+    @classmethod
+    def get_list_by_device_id(cls, context, device_id):
+        dep_filter = {'device_id': device_id}
+        dep_obj_list = Deployable.list(context, dep_filter)
+        return dep_obj_list
+
+    @classmethod
+    def get_by_name_deviceid(cls, context, name, device_id):
+        dep_filter = {'name': name, 'device_id': device_id}
+        dep_obj_list = Deployable.list(context, dep_filter)
+        if len(dep_obj_list) != 0:
+            return dep_obj_list[0]
+        else:
+            return None

@@ -15,8 +15,8 @@
 
 """SQLAlchemy storage backend."""
 
-import copy
 import threading
+import copy
 import uuid
 
 from oslo_db import api as oslo_db_api
@@ -27,16 +27,17 @@ from oslo_log import log
 from oslo_utils import strutils
 from oslo_utils import timeutils
 from oslo_utils import uuidutils
-from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.orm import load_only
+from sqlalchemy.orm.exc import NoResultFound
+from sqlalchemy.sql import func
 
 
 from cyborg.common import exception
 from cyborg.common.i18n import _
 from cyborg.db import api
 from cyborg.db.sqlalchemy import models
-from sqlalchemy import and_
 from sqlalchemy import or_
+from sqlalchemy import and_
 
 _CONTEXT = threading.local()
 LOG = log.getLogger(__name__)
@@ -105,8 +106,7 @@ def add_identity_filter(query, value):
         raise exception.InvalidIdentity(identity=value)
 
 
-def _paginate_query(context, model, limit=None, marker=None, sort_key=None,
-                    sort_dir=None, query=None):
+def _paginate_query(context, model, limit, marker, sort_key, sort_dir, query):
     sort_keys = ['id']
     if sort_key and sort_key not in sort_keys:
         sort_keys.insert(0, sort_key)
@@ -225,7 +225,7 @@ class Connection(api.Connection):
 
     def attach_handle_list(self, context):
         query = model_query(context, models.AttachHandle)
-        return _paginate_query(context, models.AttachHandle, query=query)
+        return _paginate_query(context, models.AttachHandle)
 
     def attach_handle_update(self, context, uuid, values):
         if 'uuid' in values:
@@ -290,10 +290,11 @@ class Connection(api.Connection):
         if limit == 0:
             return []
 
-        query_prefix = model_query(context, models.AttachHandle)
+        query_prefix = model_query(context, models.ControlpathID)
         filters = copy.deepcopy(filters)
 
-        exact_match_filter_names = ['uuid', 'id', 'device_id']
+        exact_match_filter_names = ['uuid', 'id', 'device_id', 'cpid_info',
+                                    'cpid_type']
 
         # Filter the query
         query_prefix = self._exact_filter(models.ControlpathID, query_prefix,
@@ -305,7 +306,7 @@ class Connection(api.Connection):
 
     def control_path_list(self, context):
         query = model_query(context, models.ControlpathID)
-        return _paginate_query(context, models.ControlpathID, query=query)
+        return _paginate_query(context, models.ControlpathID)
 
     def control_path_update(self, context, uuid, values):
         if 'uuid' in values:
@@ -383,7 +384,7 @@ class Connection(api.Connection):
 
     def device_list(self, context):
         query = model_query(context, models.Device)
-        return _paginate_query(context, models.Device, query=query)
+        return _paginate_query(context, models.Device)
 
     def device_update(self, context, uuid, values):
         if 'uuid' in values:
@@ -472,7 +473,7 @@ class Connection(api.Connection):
 
     def device_profile_list(self, context):
         query = model_query(context, models.DeviceProfile)
-        return _paginate_query(context, models.DeviceProfile, query=query)
+        return _paginate_query(context, models.DeviceProfile)
 
     def device_profile_update(self, context, uuid, values):
         if 'uuid' in values:
@@ -886,7 +887,7 @@ class Connection(api.Connection):
     def quota_reserve(self, context, resources, deltas, expire,
                       until_refresh, max_age, project_id=None,
                       is_allocated_reserve=False):
-        """Create reservation record in DB according to params"""
+        """ Create reservation record in DB according to params"""
         with _session_for_write() as session:
             if project_id is None:
                 project_id = context.project_id

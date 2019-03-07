@@ -57,7 +57,7 @@ class DeviceProfile(base.CyborgObject, object_base.VersionedObjectDictCompat):
         """Return a list of Device_profile objects."""
         if filters:
             sort_dir = filters.pop('sort_dir', 'desc')
-            sort_key = filters.pop('sort_key', 'create_at')
+            sort_key = filters.pop('sort_key', 'created_at')
             limit = filters.pop('limit', None)
             marker = filters.pop('marker_obj', None)
             db_device_profiles = cls.dbapi.device_profile_list_by_filters(

@@ -59,7 +59,7 @@ class ControlpathID(base.CyborgObject, object_base.VersionedObjectDictCompat):
         """Return a list of ControlpathID objects."""
         if filters:
             sort_dir = filters.pop('sort_dir', 'desc')
-            sort_key = filters.pop('sort_key', 'create_at')
+            sort_key = filters.pop('sort_key', 'created_at')
             limit = filters.pop('limit', None)
             marker = filters.pop('marker_obj', None)
             db_cps = cls.dbapi.control_path_get_by_filters(context, filters,
@@ -82,3 +82,24 @@ class ControlpathID(base.CyborgObject, object_base.VersionedObjectDictCompat):
         """Delete a ControlpathID from the DB."""
         self.dbapi.control_path_delete(context, self.uuid)
         self.obj_reset_changes()
+
+    @classmethod
+    def get_by_device_id(cls, context, device_id):
+        # control_path is unique for one device.
+        cpid_filter = {'device_id': device_id}
+        cpid_obj_list = ControlpathID.list(context, cpid_filter)
+        if len(cpid_obj_list) != 0:
+            return cpid_obj_list[0]
+        else:
+            return None
+
+    @classmethod
+    def get_by_device_id_cpidinfo(cls, context, device_id, cpid_info):
+        cpid_filter = {'device_id': device_id,
+                       'cpid_info': cpid_info}
+        # the list could have one value or is empty.
+        cpid_obj_list = ControlpathID.list(context, cpid_filter)
+        if len(cpid_obj_list) != 0:
+            return cpid_obj_list[0]
+        else:
+            return None

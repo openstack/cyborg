@@ -16,6 +16,7 @@
 from oslo_versionedobjects import base as object_base
 from cyborg.objects import base
 from cyborg.objects import fields as object_fields
+from cyborg.objects.attribute import Attribute
 
 
 @base.CyborgObjectRegistry.register
@@ -28,3 +29,30 @@ class DriverAttribute(base.DriverObjectBase,
         'key': object_fields.StringField(nullable=False),
         'value': object_fields.StringField(nullable=False)
     }
+
+    def create(self, context, deployable_id):
+        """Convert driver-side Attribute into Attribute Object so as to
+        store in DB."""
+        attr_obj = Attribute()
+        attr_obj.deployable_id = deployable_id
+        attr_obj.set_key_value_pair(self.key, self.value)
+        attr_obj.create(context)
+
+    @classmethod
+    def destroy(cls, context, deployable_id):
+        """Delete driver-side attribute list from the DB."""
+        attr_obj_list = Attribute.get_by_deployable_id(context, deployable_id)
+        for attr_obj in attr_obj_list:
+            attr_obj.destroy(context)
+
+    @classmethod
+    def list(cls, context, deployable_id):
+        """Form driver-side attribute list for one deployable."""
+        attr_obj_list = Attribute.get_by_deployable_id(context, deployable_id)
+        driver_attr_obj_list = []
+        for attr_obj in attr_obj_list:
+            driver_attr_obj = cls(context=context,
+                                  key=attr_obj.key,
+                                  value=attr_obj.value)
+            driver_attr_obj_list.append(driver_attr_obj)
+        return driver_attr_obj_list

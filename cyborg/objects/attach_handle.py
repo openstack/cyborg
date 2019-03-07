@@ -41,12 +41,11 @@ class AttachHandle(base.CyborgObject, object_base.VersionedObjectDictCompat):
                                                nullable=False),
         # attach_info should be JSON here.
         'attach_info': object_fields.StringField(nullable=False),
-        'in_use': object_fields.BooleanField(nullable=False)
+        'in_use': object_fields.BooleanField(nullable=False, default=False)
     }
 
     def create(self, context):
         """Create a AttachHandle record in the DB."""
-        self.in_use = False
         values = self.obj_get_changes()
         db_ah = self.dbapi.attach_handle_create(context, values)
         self._from_db_object(self, db_ah)
@@ -70,7 +69,7 @@ class AttachHandle(base.CyborgObject, object_base.VersionedObjectDictCompat):
         """Return a list of AttachHandle objects."""
         if filters:
             sort_dir = filters.pop('sort_dir', 'desc')
-            sort_key = filters.pop('sort_key', 'create_at')
+            sort_key = filters.pop('sort_key', 'created_at')
             limit = filters.pop('limit', None)
             marker = filters.pop('marker_obj', None)
             db_ahs = cls.dbapi.attach_handle_get_by_filters(context, filters,
@@ -93,3 +92,19 @@ class AttachHandle(base.CyborgObject, object_base.VersionedObjectDictCompat):
         """Delete a AttachHandle from the DB."""
         self.dbapi.attach_handle_delete(context, self.uuid)
         self.obj_reset_changes()
+
+    @classmethod
+    def get_ah_list_by_deployable_id(cls, context, deployable_id):
+        ah_filter = {'deployable_id': deployable_id}
+        ah_obj_list = AttachHandle.list(context, ah_filter)
+        return ah_obj_list
+
+    @classmethod
+    def get_ah_by_depid_attachinfo(cls, context, deployable_id, attach_info):
+        ah_filter = {'deployable_id': deployable_id,
+                     'attach_info': attach_info}
+        ah_obj_list = AttachHandle.list(context, ah_filter)
+        if len(ah_obj_list) != 0:
+            return ah_obj_list[0]
+        else:
+            return None

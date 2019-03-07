@@ -88,8 +88,6 @@ class Deployable(Base):
 
     __tablename__ = 'deployables'
     __table_args__ = (
-        schema.UniqueConstraint('uuid', 'name',
-                                name='uniq_deployables0uuid0name'),
         Index('deployables_parent_id_idx', 'parent_id'),
         Index('deployables_root_id_idx', 'root_id'),
         Index('deployables_device_id_idx', 'device_id'),
@@ -97,7 +95,7 @@ class Deployable(Base):
     )
 
     id = Column(Integer, primary_key=True)
-    uuid = Column(String(36), nullable=False)
+    uuid = Column(String(36), nullable=False, unique=True)
     parent_id = Column(Integer, ForeignKey('deployables.id'), nullable=True)
     root_id = Column(Integer, ForeignKey('deployables.id'), nullable=True)
     name = Column(String(255), nullable=False)
@@ -125,6 +123,7 @@ class ControlpathID(Base):
     __tablename__ = 'controlpath_ids'
 
     id = Column(Integer, primary_key=True)
+    uuid = Column(String(36), nullable=False, unique=True)
     device_id = Column(Integer,
                        ForeignKey('devices.id', ondelete="RESTRICT"),
                        nullable=False, index=True)
@@ -143,6 +142,7 @@ class AttachHandle(Base):
     )
 
     id = Column(Integer, primary_key=True)
+    uuid = Column(String(36), nullable=False, unique=True)
     deployable_id = Column(Integer,
                            ForeignKey('deployables.id', ondelete="RESTRICT"),
                            nullable=False)

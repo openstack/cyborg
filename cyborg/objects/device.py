@@ -19,6 +19,7 @@ from oslo_versionedobjects import base as object_base
 from cyborg.db import api as dbapi
 from cyborg.objects import base
 from cyborg.objects import fields as object_fields
+from cyborg.objects.control_path import ControlpathID
 
 
 LOG = logging.getLogger(__name__)
@@ -63,7 +64,7 @@ class Device(base.CyborgObject, object_base.VersionedObjectDictCompat):
         """Return a list of Device objects."""
         if filters:
             sort_dir = filters.pop('sort_dir', 'desc')
-            sort_key = filters.pop('sort_key', 'create_at')
+            sort_key = filters.pop('sort_key', 'created_at')
             limit = filters.pop('limit', None)
             marker = filters.pop('marker_obj', None)
             db_devices = cls.dbapi.device_list_by_filters(context, filters,
@@ -85,3 +86,11 @@ class Device(base.CyborgObject, object_base.VersionedObjectDictCompat):
         """Delete the Device from the DB."""
         self.dbapi.device_delete(context, self.uuid)
         self.obj_reset_changes()
+
+    @classmethod
+    def get_list_by_hostname(cls, context, hostname):
+        """get device object list from the hostname. return [] if not
+        exist."""
+        dev_filter = {'hostname': hostname}
+        device_obj_list = Device.list(context, dev_filter)
+        return device_obj_list
