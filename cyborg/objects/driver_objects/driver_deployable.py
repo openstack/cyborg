@@ -28,6 +28,7 @@ class DriverDeployable(base.DriverObjectBase,
     VERSION = '1.0'
 
     fields = {
+        'name': object_fields.StringField(nullable=False),
         'num_accelerators': object_fields.IntegerField(nullable=False),
         'attribute_list': object_fields.ListOfObjectsField(
             'DriverAttribute', default=[], nullable=True),
