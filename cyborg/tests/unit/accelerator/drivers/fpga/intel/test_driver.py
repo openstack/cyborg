@@ -80,6 +80,7 @@ class TestIntelFPGADriver(base.TestCase):
                           'cpid_type': 'pci'}}]
         intel = IntelFPGADriver()
         fpgas = intel.discover()
+        list.sort(fpgas, key=lambda x: x._obj_deployable_list[0].name)
         self.assertEqual(2, len(fpgas))
         for i in range(len(fpgas)):
             fpga_dict = fpgas[i].as_dict()
