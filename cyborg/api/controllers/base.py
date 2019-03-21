@@ -15,10 +15,11 @@
 
 import datetime
 
+import inspect
 import pecan
+from pecan import rest
 import wsme
 from wsme import types as wtypes
-from pecan import rest
 
 
 class APIBase(wtypes.Base):
