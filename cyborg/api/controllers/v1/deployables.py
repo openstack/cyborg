@@ -19,16 +19,13 @@ from six.moves import http_client
 import wsme
 from wsme import types as wtypes
 
+from cyborg.agent.rpcapi import AgentAPI
 from cyborg.api.controllers import base
 from cyborg.api.controllers import link
 from cyborg.api.controllers.v1 import types
-from cyborg.api.controllers.v1 import utils as api_utils
 from cyborg.api import expose
-from cyborg.common import exception
 from cyborg.common import policy
 from cyborg import objects
-from cyborg.quota import QUOTAS
-from cyborg.agent.rpcapi import AgentAPI
 
 
 class Deployable(base.APIBase):
@@ -208,14 +205,13 @@ class DeployablesController(base.CyborgController):
         :param patch: a json PATCH document to apply to this deployable.
         """
         context = pecan.request.context
-        reservations = None
 
         obj_dep = objects.Deployable.get(context, uuid)
 
         # Update only the fields that have changed
         for field in objects.Deployable.fields:
             try:
-                patch_val = getattr(api_dep, field)
+                patch_val = getattr(obj_dep, field)
             except AttributeError:
                 # Ignore fields that aren't exposed in the API
                 continue
