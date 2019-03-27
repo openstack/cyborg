@@ -1,0 +1,72 @@
+Before patch:
+
+{
+   "instance_uuid":null,
+   "assignable":true,
+   "vendor":"ZTE",
+   "parent_uuid":null,
+   "links":[
+      {
+         "href":"http://192.168.23.76/v1/deployables/f1ca30c2-f28b-4b6c-b1f6-f46e4adaa63a",
+         "rel":"self"
+      },
+      {
+         "href":"http://192.168.23.76/deployables/f1ca30c2-f28b-4b6c-b1f6-f46e4adaa63a",
+         "rel":"bookmark"
+      }
+   ],
+   "updated_at":"2019-03-30T09:40:21+00:00",
+   "interface_type":"pci",
+   "uuid":"f1ca30c2-f28b-4b6c-b1f6-f46e4adaa63a",
+   "name":"zte-hpts-6",
+   "created_at":"2019-03-30T08:39:47+00:00",
+   "host":"localhost",
+   "version":"1",
+   "board":"acc_board_type",
+   "address":"06.00.1",
+   "attributes_list":"[]",
+   "type":"pf",
+   "availability":"released",
+   "root_uuid":"f1ca30c2-f28b-4b6c-b1f6-f46e4adaa63a"
+}
+
+After patch:
+
+HTTP/1.1 200 OK
+Date: Sat, 30 Mar 2019 09:40:21 GMT
+Server: Apache/2.4.29 (Ubuntu)
+Content-Length: 683
+Content-Type: application/json
+x-openstack-request-id: req-f58854f5-bf29-4380-84c1-21b70e732d0c
+Connection: close
+
+{
+   "instance_uuid":null,
+   "assignable":false,
+   "vendor":"ZTE",
+   "parent_uuid":"155b5100-eaf3-4441-8694-ae17c82eddcb",
+   "links":[
+      {
+         "href":"http://192.168.23.76/v1/deployables/f1ca30c2-f28b-4b6c-b1f6
+             -f46e4adaa63a",
+         "rel":"self"
+      },
+      {
+         "href":"http://192.168.23.76/deployables/f1ca30c2-f28b-4b6c-b1f6-f46e4adaa63a",
+         "rel":"bookmark"
+      }
+   ],
+   "updated_at":"2019-03-30T09:40:21+00:00",
+   "interface_type":"pci",
+   "uuid":"f1ca30c2-f28b-4b6c-b1f6-f46e4adaa63a",
+   "name":"zte-hpts-6",
+   "created_at":"2019-03-30T08:39:47+00:00",
+   "host":"localhost",
+   "version":"1",
+   "board":"acc_board_type",
+   "address":"06.00.1",
+   "attributes_list":"[]",
+   "type":"pf",
+   "availability":"released",
+   "root_uuid":null
+}
