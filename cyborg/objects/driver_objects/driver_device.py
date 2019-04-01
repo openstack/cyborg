@@ -79,14 +79,14 @@ class DriverDevice(base.DriverObjectBase,
         delete the internal layer objects."""
         # get dev_obj_list from hostname
         device_obj = self.get_device_obj(context, host)
+        # delete deployable_list first.
+        for driver_deployable in self.deployable_list:
+            driver_deployable.destroy(context, device_obj.id)
         if hasattr(self.controlpath_id, 'cpid_info'):
             cpid_obj = ControlpathID.get_by_device_id_cpidinfo(
                 context, device_obj.id, self.controlpath_id.cpid_info)
             # delete controlpath_id
             cpid_obj.destroy(context)
-        # delete deployable_list first.
-        for driver_deployable in self.deployable_list:
-            driver_deployable.destroy(context, device_obj.id)
         # delete the device
         device_obj.destroy(context)
 
