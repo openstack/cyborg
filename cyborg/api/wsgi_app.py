@@ -40,4 +40,4 @@ def init_application():
     LOG.debug("Configuration:")
     CONF.log_opt_values(LOG, log.DEBUG)
 
-    return app.app_factory(CONF)
+    return app.load_app()
