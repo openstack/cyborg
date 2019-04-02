@@ -1,0 +1,26 @@
+curl -g -i -X POST $cyborg_endpoint_url/deployables \
+  -H "Accept: application/json" -H "Content-Type: application/json" \
+  -H "OpenStack-API-Version: container-infra latest" \
+  -H "User-Agent:None" \
+  -H "X-Auth-Token: yourtoken" \
+  -d '
+{  
+   "instance_uuid":null,
+   "assignable":false,
+   "vendor":"ZTE",
+   "parent_uuid":null,
+   "updated_at":null,
+   "interface_type":"pci",
+   "uuid":"6a477822-4598-4a1a-ae6f-c4f9d370e4aa",
+   "name":"zte-hpts-6",
+   "created_at":null,
+   "host":"localhost",
+   "version":"1",
+   "board":"acc_board_type",
+   "address":"06.00.1",
+   "attributes_list":"[]",
+   "type":"pf",
+   "availability":"released",
+   "root_uuid":null,
+   "accelerator_id":2
+}'
