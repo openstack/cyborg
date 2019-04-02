@@ -64,6 +64,7 @@ Developer Documentation
 
    contributor/contributing
    contributor/devstack_setup
+   contributor/driver-development-guide
    specs/index
 
 Indices and tables
