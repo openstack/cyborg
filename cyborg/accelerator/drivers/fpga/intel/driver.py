@@ -47,7 +47,7 @@ class IntelFPGADriver(FPGADriver):
             bdf = sysinfo.get_bdf_by_path(path)
         bdfs = sysinfo.split_bdf(bdf)
         cmd = ["sudo", "/usr/bin/fpgaconf"]
-        for i in zip(["-b", "-d", "-f"], bdfs):
+        for i in zip(["--bus", "--device", "--function"], bdfs):
             cmd.extend(i)
         cmd.append(image)
         p = subprocess.Popen(cmd, stdout=subprocess.PIPE)
