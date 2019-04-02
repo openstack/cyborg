@@ -204,7 +204,7 @@ References
 
 .. [#Cyborg_Nova_scheduling_spec] `Cyborg/Nova Scheduling spec <https://review.openstack.org/#/c/554717>`_
 
-.. [#Custom_traits] `Custom Traits <http://specs.openstack.org/openstack/nova-specs/specs/pike/implemented/resource-provider-traits.html#rest-api-impact>`_
+.. [#Custom_traits] `Custom Traits <https://specs.openstack.org/openstack/nova-specs/specs/pike/implemented/resource-provider-traits.html#rest-api-impact>`_
 
 History
 =======

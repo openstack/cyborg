@@ -30,10 +30,9 @@ class FilterType(wtypes.UserType):
     name = 'filtertype'
     basetype = wtypes.text
 
-    _supported_fields = wtypes.Enum(wtypes.text, 'parent_uuid', 'root_uuid',
-                                    'vender', 'host', 'board', 'availability',
-                                    'assignable', 'interface_type',
-                                    'instance_uuid', 'limit', 'marker',
+    _supported_fields = wtypes.Enum(wtypes.text, 'parent_id', 'root_id',
+                                    'name', 'num_accelerators', 'device_id',
+                                    'limit', 'marker',
                                     'sort_key', 'sort_dir')
 
     field = wsme.wsattr(_supported_fields, mandatory=True)
@@ -46,8 +45,8 @@ class FilterType(wtypes.UserType):
 
     @classmethod
     def sample(cls):
-        return cls(field='interface_type',
-                   value='pci')
+        return cls(field='name',
+                   value='FPGA')
 
     def as_dict(self):
         d = dict()
@@ -126,6 +125,7 @@ class BooleanType(wtypes.UserType):
 uuid = UUIDType()
 jsontype = JsonType()
 boolean = BooleanType()
+integer = wtypes.IntegerType()
 
 
 class JsonPatchType(wtypes.Base):

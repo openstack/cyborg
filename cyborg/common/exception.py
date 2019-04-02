@@ -86,16 +86,32 @@ class CyborgException(Exception):
         return unicode(self.args[0])
 
 
+class AttachHandleAlreadyExists(CyborgException):
+    _msg_fmt = _("AttachHandle with uuid %(uuid)s already exists.")
+
+
+class ControlpathIDAlreadyExists(CyborgException):
+    _msg_fmt = _("ControlpathID with uuid %(uuid)s already exists.")
+
+
 class ConfigInvalid(CyborgException):
     _msg_fmt = _("Invalid configuration file. %(error_msg)s")
 
 
-class AcceleratorAlreadyExists(CyborgException):
-    _msg_fmt = _("Accelerator with uuid %(uuid)s already exists.")
+class DeviceAlreadyExists(CyborgException):
+    _msg_fmt = _("Device with uuid %(uuid)s already exists.")
+
+
+class DeviceProfileAlreadyExists(CyborgException):
+    _msg_fmt = _("DeviceProfile with uuid %(uuid)s already exists.")
 
 
 class DeployableAlreadyExists(CyborgException):
     _msg_fmt = _("Deployable with uuid %(uuid)s already exists.")
+
+
+class ExtArqAlreadyExists(CyborgException):
+    _msg_fmt = _("ExtArq with uuid %(uuid)s already exists.")
 
 
 class Invalid(CyborgException):
@@ -143,17 +159,33 @@ class ServiceNotFound(NotFound):
     msg_fmt = _("Service %(service_id)s could not be found.")
 
 
+class AttachHandleNotFound(NotFound):
+    _msg_fmt = _("AttachHandle %(uuid)s could not be found.")
+
+
+class ControlpathIDNotFound(NotFound):
+    _msg_fmt = _("ControlpathID %(uuid)s could not be found.")
+
+
 class ConfGroupForServiceTypeNotFound(ServiceNotFound):
     msg_fmt = _("No conf group name could be found for service type "
                 "%(stype)s.")
 
 
-class AcceleratorNotFound(NotFound):
-    _msg_fmt = _("Accelerator %(uuid)s could not be found.")
+class DeviceNotFound(NotFound):
+    _msg_fmt = _("Device %(uuid)s could not be found.")
+
+
+class DeviceProfileNotFound(NotFound):
+    _msg_fmt = _("DeviceProfile %(uuid)s could not be found.")
 
 
 class DeployableNotFound(NotFound):
     _msg_fmt = _("Deployable %(uuid)s could not be found.")
+
+
+class ExtArqNotFound(NotFound):
+    _msg_fmt = _("ExtArq %(uuid)s could not be found.")
 
 
 class InvalidDeployType(CyborgException):
@@ -165,8 +197,12 @@ class Conflict(CyborgException):
     code = http_client.CONFLICT
 
 
-class DuplicateAcceleratorName(Conflict):
-    _msg_fmt = _("An accelerator with name %(name)s already exists.")
+class DuplicateDeviceName(Conflict):
+    _msg_fmt = _("A device with name %(name)s already exists.")
+
+
+class DuplicateDeviceProfileName(Conflict):
+    _msg_fmt = _("A device_profile with name %(name)s already exists.")
 
 
 class DuplicateDeployableName(Conflict):
@@ -327,3 +363,7 @@ class ImageNotFound(NotFound):
 class ImageBadRequest(Invalid):
     msg_fmt = _("Request of image %(image_id)s got BadRequest response: "
                 "%(response)s")
+
+
+class InvalidDriver(Invalid):
+    _msg_fmt = _("Found an invalid driver: %(name)s")

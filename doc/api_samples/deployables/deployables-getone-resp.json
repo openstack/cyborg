@@ -1,0 +1,35 @@
+HTTP/1.1 200 OK
+Content-Length: 670
+Content-Type: application/json
+X-Openstack-Request-Id: req-d1afc394-03d0-4768-8270-760e0ed5c5e9
+Date: Wed, 27 Mar 2019 02:09:29 GMT
+
+{  
+   "instance_uuid":null,
+   "assignable":false,
+   "vendor":"ZTE",
+   "parent_uuid":null,
+   "links":[  
+      {  
+         "href":"http://192.168.23.76:6666/v1/deployables/6a477822-4598-4a1a-ae6f-c4f9d370e4aa",
+         "rel":"self"
+      },
+      {  
+         "href":"http://192.168.23.76:6666/deployables/6a477822-4598-4a1a-ae6f-c4f9d370e4aa",
+         "rel":"bookmark"
+      }
+   ],
+   "updated_at":null,
+   "interface_type":"pci",
+   "uuid":"6a477822-4598-4a1a-ae6f-c4f9d370e4aa",
+   "name":"zte-hpts-6",
+   "created_at":"2019-03-27T01:38:14+00:00",
+   "host":"localhost",
+   "version":"1",
+   "board":"acc_board_type",
+   "address":"06.00.1",
+   "attributes_list":"[]",
+   "type":"pf",
+   "availability":"released",
+   "root_uuid":"6a477822-4598-4a1a-ae6f-c4f9d370e4aa"
+}

@@ -2,6 +2,12 @@
 DevStack Quick Start
 ====================
 
+.. note::
+
+   Because OPAE packages depend on libjson0, which is not available
+   after Ubuntu 16.04, so cyborg can't be installed on Ubuntu
+   higher than 16.04 now.
+
 Create stack user (optional)
 ----------------------------
 
@@ -94,7 +100,7 @@ Enable services
   enable_service q-meta
   enable_service neutron
   enable_service n-novnc
-  enable_plugin cyborg git://git.openstack.org/openstack/cyborg
+  enable_plugin cyborg https://git.openstack.org/openstack/cyborg
   NOVA_VNC_ENABLED=True
   NOVNCPROXY_URL="http://$SERVICE_HOST:6080/vnc_auto.html"
   VNCSERVER_LISTEN=0.0.0.0

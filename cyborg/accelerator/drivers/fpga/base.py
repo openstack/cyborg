@@ -27,7 +27,7 @@ class FPGADriver(object):
     """Base class for FPGA drivers.
 
        This is just a virtual FPGA drivers interface.
-       Vedor should implement their specific drivers.
+       Vendor should implement their specific drivers.
     """
 
     @classmethod

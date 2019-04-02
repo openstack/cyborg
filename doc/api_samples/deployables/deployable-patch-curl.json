@@ -1,0 +1,10 @@
+curl -g -i -X PATCH $cyborg_endpoint_url/deployables/uuid \
+  -H "Accept: applicatiapplication/json" \
+  -H "OpenStack-API-Version: container-infra latest" \
+  -H "User-Agent: None" \
+  -H "X-Auth-Token: your_token" \
+  -d '
+[{"op": "replace", "path": "/assignable", "value": "false"},
+ {"op": "remove", "path": "/root_uuid"}, 
+ {"op": "add", "path": "/parent_uuid", 
+      "value": "155b5100-eaf3-4441-8694-ae17c82eddcb"}]'

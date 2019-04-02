@@ -16,3 +16,12 @@
 
 CONDUCTOR_TOPIC = 'cyborg-conductor'
 AGENT_TOPIC = 'cyborg-agent'
+DEVICE_GPU = 'GPU'
+DEVICE_FPGA = 'FPGA'
+
+
+ARQ_STATES = (ARQINITIAL, ARQBOUND, ARQUNBOUND, ARQBINDFAILED) = \
+    ('Initial', 'Bound', 'Unbound', 'BindFailed')
+
+# Device type
+DEVICE_TYPE = (DEVICE_GPU, DEVICE_FPGA)

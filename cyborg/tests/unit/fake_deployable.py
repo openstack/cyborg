@@ -25,22 +25,12 @@ def fake_db_deployable(**updates):
     root_uuid = uuidutils.generate_uuid()
     db_deployable = {
         'id': 1,
-        'deleted': False,
         'uuid': root_uuid,
         'name': 'dp_name',
-        'parent_uuid': None,
-        'root_uuid': root_uuid,
-        'address': '00:7f:0b.2',
-        'host': 'host_name',
-        'board': 'KU115',
-        'vendor': 'Xilinx',
-        'version': '1.0',
-        'type': 'pf',
-        'interface_type': 'pci',
-        'assignable': True,
-        'instance_uuid': None,
-        'availability': 'Available',
-        'accelerator_id': 1
+        'parent_id': None,
+        'root_id': 1,
+        'num_accelerators': 4,
+        'device_id': 0
         }
 
     for name, field in objects.Deployable.fields.items():

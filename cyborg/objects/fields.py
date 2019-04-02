@@ -15,8 +15,10 @@
 
 from oslo_versionedobjects import fields as object_fields
 
+from cyborg.common import constants
 
 # Import fields from oslo_versionedobjects
+EnumField = object_fields.EnumField
 IntegerField = object_fields.IntegerField
 UUIDField = object_fields.UUIDField
 StringField = object_fields.StringField
@@ -28,3 +30,19 @@ ListOfStringsField = object_fields.ListOfStringsField
 IPAddressField = object_fields.IPAddressField
 IPNetworkField = object_fields.IPNetworkField
 UnspecifiedDefault = object_fields.UnspecifiedDefault
+EnumField = object_fields.EnumField
+
+
+class ARQState(object_fields.Enum):
+    ALL = constants.ARQ_STATES
+
+    def __init__(self):
+        super(ARQState, self).__init__(valid_values=ARQState.ALL)
+
+
+class ARQStateField(object_fields.BaseEnumField):
+    AUTO_TYPE = ARQState()
+
+
+class DeviceTypeField(object_fields.AutoTypedField):
+    AUTO_TYPE = object_fields.Enum(valid_values=constants.DEVICE_TYPE)

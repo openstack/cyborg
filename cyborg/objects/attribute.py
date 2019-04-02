@@ -87,3 +87,13 @@ class Attribute(base.CyborgObject, object_base.VersionedObjectDictCompat):
     def set_key_value_pair(self, set_key, set_value):
         self.key = set_key
         self.value = set_value
+
+    @classmethod
+    def get_by_dep_key(cls, context, dep_id, key):
+        """Get the only one attribute with deployable_id and the key."""
+        attr_filter = {"deployable_id": dep_id, "key": key}
+        attr_list = cls.get_by_filter(context, attr_filter)
+        if len(attr_list) != 0:
+            return attr_list[0]
+        else:
+            return None

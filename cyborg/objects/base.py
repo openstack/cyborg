@@ -176,3 +176,16 @@ def obj_equal_prims(obj_1, obj_2, ignore=None):
     prim_1 = _strip(obj_1.obj_to_primitive(), keys)
     prim_2 = _strip(obj_2.obj_to_primitive(), keys)
     return prim_1 == prim_2
+
+
+class DriverObjectBase(CyborgObject):
+    @staticmethod
+    def _from_db_object(obj, db_obj):
+        fields = obj.fields
+        fields.pop("updated_at")
+        fields.pop("created_at")
+        for field in fields:
+            obj[field] = db_obj[field]
+
+        obj.obj_reset_changes()
+        return obj

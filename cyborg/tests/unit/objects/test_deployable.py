@@ -1,4 +1,5 @@
-# Copyright 2018 Huawei Technologies Co.,LTD.
+# Copyright 2019 Huawei Technologies Co.,LTD.
+# All Rights Reserved.
 #
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may
 #    not use this file except in compliance with the License. You may obtain
@@ -12,20 +13,27 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-
 import mock
-from oslo_db import exception as db_exc
 
-from cyborg.common import exception
+from testtools.matchers import HasLength
 from cyborg import objects
-from cyborg.tests.unit import fake_accelerator
+from cyborg.tests.unit.db import base
+from cyborg.tests.unit.db import utils
+from cyborg.tests.unit import fake_device
 from cyborg.tests.unit import fake_deployable
 from cyborg.tests.unit import fake_attribute
 from cyborg.tests.unit.objects import test_objects
 from cyborg.tests.unit.db.base import DbTestCase
+from cyborg.common import exception
 
 
 class _TestDeployableObject(DbTestCase):
+
+    @property
+    def fake_device(self):
+        db_device = fake_device.fake_db_device(id=1)
+        return db_device
+
     @property
     def fake_deployable(self):
         db_deploy = fake_deployable.fake_db_deployable(id=1)
@@ -35,11 +43,6 @@ class _TestDeployableObject(DbTestCase):
     def fake_deployable2(self):
         db_deploy = fake_deployable.fake_db_deployable(id=2)
         return db_deploy
-
-    @property
-    def fake_accelerator(self):
-        db_acc = fake_accelerator.fake_db_accelerator(id=2)
-        return db_acc
 
     @property
     def fake_attribute(self):
@@ -57,46 +60,46 @@ class _TestDeployableObject(DbTestCase):
         return db_attr
 
     def test_create(self):
-        db_acc = self.fake_accelerator
-        acc = objects.Accelerator(context=self.context,
-                                  **db_acc)
-        acc.create(self.context)
-        acc_get = objects.Accelerator.get(self.context, acc.uuid)
+        db_device = self.fake_device
+        device = objects.Device(context=self.context,
+                                **db_device)
+        device.create(self.context)
+        device_get = objects.Device.get(self.context, device.uuid)
         db_dpl = self.fake_deployable
         dpl = objects.Deployable(context=self.context,
                                  **db_dpl)
 
-        dpl.accelerator_id = acc_get.id
+        dpl.device_id = device_get.id
         dpl.create(self.context)
 
         self.assertEqual(db_dpl['uuid'], dpl.uuid)
 
     def test_get(self):
-        db_acc = self.fake_accelerator
-        acc = objects.Accelerator(context=self.context,
-                                  **db_acc)
-        acc.create(self.context)
-        acc_get = objects.Accelerator.get(self.context, acc.uuid)
+        db_device = self.fake_device
+        device = objects.Device(context=self.context,
+                                **db_device)
+        device.create(self.context)
+        device_get = objects.Device.get(self.context, device.uuid)
         db_dpl = self.fake_deployable
         dpl = objects.Deployable(context=self.context,
                                  **db_dpl)
 
-        dpl.accelerator_id = acc_get.id
+        dpl.device_id = device_get.id
         dpl.create(self.context)
         dpl_get = objects.Deployable.get(self.context, dpl.uuid)
         self.assertEqual(dpl_get.uuid, dpl.uuid)
 
     def test_get_by_filter(self):
-        db_acc = self.fake_accelerator
-        acc = objects.Accelerator(context=self.context,
-                                  **db_acc)
-        acc.create(self.context)
-        acc_get = objects.Accelerator.get(self.context, acc.uuid)
+        db_device = self.fake_device
+        device = objects.Device(context=self.context,
+                                **db_device)
+        device.create(self.context)
+        device_get = objects.Device.get(self.context, device.uuid)
         db_dpl = self.fake_deployable
         dpl = objects.Deployable(context=self.context,
                                  **db_dpl)
 
-        dpl.accelerator_id = acc_get.id
+        dpl.device_id = device_get.id
         dpl.create(self.context)
         query = {"uuid": dpl['uuid']}
         dpl_get_list = objects.Deployable.get_by_filter(self.context, query)
@@ -104,33 +107,33 @@ class _TestDeployableObject(DbTestCase):
         self.assertEqual(dpl_get_list[0].uuid, dpl.uuid)
 
     def test_save(self):
-        db_acc = self.fake_accelerator
-        acc = objects.Accelerator(context=self.context,
-                                  **db_acc)
-        acc.create(self.context)
-        acc_get = objects.Accelerator.get(self.context, acc.uuid)
+        db_device = self.fake_device
+        device = objects.Device(context=self.context,
+                                **db_device)
+        device.create(self.context)
+        device_get = objects.Device.get(self.context, device.uuid)
         db_dpl = self.fake_deployable
         dpl = objects.Deployable(context=self.context,
                                  **db_dpl)
 
-        dpl.accelerator_id = acc_get.id
+        dpl.device_id = device_get.id
         dpl.create(self.context)
-        dpl.host = 'test_save'
+        dpl.num_accelerators = 8
         dpl.save(self.context)
         dpl_get = objects.Deployable.get(self.context, dpl.uuid)
-        self.assertEqual(dpl_get.host, 'test_save')
+        self.assertEqual(dpl_get.num_accelerators, 8)
 
     def test_destroy(self):
-        db_acc = self.fake_accelerator
-        acc = objects.Accelerator(context=self.context,
-                                  **db_acc)
-        acc.create(self.context)
-        acc_get = objects.Accelerator.get(self.context, acc.uuid)
+        db_device = self.fake_device
+        device = objects.Device(context=self.context,
+                                **db_device)
+        device.create(self.context)
+        device_get = objects.Device.get(self.context, device.uuid)
         db_dpl = self.fake_deployable
         dpl = objects.Deployable(context=self.context,
                                  **db_dpl)
 
-        dpl.accelerator_id = acc_get.id
+        dpl.device_id = device_get.id
         dpl.create(self.context)
         self.assertEqual(db_dpl['uuid'], dpl.uuid)
         dpl.destroy(self.context)
@@ -139,16 +142,16 @@ class _TestDeployableObject(DbTestCase):
                           dpl.uuid)
 
     def test_add_attribute(self):
-        db_acc = self.fake_accelerator
-        acc = objects.Accelerator(context=self.context,
-                                  **db_acc)
-        acc.create(self.context)
-        acc_get = objects.Accelerator.get(self.context, acc.uuid)
-
+        db_device = self.fake_device
+        device = objects.Device(context=self.context,
+                                **db_device)
+        device.create(self.context)
+        device_get = objects.Device.get(self.context, device.uuid)
         db_dpl = self.fake_deployable
         dpl = objects.Deployable(context=self.context,
                                  **db_dpl)
-        dpl.accelerator_id = acc_get.id
+
+        dpl.device_id = device_get.id
         dpl.create(self.context)
         dpl_get = objects.Deployable.get(self.context, dpl.uuid)
 
@@ -159,30 +162,18 @@ class _TestDeployableObject(DbTestCase):
 
         dpl_get = objects.Deployable.get(self.context, dpl.uuid)
         self.assertEqual(len(dpl_get.attributes_list), 1)
-        self.assertEqual(dpl_get.attributes_list[0].key,
-                         db_attr['key'])
-        self.assertEqual(dpl_get.attributes_list[0].value,
-                         db_attr['value'])
-
-        dpl.add_attribute(self.context, db_attr['key'], 'change_value')
-        dpl_get = objects.Deployable.get(self.context, dpl.uuid)
-        self.assertEqual(len(dpl_get.attributes_list), 1)
-        self.assertEqual(dpl_get.attributes_list[0].key,
-                         db_attr['key'])
-        self.assertEqual(dpl_get.attributes_list[0].value,
-                         'change_value')
 
     def test_delete_attribute(self):
-        db_acc = self.fake_accelerator
-        acc = objects.Accelerator(context=self.context,
-                                  **db_acc)
-        acc.create(self.context)
-        acc_get = objects.Accelerator.get(self.context, acc.uuid)
-
+        db_device = self.fake_device
+        device = objects.Device(context=self.context,
+                                **db_device)
+        device.create(self.context)
+        device_get = objects.Device.get(self.context, device.uuid)
         db_dpl = self.fake_deployable
         dpl = objects.Deployable(context=self.context,
                                  **db_dpl)
-        dpl.accelerator_id = acc_get.id
+
+        dpl.device_id = device_get.id
         dpl.create(self.context)
         dpl_get = objects.Deployable.get(self.context, dpl.uuid)
         db_attr = self.fake_attribute
@@ -195,23 +186,23 @@ class _TestDeployableObject(DbTestCase):
         self.assertEqual(len(dpl_get.attributes_list), 0)
 
     def test_get_by_filter_with_attributes(self):
-        db_acc = self.fake_accelerator
-        acc = objects.Accelerator(context=self.context,
-                                  **db_acc)
-        acc.create(self.context)
-        acc_get = objects.Accelerator.get(self.context, acc.uuid)
-
+        db_device = self.fake_device
+        device = objects.Device(context=self.context,
+                                **db_device)
+        device.create(self.context)
+        device_get = objects.Device.get(self.context, device.uuid)
         db_dpl = self.fake_deployable
         dpl = objects.Deployable(context=self.context,
                                  **db_dpl)
-        dpl.accelerator_id = acc_get.id
+
+        dpl.device_id = device_get.id
         dpl.create(self.context)
         dpl_get = objects.Deployable.get(self.context, dpl.uuid)
 
         db_dpl2 = self.fake_deployable2
         dpl2 = objects.Deployable(context=self.context,
                                   **db_dpl2)
-        dpl2.accelerator_id = acc_get.id
+        dpl2.device_id = device_get.id
         dpl2.create(self.context)
         dpl2_get = objects.Deployable.get(self.context, dpl2.uuid)
 
@@ -225,8 +216,6 @@ class _TestDeployableObject(DbTestCase):
         dpl.save(self.context)
 
         dpl2.add_attribute(self.context, 'test_key', 'test_val')
-        dpl2.save(self.context)
-
         dpl2.add_attribute(self.context, 'test_key3', 'test_val3')
         dpl2.save(self.context)
 
@@ -246,27 +235,10 @@ class _TestDeployableObject(DbTestCase):
         self.assertEqual(len(dpl_get_list), 1)
         self.assertEqual(dpl_get_list[0].uuid, dpl2.uuid)
 
-        query = {"host": "host_name", "test_key3": "test_val3"}
+        query = {"num_accelerators": 4, "test_key3": "test_val3"}
         dpl_get_list = objects.Deployable.get_by_filter(self.context, query)
         self.assertEqual(len(dpl_get_list), 1)
         self.assertEqual(dpl_get_list[0].uuid, dpl2.uuid)
-
-    def test_get_by_host(self):
-        dep1 = self.fake_deployable
-        dep2 = self.fake_deployable2
-        fake_hostname = 'host_name'
-        dep_obj1 = objects.Deployable(context=self.context,
-                                      **dep1)
-        dep_obj2 = objects.Deployable(context=self.context,
-                                      **dep2)
-        dep_obj1.create(self.context)
-        dep_obj2.create(self.context)
-
-        dep_obj1.save(self.context)
-        dep_obj2.save(self.context)
-        dep_objs = objects.Deployable.get_by_host(self.context, fake_hostname)
-        self.assertEqual(dep_objs[0].host, fake_hostname)
-        self.assertEqual(dep_objs[1].host, fake_hostname)
 
 
 class TestDeployableObject(test_objects._LocalTest,

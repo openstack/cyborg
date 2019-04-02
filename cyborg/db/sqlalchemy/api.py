@@ -127,69 +127,386 @@ class Connection(api.Connection):
     def __init__(self):
         pass
 
-    def accelerator_create(self, context, values):
+    def attach_handle_create(self, context, values):
         if not values.get('uuid'):
             values['uuid'] = uuidutils.generate_uuid()
 
-        accelerator = models.Accelerator()
-        accelerator.update(values)
+        attach_handle = models.AttachHandle()
+        attach_handle.update(values)
 
         with _session_for_write() as session:
             try:
-                session.add(accelerator)
+                session.add(attach_handle)
                 session.flush()
             except db_exc.DBDuplicateEntry:
-                raise exception.AcceleratorAlreadyExists(uuid=values['uuid'])
-            return accelerator
+                raise exception.AttachHandleAlreadyExists(uuid=values['uuid'])
+            return attach_handle
 
-    def accelerator_get(self, context, uuid):
+    def attach_handle_get_by_uuid(self, context, uuid):
         query = model_query(
             context,
-            models.Accelerator).filter_by(uuid=uuid)
+            models.AttachHandle).filter_by(uuid=uuid)
         try:
             return query.one()
         except NoResultFound:
-            raise exception.AcceleratorNotFound(uuid=uuid)
+            raise exception.AttachHandleNotFound(uuid=uuid)
 
-    def accelerator_list(self, context, limit, marker, sort_key, sort_dir,
-                         project_only):
-        query = model_query(context, models.Accelerator,
-                            project_only=project_only)
-        return _paginate_query(context, models.Accelerator, limit, marker,
-                               sort_key, sort_dir, query)
-
-    def accelerator_update(self, context, uuid, values):
-        if 'uuid' in values:
-            msg = _("Cannot overwrite UUID for an existing Accelerator.")
-            raise exception.InvalidParameterValue(err=msg)
-
+    def attach_handle_get_by_id(self, context, id):
+        query = model_query(
+            context,
+            models.AttachHandle).filter_by(id=id)
         try:
-            return self._do_update_accelerator(context, uuid, values)
-        except db_exc.DBDuplicateEntry as e:
-            if 'name' in e.columns:
-                raise exception.DuplicateAcceleratorName(name=values['name'])
+            return query.one()
+        except NoResultFound:
+            raise exception.NotFound()
+
+    def attach_handle_get_by_filters(self, context,
+                                     filters, sort_key='created_at',
+                                     sort_dir='desc', limit=None,
+                                     marker=None, join_columns=None):
+        """Return attach_handle that match all filters sorted by the given
+        keys. Deleted attach_handle will be returned by default, unless
+        there's a filter that says otherwise.
+        """
+
+        if limit == 0:
+            return []
+
+        query_prefix = model_query(context, models.AttachHandle)
+        filters = copy.deepcopy(filters)
+
+        exact_match_filter_names = ['uuid', 'id', 'deployable_id', 'cpid_id']
+
+        # Filter the query
+        query_prefix = self._exact_filter(models.AttachHandle, query_prefix,
+                                          filters, exact_match_filter_names)
+        if query_prefix is None:
+            return []
+        return _paginate_query(context, models.AttachHandle, limit, marker,
+                               sort_key, sort_dir, query_prefix)
+
+    def _exact_filter(self, model, query, filters, legal_keys=[]):
+        """Applies exact match filtering to a deployable query.
+        Returns the updated query.  Modifies filters argument to remove
+        filters consumed.
+        :param model: DB model
+        :param query: query to apply filters to
+        :param filters: dictionary of filters; values that are lists,
+                        tuples, sets, or frozensets cause an 'IN' test to
+                        be performed, while exact matching ('==' operator)
+                        is used for other values
+        :param legal_keys: list of keys to apply exact filtering to
+        """
+
+        filter_dict = {}
+
+        # Walk through all the keys
+        for key in legal_keys:
+            # Skip ones we're not filtering on
+            if key not in filters:
+                continue
+
+            # OK, filtering on this key; what value do we search for?
+            value = filters.pop(key)
+
+            if isinstance(value, (list, tuple, set, frozenset)):
+                if not value:
+                    return None
+                # Looking for values in a list; apply to query directly
+                column_attr = getattr(model, key)
+                query = query.filter(column_attr.in_(value))
+            else:
+                filter_dict[key] = value
+        # Apply simple exact matches
+        if filter_dict:
+            query = query.filter(*[getattr(model, k) == v
+                                   for k, v in filter_dict.items()])
+        return query
+
+    def attach_handle_list(self, context):
+        query = model_query(context, models.AttachHandle)
+        return _paginate_query(context, models.AttachHandle)
+
+    def attach_handle_update(self, context, uuid, values):
+        if 'uuid' in values:
+            msg = _("Cannot overwrite UUID for an existing AttachHandle.")
+            raise exception.InvalidParameterValue(err=msg)
+        return self._do_update_attach_handle(context, uuid, values)
 
     @oslo_db_api.retry_on_deadlock
-    def _do_update_accelerator(self, context, uuid, values):
+    def _do_update_attach_handle(self, context, uuid, values):
         with _session_for_write():
-            query = model_query(context, models.Accelerator)
+            query = model_query(context, models.AttachHandle)
             query = add_identity_filter(query, uuid)
             try:
                 ref = query.with_lockmode('update').one()
             except NoResultFound:
-                raise exception.AcceleratorNotFound(uuid=uuid)
+                raise exception.AttachHandleNotFound(uuid=uuid)
+            ref.update(values)
+        return ref
+
+    @oslo_db_api.retry_on_deadlock
+    def attach_handle_delete(self, context, uuid):
+        with _session_for_write():
+            query = model_query(context, models.AttachHandle)
+            query = add_identity_filter(query, uuid)
+            count = query.delete()
+            if count != 1:
+                raise exception.AttachHandleNotFound(uuid=uuid)
+
+    def control_path_create(self, context, values):
+        if not values.get('uuid'):
+            values['uuid'] = uuidutils.generate_uuid()
+
+        control_path_id = models.ControlpathID()
+        control_path_id.update(values)
+
+        with _session_for_write() as session:
+            try:
+                session.add(control_path_id)
+                session.flush()
+            except db_exc.DBDuplicateEntry:
+                raise exception.ControlpathIDAlreadyExists(uuid=values['uuid'])
+            return control_path_id
+
+    def control_path_get_by_uuid(self, context, uuid):
+        query = model_query(
+            context,
+            models.ControlpathID).filter_by(uuid=uuid)
+        try:
+            return query.one()
+        except NoResultFound:
+            raise exception.ControlpathIDNotFound(uuid=uuid)
+
+    def control_path_get_by_filters(self, context,
+                                    filters, sort_key='created_at',
+                                    sort_dir='desc', limit=None,
+                                    marker=None, join_columns=None):
+        """Return attach_handle that match all filters sorted by the given
+        keys. Deleted attach_handle will be returned by default, unless
+        there's a filter that says otherwise.
+        """
+
+        if limit == 0:
+            return []
+
+        query_prefix = model_query(context, models.ControlpathID)
+        filters = copy.deepcopy(filters)
+
+        exact_match_filter_names = ['uuid', 'id', 'device_id', 'cpid_info',
+                                    'cpid_type']
+
+        # Filter the query
+        query_prefix = self._exact_filter(models.ControlpathID, query_prefix,
+                                          filters, exact_match_filter_names)
+        if query_prefix is None:
+            return []
+        return _paginate_query(context, models.ControlpathID, limit, marker,
+                               sort_key, sort_dir, query_prefix)
+
+    def control_path_list(self, context):
+        query = model_query(context, models.ControlpathID)
+        return _paginate_query(context, models.ControlpathID)
+
+    def control_path_update(self, context, uuid, values):
+        if 'uuid' in values:
+            msg = _("Cannot overwrite UUID for an existing ControlpathID.")
+            raise exception.InvalidParameterValue(err=msg)
+        return self._do_update_control_path(context, uuid, values)
+
+    @oslo_db_api.retry_on_deadlock
+    def _do_update_control_path(self, context, uuid, values):
+        with _session_for_write():
+            query = model_query(context, models.ControlpathID)
+            query = add_identity_filter(query, uuid)
+            try:
+                ref = query.with_lockmode('update').one()
+            except NoResultFound:
+                raise exception.ControlpathIDNotFound(uuid=uuid)
+            ref.update(values)
+        return ref
+
+    @oslo_db_api.retry_on_deadlock
+    def control_path_delete(self, context, uuid):
+        with _session_for_write():
+            query = model_query(context, models.ControlpathID)
+            query = add_identity_filter(query, uuid)
+            count = query.delete()
+            if count != 1:
+                raise exception.ControlpathNotFound(uuid=uuid)
+
+    def device_create(self, context, values):
+        if not values.get('uuid'):
+            values['uuid'] = uuidutils.generate_uuid()
+
+        device = models.Device()
+        device.update(values)
+
+        with _session_for_write() as session:
+            try:
+                session.add(device)
+                session.flush()
+            except db_exc.DBDuplicateEntry:
+                raise exception.DeviceAlreadyExists(uuid=values['uuid'])
+            return device
+
+    def device_get(self, context, uuid):
+        query = model_query(
+            context,
+            models.Device).filter_by(uuid=uuid)
+        try:
+            return query.one()
+        except NoResultFound:
+            raise exception.DeviceNotFound(uuid=uuid)
+
+    def device_list_by_filters(self, context,
+                               filters, sort_key='created_at',
+                               sort_dir='desc', limit=None,
+                               marker=None, join_columns=None):
+        """Return devices that match all filters sorted by the given keys."""
+
+        if limit == 0:
+            return []
+
+        query_prefix = model_query(context, models.Device)
+        filters = copy.deepcopy(filters)
+
+        exact_match_filter_names = ['uuid', 'id', 'type',
+                                    'vendor', 'model', 'hostname']
+
+        # Filter the query
+        query_prefix = self._exact_filter(models.Device, query_prefix,
+                                          filters, exact_match_filter_names)
+        if query_prefix is None:
+            return []
+        return _paginate_query(context, models.Device, limit, marker,
+                               sort_key, sort_dir, query_prefix)
+
+    def device_list(self, context):
+        query = model_query(context, models.Device)
+        return _paginate_query(context, models.Device)
+
+    def device_update(self, context, uuid, values):
+        if 'uuid' in values:
+            msg = _("Cannot overwrite UUID for an existing Device.")
+            raise exception.InvalidParameterValue(err=msg)
+
+        try:
+            return self._do_update_device(context, uuid, values)
+        except db_exc.DBDuplicateEntry as e:
+            if 'name' in e.columns:
+                raise exception.DuplicateDeviceName(name=values['name'])
+
+    @oslo_db_api.retry_on_deadlock
+    def _do_update_device(self, context, uuid, values):
+        with _session_for_write():
+            query = model_query(context, models.Device)
+            query = add_identity_filter(query, uuid)
+            try:
+                ref = query.with_lockmode('update').one()
+            except NoResultFound:
+                raise exception.DeviceNotFound(uuid=uuid)
 
             ref.update(values)
         return ref
 
     @oslo_db_api.retry_on_deadlock
-    def accelerator_delete(self, context, uuid):
+    def device_delete(self, context, uuid):
         with _session_for_write():
-            query = model_query(context, models.Accelerator)
+            query = model_query(context, models.Device)
             query = add_identity_filter(query, uuid)
             count = query.delete()
             if count != 1:
-                raise exception.AcceleratorNotFound(uuid=uuid)
+                raise exception.DeviceNotFound(uuid=uuid)
+
+    def device_profile_create(self, context, values):
+        if not values.get('uuid'):
+            values['uuid'] = uuidutils.generate_uuid()
+
+        device_profile = models.DeviceProfile()
+        device_profile.update(values)
+
+        with _session_for_write() as session:
+            try:
+                session.add(device_profile)
+                session.flush()
+            except db_exc.DBDuplicateEntry:
+                raise exception.DeviceProfileAlreadyExists(uuid=values['uuid'])
+            return device_profile
+
+    def device_profile_get_by_uuid(self, context, uuid):
+        query = model_query(
+            context,
+            models.DeviceProfile).filter_by(uuid=uuid)
+        try:
+            return query.one()
+        except NoResultFound:
+            raise exception.DeviceProfileNotFound(uuid=uuid)
+
+    def device_profile_get_by_id(self, context, id):
+        query = model_query(
+            context,
+            models.DeviceProfile).filter_by(id=id)
+        try:
+            return query.one()
+        except NoResultFound:
+            raise exception.DeviceProfileNotFound(id=id)
+
+    def device_profile_list_by_filters(
+            self, context, filters, sort_key='created_at', sort_dir='desc',
+            limit=None, marker=None, join_columns=None):
+        if limit == 0:
+            return []
+
+        query_prefix = model_query(context, models.DeviceProfile)
+        filters = copy.deepcopy(filters)
+
+        exact_match_filter_names = ['uuid', 'id', 'name']
+
+        # Filter the query
+        query_prefix = self._exact_filter(models.DeviceProfile, query_prefix,
+                                          filters, exact_match_filter_names)
+        if query_prefix is None:
+            return []
+        return _paginate_query(context, models.DeviceProfile, limit, marker,
+                               sort_key, sort_dir, query_prefix)
+
+    def device_profile_list(self, context):
+        query = model_query(context, models.DeviceProfile)
+        return _paginate_query(context, models.DeviceProfile)
+
+    def device_profile_update(self, context, uuid, values):
+        if 'uuid' in values:
+            msg = _("Cannot overwrite UUID for an existing DeviceProfile.")
+            raise exception.InvalidParameterValue(err=msg)
+
+        try:
+            return self._do_update_device_profile(context, uuid, values)
+        except db_exc.DBDuplicateEntry as e:
+            if 'name' in e.columns:
+                raise exception.DuplicateDeviceProfileName(name=values['name'])
+
+    @oslo_db_api.retry_on_deadlock
+    def _do_update_device_profile(self, context, uuid, values):
+        with _session_for_write():
+            query = model_query(context, models.DeviceProfile)
+            query = add_identity_filter(query, uuid)
+            try:
+                ref = query.with_lockmode('update').one()
+            except NoResultFound:
+                raise exception.DeviceProfileNotFound(uuid=uuid)
+
+            ref.update(values)
+        return ref
+
+    @oslo_db_api.retry_on_deadlock
+    def device_profile_delete(self, context, uuid):
+        with _session_for_write():
+            query = model_query(context, models.DeviceProfile)
+            query = add_identity_filter(query, uuid)
+            count = query.delete()
+            if count != 1:
+                raise exception.DeviceProfileNotFound(uuid=uuid)
 
     def deployable_create(self, context, values):
         if not values.get('uuid'):
@@ -215,12 +532,6 @@ class Connection(api.Connection):
             return query.one()
         except NoResultFound:
             raise exception.DeployableNotFound(uuid=uuid)
-
-    def deployable_get_by_host(self, context, host):
-        query = model_query(
-            context,
-            models.Deployable).filter_by(host=host)
-        return query.all()
 
     def deployable_list(self, context):
         query = model_query(context, models.Deployable)
@@ -256,7 +567,7 @@ class Connection(api.Connection):
         with _session_for_write():
             query = model_query(context, models.Deployable)
             query = add_identity_filter(query, uuid)
-            query.update({'root_uuid': None})
+            query.update({'root_id': None})
             count = query.delete()
             if count != 1:
                 raise exception.DeployableNotFound(uuid=uuid)
@@ -264,13 +575,9 @@ class Connection(api.Connection):
     def deployable_get_by_filters_with_attributes(self, context,
                                                   filters):
 
-        exact_match_filter_names = ['uuid', 'name',
-                                    'parent_uuid', 'root_uuid',
-                                    'address', 'host',
-                                    'board', 'vendor', 'version',
-                                    'type', 'interface_type', 'assignable',
-                                    'instance_uuid', 'availability',
-                                    'accelerator_id']
+        exact_match_filter_names = ['id', 'uuid', 'name',
+                                    'parent_id', 'root_id',
+                                    'num_accelerators', 'device_id']
         attribute_filters = {}
         filters_copy = copy.deepcopy(filters)
         for key, value in filters_copy.items():
@@ -354,44 +661,6 @@ class Connection(api.Connection):
                                        for k, v in attribute_filters.items()]))
         return query
 
-    def _exact_deployable_filter(self, query, filters, legal_keys):
-        """Applies exact match filtering to a deployable query.
-        Returns the updated query.  Modifies filters argument to remove
-        filters consumed.
-        :param query: query to apply filters to
-        :param filters: dictionary of filters; values that are lists,
-                        tuples, sets, or frozensets cause an 'IN' test to
-                        be performed, while exact matching ('==' operator)
-                        is used for other values
-        :param legal_keys: list of keys to apply exact filtering to
-        """
-
-        filter_dict = {}
-        model = models.Deployable
-
-        # Walk through all the keys
-        for key in legal_keys:
-            # Skip ones we're not filtering on
-            if key not in filters:
-                continue
-
-            # OK, filtering on this key; what value do we search for?
-            value = filters.pop(key)
-
-            if isinstance(value, (list, tuple, set, frozenset)):
-                if not value:
-                    return None
-                # Looking for values in a list; apply to query directly
-                column_attr = getattr(model, key)
-                query = query.filter(column_attr.in_(value))
-            else:
-                filter_dict[key] = value
-        # Apply simple exact matches
-        if filter_dict:
-            query = query.filter(*[getattr(models.Deployable, k) == v
-                                   for k, v in filter_dict.items()])
-        return query
-
     def deployable_get_by_filters_sort(self, context, filters, limit=None,
                                        marker=None, join_columns=None,
                                        sort_key=None, sort_dir=None):
@@ -406,18 +675,14 @@ class Connection(api.Connection):
         query_prefix = model_query(context, models.Deployable)
         filters = copy.deepcopy(filters)
 
-        exact_match_filter_names = ['uuid', 'name',
-                                    'parent_uuid', 'root_uuid',
-                                    'address', 'host',
-                                    'board', 'vendor', 'version',
-                                    'type', 'interface_type', 'assignable',
-                                    'instance_uuid', 'availability',
-                                    'accelerator_id']
+        exact_match_filter_names = ['id', 'uuid', 'name',
+                                    'parent_id', 'root_id',
+                                    'num_accelerators', 'device_id']
 
         # Filter the query
-        query_prefix = self._exact_deployable_filter(query_prefix,
-                                                     filters,
-                                                     exact_match_filter_names)
+        query_prefix = self._exact_filter(models.Deployable, query_prefix,
+                                          filters,
+                                          exact_match_filter_names)
         if query_prefix is None:
             return []
         return _paginate_query(context, models.Deployable, limit, marker,
@@ -461,26 +726,26 @@ class Connection(api.Connection):
         query_prefix = model_query(context, models.Attribute)
 
         # Filter the query
-        query_prefix = self._exact_attribute_by_filter(query_prefix,
-                                                       filters)
+        query_prefix = self._exact_filter(models.Attribute, query_prefix,
+                                          filters)
         if query_prefix is None:
             return []
 
         return query_prefix.all()
 
-    def _exact_attribute_by_filter(self, query, filters):
-        """Applies exact match filtering to a atrtribute query.
-        Returns the updated query.
-        :param filters: The filters specified by a dict of kv pairs
-        """
-
-        model = models.Attribute
-        filter_dict = filters
-
-        # Apply simple exact matches
-        query = query.filter(*[getattr(models.Attribute, k) == v
-                               for k, v in filter_dict.items()])
-        return query
+    # def _exact_attribute_by_filter(self, query, filters):
+    #     """Applies exact match filtering to a atrtribute query.
+    #     Returns the updated query.
+    #     :param filters: The filters specified by a dict of kv pairs
+    #     """
+    #
+    #     model = models.Attribute
+    #     filter_dict = filters
+    #
+    #     # Apply simple exact matches
+    #     query = query.filter(*[getattr(models.Attribute, k) == v
+    #                            for k, v in filter_dict.items()])
+    #     return query
 
     def attribute_update(self, context, uuid, key, value):
         return self._do_update_attribute(context, uuid, key, value)
@@ -506,6 +771,63 @@ class Connection(api.Connection):
             count = query.delete()
             if count != 1:
                 raise exception.AttributeNotFound(uuid=uuid)
+
+    def extarq_create(self, context, values):
+        if not values.get('uuid'):
+            values['uuid'] = uuidutils.generate_uuid()
+        if values.get('id'):
+            values.pop('id', None)
+        extarq = models.ExtArq()
+        extarq.update(values)
+
+        with _session_for_write() as session:
+            try:
+                session.add(extarq)
+                session.flush()
+            except db_exc.DBDuplicateEntry:
+                raise exception.ExtArqAlreadyExists(uuid=values['uuid'])
+            return extarq
+
+    @oslo_db_api.retry_on_deadlock
+    def extarq_delete(self, context, uuid):
+        with _session_for_write():
+            query = model_query(context, models.ExtArq)
+            query = add_identity_filter(query, uuid)
+            count = query.delete()
+            if count != 1:
+                raise exception.ExtArqNotFound(uuid=uuid)
+
+    def extarq_update(self, context, uuid, values):
+        if 'uuid' in values:
+            msg = _("Cannot overwrite UUID for an existing ExtArq.")
+            raise exception.InvalidParameterValue(err=msg)
+        return self._do_update_extarq(context, uuid, values)
+
+    @oslo_db_api.retry_on_deadlock
+    def _do_update_extarq(self, context, uuid, values):
+        with _session_for_write():
+            query = model_query(context, models.ExtArq)
+            query = query.filter_by(uuid=uuid)
+            try:
+                ref = query.with_lockmode('update').one()
+            except NoResultFound:
+                raise exception.ExtArqNotFound(uuid=uuid)
+            ref.update(values)
+        return ref
+
+    def extarq_list(self, context, limit, marker, sort_key, sort_dir):
+        query = model_query(context, models.ExtArq)
+        return _paginate_query(context, models.Device, limit, marker,
+                               sort_key, sort_dir, query)
+
+    def extarq_get(self, context, uuid):
+        query = model_query(
+            context,
+            models.ExtArq).filter_by(uuid=uuid)
+        try:
+            return query.one()
+        except NoResultFound:
+            raise exception.ExtArqNotFound(uuid=uuid)
 
     def _get_quota_usages(self, context, project_id, resources=None):
         # Broken out for testability
@@ -653,14 +975,13 @@ class Connection(api.Connection):
 
     def _sync_acc_res(self, context, resource, project_id):
         """Quota sync funciton"""
-        res_in_use = self._accelerator_data_get_for_project(context, resource,
-                                                            project_id)
+        res_in_use = self._device_data_get_for_project(context, resource,
+                                                       project_id)
         return {resource: res_in_use}
 
-    def _accelerator_data_get_for_project(self, context, resource, project_id):
+    def _device_data_get_for_project(self, context, resource, project_id):
         """Return the number of resource which is being used by a project"""
-        query = model_query(context, models.Accelerator).\
-            filter_by(project_id=project_id).filter_by(device_type=resource)
+        query = model_query(context, models.Device).filter_by(type=resource)
 
         return query.count()
 

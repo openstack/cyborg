@@ -22,7 +22,10 @@ Cyborg Intel FPGA driver implementation.
 import glob
 import os
 import re
-
+from cyborg import objects
+from cyborg.objects.driver_objects import driver_deployable, driver_device,\
+    driver_attach_handle, driver_controlpath_id
+from cyborg.common import constants
 
 SYS_FPGA = "/sys/class/fpga"
 DEVICE = "device"
@@ -32,11 +35,10 @@ BDF_PATTERN = re.compile(
     "^[a-fA-F\d]{4}:[a-fA-F\d]{2}:[a-fA-F\d]{2}\.[a-fA-F\d]$")
 
 
-DEVICE_FILE_MAP = {"vendor": "vendor_id",
-                   "device": "product_id",
-                   "sriov_numvfs": "pr_num"}
+DEVICE_FILE_MAP = {"vendor": "vendor",
+                   "device": "model"}
 DEVICE_FILE_HANDLER = {}
-DEVICE_EXPOSED = ["vendor", "device", "sriov_numvfs"]
+DEVICE_EXPOSED = ["vendor", "device"]
 
 
 def all_fpgas():
@@ -49,7 +51,7 @@ def all_vf_fpgas():
             glob.glob(os.path.join(SYS_FPGA, "*/device/physfn"))]
 
 
-def all_pure_pf_fpgas():
+def all_pfs_have_vf():
     return [dev.rsplit("/", 2)[0] for dev in
             glob.glob(os.path.join(SYS_FPGA, "*/device/virtfn0"))]
 
@@ -131,33 +133,72 @@ def fpga_device(path):
 
 
 def fpga_tree():
-
     def gen_fpga_infos(path, vf=True):
         name = os.path.basename(path)
         dpath = os.path.realpath(os.path.join(path, DEVICE))
         bdf = os.path.basename(dpath)
-        func = "vf" if vf else "pf"
-        pf_bdf = os.path.basename(
-            os.path.realpath(os.path.join(dpath, PF))) if vf else ""
-        fpga = {"path": path, "function": func,
-                "devices": bdf, "assignable": True,
-                "parent_devices": pf_bdf,
-                "name": name,
-                "interface_type": "pci"}
+        fpga = {"type": constants.DEVICE_FPGA,
+                "devices": bdf,
+                "name": name}
         d_info = fpga_device(dpath)
         fpga.update(d_info)
         return fpga
-
     devs = []
-    pure_pfs = all_pure_pf_fpgas()
+    pf_has_vf = all_pfs_have_vf()
     for pf in all_pf_fpgas():
         fpga = gen_fpga_infos(pf, False)
-        if pf in pure_pfs:
-            fpga["assignable"] = False
+        if pf in pf_has_vf:
             fpga["regions"] = []
             vfs = all_vfs_in_pf_fpgas(pf)
             for vf in vfs:
                 vf_fpga = gen_fpga_infos(vf, True)
                 fpga["regions"].append(vf_fpga)
-        devs.append(fpga)
+        devs.append(_generate_driver_device(fpga, pf in pf_has_vf))
     return devs
+
+
+def _generate_driver_device(fpga, pf_has_vf):
+    driver_device_obj = driver_device.DriverDevice()
+    driver_device_obj.vendor = fpga["vendor"]
+    driver_device_obj.model = fpga["model"]
+    driver_device_obj.type = fpga["type"]
+    driver_device_obj.controlpath_id = _generate_controlpath_id(fpga)
+    driver_device_obj.deployable_list = _generate_dep_list(fpga, pf_has_vf)
+    return driver_device_obj
+
+
+def _generate_controlpath_id(fpga):
+    driver_cpid = driver_controlpath_id.DriverControlPathID()
+    driver_cpid.cpid_type = "pci"
+    driver_cpid.cpid_info = fpga["devices"]
+    return driver_cpid
+
+
+def _generate_dep_list(fpga, pf_has_vf):
+    dep_list = []
+    driver_dep = driver_deployable.DriverDeployable()
+    driver_dep.attach_handle_list = []
+    # pf without sriov enabled.
+    if not pf_has_vf:
+        driver_dep.num_accelerators = 1
+        driver_dep.attach_handle_list = \
+            [_generate_attach_handle(fpga, pf_has_vf)]
+        driver_dep.name = fpga["name"]
+    # pf with sriov enabled, may have several regions and several vfs.
+    # For now, there is only region, this maybe improve in next release.
+    else:
+        driver_dep.num_accelerators = len(fpga["regions"])
+        for vf in fpga["regions"]:
+            driver_dep.attach_handle_list.append(
+                _generate_attach_handle(vf, False))
+            driver_dep.name = vf["name"]
+    dep_list.append(driver_dep)
+    return dep_list
+
+
+def _generate_attach_handle(fpga, pf_has_vf):
+    driver_ah = driver_attach_handle.DriverAttachHandle()
+    driver_ah.attach_type = "pci"
+    driver_ah.attach_info = fpga["devices"]
+    driver_ah.in_use = False
+    return driver_ah

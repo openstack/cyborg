@@ -25,6 +25,12 @@ def register_all():
     # NOTE(danms): You must make sure your object gets imported in this
     # function in order for it to be registered by services that may
     # need to receive it via RPC.
-    __import__('cyborg.objects.accelerator')
     __import__('cyborg.objects.deployable')
     __import__('cyborg.objects.attribute')
+    __import__('cyborg.objects.arq')
+    __import__('cyborg.objects.ext_arq')
+    __import__('cyborg.objects.attach_handle')
+    __import__('cyborg.objects.control_path')
+    __import__('cyborg.objects.device')
+    __import__('cyborg.objects.device_profile')
+    __import__('cyborg.objects.driver_objects')

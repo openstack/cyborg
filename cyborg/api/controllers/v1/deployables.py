@@ -19,16 +19,13 @@ from six.moves import http_client
 import wsme
 from wsme import types as wtypes
 
+from cyborg.agent.rpcapi import AgentAPI
 from cyborg.api.controllers import base
 from cyborg.api.controllers import link
 from cyborg.api.controllers.v1 import types
-from cyborg.api.controllers.v1 import utils as api_utils
 from cyborg.api import expose
-from cyborg.common import exception
 from cyborg.common import policy
 from cyborg import objects
-from cyborg.quota import QUOTAS
-from cyborg.agent.rpcapi import AgentAPI
 
 
 class Deployable(base.APIBase):
@@ -42,44 +39,20 @@ class Deployable(base.APIBase):
     uuid = types.uuid
     """The UUID of the deployable"""
 
+    parent_id = types.integer
+    """The parent ID of the deployable"""
+
+    root_id = types.integer
+    """The root ID of the deployable"""
+
     name = wtypes.text
     """The name of the deployable"""
 
-    parent_uuid = types.uuid
-    """The parent UUID of the deployable"""
+    num_accelerators = types.integer
+    """The number of accelerators of the deployable"""
 
-    root_uuid = types.uuid
-    """The root UUID of the deployable"""
-
-    address = wtypes.text
-    """The address(pci/mdev) of the deployable"""
-
-    host = wtypes.text
-    """The host on which the deployable is located"""
-
-    board = wtypes.text
-    """The board of the deployable"""
-
-    vendor = wtypes.text
-    """The vendor of the deployable"""
-
-    version = wtypes.text
-    """The version of the deployable"""
-
-    type = wtypes.text
-    """The type of the deployable"""
-
-    interface_type = wtypes.text
-    """The interface type of deployable"""
-
-    assignable = types.boolean
-    """Whether the deployable is assignable"""
-
-    instance_uuid = types.uuid
-    """The UUID of the instance which deployable is assigned to"""
-
-    availability = wtypes.text
-    """The availability of the deployable"""
+    device_id = types.integer
+    """The device on which the deployable is located"""
 
     attributes_list = wtypes.text
     """The json list of attributes of the deployable"""
@@ -134,7 +107,7 @@ class DeployablePatchType(types.JsonPatchType):
     @staticmethod
     def internal_attrs():
         defaults = types.JsonPatchType.internal_attrs()
-        return defaults + ['/address', '/host', '/type']
+        return defaults + ['/name', '/num_accelerators']
 
 
 class DeployablesController(base.CyborgController):
@@ -232,33 +205,13 @@ class DeployablesController(base.CyborgController):
         :param patch: a json PATCH document to apply to this deployable.
         """
         context = pecan.request.context
-        reservations = None
 
         obj_dep = objects.Deployable.get(context, uuid)
-        try:
-            # TODO(xinran): need more discussion on quota's granularity.
-            # Now we count by board.
-            for p in patch:
-                if p["path"] == "/instance_uuid" and p["op"] == "replace":
-                    if not p["value"]:
-                        obj_dep["assignable"] = True
-                        reserve_opts = {obj_dep["board"]: -1}
-                    else:
-                        obj_dep["assignable"] = False
-                        reserve_opts = {obj_dep["board"]: 1}
-                    reservations = QUOTAS.reserve(context, reserve_opts)
-            api_dep = Deployable(
-                **api_utils.apply_jsonpatch(obj_dep.as_dict(), patch))
-        except api_utils.JSONPATCH_EXCEPTIONS as e:
-            QUOTAS.rollback(context, reservations, project_id=None)
-            raise exception.PatchError(patch=patch, reason=e)
-
-        QUOTAS.commit(context, reservations)
 
         # Update only the fields that have changed
         for field in objects.Deployable.fields:
             try:
-                patch_val = getattr(api_dep, field)
+                patch_val = getattr(obj_dep, field)
             except AttributeError:
                 # Ignore fields that aren't exposed in the API
                 continue

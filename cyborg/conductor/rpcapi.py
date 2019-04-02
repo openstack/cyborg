@@ -136,16 +136,6 @@ class ConductorAPI(object):
         cctxt = self.client.prepare(topic=self.topic)
         return cctxt.call(context, 'deployable_get', uuid=uuid)
 
-    def deployable_get_by_host(self, context, host):
-        """Signal to conductor service to get a deployable by host.
-
-        :param context: request context.
-        :param host: host on which the deployable is located.
-        :returns: requested deployable object.
-        """
-        cctxt = self.client.prepare(topic=self.topic)
-        return cctxt.call(context, 'deployable_get_by_host', host=host)
-
     def deployable_list(self, context):
         """Signal to conductor service to get a list of deployables.
 
@@ -154,3 +144,11 @@ class ConductorAPI(object):
         """
         cctxt = self.client.prepare(topic=self.topic)
         return cctxt.call(context, 'deployable_list')
+
+    def report_data(self, context, hostname, driver_device_list):
+        """Signal to conductor service to update the cyborg DB
+        :parma context: request context.
+        """
+        cctxt = self.client.prepare(topic=self.topic)
+        cctxt.call(context, 'report_data', hostname=hostname,
+                   driver_device_list=driver_device_list)

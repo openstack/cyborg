@@ -18,30 +18,19 @@ Track resources like FPGA GPU and QAT for a host.  Provides the
 conductor with useful information about availability through the accelerator
 model.
 """
-from oslo_log import log as logging
-from oslo_messaging.rpc.client import RemoteError
-from oslo_utils import uuidutils
 
-from cyborg.accelerator.drivers.fpga.base import FPGADriver
+from oslo_log import log as logging
+from stevedore import driver
+from stevedore.extension import ExtensionManager
+
+from cyborg.common import exception
 from cyborg.common import utils
-from cyborg import objects
+from cyborg.conf import CONF
 
 
 LOG = logging.getLogger(__name__)
 
 AGENT_RESOURCE_SEMAPHORE = "agent_resources"
-
-DEPLOYABLE_VERSION = "1.0"
-
-# need to change the driver field name
-DEPLOYABLE_HOST_MAPS = {"assignable": "assignable",
-                        "address": "devices",
-                        "board": "product_id",
-                        "type": "function",
-                        "vendor": "vendor_id",
-                        "name": "name",
-                        "interface_type": "interface_type"
-                        }
 
 
 class ResourceTracker(object):
@@ -50,149 +39,38 @@ class ResourceTracker(object):
     """
 
     def __init__(self, host, cond_api):
-        # FIXME (Shaohe) local cache for Accelerator.
-        # Will fix it in next release.
-        self.fpgas = None
         self.host = host
         self.conductor_api = cond_api
-        self.fpga_driver = FPGADriver()
+        self.acc_drivers = []
+        self._initialize_drivers()
 
-    @utils.synchronized(AGENT_RESOURCE_SEMAPHORE)
-    def claim(self, context):
-        pass
-
-    def _fpga_compare_and_update(self, host_dev, acclerator):
-        need_updated = False
-        for k, v in DEPLOYABLE_HOST_MAPS.items():
-            if acclerator[k] != host_dev[v]:
-                need_updated = True
-                acclerator[k] = host_dev[v]
-        return need_updated
-
-    def _gen_accelerator_for_deployable(
-            self, context, name, vendor, productor, desc="", dev_type="pf",
-            acc_type="FPGA", acc_cap="", remotable=0):
+    def _initialize_drivers(self, enabled_drivers=[]):
         """
-        The type of the accelerator device, e.g GPU, FPGA, ...
-        acc_type defines the usage of the accelerator, e.g Crypto
-        acc_capability defines the specific capability, e.g AES
+        Load accelerator drivers.
+        :return: [nvidia_gpu_driver_obj, intel_fpga_driver_obj]
         """
-        db_acc = {
-            'deleted': False,
-            'uuid': uuidutils.generate_uuid(),
-            'name': name,
-            'description': desc,
-            'project_id': context.project_id,
-            'user_id': context.user_id,
-            'device_type': dev_type,
-            'acc_type': acc_type,
-            'acc_capability': acc_cap,
-            'vendor_id': vendor,
-            'product_id': productor,
-            'remotable': remotable
-            }
-
-        acc = objects.Accelerator(context, **db_acc)
-        acc = self.conductor_api.accelerator_create(context, acc)
-        return acc
-
-    def _gen_deployable_from_host_dev(self, host_dev, acc_id,
-                                      parent_uuid=None, root_uuid=None):
-        dep = {}
-        for k, v in DEPLOYABLE_HOST_MAPS.items():
-            dep[k] = host_dev[v]
-        dep["host"] = self.host
-        dep["version"] = DEPLOYABLE_VERSION
-        dep["availability"] = "free"
-        dep["uuid"] = uuidutils.generate_uuid()
-        dep["parent_uuid"] = parent_uuid
-        dep["root_uuid"] = root_uuid
-        dep["accelerator_id"] = acc_id
-        return dep
+        acc_drivers = []
+        if not enabled_drivers:
+            enabled_drivers = CONF.agent.enabled_drivers
+        valid_drivers = ExtensionManager(
+            namespace='cyborg.accelerator.driver').names()
+        for d in enabled_drivers:
+            if d not in valid_drivers:
+                raise exception.InvalidDriver(name=d)
+            acc_driver = driver.DriverManager(
+                namespace='cyborg.accelerator.driver', name=d,
+                invoke_on_load=True).driver
+            acc_drivers.append(acc_driver)
+        self.acc_drivers = acc_drivers
 
     @utils.synchronized(AGENT_RESOURCE_SEMAPHORE)
     def update_usage(self, context):
-        """Update the resource usage and stats after a change in an
-        instance
+        """Update the resource usage periodically.
         """
-        def create_deployable(fpgas, bdf, acc_id, parent_uuid=None):
-            fpga = fpgas[bdf]
-            dep = self._gen_deployable_from_host_dev(fpga, acc_id)
-            # if parent_uuid:
-            dep["parent_uuid"] = parent_uuid
-            obj_dep = objects.Deployable(context, **dep)
-            new_dep = self.conductor_api.deployable_create(context, obj_dep)
-            return new_dep
-
-        # NOTE(Shaohe Feng) need more agreement on how to keep consistency.
-        fpgas = self._get_fpga_devices()
-        bdfs = set(fpgas.keys())
-        deployables = self.conductor_api.deployable_get_by_host(
-            context, self.host)
-
-        # NOTE(Shaohe Feng) when no "address" in deployable?
-        accls = dict([(v["address"], v) for v in deployables])
-        accl_bdfs = set(accls.keys())
-
-        # Firstly update
-        for mutual in accl_bdfs & bdfs:
-            accl = accls[mutual]
-            if self._fpga_compare_and_update(fpgas[mutual], accl):
-                try:
-                    self.conductor_api.deployable_update(context, accl)
-                except RemoteError as e:
-                    LOG.error(e)
-        # Add
-        new = bdfs - accl_bdfs
-        new_pf = set([n for n in new if fpgas[n]["function"] == "pf"])
-        for n in new_pf:
-            fpga = fpgas[n]
-            acc = self._gen_accelerator_for_deployable(
-                context, fpga["name"], fpga["vendor_id"], fpga["product_id"],
-                "FPGA device on %s" % self.host, "pf", "FPGA")
-            new_dep = create_deployable(fpgas, n, acc.id)
-            accls[n] = new_dep
-            sub_vf = set()
-            if "regions" in n:
-                sub_vf = set([sub["devices"] for sub in fpgas[n]["regions"]])
-            for vf in sub_vf & new:
-                fpga = fpgas[n]
-                acc = self._gen_accelerator_for_deployable(
-                    context, fpga["name"], fpga["vendor_id"],
-                    fpga["product_id"], "FPGA device on %s" % self.host,
-                    "vf", "FPGA")
-                new_dep = create_deployable(fpgas, vf, acc.id, new_dep["uuid"])
-                accls[vf] = new_dep
-                new.remove(vf)
-        for n in new - new_pf:
-            p_bdf = fpgas[n]["parent_devices"]
-            p_accl = accls[p_bdf]
-            p_uuid = p_accl["uuid"]
-            fpga = fpgas[n]
-            acc = self._gen_accelerator_for_deployable(
-                context, fpga["name"], fpga["vendor_id"], fpga["product_id"],
-                "FPGA device on %s" % self.host, "pf", "FPGA")
-            new_dep = create_deployable(fpgas, n, acc.id, p_uuid)
-
-        # Delete
-        for obsolete in accl_bdfs - bdfs:
-            try:
-                self.conductor_api.deployable_delete(context, accls[obsolete])
-            except RemoteError as e:
-                LOG.error(e)
-            del accls[obsolete]
-
-    def _get_fpga_devices(self):
-
-        def form_dict(devices, fpgas):
-            for v in devices:
-                fpgas[v["devices"]] = v
-                if "regions" in v:
-                    form_dict(v["regions"], fpgas)
-
-        fpgas = {}
-        vendors = self.fpga_driver.discover_vendors()
-        for v in vendors:
-            driver = self.fpga_driver.create(v)
-            form_dict(driver.discover(), fpgas)
-        return fpgas
+        acc_list = []
+        for acc_driver in self.acc_drivers:
+            acc_list.extend(acc_driver.discover())
+        # Call conductor_api here to diff and report acc data. Now, we actually
+        # do not have the method report_data.
+        if acc_list:
+            self.conductor_api.report_data(context, self.host, acc_list)

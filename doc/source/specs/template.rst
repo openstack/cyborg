@@ -20,7 +20,7 @@ respectively.
 Some notes about the cyborg-spec and blueprint process:
 
 * Not all blueprints need a spec. For more information see
-  http://docs.openstack.org/developer/cyborg/blueprints.html#specs
+  https://docs.openstack.org/developer/cyborg/blueprints.html#specs
 
 * The aim of this document is first to define the problem we need to solve,
   and second agree the overall approach to solve that problem.
