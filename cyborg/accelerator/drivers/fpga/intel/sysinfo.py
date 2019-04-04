@@ -169,7 +169,7 @@ def _generate_driver_device(fpga, pf_has_vf):
 
 def _generate_controlpath_id(fpga):
     driver_cpid = driver_controlpath_id.DriverControlPathID()
-    driver_cpid.cpid_type = "pci"
+    driver_cpid.cpid_type = "PCI"
     driver_cpid.cpid_info = fpga["devices"]
     return driver_cpid
 
@@ -198,7 +198,7 @@ def _generate_dep_list(fpga, pf_has_vf):
 
 def _generate_attach_handle(fpga, pf_has_vf):
     driver_ah = driver_attach_handle.DriverAttachHandle()
-    driver_ah.attach_type = "pci"
+    driver_ah.attach_type = "PCI"
     driver_ah.attach_info = fpga["devices"]
     driver_ah.in_use = False
     return driver_ah
