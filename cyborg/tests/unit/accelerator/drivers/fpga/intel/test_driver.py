@@ -42,12 +42,12 @@ class TestIntelFPGADriver(base.TestCase):
     def test_discover(self):
         attach_handle_list = [
             [
-                {'attach_type': 'pci',
+                {'attach_type': 'PCI',
                  'attach_info': '0000:be:00.0',
                  'in_use': False}
             ],
             [
-                {'attach_type': 'pci',
+                {'attach_type': 'PCI',
                  'attach_info': '0000:5e:00.1',
                  'in_use': False}
             ]
@@ -64,7 +64,7 @@ class TestIntelFPGADriver(base.TestCase):
                          ],
                      'controlpath_id':
                          {'cpid_info': '0000:be:00.0',
-                          'cpid_type': 'pci'}},
+                          'cpid_type': 'PCI'}},
                     {'vendor': '0x8086',
                      'type': 'FPGA',
                      'model': '0xbcc0',
@@ -77,7 +77,7 @@ class TestIntelFPGADriver(base.TestCase):
                          ],
                      'controlpath_id':
                          {'cpid_info': '0000:5e:00.0',
-                          'cpid_type': 'pci'}}]
+                          'cpid_type': 'PCI'}}]
         intel = IntelFPGADriver()
         fpgas = intel.discover()
         list.sort(fpgas, key=lambda x: x._obj_deployable_list[0].name)
