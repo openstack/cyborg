@@ -97,6 +97,7 @@ Install and Configure
         password = cyborg
         username = cyborg
         auth_url = http://%OPENSTACK_HOST_IP%/identity
+        auth_type = password
 
     ..
 
