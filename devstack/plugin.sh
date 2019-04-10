@@ -14,9 +14,9 @@ if is_service_enabled cyborg-api cyborg-cond; then
         # stack/pre-install - Called after (OS) setup is complete and before
         # project source is installed
             echo_summary "Installing additional Cyborg packages"
-            if install_opae_packages; then
+            if [[ "$OPAE_INSTALL_ENABLE" == "True" ]] && install_opae_packages; then
                echo_summary "INFO: Additional Cyborg packages installed"
-            else
+            elif [[ "$OPAE_INSTALL_ENABLE" == "True" ]]; then
                echo "WARNING: Failed to install additional Cyborg packages"
             fi
         elif [[ "$2" == "install" ]]; then
@@ -56,6 +56,8 @@ if is_service_enabled cyborg-api cyborg-cond; then
     # clean - Called by clean.sh before other services are cleaned, but after
     # unstack.sh has been called.
         cleanup_cyborg
-        uninstall_opae_packages
+        if [[ "$OPAE_INSTALL_ENABLE" == "True" ]]; then
+            uninstall_opae_packages
+        fi
     fi
 fi
