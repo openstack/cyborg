@@ -23,7 +23,7 @@ Install and Configure
     .. code-block:: console
 
         cd ~/cyborg
-        git clone https://git.openstack.org/openstack/cyborg
+        git clone https://opendev.org/openstack/cyborg
     ..
 
 #.  Set up the cyborg config file
