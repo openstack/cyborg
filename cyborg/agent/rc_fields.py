@@ -41,6 +41,7 @@ class ResourceClass(fields.StringField):
     IPV4_ADDRESS = 'IPV4_ADDRESS'
     VGPU = 'VGPU'
     VGPU_DISPLAY_HEAD = 'VGPU_DISPLAY_HEAD'
+    FPGA = 'ACCELERATOR_FPGA'
 
     # The ordering here is relevant. If you must add a value, only
     # append.
