@@ -15,7 +15,11 @@
 
 from oslo_log import log as logging
 import oslo_messaging as messaging
+from oslo_utils import encodeutils
+import uuid
 
+from cyborg.common import exception
+from cyborg.common import placement_client
 from cyborg.conf import CONF
 from cyborg import objects
 from cyborg.objects.attach_handle import AttachHandle
@@ -23,6 +27,7 @@ from cyborg.objects.attribute import Attribute
 from cyborg.objects.control_path import ControlpathID
 from cyborg.objects.deployable import Deployable
 from cyborg.objects.device import Device
+from cyborg.objects.driver_objects.driver_device import DriverDeployable
 from cyborg.objects.driver_objects.driver_device import DriverDevice
 
 LOG = logging.getLogger(__name__)
@@ -38,6 +43,7 @@ class ConductorManager(object):
         super(ConductorManager, self).__init__()
         self.topic = topic
         self.host = host or CONF.host
+        self.placement_client = placement_client.PlacementClient()
 
     def periodic_tasks(self, context, raise_on_error=False):
         pass
@@ -133,11 +139,10 @@ class ConductorManager(object):
         old_driver_device_list = DriverDevice.list(context, hostname)
         # TODO(wangzhh): Remove invalid driver_devices without controlpath_id.
         # Then diff two driver device list.
-        self.drv_device_make_diff(context, hostname, old_driver_device_list,
-                                  driver_device_list)
+        self.drv_device_make_diff(context, hostname,
+                                  old_driver_device_list, driver_device_list)
 
-    @classmethod
-    def drv_device_make_diff(cls, context, host, old_driver_device_list,
+    def drv_device_make_diff(self, context, host, old_driver_device_list,
                              new_driver_device_list):
         """Compare new driver-side device object list with the old one in
         one host.
@@ -155,6 +160,7 @@ class ConductorManager(object):
         same = set(new_cpid_list) & set(old_cpid_list) - set(stub_cpid_list)
         added = set(new_cpid_list) - same - set(stub_cpid_list)
         deleted = set(old_cpid_list) - same - set(stub_cpid_list)
+        host_rp = self._get_root_provider(context, host)
         for s in same:
             # get the driver_dev_obj, diff the driver_device layer
             new_driver_dev_obj = new_driver_device_list[new_cpid_list.index(s)]
@@ -179,21 +185,29 @@ class ConductorManager(object):
                     setattr(dev_obj, c_k, getattr(new_driver_dev_obj, c_k))
             dev_obj.save(context)
             # diff the internal layer: driver_deployable
-            cls.drv_deployable_make_diff(context, dev_obj.id, cpid_obj.id,
-                                         old_driver_dev_obj.deployable_list,
-                                         new_driver_dev_obj.deployable_list)
+            self.drv_deployable_make_diff(context, dev_obj.id, cpid_obj.id,
+                                          old_driver_dev_obj.deployable_list,
+                                          new_driver_dev_obj.deployable_list,
+                                          host_rp)
         # device is deleted.
         for d in deleted:
             old_driver_dev_obj = old_driver_device_list[old_cpid_list.index(d)]
+            for driver_dep_obj in old_driver_dev_obj.deployable_list:
+                rp_uuid = self.get_pr_uuid_from_obj(driver_dep_obj)
+                self._delete_provider_and_sub_providers(context, rp_uuid)
             old_driver_dev_obj.destroy(context, host)
         # device is added
         for a in added:
             new_driver_dev_obj = new_driver_device_list[new_cpid_list.index(a)]
             new_driver_dev_obj.create(context, host)
+            for driver_dep_obj in new_driver_dev_obj.deployable_list:
+                self.get_placement_needed_info_and_report(context,
+                                                          driver_dep_obj,
+                                                          host_rp)
 
-    @classmethod
-    def drv_deployable_make_diff(cls, context, device_id, cpid_id,
-                                 old_driver_dep_list, new_driver_dep_list):
+    def drv_deployable_make_diff(self, context, device_id, cpid_id,
+                                 old_driver_dep_list, new_driver_dep_list,
+                                 host_rp):
         """Compare new driver-side deployable object list with the old one in
         one host.
         """
@@ -216,31 +230,45 @@ class ConductorManager(object):
             if dep_obj.num_accelerators != new_driver_dep_obj.num_accelerators:
                 dep_obj.num_accelerators = new_driver_dep_obj.num_accelerators
                 dep_obj.save(context)
+                rp_uuid = self.get_pr_uuid_from_obj(new_driver_dep_obj)
+                rc = new_driver_dep_obj.name
+                inv_date = \
+                    self._gen_resource_inventory(
+                        rc, total=dep_obj.num_accelerators)
+                self.placement_client._placement_client._update_inventory(
+                    rp_uuid, inv_date)
             # diff the internal layer: driver_attribute_list
             new_attribute_list = []
             if hasattr(new_driver_dep_obj, 'attribute_list'):
                 new_attribute_list = new_driver_dep_obj.attribute_list
-            cls.drv_attr_make_diff(context, dep_obj.id,
-                                   old_driver_dep_obj.attribute_list,
-                                   new_attribute_list)
+            self.drv_attr_make_diff(context, dep_obj.id,
+                                    old_driver_dep_obj.attribute_list,
+                                    new_attribute_list)
             # diff the internal layer: driver_attach_hanle_list
-            cls.drv_ah_make_diff(context, dep_obj.id, cpid_id,
-                                 old_driver_dep_obj.attach_handle_list,
-                                 new_driver_dep_obj.attach_handle_list)
+            self.drv_ah_make_diff(context, dep_obj.id, cpid_id,
+                                  old_driver_dep_obj.attach_handle_list,
+                                  new_driver_dep_obj.attach_handle_list)
         # name is deleted.
         for d in deleted:
             old_driver_dep_obj = old_driver_dep_list[old_name_list.index(d)]
+            rp_uuid = self.get_pr_uuid_from_obj(old_driver_dep_obj)
             old_driver_dep_obj.destroy(context, device_id)
+            self._delete_provider_and_sub_providers(context, rp_uuid)
         # name is added.
         for a in added:
             new_driver_dep_obj = new_driver_dep_list[new_name_list.index(a)]
             new_driver_dep_obj.create(context, device_id, cpid_id)
+            self.get_placement_needed_info_and_report(context,
+                                                      new_driver_dep_obj,
+                                                      host_rp)
 
-    @classmethod
-    def drv_attr_make_diff(cls, context, dep_id, old_driver_attr_list,
+    def drv_attr_make_diff(self, context, dep_id, old_driver_attr_list,
                            new_driver_attr_list):
         """Diff new dirver-side Attribute Object lists with the old one."""
         LOG.info("Start differing attributes.")
+        dep_obj = Deployable.get_by_id(context, dep_id)
+        driver_dep = DriverDeployable.get_by_name(context, dep_obj.name)
+        rp_uuid = self.get_pr_uuid_from_obj(driver_dep)
         new_key_list = [driver_attr_obj.key for driver_attr_obj in
                         new_driver_attr_list]
         old_key_list = [driver_attr_obj.key for driver_attr_obj in
@@ -255,17 +283,26 @@ class ConductorManager(object):
                 attr_obj = Attribute.get_by_dep_key(context, dep_id, s)
                 attr_obj.value = new_driver_attr_obj.value
                 attr_obj.save(context)
+                # Update traits here.
+                if new_driver_attr_obj.key.startswith("trait"):
+                    self.placement_client.delete_trait_by_name(
+                        rp_uuid, old_driver_attr_obj.value)
+                    self.placement_client.add_traits_to_rp(
+                        rp_uuid, [new_driver_attr_obj.value])
         # key is deleted.
         deleted = set(old_key_list) - same
         for d in deleted:
-            old_driver_attr_obj = old_driver_attr_list[
-                old_key_list.index(d)]
-            old_driver_attr_obj.destroy(context, dep_id)
+            old_driver_attr_obj = old_driver_attr_list[old_key_list.index(d)]
+            self.placement_client.delete_trait_by_name(
+                rp_uuid, old_driver_attr_obj.value)
+            old_driver_attr_obj.delete_by_key(context, dep_id, d)
         # key is added.
         added = set(new_key_list) - same
         for a in added:
             new_driver_attr_obj = new_driver_attr_list[new_key_list.index(a)]
             new_driver_attr_obj.create(context, dep_id)
+            self.placement_client.add_traits_to_rp(
+                rp_uuid, [new_driver_attr_obj.value])
 
     @classmethod
     def drv_ah_make_diff(cls, context, dep_id, cpid_id, old_driver_ah_list,
@@ -302,3 +339,91 @@ class ConductorManager(object):
         for a in added:
             new_driver_ah_obj = new_driver_ah_list[new_info_list.index(a)]
             new_driver_ah_obj.create(context, dep_id, cpid_id)
+
+    def _get_root_provider(self, context, hostname):
+        try:
+            provider = self.placement_client.get(
+                "resource_providers?name=" + hostname).json()
+            pr_uuid = provider["resource_providers"][0]["uuid"]
+            return pr_uuid
+        except IndexError:
+            LOG.error("Error, provider %(hostname)s can not be found",
+                      {"hostname": hostname})
+        except Exception as e:
+            LOG.error("Error, could not access placement. Details: %(info)s",
+                      {"info": e})
+        return
+
+    def _get_sub_provider(self, context, parent, name):
+        name = encodeutils.safe_encode(name)
+        old_sub_pr_uuid = str(uuid.uuid3(uuid.NAMESPACE_DNS, name))
+        new_sub_pr_uuid = self.placement_client.ensure_resource_provider(
+            context, old_sub_pr_uuid,
+            name=name, parent_provider_uuid=parent)
+        if old_sub_pr_uuid == new_sub_pr_uuid:
+            return new_sub_pr_uuid
+        else:
+            raise exception.Conflict()
+
+    def provider_report(self, context, name, resource_class, traits, total,
+                        parent):
+        try:
+            self.placement_client.get("/resource_classes/%s" %
+                                      resource_class,
+                                      version='1.26')
+        except Exception as e:
+            self.placement_client.ensure_resource_classes(context,
+                                                          [resource_class])
+            LOG.error("Error, could not access resource_classes."
+                      "Details: %(info)s", {"info": e})
+
+        sub_pr_uuid = self._get_sub_provider(
+            context, parent, name)
+        result = self._gen_resource_inventory(resource_class, total)
+        self.placement_client._update_inventory(sub_pr_uuid, result)
+        # traits = ["CUSTOM_FPGA_INTEL", "CUSTOM_FPGA_INTEL_ARRIA10",
+        #           "CUSTOM_FPGA_INTEL_REGION_UUID",
+        #           "CUSTOM_FPGA_FUNCTION_ID_INTEL_UUID",
+        #           "CUSTOM_PROGRAMMABLE",
+        #           "CUSTOM_FPGA_NETWORK"]
+        self.placement_client.add_traits_to_rp(sub_pr_uuid, traits)
+        return sub_pr_uuid
+
+    def get_placement_needed_info_and_report(self, context, obj,
+                                             parent_uuid=None):
+        pr_name = obj.name
+        attrs = obj.attribute_list
+        resource_class = [i.value for i in attrs if i.key == 'rc'][0]
+        traits = [i.value for i in attrs
+                  if encodeutils.safe_encode(i.key).startswith("trait")]
+        total = obj.num_accelerators
+        rp_uuid = self.provider_report(context, pr_name, resource_class,
+                                       traits, total, parent_uuid)
+        dep_obj = Deployable.get_by_name(context, pr_name)
+        dep_obj["rp_uuid"] = rp_uuid
+        dep_obj.save(context)
+
+    def _gen_resource_inventory(self, name, total=0, max=1, min=1, step=1):
+        result = {}
+        result[name] = {
+            'total': total,
+            'min_unit': min,
+            'max_unit': max,
+            'step_size': step,
+        }
+        return result
+
+    def get_pr_uuid_from_obj(self, obj):
+        pr_name = encodeutils.safe_encode(obj.name)
+        return str(uuid.uuid3(uuid.NAMESPACE_DNS, pr_name))
+
+    def _delete_provider_and_sub_providers(self, context, rp_uuid):
+        rp_in_tree = self.placement_client._get_providers_in_tree(context,
+                                                                  rp_uuid)
+        for rp in rp_in_tree[::-1]:
+            if rp["parent_provider_uuid"] == rp_uuid or rp["uuid"] == rp_uuid:
+                self.placement_client._delete_provider(rp["uuid"])
+                LOG.info("Sucessfully delete resource provider %(rp_uuid)s",
+                         {"rp_uuid": rp["uuid"]})
+                if rp["uuid"] == rp_uuid:
+                    break

@@ -46,6 +46,14 @@ class DriverAttribute(base.DriverObjectBase,
             attr_obj.destroy(context)
 
     @classmethod
+    def delete_by_key(cls, context, deployable_id, key):
+        """Delete driver-side attribute list from the DB."""
+        attr_obj_list = Attribute.get_by_deployable_id(context, deployable_id)
+        for attr_obj in attr_obj_list:
+            if key == attr_obj.key:
+                attr_obj.destroy(context)
+
+    @classmethod
     def list(cls, context, deployable_id):
         """Form driver-side attribute list for one deployable."""
         attr_obj_list = Attribute.get_by_deployable_id(context, deployable_id)

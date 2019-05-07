@@ -24,7 +24,6 @@ import re
 from oslo_serialization import jsonutils
 
 from cyborg.accelerator.common import utils
-from cyborg.agent import rc_fields
 from cyborg.objects.driver_objects import driver_deployable, driver_device,\
     driver_attach_handle, driver_controlpath_id, driver_attribute
 from cyborg.common import constants
@@ -32,8 +31,8 @@ from cyborg.common import constants
 
 PCI_DEVICES_PATH = "/sys/bus/pci/devices"
 PCI_DEVICES_PATH_PATTERN = "/sys/bus/pci/devices/*"
-# TODO(shaohe) The KNOW_FPGAS can be configurable.
-KNOW_FPGAS = [("0x8086", "0x09c4")]
+# TODO(shaohe) The KNOWN_FPGAS can be configurable.
+KNOWN_FPGAS = [("0x8086", "0x09c4")]
 
 INTEL_FPGA_DEV_PREFIX = "intel-fpga-dev"
 SYS_FPGA = "/sys/class/fpga"
@@ -48,12 +47,7 @@ DEVICE_FILE_MAP = {"vendor": "vendor",
 DEVICE_FILE_HANDLER = {}
 DEVICE_EXPOSED = ["vendor", "device"]
 
-RC_FPGA = rc_fields.ResourceClass.normalize_name(
-    rc_fields.ResourceClass.FPGA)
-
-RESOURCES = {
-    "fpga": RC_FPGA
-}
+PRODUCT_MAP = {"0x09c4": "PAC_ARRIA10"}
 
 DRIVER_NAME = "intel"
 
@@ -66,7 +60,7 @@ def read_line(filename):
 def is_fpga(p):
     infos = (read_line(os.path.join(p, "vendor")),
              read_line(os.path.join(p, "device")))
-    if infos in KNOW_FPGAS:
+    if infos in KNOWN_FPGAS:
         return os.path.realpath(p)
 
 
@@ -80,7 +74,7 @@ def find_fpgas_by_know_list():
         lambda p: (
             read_line(os.path.join(p, "vendor")),
             read_line(os.path.join(p, "device"))
-        ) in KNOW_FPGAS,
+        ) in KNOWN_FPGAS,
         glob.glob(PCI_DEVICES_PATH_PATTERN))
 
 
@@ -165,24 +159,47 @@ def get_pf_bdf(bdf):
     return bdf
 
 
-def get_afu_ids(name):
+def get_afu_ids(device_name):
     return map(
         read_line,
         glob.glob(
             os.path.join(
                 PCI_DEVICES_PATH_PATTERN, "fpga",
-                name, "intel-fpga-port.*", "afu_id")
+                device_name, "intel-fpga-port.*", "afu_id")
         )
     )
 
 
-def get_traits(name, product_id):
+def get_region_ids(device_name):
+    return map(
+        read_line,
+        glob.glob(
+            os.path.join(
+                SYS_FPGA, device_name, "device/physfn/fpga",
+                "intel-fpga-dev.*", "intel-fpga-fme.*", "pr/interface_id")
+        )
+    )
+
+
+def get_traits(device_name, product_id, vf=True):
+    """Generate traits for devices.
+    : param devices_name: name of PF/VF, for example, "intel-fpga-dev.0".
+    : param product_id: product id of PF/VF, for example, "0x09c4".
+    : param vf: True if device_name is a VF, otherwise False.
+    """
     # "region_id" not support at present, "CUSTOM_FPGA_REGION_INTEL_UUID"
     # "CUSTOM_PROGRAMMABLE" not support at present
-    traits = ["CUSTOM_FPGA_INTEL"]
-    for i in get_afu_ids(name):
-        l = "CUSTOM_FPGA_INTEL_FUNCTION_" + i.upper()
-        traits.append(l)
+    traits = []
+    if not vf:
+        traits.append("CUSTOM_FPGA_INTEL")
+        traits.append("CUSTOM_FPGA_INTEL_" + PRODUCT_MAP.get(product_id))
+    else:
+        for i in get_afu_ids(device_name):
+            l = "CUSTOM_FPGA_FUNCTION_ID_INTEL_" + i.upper()
+            traits.append(l)
+        for i in get_region_ids(device_name):
+            l = "CUSTOM_FPGA_REGION_INTEL_" + i.upper()
+            traits.append(l)
     return {"traits": traits}
 
 
@@ -216,9 +233,9 @@ def fpga_tree():
         if names:
             name = names[0]
             fpga["stub"] = False
-            traits = get_traits(name, fpga["product_id"])
+            traits = get_traits(name, fpga["product_id"], vf)
             fpga.update(traits)
-        fpga["rc"] = RESOURCES["fpga"]
+        fpga["rc"] = constants.RESOURCES["FPGA"]
         return fpga
 
     devs = []
@@ -294,17 +311,28 @@ def _generate_attach_handle(fpga):
 
 def _generate_attribute_list(fpga):
     attr_list = []
+    index = 0
     for k, v in fpga.items():
         if k == "rc":
             driver_attr = driver_attribute.DriverAttribute()
-            driver_attr.key = k
-            driver_attr.value = fpga.get(k, None)
+            driver_attr.key, driver_attr.value = k, v
             attr_list.append(driver_attr)
         if k == "traits":
             values = fpga.get(k, None)
             for val in values:
                 driver_attr = driver_attribute.DriverAttribute()
-                driver_attr.key = "trait" + str(values.index(val))
+                driver_attr.key = "trait" + str(index)
+                index = index + 1
                 driver_attr.value = val
                 attr_list.append(driver_attr)
+    if fpga.get("regions"):
+        for vf in fpga["regions"]:
+            for k, values in vf.items():
+                if k == "traits":
+                    for val in values:
+                        driver_attr = driver_attribute.DriverAttribute(
+                            key="trait" + str(index), value=val)
+                        index = index + 1
+                        # driver_attr.value = "CUSTOM_UPDATED_TRAITS2"
+                        attr_list.append(driver_attr)
     return attr_list

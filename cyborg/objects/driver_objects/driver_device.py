@@ -134,3 +134,19 @@ class DriverDevice(base.DriverObjectBase,
                         )
                 driver_dev_obj_list.append(driver_dev_obj)
         return driver_dev_obj_list
+
+    def get_device_obj_by_device_id(self, context, device_id):
+        """
+        :param context: requested context.
+        :param host: hostname of the node.
+        :return: a device object of current driver device object. It will
+        return on value because it has controlpath_id.
+        """
+        # get dev_obj_list from hostname
+        device_obj = Device.get_by_device_id(context, device_id)
+        # use controlpath_id.cpid_info to identiy one Device.
+        # get cpid_obj, could be empty or only one value.
+        cpid_obj = ControlpathID.get_by_device_id_cpidinfo(
+            context, device_obj.id, self.controlpath_id.cpid_info)
+        # find the one cpid_obj with cpid_info
+        return device_obj

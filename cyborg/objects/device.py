@@ -94,3 +94,11 @@ class Device(base.CyborgObject, object_base.VersionedObjectDictCompat):
         dev_filter = {'hostname': hostname}
         device_obj_list = Device.list(context, dev_filter)
         return device_obj_list
+
+    @classmethod
+    def get_by_device_id(cls, context, device_id):
+        """get device object list from the device ID. return [] if not
+        exist."""
+        dev_filter = {'device_id': device_id}
+        device_obj_list = Device.list(context, dev_filter)
+        return device_obj_list

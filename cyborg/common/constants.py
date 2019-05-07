@@ -12,7 +12,7 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
-
+import os_resource_classes as orc
 
 CONDUCTOR_TOPIC = 'cyborg-conductor'
 AGENT_TOPIC = 'cyborg-agent'
@@ -31,3 +31,8 @@ DEVICE_TYPE = (DEVICE_GPU, DEVICE_FPGA, DEVICE_AICHIP)
 #  'TEST_PCI': used by fake driver, ignored by Nova virt driver.
 ATTACH_HANDLE_TYPES = (AH_TYPE_PCI, AH_TYPE_MDEV, AH_TYPE_TEST_PCI) = (
     "PCI", "MDEV", "TEST_PCI")
+
+# Resource Class
+RESOURCES = {
+    "FPGA": orc.FPGA
+}

@@ -103,3 +103,17 @@ class DriverDeployable(base.DriverObjectBase,
                                  attach_handle_list=driver_ah_obj_list)
             driver_dep_obj_list.append(driver_dep_obj)
         return driver_dep_obj_list
+
+    @classmethod
+    def get_by_name(cls, context, name):
+        """Form driver-side Deployable object list from DB for one device."""
+        # get deployable_obj_list for one device_id
+        dep_obj = Deployable.get_by_name(context, name)
+        driver_ah_obj_list = DriverAttachHandle.list(context, dep_obj.id)
+        # get driver_attr_obj_list fro this dep_obj
+        driver_attr_obj_list = DriverAttribute.list(context, dep_obj.id)
+        driver_dep_obj = cls(context=context, name=dep_obj.name,
+                             num_accelerators=dep_obj.num_accelerators,
+                             attribute_list=driver_attr_obj_list,
+                             attach_handle_list=driver_ah_obj_list)
+        return driver_dep_obj

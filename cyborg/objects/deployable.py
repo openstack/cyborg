@@ -115,6 +115,12 @@ class Deployable(base.CyborgObject, object_base.VersionedObjectDictCompat):
     def save(self, context):
         """Update a Deployable record in the DB."""
         updates = self.obj_get_changes()
+        # TODO(Xinran): Will remove this if find some better way.
+        updates.pop("uuid", None)
+        updates.pop("created_at", None)
+        if "updated_at" in updates.keys() and \
+                updates["updated_at"] is not None:
+            updates["updated_at"] = updates["updated_at"].replace(tzinfo=None)
         db_dep = self.dbapi.deployable_update(context, self.uuid, updates)
         self.obj_reset_changes()
         self._from_db_object(self, db_dep)
@@ -208,6 +214,15 @@ class Deployable(base.CyborgObject, object_base.VersionedObjectDictCompat):
     @classmethod
     def get_by_name_deviceid(cls, context, name, device_id):
         dep_filter = {'name': name, 'device_id': device_id}
+        dep_obj_list = Deployable.list(context, dep_filter)
+        if len(dep_obj_list) != 0:
+            return dep_obj_list[0]
+        else:
+            return None
+
+    @classmethod
+    def get_by_name(cls, context, name):
+        dep_filter = {'name': name}
         dep_obj_list = Deployable.list(context, dep_filter)
         if len(dep_obj_list) != 0:
             return dep_obj_list[0]

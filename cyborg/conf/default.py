@@ -106,7 +106,6 @@ def register_placement_opts(cfg=cfg.CONF):
 
 
 DEFAULT_OPTS = (exc_log_opts + service_opts + path_opts)
-PLACEMENT_OPTS = (placement_opts)
 
 
 def list_opts():

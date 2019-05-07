@@ -281,6 +281,10 @@ class AttributeAlreadyExists(CyborgException):
 
 # An exception with this name is used on both sides of the placement/
 # cyborg interaction.
+class ResourceClassNotFound(NotFound):
+    msg_fmt = _("No such resource class %(name_or_uuid)s.")
+
+
 class ResourceProviderInUse(CyborgException):
     msg_fmt = _("Resource provider has allocations.")
 
@@ -339,6 +343,14 @@ class ResourceProviderUpdateConflict(PlacementAPIConflict):
     """
     msg_fmt = _("A conflict was encountered attempting to update resource "
                 "provider %(uuid)s (generation %(generation)d): %(error)s")
+
+
+class TraitCreationFailed(CyborgException):
+    msg_fmt = _("Failed to create trait %(name)s: %(error)s")
+
+
+class TraitRetrievalFailed(CyborgException):
+    msg_fmt = _("Failed to retrieve traits from the placement API: %(error)s")
 
 
 class InvalidResourceClass(Invalid):

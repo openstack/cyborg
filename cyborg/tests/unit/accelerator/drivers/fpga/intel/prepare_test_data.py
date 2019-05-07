@@ -42,7 +42,7 @@ PGFA_DEVICE_COMMON_CONTENT = {
     "config": "",
     "consistent_dma_mask_bits": "64",
     "d3cold_allowed": "1",
-    "device": "0xbcc0",
+    "device": "0x09c4",
     "dma_mask_bits": "64",
     "driver_override": "(null)",
     "enable": "1",
@@ -117,7 +117,7 @@ PGFA_DEVICES_SPECIAL_COMMON_CONTENT = {
     },
     "dev.2": {
         "d3cold_allowed": "0",
-        "device": "0xbcc1",
+        "device": "0x09c4",
         "modalias": "pci:v00008086d0000BCC0sv00000000sd00000000bc12sc00i00",
         "irq": "0",
         "resource": [
