@@ -102,7 +102,9 @@ def get_test_control_path(**kw):
         'id': kw.get('id', 1),
         'device_id': kw.get('device_id', 1),
         'cpid_type': kw.get('cpid_type', "PCI"),
-        'cpid_info': kw.get('cpid_info', "cpid_info"),
+        'cpid_info': kw.get('cpid_info',
+                            '{"device": "2", "bus": "00", "function": "01", '
+                            '"domain": "0001"}'),
         'created_at': kw.get('create_at', None),
         'updated_at': kw.get('updated_at', None),
     }
