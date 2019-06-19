@@ -39,9 +39,12 @@ class IntelFPGADriver(FPGADriver):
 
     def program(self, device_path, image):
         bdf = ""
-        path = sysinfo.find_pf_by_vf(device_path) if sysinfo.is_vf(
-            device_path) else device_path
+        bdf_path = device_path
         if sysinfo.is_bdf(device_path):
+            bdf_path = sysinfo.bdf_path_map().get(device_path, device_path)
+        path = sysinfo.find_pf_by_vf(bdf_path) if sysinfo.is_vf(
+            bdf_path) else device_path
+        if sysinfo.is_bdf(path):
             bdf = sysinfo.get_pf_bdf(device_path)
         else:
             bdf = sysinfo.get_bdf_by_path(path)

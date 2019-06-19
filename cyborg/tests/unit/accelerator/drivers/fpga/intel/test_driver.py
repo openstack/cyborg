@@ -29,32 +29,36 @@ class TestIntelFPGADriver(base.TestCase):
     def setUp(self):
         super(TestIntelFPGADriver, self).setUp()
         self.syspath = sysinfo.SYS_FPGA
-        sysinfo.SYS_FPGA = "/sys/class/fpga"
+        self.pcipath = sysinfo.PCI_DEVICES_PATH
         tmp_sys_dir = self.useFixture(fixtures.TempDir())
         prepare_test_data.create_fake_sysfs(tmp_sys_dir.path)
+        tmp_path = tmp_sys_dir.path
         sysinfo.SYS_FPGA = os.path.join(
-            tmp_sys_dir.path, sysinfo.SYS_FPGA.split("/", 1)[-1])
+            tmp_path, sysinfo.SYS_FPGA.split("/", 1)[-1])
+        sysinfo.PCI_DEVICES_PATH = os.path.join(
+            tmp_path, sysinfo.PCI_DEVICES_PATH.split("/", 1)[-1])
 
     def tearDown(self):
         super(TestIntelFPGADriver, self).tearDown()
         sysinfo.SYS_FPGA = self.syspath
+        sysinfo.PCI_DEVICES_PATH = self.pcipath
 
     def test_discover(self):
         attach_handle_list = [
-            [
-                {'attach_type': 'PCI',
-                 'attach_info': '{"bus": "be", '
-                                '"device": "00", '
-                                '"domain": "0000", '
-                                '"function": "0"}',
-                 'in_use': False}
-            ],
             [
                 {'attach_type': 'PCI',
                  'attach_info': '{"bus": "5e", '
                                 '"device": "00", '
                                 '"domain": "0000", '
                                 '"function": "1"}',
+                 'in_use': False}
+            ],
+            [
+                {'attach_type': 'PCI',
+                 'attach_info': '{"bus": "be", '
+                                '"device": "00", '
+                                '"domain": "0000", '
+                                '"function": "0"}',
                  'in_use': False}
             ]
         ]
@@ -70,7 +74,7 @@ class TestIntelFPGADriver(base.TestCase):
                          ],
                      'controlpath_id':
                          {
-                             'cpid_info': '{"bus": "be", '
+                             'cpid_info': '{"bus": "5e", '
                                           '"device": "00", '
                                           '"domain": "0000", '
                                           '"function": "0"}',
@@ -88,7 +92,7 @@ class TestIntelFPGADriver(base.TestCase):
                          ],
                      'controlpath_id':
                          {
-                             'cpid_info': '{"bus": "5e", '
+                             'cpid_info': '{"bus": "be", '
                                           '"device": "00", '
                                           '"domain": "0000", '
                                           '"function": "0"}',

@@ -12,16 +12,9 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import mock
-import os
-import subprocess
-
-import fixtures
-
 from cyborg.accelerator.drivers.fpga.base import FPGADriver
-from cyborg.accelerator.drivers.fpga.intel import sysinfo
+from cyborg.accelerator.drivers.fpga.intel.driver import IntelFPGADriver  # noqa
 from cyborg.tests import base
-from cyborg.tests.unit.accelerator.drivers.fpga.intel import prepare_test_data
 
 
 class TestFPGADriver(base.TestCase):

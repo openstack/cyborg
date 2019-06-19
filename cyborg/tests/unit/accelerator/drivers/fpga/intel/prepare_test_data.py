@@ -29,6 +29,7 @@ FPGA_TREE = {
     "dev.1": {"bdf": PF1_ADDR}}
 
 SYS_DEVICES = "sys/devices"
+PCI_DEVICES_PATH = "sys/bus/pci/devices"
 SYS_CLASS_FPGA = "sys/class/fpga"
 
 DEV_PREFIX = "intel-fpga"
@@ -250,6 +251,12 @@ def create_devices_path_and_files(tree, device_path, class_fpga_path,
         source = dev_path.split("sys")[-1]
         os.symlink("../.." + source, os.path.join(class_fpga_path, ln))
         os.symlink("../../../" + bdf, os.path.join(dev_path, "device"))
+        pci_dev = os.path.join(device_path.split(SYS_DEVICES)[0],
+                               PCI_DEVICES_PATH)
+        if not os.path.exists(pci_dev):
+            os.makedirs(pci_dev)
+        os.symlink("../../.." + bdf_path.split("sys")[-1],
+                   os.path.join(pci_dev, bdf))
 
 
 def create_devices_soft_link(class_fpga_path):

@@ -29,13 +29,19 @@ from cyborg.objects.driver_objects import driver_deployable, driver_device,\
     driver_attach_handle, driver_controlpath_id, driver_attribute
 from cyborg.common import constants
 
+
+PCI_DEVICES_PATH = "/sys/bus/pci/devices"
+PCI_DEVICES_PATH_PATTERN = "/sys/bus/pci/devices/*"
+# TODO(shaohe) The KNOW_FPGAS can be configurable.
+KNOW_FPGAS = [("0x8086", "0x09c4")]
+
+INTEL_FPGA_DEV_PREFIX = "intel-fpga-dev"
 SYS_FPGA = "/sys/class/fpga"
 DEVICE = "device"
 PF = "physfn"
 VF = "virtfn*"
 BDF_PATTERN = re.compile(
     "^[a-fA-F\d]{4}:[a-fA-F\d]{2}:[a-fA-F\d]{2}\.[a-fA-F\d]$")
-
 
 DEVICE_FILE_MAP = {"vendor": "vendor",
                    "device": "product_id"}
@@ -50,9 +56,45 @@ RESOURCES = {
 }
 
 
+def read_line(filename):
+    with open(filename) as f:
+        return f.readline().strip()
+
+
+def is_fpga(p):
+    infos = (read_line(os.path.join(p, "vendor")),
+             read_line(os.path.join(p, "device")))
+    if infos in KNOW_FPGAS:
+        return os.path.realpath(p)
+
+
+def link_real_path(p):
+    return os.path.realpath(
+        os.path.join(os.path.dirname(p), os.readlink(p)))
+
+
+def find_fpgas_by_know_list():
+    return filter(
+        lambda p: (
+            read_line(os.path.join(p, "vendor")),
+            read_line(os.path.join(p, "device"))
+        ) in KNOW_FPGAS,
+        glob.glob(PCI_DEVICES_PATH_PATTERN))
+
+
+def get_link_targets(links):
+    return map(
+        lambda p:
+            os.path.realpath(
+                os.path.join(os.path.dirname(p), os.readlink(p))),
+        links)
+
+
 def all_fpgas():
     # glob.glob1("/sys/class/fpga", "*")
-    return glob.glob(os.path.join(SYS_FPGA, "*"))
+    return set(get_link_targets(find_fpgas_by_know_list())) | set(
+        map(lambda p: p.rsplit("/", 2)[0],
+            get_link_targets(glob.glob(os.path.join(SYS_FPGA, "*")))))
 
 
 def all_vf_fpgas():
@@ -61,8 +103,8 @@ def all_vf_fpgas():
 
 
 def all_pfs_have_vf():
-    return [dev.rsplit("/", 2)[0] for dev in
-            glob.glob(os.path.join(SYS_FPGA, "*/device/virtfn0"))]
+    return filter(lambda p: glob.glob(os.path.join(p, "virtfn0")),
+                  all_fpgas())
 
 
 def target_symbolic_map():
@@ -73,31 +115,28 @@ def target_symbolic_map():
 
 
 def bdf_path_map():
-    maps = {}
-    for f in glob.glob(os.path.join(SYS_FPGA, "*/device")):
-        maps[os.path.basename(os.path.realpath(f))] = os.path.dirname(f)
-    return maps
+    return dict(map(lambda f: (os.path.basename(f), f), all_fpgas()))
 
 
 def all_vfs_in_pf_fpgas(pf_path):
-    maps = target_symbolic_map()
-    vfs = glob.glob(os.path.join(pf_path, "device/virtfn*"))
-    return [maps[os.path.realpath(vf)] for vf in vfs]
+    return get_link_targets(
+        glob.glob(os.path.join(pf_path, "virtfn*")))
 
 
 def all_pf_fpgas():
-    return [dev.rsplit("/", 2)[0] for dev in
-            glob.glob(os.path.join(SYS_FPGA, "*/device/sriov_totalvfs"))]
+    return filter(lambda p: glob.glob(os.path.join(p, "sriov_totalvfs")),
+                  all_fpgas())
 
 
 def is_vf(path):
-    return True if glob.glob(os.path.join(path, "device/physfn")) else False
+    return True if (
+        glob.glob(os.path.join(path, "device/physfn")) or
+        glob.glob(os.path.join(path, "physfn"))) else False
 
 
 def find_pf_by_vf(path):
-    maps = target_symbolic_map()
-    p = os.path.realpath(os.path.join(path, "device/physfn"))
-    return maps[p]
+    if glob.glob(os.path.join(path, "physfn")):
+        return link_real_path(os.path.join(path, "physfn"))
 
 
 def is_bdf(bdf):
@@ -105,6 +144,9 @@ def is_bdf(bdf):
 
 
 def get_bdf_by_path(path):
+    bdf = os.path.basename(path)
+    if is_bdf(bdf):
+        return bdf
     return os.path.basename(os.readlink(os.path.join(path, "device")))
 
 
@@ -113,21 +155,23 @@ def split_bdf(bdf):
 
 
 def get_pf_bdf(bdf):
-    path = bdf_path_map().get(bdf)
-    if path:
-        path = find_pf_by_vf(path) if is_vf(path) else path
+    paths = glob.glob0(PCI_DEVICES_PATH, bdf)
+    if paths:
+        p0 = paths[0]
+        path = find_pf_by_vf(p0) if is_vf(p0) else p0
         return get_bdf_by_path(path)
     return bdf
 
 
 def get_afu_ids(name):
-    ids = []
-    for path in glob.glob(os.path.join(
-            SYS_FPGA, name, "intel-fpga-port.*", "afu_id")):
-        with open(path) as f:
-            first_line = f.readline()
-            ids.append(first_line.split('\n', 1)[0])
-    return ids
+    return map(
+        read_line,
+        glob.glob(
+            os.path.join(
+                PCI_DEVICES_PATH_PATTERN, "fpga",
+                name, "intel-fpga-port.*", "afu_id")
+        )
+    )
 
 
 def get_traits(name, product_id):
@@ -143,17 +187,13 @@ def get_traits(name, product_id):
 def fpga_device(path):
     infos = {}
 
-    def read_line(filename):
-        with open(filename) as f:
-            return f.readline().strip()
-
     # NOTE "In 3.x, os.path.walk is removed in favor of os.walk."
     for (dirpath, dirnames, filenames) in os.walk(path):
         for filename in filenames:
             if filename in DEVICE_EXPOSED:
                 key = DEVICE_FILE_MAP.get(filename) or filename
                 if key in DEVICE_FILE_HANDLER and callable(
-                        DEVICE_FILE_HANDLER(key)):
+                    DEVICE_FILE_HANDLER(key)):
                     infos[key] = DEVICE_FILE_HANDLER(key)(
                         os.path.join(dirpath, filename))
                 else:
@@ -163,18 +203,22 @@ def fpga_device(path):
 
 def fpga_tree():
     def gen_fpga_infos(path, vf=True):
-        name = os.path.basename(path)
-        dpath = os.path.realpath(os.path.join(path, DEVICE))
-        bdf = os.path.basename(dpath)
+        bdf = get_bdf_by_path(path)
+        names = glob.glob1(os.path.join(path, "fpga"), "*")
+        # name = os.path.basename(path)
         fpga = {"type": constants.DEVICE_FPGA,
-                "devices": bdf,
-                "name": name}
-        d_info = fpga_device(dpath)
+                "devices": bdf, "stub": True,
+                "name": "_".join((INTEL_FPGA_DEV_PREFIX, bdf))}
+        d_info = fpga_device(path)
         fpga.update(d_info)
-        traits = get_traits(fpga["name"], fpga["product_id"])
-        fpga.update(traits)
+        if names:
+            name = names[0]
+            fpga["stub"] = False
+            traits = get_traits(name, fpga["product_id"])
+            fpga.update(traits)
         fpga["rc"] = RESOURCES["fpga"]
         return fpga
+
     devs = []
     pf_has_vf = all_pfs_have_vf()
     for pf in all_pf_fpgas():
@@ -194,6 +238,7 @@ def fpga_tree():
 def _generate_driver_device(fpga, pf_has_vf):
     driver_device_obj = driver_device.DriverDevice()
     driver_device_obj.vendor = fpga["vendor"]
+    driver_device_obj.stub = fpga["stub"]
     driver_device_obj.model = fpga.get('model', "miss_model_info")
     driver_device_obj.vendor_board_info = fpga.get('vendor_board_info',
                                                    "miss_vb_info")
