@@ -13,11 +13,12 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import json
 import pecan
 from six.moves import http_client
 import wsme
 from wsme import types as wtypes
+
+from oslo_serialization import jsonutils
 
 from cyborg.agent.rpcapi import AgentAPI
 from cyborg.api.controllers import base
@@ -82,7 +83,7 @@ class Deployable(base.APIBase):
         attributes_list = []
         for exist_attr in attr_get_list:
             attributes_list.append({exist_attr.key: exist_attr.value})
-        api_dep.attributes_list = json.dumps(attributes_list)
+        api_dep.attributes_list = jsonutils.dumps(attributes_list)
         return api_dep
 
 

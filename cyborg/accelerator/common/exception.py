@@ -15,8 +15,8 @@
 """Accelerator base exception handling. """
 
 import collections
-import json
 from oslo_log import log as logging
+from oslo_serialization import jsonutils
 import six
 from six.moves import http_client
 
@@ -39,7 +39,7 @@ def _ensure_exception_kwargs_serializable(exc_class_name, kwargs):
         constructor.
     :returns: a dictionary of serializable keyword arguments.
     """
-    serializers = [(json.dumps, _('when converting to JSON')),
+    serializers = [(jsonutils.dumps, _('when converting to JSON')),
                    (six.text_type, _('when converting to string'))]
     exceptions = collections.defaultdict(list)
     serializable_kwargs = {}

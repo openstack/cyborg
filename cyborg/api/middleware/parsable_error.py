@@ -20,9 +20,9 @@ response with one formatted so the client can parse it.
 Based on pecan.middleware.errordocument
 """
 
-import json
-
 import six
+
+from oslo_serialization import jsonutils
 
 
 class ParsableErrorMiddleware(object):
@@ -62,7 +62,7 @@ class ParsableErrorMiddleware(object):
         if (state['status_code'] // 100) not in (2, 3):
             if six.PY3:
                 app_iter = [i.decode('utf-8') for i in app_iter]
-            body = [json.dumps({'error_message': '\n'.join(app_iter)})]
+            body = [jsonutils.dumps({'error_message': '\n'.join(app_iter)})]
             if six.PY3:
                 body = [i.encode('utf-8') for i in body]
             state['headers'].append(('Content-Type', 'application/json'))
