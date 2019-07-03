@@ -17,13 +17,13 @@
 Cyborg Intel FPGA driver implementation.
 """
 
-# from cyborg.accelerator.drivers.fpga.base import FPGADriver
 
 import glob
 import os
 import re
 from oslo_serialization import jsonutils
 
+from cyborg.accelerator.common import utils
 from cyborg.agent import rc_fields
 from cyborg.objects.driver_objects import driver_deployable, driver_device,\
     driver_attach_handle, driver_controlpath_id, driver_attribute
@@ -208,7 +208,7 @@ def _generate_driver_device(fpga, pf_has_vf):
 def _generate_controlpath_id(fpga):
     driver_cpid = driver_controlpath_id.DriverControlPathID()
     driver_cpid.cpid_type = "PCI"
-    driver_cpid.cpid_info = fpga["devices"]
+    driver_cpid.cpid_info = utils.pci_str_to_json(fpga["devices"])
     return driver_cpid
 
 
@@ -221,7 +221,7 @@ def _generate_dep_list(fpga, pf_has_vf):
     if not pf_has_vf:
         driver_dep.num_accelerators = 1
         driver_dep.attach_handle_list = \
-            [_generate_attach_handle(fpga, pf_has_vf)]
+            [_generate_attach_handle(fpga)]
         driver_dep.name = fpga["name"]
     # pf with sriov enabled, may have several regions and several vfs.
     # For now, there is only region, this maybe improve in next release.
@@ -230,15 +230,15 @@ def _generate_dep_list(fpga, pf_has_vf):
         for vf in fpga["regions"]:
             # Only vfs in regions can be attach, no pf.
             driver_dep.attach_handle_list.append(
-                _generate_attach_handle(vf, False))
+                _generate_attach_handle(vf))
             driver_dep.name = vf["name"]
     return [driver_dep]
 
 
-def _generate_attach_handle(fpga, pf_has_vf):
+def _generate_attach_handle(fpga):
     driver_ah = driver_attach_handle.DriverAttachHandle()
     driver_ah.attach_type = "PCI"
-    driver_ah.attach_info = fpga["devices"]
+    driver_ah.attach_info = utils.pci_str_to_json(fpga["devices"])
     driver_ah.in_use = False
     return driver_ah
 

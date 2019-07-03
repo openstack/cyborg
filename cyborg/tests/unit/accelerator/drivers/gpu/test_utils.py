@@ -59,7 +59,10 @@ class TestGPUDriverUtils(base.TestCase):
         self.assertEqual(1, len(gpu_list))
         attach_handle_list = [
             {'attach_type': 'PCI',
-             'attach_info': '0000:00:06.0',
+             'attach_info': '{"bus": "00", '
+                            '"device": "06", '
+                            '"domain": "0000", '
+                            '"function": "0"}',
              'in_use': False}
         ]
         expected = {
@@ -76,8 +79,13 @@ class TestGPUDriverUtils(base.TestCase):
                         'attach_handle_list': attach_handle_list
                     },
                 ],
-            'controlpath_id': {'cpid_info': '0000:00:06.0', 'cpid_type': 'PCI'}
-        }
+
+            'controlpath_id': {'cpid_info': '{"bus": "00", '
+                                            '"device": "06", '
+                                            '"domain": "0000", '
+                                            '"function": "0"}',
+                               'cpid_type': 'PCI'}
+            }
         gpu_obj = gpu_list[0]
         gpu_dict = gpu_obj.as_dict()
         gpu_dep_list = gpu_dict['deployable_list']

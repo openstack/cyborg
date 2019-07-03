@@ -72,5 +72,4 @@ class ResourceTracker(object):
             acc_list.extend(acc_driver.discover())
         # Call conductor_api here to diff and report acc data. Now, we actually
         # do not have the method report_data.
-        if acc_list:
-            self.conductor_api.report_data(context, self.host, acc_list)
+        self.conductor_api.report_data(context, self.host, acc_list)
