@@ -150,13 +150,16 @@ class ConductorManager(object):
         LOG.info("Start differing devices.")
         # TODO:The placement report will be implemented here.
         # Use cpid.cpid_info to identify whether the device is the same.
+        stub_cpid_list = [driver_dev_obj.controlpath_id.cpid_info for
+                          driver_dev_obj in new_driver_device_list
+                          if driver_dev_obj.stub]
         new_cpid_list = [driver_dev_obj.controlpath_id.cpid_info for
                          driver_dev_obj in new_driver_device_list]
         old_cpid_list = [driver_dev_obj.controlpath_id.cpid_info for
                          driver_dev_obj in old_driver_device_list]
-        same = set(new_cpid_list) & set(old_cpid_list)
-        added = set(new_cpid_list) - same
-        deleted = set(old_cpid_list) - same
+        same = set(new_cpid_list) & set(old_cpid_list) - set(stub_cpid_list)
+        added = set(new_cpid_list) - same - set(stub_cpid_list)
+        deleted = set(old_cpid_list) - same - set(stub_cpid_list)
         for s in same:
             # get the driver_dev_obj, diff the driver_device layer
             new_driver_dev_obj = new_driver_device_list[new_cpid_list.index(s)]

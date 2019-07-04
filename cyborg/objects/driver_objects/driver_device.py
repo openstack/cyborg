@@ -46,7 +46,8 @@ class DriverDevice(base.DriverObjectBase,
                                                     nullable=False),
         'deployable_list': object_fields.ListOfObjectsField('DriverDeployable',
                                                             default=[],
-                                                            nullable=False)
+                                                            nullable=False),
+        'stub': object_fields.BooleanField(nullable=False, default=False)
     }
 
     def create(self, context, host):
