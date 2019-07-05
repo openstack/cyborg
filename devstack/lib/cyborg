@@ -27,8 +27,11 @@ declare -r -g _CYBORG_DEVSTACK_LIB=1
 # Defaults
 # --------
 
-# Set up default directories
+# Set up default repos
+CYBORG_REPO=${CYBORG_REPO:-${GIT_BASE}/openstack/cyborg.git}
+CYBORG_BRANCH=${CYBORG_BRANCH:-master}
 
+# Set up default directories
 CYBORG_DIR=$DEST/cyborg
 CYBORG_DEVSTACK_DIR=$CYBORG_DIR/devstack
 CYBORG_DEVSTACK_FILES_DIR=$CYBORG_DEVSTACK_DIR/files
@@ -78,6 +81,9 @@ function install_cyborg_in_controller {
 function install_cyborg {
     # make sure all needed services are enabled
     install_cyborg_in_controller
+
+    git_clone $CYBORG_REPO $CYBORG_DIR $CYBORG_BRANCH
+
     setup_develop $CYBORG_DIR
 }
 
