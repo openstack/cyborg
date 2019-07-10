@@ -36,7 +36,7 @@ Download DevStack
 
 .. code-block:: console
 
-   $ git clone https://git.openstack.org/openstack-dev/devstack
+   $ git clone https://opendev.org/openstack/devstack
 
 .. code-block:: console
 
@@ -100,7 +100,7 @@ Enable services
   enable_service q-meta
   enable_service neutron
   enable_service n-novnc
-  enable_plugin cyborg https://git.openstack.org/openstack/cyborg
+  enable_plugin cyborg https://opendev.org/openstack/cyborg
   NOVA_VNC_ENABLED=True
   NOVNCPROXY_URL="http://$SERVICE_HOST:6080/vnc_auto.html"
   VNCSERVER_LISTEN=0.0.0.0
@@ -122,6 +122,25 @@ Enable services
 .. note::
 
   If you got version conflicts, please set `PIP_UPGRADE` to `True` in local.conf
+
+Disable OPAE install
+>>>>>>>>>>>>>>>>>>>>
+
+::
+
+  OPAE_INSTALL_ENABLE=false
+
+- By default OPAE_INSTALL_ENABLE is True.
+
+- You need to set OPAE_INSTALL_ENABLE as false explicitly,
+  if not need OPEA enviroment.
+
+- At present OPAE depends on OS verson heavily.
+
+.. note::
+
+  If you do not want to try Intel FPGA, you can disable OPAE install. Then you
+  do not depend on specific OS verson.
 
 
 Run DevStack

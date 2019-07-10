@@ -88,3 +88,11 @@ class TestDeviceObject(base.DbTestCase):
                     self.context, uuid,
                     {'vendor_board_info': 'new_vendor_board_info'})
                 self.assertEqual(self.context, device._context)
+
+    def test_device_type(self):
+        for t in ["GPU", "FPGA", "AICHIP"]:
+            device = objects.Device(self.context, type=t)
+            self.assertEqual(self.context, device._context)
+        # Invaild type will raise ValueError
+        self.assertRaises(ValueError, objects.Device,
+                          self.context, type='OTHER_TYPE')

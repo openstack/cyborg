@@ -243,7 +243,7 @@ function configure_cyborg_conductor {
     sudo mv $tempfile /etc/sudoers.d/cyborg-rootwrap
 
     # set up drivers / hardware types
-    iniset $CYBORG_CONF_FILE DEFAULT enabled_drivers $CYBORG_ENABLED_DRIVERS
+    iniset $CYBORG_CONF_FILE agent enabled_drivers $CYBORG_ENABLED_DRIVERS
 
     if is_deployed_by_agent; then
         iniset $CYBORG_CONF_FILE api ramdisk_heartbeat_timeout 30

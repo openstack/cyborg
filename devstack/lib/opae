@@ -21,7 +21,6 @@ function setup_distro_vars {
         [[ $os_RELEASE == "16.04" ]] && PKG_EXT="deb"
     fi
 }
-setup_distro_vars
 
 function install_opae_pkg {
     local pkg=$1
@@ -46,6 +45,7 @@ function install_opae_pkg {
 }
 
 function install_opae_packages {
+    setup_distro_vars
     local libs_url="$OPAE_GITHUB/$OPAE_LIBS.$PKG_EXT"
     local devel_url="$OPAE_GITHUB/$OPAE_DEVEL.$PKG_EXT"
 

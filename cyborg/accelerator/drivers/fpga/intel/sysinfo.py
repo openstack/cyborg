@@ -17,14 +17,16 @@
 Cyborg Intel FPGA driver implementation.
 """
 
-# from cyborg.accelerator.drivers.fpga.base import FPGADriver
 
 import glob
 import os
 import re
-from cyborg import objects
+from oslo_serialization import jsonutils
+
+from cyborg.accelerator.common import utils
+from cyborg.agent import rc_fields
 from cyborg.objects.driver_objects import driver_deployable, driver_device,\
-    driver_attach_handle, driver_controlpath_id
+    driver_attach_handle, driver_controlpath_id, driver_attribute
 from cyborg.common import constants
 
 SYS_FPGA = "/sys/class/fpga"
@@ -36,9 +38,16 @@ BDF_PATTERN = re.compile(
 
 
 DEVICE_FILE_MAP = {"vendor": "vendor",
-                   "device": "model"}
+                   "device": "product_id"}
 DEVICE_FILE_HANDLER = {}
 DEVICE_EXPOSED = ["vendor", "device"]
+
+RC_FPGA = rc_fields.ResourceClass.normalize_name(
+    rc_fields.ResourceClass.FPGA)
+
+RESOURCES = {
+    "fpga": RC_FPGA
+}
 
 
 def all_fpgas():
@@ -111,6 +120,26 @@ def get_pf_bdf(bdf):
     return bdf
 
 
+def get_afu_ids(name):
+    ids = []
+    for path in glob.glob(os.path.join(
+            SYS_FPGA, name, "intel-fpga-port.*", "afu_id")):
+        with open(path) as f:
+            first_line = f.readline()
+            ids.append(first_line.split('\n', 1)[0])
+    return ids
+
+
+def get_traits(name, product_id):
+    # "region_id" not support at present, "CUSTOM_FPGA_REGION_INTEL_UUID"
+    # "CUSTOM_PROGRAMMABLE" not support at present
+    traits = ["CUSTOM_FPGA_INTEL"]
+    for i in get_afu_ids(name):
+        l = "CUSTOM_FPGA_INTEL_FUNCTION_" + i.upper()
+        traits.append(l)
+    return {"traits": traits}
+
+
 def fpga_device(path):
     infos = {}
 
@@ -142,13 +171,18 @@ def fpga_tree():
                 "name": name}
         d_info = fpga_device(dpath)
         fpga.update(d_info)
+        traits = get_traits(fpga["name"], fpga["product_id"])
+        fpga.update(traits)
+        fpga["rc"] = RESOURCES["fpga"]
         return fpga
     devs = []
     pf_has_vf = all_pfs_have_vf()
     for pf in all_pf_fpgas():
         fpga = gen_fpga_infos(pf, False)
         if pf in pf_has_vf:
+            # Currently only one region supported.
             fpga["regions"] = []
+            # All VFs here belong to one same region.
             vfs = all_vfs_in_pf_fpgas(pf)
             for vf in vfs:
                 vf_fpga = gen_fpga_infos(vf, True)
@@ -160,7 +194,11 @@ def fpga_tree():
 def _generate_driver_device(fpga, pf_has_vf):
     driver_device_obj = driver_device.DriverDevice()
     driver_device_obj.vendor = fpga["vendor"]
-    driver_device_obj.model = fpga["model"]
+    driver_device_obj.model = fpga.get('model', "miss_model_info")
+    driver_device_obj.vendor_board_info = fpga.get('vendor_board_info',
+                                                   "miss_vb_info")
+    std_board_info = {'product_id': fpga.get('product_id', None)}
+    driver_device_obj.std_board_info = jsonutils.dumps(std_board_info)
     driver_device_obj.type = fpga["type"]
     driver_device_obj.controlpath_id = _generate_controlpath_id(fpga)
     driver_device_obj.deployable_list = _generate_dep_list(fpga, pf_has_vf)
@@ -169,36 +207,55 @@ def _generate_driver_device(fpga, pf_has_vf):
 
 def _generate_controlpath_id(fpga):
     driver_cpid = driver_controlpath_id.DriverControlPathID()
-    driver_cpid.cpid_type = "pci"
-    driver_cpid.cpid_info = fpga["devices"]
+    driver_cpid.cpid_type = "PCI"
+    driver_cpid.cpid_info = utils.pci_str_to_json(fpga["devices"])
     return driver_cpid
 
 
 def _generate_dep_list(fpga, pf_has_vf):
     dep_list = []
     driver_dep = driver_deployable.DriverDeployable()
+    driver_dep.attribute_list = _generate_attribute_list(fpga)
     driver_dep.attach_handle_list = []
     # pf without sriov enabled.
     if not pf_has_vf:
         driver_dep.num_accelerators = 1
         driver_dep.attach_handle_list = \
-            [_generate_attach_handle(fpga, pf_has_vf)]
+            [_generate_attach_handle(fpga)]
         driver_dep.name = fpga["name"]
     # pf with sriov enabled, may have several regions and several vfs.
     # For now, there is only region, this maybe improve in next release.
     else:
         driver_dep.num_accelerators = len(fpga["regions"])
         for vf in fpga["regions"]:
+            # Only vfs in regions can be attach, no pf.
             driver_dep.attach_handle_list.append(
-                _generate_attach_handle(vf, False))
+                _generate_attach_handle(vf))
             driver_dep.name = vf["name"]
-    dep_list.append(driver_dep)
-    return dep_list
+    return [driver_dep]
 
 
-def _generate_attach_handle(fpga, pf_has_vf):
+def _generate_attach_handle(fpga):
     driver_ah = driver_attach_handle.DriverAttachHandle()
-    driver_ah.attach_type = "pci"
-    driver_ah.attach_info = fpga["devices"]
+    driver_ah.attach_type = "PCI"
+    driver_ah.attach_info = utils.pci_str_to_json(fpga["devices"])
     driver_ah.in_use = False
     return driver_ah
+
+
+def _generate_attribute_list(fpga):
+    attr_list = []
+    for k, v in fpga.items():
+        if k == "rc":
+            driver_attr = driver_attribute.DriverAttribute()
+            driver_attr.key = k
+            driver_attr.value = fpga.get(k, None)
+            attr_list.append(driver_attr)
+        if k == "traits":
+            values = fpga.get(k, None)
+            for val in values:
+                driver_attr = driver_attribute.DriverAttribute()
+                driver_attr.key = "trait" + str(values.index(val))
+                driver_attr.value = val
+                attr_list.append(driver_attr)
+    return attr_list

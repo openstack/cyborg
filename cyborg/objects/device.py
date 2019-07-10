@@ -16,6 +16,7 @@
 from oslo_log import log as logging
 from oslo_versionedobjects import base as object_base
 
+from cyborg.common import constants
 from cyborg.db import api as dbapi
 from cyborg.objects import base
 from cyborg.objects import fields as object_fields
@@ -24,20 +25,19 @@ from cyborg.objects.control_path import ControlpathID
 
 LOG = logging.getLogger(__name__)
 
-DEVICE_TYPE = ["GPU", "FPGA"]
-
 
 @base.CyborgObjectRegistry.register
 class Device(base.CyborgObject, object_base.VersionedObjectDictCompat):
     # Version 1.0: Initial version
-    VERSION = '1.0'
+    # Version 1.1: Add AICHIP, GENERIC type
+    VERSION = '1.1'
 
     dbapi = dbapi.get_instance()
 
     fields = {
         'id': object_fields.IntegerField(nullable=False),
         'uuid': object_fields.UUIDField(nullable=False),
-        'type': object_fields.EnumField(valid_values=DEVICE_TYPE,
+        'type': object_fields.EnumField(valid_values=constants.DEVICE_TYPE,
                                         nullable=False),
         'vendor': object_fields.StringField(nullable=False),
         'model': object_fields.StringField(nullable=False),

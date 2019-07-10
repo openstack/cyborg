@@ -1,6 +1,5 @@
-import json
-
 from oslo_log import log as logging
+from oslo_serialization import jsonutils
 
 LOG = logging.getLogger(__name__)
 
@@ -119,5 +118,5 @@ class NvmfTgt(object):
 
     def _get_json_objs(self, method, server_ip):
         res = self.py.exec_rpc(method, server_ip)
-        json_obj = json.loads(res)
+        json_obj = jsonutils.loads(res)
         return json_obj
