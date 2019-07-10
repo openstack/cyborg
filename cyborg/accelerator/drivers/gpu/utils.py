@@ -25,6 +25,7 @@ import subprocess
 from cyborg.objects.driver_objects import driver_deployable, driver_device, \
     driver_attach_handle, driver_controlpath_id
 from cyborg.common import constants
+from cyborg.accelerator.common import utils
 
 LOG = logging.getLogger(__name__)
 
@@ -91,7 +92,7 @@ def _generate_driver_device(gpu):
 def _generate_controlpath_id(gpu):
     driver_cpid = driver_controlpath_id.DriverControlPathID()
     driver_cpid.cpid_type = "PCI"
-    driver_cpid.cpid_info = gpu["devices"]
+    driver_cpid.cpid_info = utils.pci_str_to_json(gpu["devices"])
     return driver_cpid
 
 
@@ -115,5 +116,5 @@ def _generate_attach_handle(gpu):
     driver_ah = driver_attach_handle.DriverAttachHandle()
     driver_ah.attach_type = "PCI"
     driver_ah.in_use = False
-    driver_ah.attach_info = gpu["devices"]
+    driver_ah.attach_info = utils.pci_str_to_json(gpu["devices"])
     return driver_ah
