@@ -29,7 +29,8 @@ from cyborg.common import constants
 LOG = logging.getLogger(__name__)
 
 GPU_FLAGS = ["VGA compatible controller", "3D controller"]
-GPU_INFO_PATTERN = re.compile("(?P<devices>[0-9]{4}:[0-9]{2}:[0-9]{2}\.[0-9]) "
+GPU_INFO_PATTERN = re.compile("(?P<devices>[0-9a-fA-F]{4}:[0-9a-fA-F]{2}:"
+                              "[0-9a-fA-F]{2}\.[0-9a-fA-F]) "
                               "(?P<controller>.*) [\[].*]: (?P<name>.*) .*"
                               "[\[](?P<vendor_id>[0-9a-fA-F]"
                               "{4}):(?P<product_id>[0-9a-fA-F]{4})].*")
