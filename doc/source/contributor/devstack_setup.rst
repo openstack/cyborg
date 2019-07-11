@@ -142,6 +142,35 @@ Disable OPAE install
   If you do not want to try Intel FPGA, you can disable OPAE install. Then you
   do not depend on specific OS verson.
 
+Multi-Node Lab
+--------------
+If you want to setup an OpenStack with cyborg in a realistic test configuration
+with multiple physical servers. Please ref [#MultiNodeLab]_.
+
+Cluster Controller
+>>>>>>>>>>>>>>>>>>
+
+::
+
+  disable_service cyborg-agent
+
+Compute Nodes
+>>>>>>>>>>>>>
+
+::
+
+  enable_service cyborg-agent
+  disable_service cyborg-api
+  disable_service cyborg-cond
+
+- If you do not want to setup cyborg-agent on controller, you can disable it.
+- You do not need to enable cyborg-api and cyborg-cond on compute nodes.
+
+Cell V2 Deployment
+>>>>>>>>>>>>>>>>>>
+
+Compute node services must be mapped to a cell before they can be used.
+Cell V2 deployment, please ref [#CellV2]_.
 
 Run DevStack
 ------------
@@ -170,3 +199,11 @@ Horizon
 
 You can access horizon to experience the web interface to OpenStack, and manage
 vms, networks, volumes, and images from there.
+
+References
+==========
+
+.. [#MultiNodeLab] `Openstack Multi-Node Lab Setup
+  <https://docs.openstack.org/devstack/latest/guides/multinode-lab.html>`_
+.. [#CellV2] `Openstack Cell V2 Deployment Guide
+  <https://docs.openstack.org/nova/latest/user/cells.html>`_

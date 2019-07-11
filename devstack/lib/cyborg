@@ -62,17 +62,22 @@ else
     CYBORG_API_URL="$CYBORG_SERVICE_PROTOCOL://$CYBORG_SERVICE_HOST:$CYBORG_SERVICE_PORT"
 fi
 
+function install_cyborg_in_controller {
+    if is_service_enabled cyborg-api; then
+        local req_services="key"
+        req_services+=" placement"
+        for srv in $req_services; do
+            if ! is_service_enabled "$srv"; then
+                die $LINENO "$srv should be enabled for Cyborg."
+            fi
+        done
+    fi
+}
+
 # install_cyborg() - Install the things!
 function install_cyborg {
-    # make sure all needed service were enabled
-    local req_services="key"
-    req_services+=" nova glance neutron"
-    for srv in $req_services; do
-        if ! is_service_enabled "$srv"; then
-            die $LINENO "$srv should be enabled for Cyborg."
-        fi
-    done
-
+    # make sure all needed services are enabled
+    install_cyborg_in_controller
     setup_develop $CYBORG_DIR
 }
 
@@ -116,13 +121,15 @@ function configure_cyborg_dirs {
 # ------------------------------
 # service     cyborg      admin
 function create_cyborg_accounts {
-    create_service_user "cyborg" "admin"
-    get_or_create_service "cyborg" "accelerator" "Cyborg Accelerators Service"
-    get_or_create_endpoint "cyborg" \
-        "$REGION_NAME" \
-        "$CYBORG_API_URL/v1" \
-        "$CYBORG_API_URL/v1" \
-        "$CYBORG_API_URL/v1"
+    if is_service_enabled cyborg-api; then
+        create_service_user "cyborg" "admin"
+        get_or_create_service "cyborg" "accelerator" "Cyborg Accelerators Service"
+        get_or_create_endpoint "cyborg" \
+            "$REGION_NAME" \
+            "$CYBORG_API_URL/v1" \
+            "$CYBORG_API_URL/v1" \
+            "$CYBORG_API_URL/v1"
+    fi
 }
 
 
@@ -261,12 +268,14 @@ function create_cyborg_cache_dir {
 
 # init_cyborg() - Initialize databases, etc.
 function init_cyborg {
-    # (re)create Cyborg database
-    recreate_database cyborg utf8
+    if is_service_enabled cyborg-api; then
+        # (re)create Cyborg database
+        recreate_database cyborg utf8
 
-    # Migrate cyborg database
-    $CYBORG_BIN_DIR/cyborg-dbsync --config-file ${CYBORG_CONF_FILE} upgrade
-    create_cyborg_cache_dir
+        # Migrate cyborg database
+        $CYBORG_BIN_DIR/cyborg-dbsync --config-file ${CYBORG_CONF_FILE} upgrade
+        create_cyborg_cache_dir
+    fi
 }
 
 
