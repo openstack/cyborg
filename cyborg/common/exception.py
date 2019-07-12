@@ -163,6 +163,11 @@ class InvalidJsonType(Invalid):
     _msg_fmt = _("%(value)s is not JSON serializable.")
 
 
+class InvalidAPIVersionString(Invalid):
+    msg_fmt = _("API Version String %(version)s is of invalid format. Must "
+                "be of format MajorNum.MinorNum.")
+
+
 # Cannot be templated as the error syntax varies.
 # msg needs to be constructed when raised.
 class InvalidParameterValue(Invalid):

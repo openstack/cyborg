@@ -23,8 +23,12 @@ def build_url(resource, resource_args, bookmark=False, base_url=None):
     if base_url is None:
         base_url = pecan.request.public_url
 
-    template = '%(url)s/%(res)s' if bookmark else '%(url)s/v1/%(res)s'
-    template += '%(args)s' if resource_args.startswith('?') else '/%(args)s'
+    # TODO(Sundar) Return version etc. similar to other projects.
+    template = '%(url)s/accelerator/%(res)s' \
+        if bookmark else '%(url)s/accelerator/' + base.API_V2 + '/%(res)s'
+    if resource_args:
+        template += ('%(args)s' if resource_args.startswith('?')
+                     else '/%(args)s')
     return template % {'url': base_url, 'res': resource, 'args': resource_args}
 
 
@@ -46,3 +50,9 @@ class Link(base.APIBase):
         href = build_url(resource, resource_args,
                          bookmark=bookmark, base_url=url)
         return Link(href=href, rel=rel_name, type=type)
+
+    @staticmethod
+    def make_link_dict(resource, resource_args, rel='self'):
+        href = build_url(resource, resource_args)
+        link = {"href": href, "rel": rel}
+        return link

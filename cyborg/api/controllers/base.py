@@ -21,6 +21,9 @@ from pecan import rest
 import wsme
 from wsme import types as wtypes
 
+API_V1 = 'v1'
+API_V2 = 'v2'
+
 
 class APIBase(wtypes.Base):
     created_at = wsme.wsattr(datetime.datetime, readonly=True)

@@ -30,9 +30,11 @@ class FilterType(wtypes.UserType):
     name = 'filtertype'
     basetype = wtypes.text
 
-    _supported_fields = wtypes.Enum(wtypes.text, 'parent_id', 'root_id',
-                                    'name', 'num_accelerators', 'device_id',
-                                    'limit', 'marker',
+    # TODO(Sundar): Ensure v1 and v2 APIs coexist.
+    _supported_fields = wtypes.Enum(wtypes.text, 'parent_uuid', 'root_uuid',
+                                    'vendor', 'host', 'board', 'availability',
+                                    'assignable', 'interface_type',
+                                    'instance_uuid', 'limit', 'marker',
                                     'sort_key', 'sort_dir')
 
     field = wsme.wsattr(_supported_fields, mandatory=True)
@@ -45,8 +47,8 @@ class FilterType(wtypes.UserType):
 
     @classmethod
     def sample(cls):
-        return cls(field='name',
-                   value='FPGA')
+        return cls(field='interface_type',
+                   value='pci')
 
     def as_dict(self):
         d = dict()

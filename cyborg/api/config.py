@@ -29,7 +29,7 @@ app = {
     'debug': False,
     'acl_public_routes': [
         '/',
-        '/v1'
+        '/v2'
     ]
 }
 
