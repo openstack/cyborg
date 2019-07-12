@@ -161,3 +161,7 @@ class API(object):
         session, image_id = self._get_session_and_image_id(context, id_or_uri)
         return session.download(context, image_id, data=data,
                                 dst_path=dest_path)
+
+    def get_images_by_properties(self, context, properties):
+        session = self._get_session(context)
+        return session.get_images_by_properties(context, properties)

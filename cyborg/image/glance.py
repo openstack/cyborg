@@ -238,6 +238,16 @@ class GlanceImageServiceV2(object):
         if not any(check(mode) for check in (stat.S_ISFIFO, stat.S_ISSOCK)):
             os.fsync(fileno)
 
+    def get_images_by_properties(self, context, properties):
+        """Retrieve all images that have the given properties.
+
+           :param properties: dictionary of properties.
+           E.g. {"function_id": "3AFB"}
+           :returns: List of images
+        """
+        image_generator = self._client.call(context, 2, 'list', properties)
+        return list(image_generator)
+
     def download(self, context, image_id, data=None, dst_path=None):
         """Calls out to Glance for data and writes data."""
         if CONF.glance.allowed_direct_url_schemes and dst_path is not None:
