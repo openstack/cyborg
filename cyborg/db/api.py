@@ -51,7 +51,8 @@ class Connection(object):
         """Get requested device."""
 
     @abc.abstractmethod
-    def device_list(self, context, limit, marker, sort_key, sort_dir):
+    def device_list(self, context, limit=None, marker=None,
+                    sort_key=None, sort_dir=None):
         """Get requested list of devices."""
 
     @abc.abstractmethod
@@ -81,6 +82,10 @@ class Connection(object):
     @abc.abstractmethod
     def device_profile_get_by_id(self, context, id):
         """Get requested device_profile by id."""
+
+    @abc.abstractmethod
+    def device_profile_get(self, context, name):
+        """Get requested device_profile by name."""
 
     @abc.abstractmethod
     def device_profile_list(self, context):
@@ -133,6 +138,11 @@ class Connection(object):
     def deployable_get_by_filters_with_attributes(self, context,
                                                   filters):
         """Get requested deployable by filters with attributes."""
+
+    @abc.abstractmethod
+    def deployable_get_by_rp_uuid(self, context, rp_uuid):
+        """Get requested deployable by resource provider UUID."""
+
     # attributes
     @abc.abstractmethod
     def attribute_create(self, context, values):
@@ -183,7 +193,7 @@ class Connection(object):
         """Update an extarq."""
 
     @abc.abstractmethod
-    def extarq_list(self, context, limit, marker, sort_key, sort_dir):
+    def extarq_list(self, context):
         """Get requested list of extarqs."""
 
     @abc.abstractmethod

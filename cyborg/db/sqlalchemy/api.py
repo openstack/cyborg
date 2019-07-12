@@ -106,7 +106,8 @@ def add_identity_filter(query, value):
         raise exception.InvalidIdentity(identity=value)
 
 
-def _paginate_query(context, model, limit, marker, sort_key, sort_dir, query):
+def _paginate_query(context, model, query, limit=None, marker=None,
+                    sort_key=None, sort_dir=None):
     sort_keys = ['id']
     if sort_key and sort_key not in sort_keys:
         sort_keys.insert(0, sort_key)
@@ -158,7 +159,19 @@ class Connection(api.Connection):
         try:
             return query.one()
         except NoResultFound:
-            raise exception.NotFound()
+            raise exception.ResourceNotFound(
+                resource='Attach Handle',
+                msg='with id=%s' % id)
+
+    def attach_handle_list_by_type(self, context, attach_type='PCI'):
+        query = model_query(context, models.AttachHandle). \
+            filter_by(attach_type=attach_type)
+        try:
+            return query.all()
+        except NoResultFound:
+            raise exception.ResourceNotFound(
+                resource='Attach Handle',
+                msg='with type=%s' % attach_type)
 
     def attach_handle_get_by_filters(self, context,
                                      filters, sort_key='created_at',
@@ -182,8 +195,8 @@ class Connection(api.Connection):
                                           filters, exact_match_filter_names)
         if query_prefix is None:
             return []
-        return _paginate_query(context, models.AttachHandle, limit, marker,
-                               sort_key, sort_dir, query_prefix)
+        return _paginate_query(context, models.AttachHandle, query_prefix,
+                               limit, marker, sort_key, sort_dir)
 
     def _exact_filter(self, model, query, filters, legal_keys=[]):
         """Applies exact match filtering to a deployable query.
@@ -225,7 +238,7 @@ class Connection(api.Connection):
 
     def attach_handle_list(self, context):
         query = model_query(context, models.AttachHandle)
-        return _paginate_query(context, models.AttachHandle)
+        return _paginate_query(context, models.AttachHandle, query=query)
 
     def attach_handle_update(self, context, uuid, values):
         if 'uuid' in values:
@@ -244,6 +257,39 @@ class Connection(api.Connection):
                 raise exception.AttachHandleNotFound(uuid=uuid)
             ref.update(values)
         return ref
+
+    @oslo_db_api.retry_on_deadlock
+    def _do_allocate_attach_handle(self, context, query, values):
+        """Atomically get a set of attach handles that match the query
+           and mark one of those as in_use.
+        """
+        with _session_for_write() as session:
+            ref = query.with_lockmode('update').one()
+            ref.update(values)
+            # FIXME The in_use field doesn't get updated in db.
+            session.flush()
+        return ref
+
+    def attach_handle_allocate(self, context, attach_type, deployable_id):
+        """Allocate an attach handle with a given type and deployable.
+
+           To allocate is to get an unused resource and mark it as in_use.
+        """
+        query = model_query(context, models.AttachHandle). \
+            filter_by(attach_type=attach_type,
+                      deployable_id=deployable_id,
+                      in_use=False)
+        values = {"in_use": True}
+        try:
+            ah = self._do_allocate_attach_handle(context, query, values)
+        except NoResultFound:
+            msg = 'Matching attach_type {0} and deployable_id {1}'.format(
+                attach_type, deployable_id)
+            raise exception.ResourceNotFound(
+                resource='AttachHandle', msg=msg)
+        return ah
+
+    # NOTE: For deallocate, we use attach_handle_update()
 
     @oslo_db_api.retry_on_deadlock
     def attach_handle_delete(self, context, uuid):
@@ -301,12 +347,12 @@ class Connection(api.Connection):
                                           filters, exact_match_filter_names)
         if query_prefix is None:
             return []
-        return _paginate_query(context, models.ControlpathID, limit, marker,
-                               sort_key, sort_dir, query_prefix)
+        return _paginate_query(context, models.ControlpathID, query_prefix,
+                               limit, marker, sort_key, sort_dir)
 
     def control_path_list(self, context):
         query = model_query(context, models.ControlpathID)
-        return _paginate_query(context, models.ControlpathID)
+        return _paginate_query(context, models.ControlpathID, query=query)
 
     def control_path_update(self, context, uuid, values):
         if 'uuid' in values:
@@ -379,12 +425,14 @@ class Connection(api.Connection):
                                           filters, exact_match_filter_names)
         if query_prefix is None:
             return []
-        return _paginate_query(context, models.Device, limit, marker,
-                               sort_key, sort_dir, query_prefix)
+        return _paginate_query(context, models.Device, query_prefix,
+                               limit, marker, sort_key, sort_dir)
 
-    def device_list(self, context):
+    def device_list(self, context, limit=None, marker=None,
+                    sort_key=None, sort_dir=None):
         query = model_query(context, models.Device)
-        return _paginate_query(context, models.Device)
+        return _paginate_query(context, models.Device, query,
+                               limit, marker, sort_key, sort_dir)
 
     def device_update(self, context, uuid, values):
         if 'uuid' in values:
@@ -452,6 +500,14 @@ class Connection(api.Connection):
         except NoResultFound:
             raise exception.DeviceProfileNotFound(id=id)
 
+    def device_profile_get(self, context, name):
+        query = model_query(
+            context, models.DeviceProfile).filter_by(name=name)
+        try:
+            return query.one()
+        except NoResultFound:
+            raise exception.DeviceProfileNotFound(name=name)
+
     def device_profile_list_by_filters(
             self, context, filters, sort_key='created_at', sort_dir='desc',
             limit=None, marker=None, join_columns=None):
@@ -468,12 +524,12 @@ class Connection(api.Connection):
                                           filters, exact_match_filter_names)
         if query_prefix is None:
             return []
-        return _paginate_query(context, models.DeviceProfile, limit, marker,
-                               sort_key, sort_dir, query_prefix)
+        return _paginate_query(context, models.DeviceProfile, query_prefix,
+                               limit, marker, sort_key, sort_dir)
 
     def device_profile_list(self, context):
         query = model_query(context, models.DeviceProfile)
-        return _paginate_query(context, models.DeviceProfile)
+        return _paginate_query(context, models.DeviceProfile, query=query)
 
     def device_profile_update(self, context, uuid, values):
         if 'uuid' in values:
@@ -509,6 +565,7 @@ class Connection(api.Connection):
                 raise exception.DeviceProfileNotFound(uuid=uuid)
 
     def deployable_create(self, context, values):
+        raise NotImplementedError()  # TODO
         if not values.get('uuid'):
             values['uuid'] = uuidutils.generate_uuid()
         if values.get('id'):
@@ -525,6 +582,7 @@ class Connection(api.Connection):
             return deployable
 
     def deployable_get(self, context, uuid):
+        raise NotImplementedError()  # TODO
         query = model_query(
             context,
             models.Deployable).filter_by(uuid=uuid)
@@ -533,11 +591,20 @@ class Connection(api.Connection):
         except NoResultFound:
             raise exception.DeployableNotFound(uuid=uuid)
 
+    def deployable_get_by_rp_uuid(self, context, rp_uuid):
+        """Get a deployable by resource provider UUID."""
+        query = model_query(
+            context,
+            models.Deployable).filter_by(rp_uuid=rp_uuid)
+        return query.one()
+
     def deployable_list(self, context):
+        raise NotImplementedError()  # TODO
         query = model_query(context, models.Deployable)
         return query.all()
 
     def deployable_update(self, context, uuid, values):
+        raise NotImplementedError()  # TODO
         if 'uuid' in values:
             msg = _("Cannot overwrite UUID for an existing Deployable.")
             raise exception.InvalidParameterValue(err=msg)
@@ -564,6 +631,7 @@ class Connection(api.Connection):
 
     @oslo_db_api.retry_on_deadlock
     def deployable_delete(self, context, uuid):
+        raise NotImplementedError()  # TODO
         with _session_for_write():
             query = model_query(context, models.Deployable)
             query = add_identity_filter(query, uuid)
@@ -574,6 +642,7 @@ class Connection(api.Connection):
 
     def deployable_get_by_filters_with_attributes(self, context,
                                                   filters):
+        raise NotImplementedError()  # TODO
 
         exact_match_filter_names = ['id', 'uuid', 'name',
                                     'parent_id', 'root_id',
@@ -657,8 +726,8 @@ class Connection(api.Connection):
         if attribute_filters:
             query = query.outerjoin(models.Attribute)
             query = query.filter(or_(*[and_(models.Attribute.key == k,
-                                       models.Attribute.value == v)
-                                       for k, v in attribute_filters.items()]))
+                                 models.Attribute.value == v)
+                                 for k, v in attribute_filters.items()]))
         return query
 
     def deployable_get_by_filters_sort(self, context, filters, limit=None,
@@ -668,6 +737,7 @@ class Connection(api.Connection):
         keys. Deleted deployables will be returned by default, unless
         there's a filter that says otherwise.
         """
+        raise NotImplementedError()  # TODO
 
         if limit == 0:
             return []
@@ -685,10 +755,11 @@ class Connection(api.Connection):
                                           exact_match_filter_names)
         if query_prefix is None:
             return []
-        return _paginate_query(context, models.Deployable, limit, marker,
-                               sort_key, sort_dir, query_prefix)
+        return _paginate_query(context, models.Deployable, query_prefix,
+                               limit, marker, sort_key, sort_dir)
 
     def attribute_create(self, context, values):
+        raise NotImplementedError()  # TODO
         if not values.get('uuid'):
             values['uuid'] = uuidutils.generate_uuid()
         if values.get('id'):
@@ -706,6 +777,7 @@ class Connection(api.Connection):
             return attribute
 
     def attribute_get(self, context, uuid):
+        raise NotImplementedError()  # TODO
         query = model_query(
             context,
             models.Attribute).filter_by(uuid=uuid)
@@ -715,12 +787,14 @@ class Connection(api.Connection):
             raise exception.AttributeNotFound(uuid=uuid)
 
     def attribute_get_by_deployable_id(self, context, deployable_id):
+        raise NotImplementedError()  # TODO
         query = model_query(
             context,
             models.Attribute).filter_by(deployable_id=deployable_id)
         return query.all()
 
     def attribute_get_by_filter(self, context, filters):
+        raise NotImplementedError()  # TODO
         """Return attributes that matches the filters
         """
         query_prefix = model_query(context, models.Attribute)
@@ -748,6 +822,7 @@ class Connection(api.Connection):
     #     return query
 
     def attribute_update(self, context, uuid, key, value):
+        raise NotImplementedError()  # TODO
         return self._do_update_attribute(context, uuid, key, value)
 
     @oslo_db_api.retry_on_deadlock
@@ -765,6 +840,7 @@ class Connection(api.Connection):
         return ref
 
     def attribute_delete(self, context, uuid):
+        raise NotImplementedError()  # TODO
         with _session_for_write():
             query = model_query(context, models.Attribute)
             query = add_identity_filter(query, uuid)
@@ -777,6 +853,17 @@ class Connection(api.Connection):
             values['uuid'] = uuidutils.generate_uuid()
         if values.get('id'):
             values.pop('id', None)
+
+        if values.get('device_profile_id'):
+            pass  # Already have the devprof id, so nothing to do
+        elif values.get('device_profile_name'):
+            devprof = self.device_profile_get(context,
+                                              values['device_profile_name'])
+            values['device_profile_id'] = devprof['id']
+        else:
+            # TODO Use proper exception
+            raise exception.DeviceProfileNameNeeded()
+
         extarq = models.ExtArq()
         extarq.update(values)
 
@@ -815,10 +902,9 @@ class Connection(api.Connection):
             ref.update(values)
         return ref
 
-    def extarq_list(self, context, limit, marker, sort_key, sort_dir):
+    def extarq_list(self, context):
         query = model_query(context, models.ExtArq)
-        return _paginate_query(context, models.Device, limit, marker,
-                               sort_key, sort_dir, query)
+        return _paginate_query(context, models.ExtArq, query)
 
     def extarq_get(self, context, uuid):
         query = model_query(
@@ -902,14 +988,9 @@ class Connection(api.Connection):
                 # create quota usage in DB if there is no record of this type
                 # of resource
                 if resource not in usages:
-                    usages[resource] = self._quota_usage_create(project_id,
-                                                                resource,
-                                                                until_refresh
-                                                                or None,
-                                                                in_use=0,
-                                                                reserved=0,
-                                                                session=session
-                                                                )
+                    usages[resource] = self._quota_usage_create(
+                        project_id, resource, until_refresh or None,
+                        in_use=0, reserved=0, session=session)
                     refresh = True
                 elif usages[resource].in_use < 0:
                     # Negative in_use count indicates a desync, so try to
@@ -928,7 +1009,8 @@ class Connection(api.Connection):
                 # refresh the usage
                 if refresh:
                     # Grab the sync routine
-                    updates = self._sync_acc_res(context, resource, project_id)
+                    updates = self._sync_acc_res(context,
+                                                 resource, project_id)
                     for res, in_use in updates.items():
                         # Make sure we have a destination for the usage!
                         if res not in usages:
@@ -969,8 +1051,8 @@ class Connection(api.Connection):
                 usages[resource].reserved += delta
             session.flush()
         if unders:
-            LOG.warning("Change will make usage less than 0 for the following "
-                        "resources: %s", unders)
+            LOG.warning("Change will make usage less than 0 for the "
+                        "following resources: %s", unders)
         return reservations
 
     def _sync_acc_res(self, context, resource, project_id):
