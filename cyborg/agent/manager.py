@@ -13,6 +13,8 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import os
+from oslo_log import log as logging
 import oslo_messaging as messaging
 from oslo_service import periodic_task
 
@@ -22,6 +24,9 @@ from cyborg.agent.rpcapi import AgentAPI
 from cyborg.image.api import API as ImageAPI
 from cyborg.conductor import rpcapi as cond_api
 from cyborg.conf import CONF
+
+
+LOG = logging.getLogger(__name__)
 
 
 class AgentManager(periodic_task.PeriodicTasks):
@@ -55,6 +60,18 @@ class AgentManager(periodic_task.PeriodicTasks):
         dep = self.cond_api.deployable_get(context, deployable_uuid)
         driver = self.fpga_driver.create(dep.vendor)
         driver.program(dep.address, path)
+
+    def fpga_program_v2(self, context, controlpath_id,
+                        bitstream_uuid, driver_name):
+        # TODO Use tempfile module?
+        download_path = "/tmp/" + bitstream_uuid + ".gbs"
+        self.image_api.download(context,
+                                bitstream_uuid,
+                                dest_path=download_path)
+        driver = self.fpga_driver.create(driver_name)
+        ret = driver.program_v2(controlpath_id, download_path)
+        LOG.info('Driver program() API returned code %s', ret)
+        os.remove(download_path)
 
     def _download_bitstream(self, context, bitstream_uuid):
         """download the bistream

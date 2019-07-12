@@ -121,26 +121,21 @@ class TestIntelFPGADriver(base.TestCase):
             self.assertEqual(attach_handle_list[i][0],
                              fpga_attach_handle_list[0].as_dict())
 
-    @mock.patch.object(subprocess, 'Popen', autospec=True)
-    def test_intel_program(self, mock_popen):
-
-        class p(object):
-            returncode = 0
-
-            def wait(self):
-                pass
-
+    @mock.patch.object(subprocess, 'check_output', autospec=True)
+    def test_intel_program(self, mock_subprocess):
         b = "0x5e"
         d = "0x00"
         f = "0x0"
         expect_cmd = ['sudo', '/usr/bin/fpgaconf', '--bus', b,
                       '--device', d, '--function', f, '/path/image']
-        mock_popen.return_value = p()
+        mock_subprocess.return_value = bytes([0])
+
         intel = IntelFPGADriver()
-        # program VF
-        intel.program("0000:5e:00.1", "/path/image")
-        mock_popen.assert_called_with(expect_cmd, stdout=subprocess.PIPE)
+        cpid_info = {"domain": "0000", "bus": "0x5e",
+                     "device": "0x00", "function": "0x0"}
+        cpid = {'cpid_type': 'PCI', 'cpid_info': cpid_info}
 
         # program PF
-        intel.program("0000:5e:00.0", "/path/image")
-        mock_popen.assert_called_with(expect_cmd, stdout=subprocess.PIPE)
+        intel.program_v2(cpid, "/path/image")
+        mock_subprocess.assert_called_with(
+            expect_cmd, shell=False, stderr=subprocess.STDOUT)

@@ -17,10 +17,15 @@
 Cyborg Intel FPGA driver implementation.
 """
 
+from oslo_log import log as logging
+from oslo_serialization import jsonutils
 import subprocess
 
 from cyborg.accelerator.drivers.fpga.base import FPGADriver
 from cyborg.accelerator.drivers.fpga.intel import sysinfo
+from cyborg.common import exception
+
+LOG = logging.getLogger(__name__)
 
 
 class IntelFPGADriver(FPGADriver):
@@ -39,12 +44,9 @@ class IntelFPGADriver(FPGADriver):
 
     def program(self, device_path, image):
         bdf = ""
-        bdf_path = device_path
+        path = sysinfo.find_pf_by_vf(device_path) if sysinfo.is_vf(
+            device_path) else device_path
         if sysinfo.is_bdf(device_path):
-            bdf_path = sysinfo.bdf_path_map().get(device_path, device_path)
-        path = sysinfo.find_pf_by_vf(bdf_path) if sysinfo.is_vf(
-            bdf_path) else device_path
-        if sysinfo.is_bdf(path):
             bdf = sysinfo.get_pf_bdf(device_path)
         else:
             bdf = sysinfo.get_bdf_by_path(path)
@@ -54,6 +56,46 @@ class IntelFPGADriver(FPGADriver):
             cmd.extend(i)
         cmd.append(image)
         p = subprocess.Popen(cmd, stdout=subprocess.PIPE)
-        # FIXME Should log p.communicate(), p.stderr
         p.wait()
         return p.returncode
+
+    def program_v2(self, controlpath_id, image_file_path):
+        """Program the FPGA with the provided bitstream image.
+
+           TODO(Sundar): Need to handle retries.
+
+           :param: controlpath_id
+               Controlpath_id OVO
+           :param: image_file_path
+               String with the file path
+           :returns: True on success, False on failure
+        """
+        if controlpath_id['cpid_type'] != "PCI":
+            raise exception.InvalidType(obj='controlpath_id',
+                                        type=controlpath_id['cpid_type'],
+                                        expected='PCI')
+        # TODO(Sundar) Do not hardcode fpgaconf. Use right tool based on
+        #    bitstream type. New OPAE version with secure updates will
+        #    unify more bitstream types.
+        cmd = ["sudo", "/usr/bin/fpgaconf"]
+        """
+        # TODO Should driver do this or the agent?
+        controlpath_id['cpid_info'] = jsonutils.loads(
+            controlpath_id['cpid_info'])
+        """
+        bdf_dict = controlpath_id['cpid_info']
+        bdf = map(lambda x: bdf_dict[x], ["bus", "device", "function"])
+        for i in zip(["--bus", "--device", "--function"], bdf):
+            cmd.extend(i)
+        cmd.append(image_file_path)
+        LOG.info('Running command: %s', cmd)
+        try:
+            # TODO Use oslo.privsep, not subprocess.Popen
+            out = subprocess.check_output(cmd, stderr=subprocess.STDOUT,
+                                          shell=False)
+            return True
+        except subprocess.CalledProcessError as e:
+            LOG.error('Programming failed. Command: (%s) '
+                      'Exception: (%s)', cmd, str(e))
+            # TODO if retryable error, try again
+            return False

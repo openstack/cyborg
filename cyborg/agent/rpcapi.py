@@ -23,6 +23,11 @@ from cyborg.common import rpc
 from cyborg.objects import base as objects_base
 from cyborg import objects
 
+from oslo_log import log
+
+LOG = log.getLogger(__name__)
+
+
 CONF = cfg.CONF
 
 
@@ -67,3 +72,14 @@ class AgentAPI(object):
         return cctxt.call(context, 'fpga_program',
                           deployable_uuid=deployable_uuid,
                           image_uuid=bitstream_uuid)
+
+    def fpga_program_v2(self, context, hostname, controlpath_id,
+                        bitstream_uuid, driver_name):
+        LOG.info('Agent fpga_program_v2: hostname: (%s) ' +
+                 'bitstream_id: (%s)', hostname, bitstream_uuid)
+        version = '1.0'
+        cctxt = self.client.prepare(server=hostname, version=version)
+        return cctxt.call(context, 'fpga_program_v2',
+                          controlpath_id=controlpath_id,
+                          bitstream_uuid=bitstream_uuid,
+                          driver_name=driver_name)
