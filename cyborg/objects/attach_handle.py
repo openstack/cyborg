@@ -108,3 +108,13 @@ class AttachHandle(base.CyborgObject, object_base.VersionedObjectDictCompat):
             return ah_obj_list[0]
         else:
             return None
+
+    @classmethod
+    def allocate(cls, context, deployable_id):
+        db_ah = cls.dbapi.attach_handle_allocate(context, deployable_id)
+        obj_ah = cls._from_db_object(cls(context), db_ah)
+        return obj_ah
+
+    def deallocate(self, context):
+        values = {"in_use": False}
+        self.dbapi.attach_handle_update(context, self.uuid, values)

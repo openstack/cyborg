@@ -14,6 +14,7 @@
 #    under the License.
 
 from oslo_log import log as logging
+from oslo_serialization import jsonutils
 from oslo_versionedobjects import base as object_base
 
 from cyborg.db import api as dbapi
@@ -28,20 +29,26 @@ LOG = logging.getLogger(__name__)
 @base.CyborgObjectRegistry.register
 class ARQ(base.CyborgObject, object_base.VersionedObjectDictCompat):
     # Version 1.0: Initial version
-    VERSION = '1.0'
+    # 1.1: v2 API and Nova integration
+    VERSION = '1.1'
 
     dbapi = dbapi.get_instance()
     fields = {
         'id': object_fields.IntegerField(nullable=False),
         'uuid': object_fields.UUIDField(nullable=False),
         'state': object_fields.ARQStateField(nullable=False),
-        'device_profile': object_fields.ObjectField('DeviceProfile',
-                                                    nullable=True),
+        'device_profile_name': object_fields.StringField(nullable=False),
+        'device_profile_group_id':
+            object_fields.IntegerField(nullable=False),
+
+        # Fields populated by Nova after scheduling for binding
         'hostname': object_fields.StringField(nullable=True),
-        'device_rp_uuid': object_fields.UUIDField(nullable=True),
-        'device_instance_uuid': object_fields.UUIDField(nullable=True),
-        'attach_handle': object_fields.ObjectField('AttachHandle',
-                                                   nullable=True),
+        'device_rp_uuid': object_fields.StringField(nullable=True),
+        'instance_uuid': object_fields.StringField(nullable=True),
+
+        # Fields populated by Cyborg after binding
+        'attach_handle_type': object_fields.StringField(nullable=True),
+        'attach_handle_info': object_fields.DictOfStringsField(nullable=True),
     }
 
     @staticmethod
@@ -52,23 +59,14 @@ class ARQ(base.CyborgObject, object_base.VersionedObjectDictCompat):
         :param db_extarq: A DB model of the object
         :return: The object of the class with the database entity added
         """
-        device_profile_id = db_extarq.pop('device_profile_id', None)
-        attach_handle_id = db_extarq.pop('attach_handle_id', None)
+        ahi = db_extarq['attach_handle_info']
+        if ahi is not None and ahi != '':
+            d = jsonutils.loads(ahi)
+            db_extarq['attach_handle_info'] = d
+        else:
+            db_extarq['attach_handle_info'] = {}
 
         for field in arq.fields:
-            # if field == 'device_profile':
-            #     arq._load_device_profile(device_profile_id)
-            # if field == 'attach_handle':
-            #     arq._load_device_profile(attach_handle_id)
             arq[field] = db_extarq[field]
-
         arq.obj_reset_changes()
         return arq
-
-    def _load_device_profile(self, device_profile_id):
-        self.device_profile = objects.DeviceProfile.\
-            get_by_id(self._context, device_profile_id)
-
-    def _load_attach_handle(self, attach_handle_id):
-        self.attach_handle = objects.AttachHandle.\
-            get_by_id(self._context, attach_handle_id)

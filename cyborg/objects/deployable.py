@@ -27,8 +27,9 @@ LOG = logging.getLogger(__name__)
 
 @base.CyborgObjectRegistry.register
 class Deployable(base.CyborgObject, object_base.VersionedObjectDictCompat):
-    # Version 1.0: Initial version
-    VERSION = '2.0'
+    # 1.0: Initial version
+    # 1.1: Added rp_uuid, driver_name, bitstream_id, num_accel_in_use
+    VERSION = '1.1'
 
     dbapi = dbapi.get_instance()
     attributes_list = []
@@ -46,8 +47,11 @@ class Deployable(base.CyborgObject, object_base.VersionedObjectDictCompat):
         # number of accelerators spawned by this deployable
         'device_id': object_fields.IntegerField(nullable=False),
         # Foreign key constrain to reference device table
-        'driver_name': object_fields.StringField(nullable=True)
+        'driver_name': object_fields.StringField(nullable=True),
         # Will change it to non-nullable after other driver report it.
+        'rp_uuid': object_fields.UUIDField(nullable=True),
+        # UUID of the Resource provider corresponding to this deployable
+        'bitstream_id': object_fields.UUIDField(nullable=True),
     }
 
     def _get_parent_root_id(self, context):
@@ -90,6 +94,12 @@ class Deployable(base.CyborgObject, object_base.VersionedObjectDictCompat):
         return obj_dep
 
     @classmethod
+    def get_by_device_rp_uuid(cls, context, devrp_uuid):
+        db_dep = cls.dbapi.deployable_get_by_rp_uuid(context, devrp_uuid)
+        obj_dep = cls._from_db_object(cls(context), db_dep)
+        return obj_dep
+
+    @classmethod
     def list(cls, context, filters={}):
         """Return a list of Deployable objects."""
         if filters:
@@ -128,6 +138,11 @@ class Deployable(base.CyborgObject, object_base.VersionedObjectDictCompat):
         attr_get_list = Attribute.get_by_filter(context,
                                                 query)
         self.attributes_list = attr_get_list
+
+    def update(self, context, updates):
+        """Update provided key, value pairs"""
+        db_dep = self.dbapi.deployable_update(context, self.uuid,
+                                              updates)
 
     def destroy(self, context):
         """Delete a Deployable from the DB."""
