@@ -14,6 +14,7 @@
 
 
 from cyborg.accelerator.drivers.gpu.base import GPUDriver
+from cyborg.accelerator.drivers.gpu.nvidia.driver import NVIDIAGPUDriver
 from cyborg.tests import base
 
 
