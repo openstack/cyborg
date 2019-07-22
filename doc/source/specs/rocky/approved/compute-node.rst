@@ -394,7 +394,7 @@ References
    <https://review.openstack.org/#/c/558265/>`_
 
 .. [#ServerConcepts] `OpenStack Server API Concepts
-   <https://developer.openstack.org/api-guide/compute/server_concepts.html>`_
+   <https://docs.openstack.org/api-guide/compute/server_concepts.html>`_
 
 History
 =======
