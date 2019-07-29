@@ -45,7 +45,7 @@ class DBAPIQuotaUsageTestCase(base.DbTestCase):
 
     """Tests for db.api.quota_usage_* methods."""
 
-    def test_quota_reserve(self):
+    def _test_quota_reserve(self):
         sqlalchemy_api = sqlalchemyapi.get_backend()
         reservations = _quota_reserve(self.context, 'project1')
         self.assertEqual(2, len(reservations))
@@ -60,7 +60,7 @@ class DBAPIQuotaUsageTestCase(base.DbTestCase):
                           'fpga': {'reserved': 1, 'in_use': 0}},
                          result)
 
-    def test__get_quota_usages(self):
+    def _test__get_quota_usages(self):
         _quota_reserve(self.context, 'project1')
         sqlalchemy_api = sqlalchemyapi.get_backend()
         quota_usages = sqlalchemy_api._get_quota_usages(self.context,
@@ -69,7 +69,7 @@ class DBAPIQuotaUsageTestCase(base.DbTestCase):
         self.assertEqual(['fpga', 'gpu'],
                          sorted(quota_usages.keys()))
 
-    def test__get_quota_usages_with_resources(self):
+    def _test__get_quota_usages_with_resources(self):
         _quota_reserve(self.context, 'project1')
         sqlalchemy_api = sqlalchemyapi.get_backend()
         quota_usage = sqlalchemy_api._get_quota_usages(
@@ -94,7 +94,7 @@ class DBAPIReservationTestCase(base.DbTestCase):
             'usage': {'id': 1}
         }
 
-    def test__get_reservation_resources(self):
+    def _test__get_reservation_resources(self):
         sqlalchemy_api = sqlalchemyapi.get_backend()
         reservations = _quota_reserve(self.context, 'project1')
         expected = ['fpga', 'gpu']
@@ -102,7 +102,7 @@ class DBAPIReservationTestCase(base.DbTestCase):
             self.context, reservations)
         self.assertEqual(expected, sorted(resources))
 
-    def test_reservation_commit(self):
+    def _test_reservation_commit(self):
         db_api = dbapi.get_instance()
         reservations = _quota_reserve(self.context, 'project1')
         expected = {'project_id': 'project1',
