@@ -13,14 +13,15 @@
 
 """The Cyborg Agent Service."""
 
+import shlex
 import sys
 
 from oslo_config import cfg
+from oslo_privsep import priv_context
 from oslo_service import service
 
 from cyborg.common import constants
 from cyborg.common import service as cyborg_service
-
 
 CONF = cfg.CONF
 
@@ -28,6 +29,7 @@ CONF = cfg.CONF
 def main():
     # Parse config file and command line options, then start logging
     cyborg_service.prepare_service(sys.argv)
+    priv_context.init(root_helper=shlex.split('sudo'))
 
     mgr = cyborg_service.RPCService('cyborg.agent.manager',
                                     'AgentManager',

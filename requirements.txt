@@ -28,3 +28,4 @@ jsonpatch>=1.16,!=1.20 # BSD
 psutil>=3.2.2 # BSD
 mock>=2.0.0 # BSD
 python-glanceclient>=2.3.0 # Apache-2.0
+oslo.privsep>=1.32.0 # Apache-2.0
