@@ -27,6 +27,7 @@ from sqlalchemy import schema
 from sqlalchemy import DateTime
 from sqlalchemy import orm
 
+from cyborg.common import constants
 from cyborg.common import paths
 from cyborg.conf import CONF
 
@@ -103,6 +104,18 @@ class Deployable(Base):
     num_accelerators = Column(Integer, nullable=False)
     device_id = Column(Integer, ForeignKey('devices.id', ondelete="RESTRICT"),
                        nullable=False)
+    # The resource provider UUID is nullable for 2 reasons:
+    # A. on creation, till Placement is populated, this will be null.
+    # B. Sub-deployables (such as in networked FPGA cards) will have
+    #    this as null.
+    rp_uuid = Column(String(36), nullable=True)
+    # This is nullable because the parent deployable in a networked
+    # FPGA card will have no driver. Only subdeployables have one.
+    driver_name = Column(String(100), nullable=True)
+    # The following fields are needed only for deployables with
+    # num_accelerators > 1
+    num_accelerators_in_use = Column(Integer, default=0)
+    # TODO Add programming_in_progress field
 
 
 class Attribute(Base):
@@ -168,7 +181,7 @@ class DeviceProfile(Base):
 
     id = Column(Integer, primary_key=True)
     uuid = Column(String(36), nullable=False)
-    name = Column(String(255), nullable=False)
+    name = Column(String(255), nullable=False, unique=True)
     profile_json = Column(Text, nullable=False)
 
 
@@ -181,7 +194,7 @@ class ExtArq(Base):
         Index('extArqs_project_id_idx', 'project_id'),
         Index('extArqs_device_profile_id_idx', 'device_profile_id'),
         Index('extArqs_device_rp_uuid_idx', 'device_rp_uuid'),
-        Index('extArqs_device_instance_uuid_idx', 'device_instance_uuid'),
+        Index('extArqs_instance_uuid_idx', 'instance_uuid'),
         Index('extArqs_attach_handle_id_idx', 'attach_handle_id'),
         Index('extArqs_deployable_id_idx', 'deployable_id'),
         table_args()
@@ -190,14 +203,18 @@ class ExtArq(Base):
     id = Column(Integer, primary_key=True)
     uuid = Column(String(36), nullable=False, unique=True)
     project_id = Column(String(255), nullable=True)
-    state = Column(Enum('Initial', 'Bound', 'BindFailed', name='state'),
+    state = Column(Enum(constants.ARQ_INITIAL,
+                        constants.ARQ_BOUND,
+                        constants.ARQ_BIND_FAILED,
+                        constants.ARQ_UNBOUND),
                    nullable=False)
     device_profile_id = Column(Integer, ForeignKey('device_profiles.id',
                                                    ondelete="RESTRICT"),
                                nullable=False)
+    device_profile_group_id = Column(Integer, nullable=False, default=0)
     hostname = Column(String(255), nullable=True)
     device_rp_uuid = Column(String(36), nullable=True)
-    device_instance_uuid = Column(String(36), nullable=True)
+    instance_uuid = Column(String(36), nullable=True)
     attach_handle_id = Column(Integer, ForeignKey('attach_handles.id',
                                                   ondelete="RESTRICT"),
                               nullable=True)
