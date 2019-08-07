@@ -30,6 +30,7 @@ class TestIntelFPGADriver(base.TestCase):
         super(TestIntelFPGADriver, self).setUp()
         self.syspath = sysinfo.SYS_FPGA
         self.pcipath = sysinfo.PCI_DEVICES_PATH
+        self.pcipath_pattern = sysinfo.PCI_DEVICES_PATH_PATTERN
         tmp_sys_dir = self.useFixture(fixtures.TempDir())
         prepare_test_data.create_fake_sysfs(tmp_sys_dir.path)
         tmp_path = tmp_sys_dir.path
@@ -37,11 +38,14 @@ class TestIntelFPGADriver(base.TestCase):
             tmp_path, sysinfo.SYS_FPGA.split("/", 1)[-1])
         sysinfo.PCI_DEVICES_PATH = os.path.join(
             tmp_path, sysinfo.PCI_DEVICES_PATH.split("/", 1)[-1])
+        sysinfo.PCI_DEVICES_PATH_PATTERN = os.path.join(
+            tmp_path, sysinfo.PCI_DEVICES_PATH_PATTERN.split("/", 1)[-1])
 
     def tearDown(self):
         super(TestIntelFPGADriver, self).tearDown()
         sysinfo.SYS_FPGA = self.syspath
         sysinfo.PCI_DEVICES_PATH = self.pcipath
+        sysinfo.PCI_DEVICES_PATH_PATTERN = self.pcipath_pattern
 
     def test_discover(self):
         attach_handle_list = [
@@ -68,7 +72,7 @@ class TestIntelFPGADriver(base.TestCase):
                      'deployable_list':
                          [
                              {'num_accelerators': 1,
-                              'name': 'intel-fpga-dev.1',
+                              'name': 'intel-fpga-dev_0000:5e:00.1',
                               'attach_handle_list': attach_handle_list[0]
                               },
                          ],
@@ -86,7 +90,7 @@ class TestIntelFPGADriver(base.TestCase):
                      'deployable_list':
                          [
                              {'num_accelerators': 1,
-                              'name': 'intel-fpga-dev.2',
+                              'name': 'intel-fpga-dev_0000:be:00.0',
                               'attach_handle_list': attach_handle_list[1]
                               },
                          ],
