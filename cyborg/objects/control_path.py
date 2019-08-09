@@ -15,6 +15,7 @@
 
 from oslo_log import log as logging
 from oslo_versionedobjects import base as object_base
+from oslo_serialization import jsonutils
 
 from cyborg.db import api as dbapi
 from cyborg.objects import base
@@ -28,7 +29,8 @@ CPID_TYPE = ["PCI", "MDEV"]
 @base.CyborgObjectRegistry.register
 class ControlpathID(base.CyborgObject, object_base.VersionedObjectDictCompat):
     # Version 1.0: Initial version
-    VERSION = '1.0'
+    # Version 1.1: Add cpid_info_obj
+    VERSION = '1.1'
 
     dbapi = dbapi.get_instance()
 
@@ -40,6 +42,14 @@ class ControlpathID(base.CyborgObject, object_base.VersionedObjectDictCompat):
                                              nullable=False),
         'cpid_info': object_fields.StringField(nullable=False)
     }
+
+    @property
+    def cpid_info_obj(self):
+        return jsonutils.loads(self.cpid_info)
+
+    @cpid_info_obj.setter
+    def cpid_info_obj(self, cpid_info_obj):
+        self.cpid_info = jsonutils.dumps(cpid_info_obj)
 
     def create(self, context):
         """Create a ControlPathID record in the DB."""

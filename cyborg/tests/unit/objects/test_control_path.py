@@ -19,6 +19,8 @@ from cyborg import objects
 from cyborg.tests.unit.db import base
 from cyborg.tests.unit.db import utils
 
+from oslo_serialization import jsonutils
+
 
 class TestControlpathIDObject(base.DbTestCase):
 
@@ -34,6 +36,20 @@ class TestControlpathIDObject(base.DbTestCase):
             control_path = objects.ControlpathID.get(self.context, uuid)
             mock_control_path_get.assert_called_once_with(self.context, uuid)
             self.assertEqual(self.context, control_path._context)
+
+    def test_get_set_cpid_info_using_obj(self):
+        uuid = self.fake_control_path['uuid']
+        with mock.patch.object(self.dbapi, 'control_path_get_by_uuid',
+                               autospec=True) as mock_control_path_get:
+            mock_control_path_get.return_value = self.fake_control_path
+            # test cpid_info_obj loader
+            control_path = objects.ControlpathID.get(self.context, uuid)
+            self.assertEqual(jsonutils.loads(control_path.cpid_info),
+                             control_path.cpid_info_obj)
+            # test cpid_info_obj setter
+            control_path.cpid_info_obj = {'bus': "fake"}
+            self.assertEqual(control_path.cpid_info,
+                             jsonutils.dumps(control_path.cpid_info_obj))
 
     def test_list(self):
         with mock.patch.object(self.dbapi, 'control_path_list',
