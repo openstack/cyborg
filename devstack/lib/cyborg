@@ -132,9 +132,9 @@ function create_cyborg_accounts {
         get_or_create_service "cyborg" "accelerator" "Cyborg Accelerators Service"
         get_or_create_endpoint "cyborg" \
             "$REGION_NAME" \
-            "$CYBORG_API_URL/v1" \
-            "$CYBORG_API_URL/v1" \
-            "$CYBORG_API_URL/v1"
+            "$CYBORG_API_URL/v2" \
+            "$CYBORG_API_URL/v2" \
+            "$CYBORG_API_URL/v2"
     fi
 }
 
