@@ -6,16 +6,8 @@
       - publish-openstack-docs-pti
     check:
       jobs:
-        - cyborg-devstack
+        - cyborg-tempest
+    gate:
+      jobs:
+        - cyborg-tempest
 
-- job:
-    name: cyborg-devstack
-    parent: legacy-dsvm-base
-    run: playbooks/legacy/cyborg-devstack/run.yaml
-    post-run: playbooks/legacy/cyborg-devstack/post.yaml
-    timeout: 4200
-    voting: false
-    required-projects:
-      - openstack/devstack
-      - openstack/devstack-gate
-      - openstack/cyborg
