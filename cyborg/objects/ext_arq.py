@@ -22,6 +22,7 @@ from cyborg.agent.rpcapi import AgentAPI
 from cyborg.db import api as dbapi
 from cyborg.common import constants
 from cyborg.common import exception
+from cyborg.common import nova_client
 from cyborg.common import placement_client
 from cyborg import objects
 from cyborg.objects import base
@@ -306,15 +307,36 @@ class ExtARQ(base.CyborgObject, object_base.VersionedObjectDictCompat):
     @classmethod
     def apply_patch(cls, context, patch_list, valid_fields):
         """Apply JSON patch. See api/controllers/v1/arqs.py. """
+        device_profile_name = None
+        instance_uuid = None
+        bind_action = False
+        status = "completed"
         for arq_uuid, patch in patch_list.items():
             extarq = ExtARQ.get(context, arq_uuid)
+            if not device_profile_name:
+                device_profile_name = extarq.arq.device_profile_name
+            if not instance_uuid:
+                instance_uuid = valid_fields[arq_uuid]['instance_uuid']
             if patch[0]['op'] == 'add':  # All ops are 'add'
+                # True if do binding, False if do unbinding.
+                bind_action = True
                 extarq.bind(context,
                             valid_fields[arq_uuid]['hostname'],
                             valid_fields[arq_uuid]['device_rp_uuid'],
                             valid_fields[arq_uuid]['instance_uuid'])
+                if extarq.arq.state == constants.ARQ_BIND_FAILED:
+                    status = "failed"
+                elif extarq.arq.state == constants.ARQ_BOUND:
+                    continue
+                else:
+                    raise exception.ARQInvalidState(state=extarq.arq.state)
             else:
+                bind_action = False
                 extarq.unbind(context)
+        if bind_action:
+            nova_api = nova_client.NovaAPI()
+            nova_api.notify_binding(instance_uuid,
+                                    device_profile_name, status)
 
     def unbind(self, context):
         arq = self.arq

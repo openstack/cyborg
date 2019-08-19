@@ -66,3 +66,11 @@ def get_fake_extarq_objs():
     arq_list = _get_arqs_as_dict()
     obj_extarqs = map(_convert_from_dict_to_obj, arq_list)
     return obj_extarqs
+
+
+def get_fake_db_extarqs():
+    db_extarqs = []
+    for db_extarq in _get_arqs_as_dict():
+        db_extarq.update({'device_profile_id': 0})
+        db_extarqs.append(db_extarq)
+    return db_extarqs
