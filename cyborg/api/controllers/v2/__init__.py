@@ -22,6 +22,7 @@ from wsme import types as wtypes
 from cyborg.api.controllers import base
 from cyborg.api.controllers import link
 from cyborg.api.controllers.v2 import api_version_request
+from cyborg.api.controllers.v2 import device_profiles
 from cyborg.api import expose
 
 
@@ -61,7 +62,7 @@ class Controller(rest.RestController):
     """Version 2 API controller root"""
 
     # Enabled in later patches.
-    # device_profiles = device_profiles.DeviceProfilesController()
+    device_profiles = device_profiles.DeviceProfilesController()
     # accelerator_requests = arqs.ARQsController()
 
     @expose.expose(V2)
