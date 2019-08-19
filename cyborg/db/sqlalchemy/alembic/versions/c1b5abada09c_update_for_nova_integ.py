@@ -39,7 +39,7 @@ def upgrade():
         sa.Column('driver_name', sa.String(length=100), nullable=True))
     op.add_column(
         'deployables',
-        sa.Column('num_accelerators_in_use', sa.Integer(), default=0))
+        sa.Column('bitstream_id', sa.String(length=36), nullable=True))
 
     # Update ExtARQ table
     op.add_column(
@@ -59,9 +59,11 @@ def upgrade():
     op.drop_column('extended_accelerator_requests', 'device_instance_uuid')
     # Add more valid states for 'state' field
     ns = sa.Enum(constants.ARQ_INITIAL,
+                 constants.ARQ_BIND_STARTED,
                  constants.ARQ_BOUND,
                  constants.ARQ_UNBOUND,
-                 constants.ARQ_BIND_FAILED, name='state')
+                 constants.ARQ_BIND_FAILED,
+                 constants.ARQ_DELETING, name='state')
     op.alter_column(
         'extended_accelerator_requests', 'state',
         existing_type=ns, nullable=False, default=constants.ARQ_INITIAL)
@@ -74,3 +76,12 @@ def upgrade():
     op.alter_column('attach_handles', 'attach_type',
                     existing_type=new_attach_type,
                     nullable=False)
+
+    # Update device_profiles table to make name and uuid unique separately.
+    # Previous schema made the pair unique.
+    op.create_unique_constraint('uniq_device_profiles0uuid',
+                                'device_profiles', ['uuid'])
+    op.create_unique_constraint('uniq_device_profiles0name',
+                                'device_profiles', ['name'])
+    op.drop_constraint('uniq_device_profiles0uuid0name',
+                       'device_profiles', type_='unique')

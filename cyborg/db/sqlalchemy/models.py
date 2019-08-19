@@ -112,9 +112,8 @@ class Deployable(Base):
     # This is nullable because the parent deployable in a networked
     # FPGA card will have no driver. Only subdeployables have one.
     driver_name = Column(String(100), nullable=True)
-    # The following fields are needed only for deployables with
-    # num_accelerators > 1
-    num_accelerators_in_use = Column(Integer, default=0)
+    bitstream_id = Column(String(36), nullable=True)
+
     # TODO Add programming_in_progress field
 
 
@@ -207,9 +206,11 @@ class ExtArq(Base):
     uuid = Column(String(36), nullable=False, unique=True)
     project_id = Column(String(255), nullable=True)
     state = Column(Enum(constants.ARQ_INITIAL,
+                        constants.ARQ_BIND_STARTED,
                         constants.ARQ_BOUND,
                         constants.ARQ_BIND_FAILED,
-                        constants.ARQ_UNBOUND),
+                        constants.ARQ_UNBOUND,
+                        constants.ARQ_DELETING),
                    nullable=False)
     device_profile_id = Column(Integer, ForeignKey('device_profiles.id',
                                                    ondelete="RESTRICT"),

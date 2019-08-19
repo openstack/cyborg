@@ -21,8 +21,9 @@ DEVICE_FPGA = 'FPGA'
 DEVICE_AICHIP = 'AICHIP'
 
 
-ARQ_STATES = (ARQ_INITIAL, ARQ_BOUND, ARQ_UNBOUND, ARQ_BIND_FAILED) = \
-    ('Initial', 'Bound', 'Unbound', 'BindFailed')
+ARQ_STATES = (ARQ_INITIAL, ARQ_BIND_STARTED, ARQ_BOUND, ARQ_UNBOUND,
+              ARQ_BIND_FAILED, ARQ_DELETING) = (
+    'Initial', 'BindStarted', 'Bound', 'Unbound', 'BindFailed', 'Deleting')
 
 # Device type
 DEVICE_TYPE = (DEVICE_GPU, DEVICE_FPGA, DEVICE_AICHIP)

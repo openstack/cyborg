@@ -259,14 +259,13 @@ class Connection(api.Connection):
         return ref
 
     @oslo_db_api.retry_on_deadlock
-    def _do_allocate_attach_handle(self, context, attach_type, deployable_id):
+    def _do_allocate_attach_handle(self, context, deployable_id):
         """Atomically get a set of attach handles that match the query
            and mark one of those as in_use.
         """
         with _session_for_write() as session:
             query = model_query(context, models.AttachHandle). \
-                filter_by(attach_type=attach_type,
-                          deployable_id=deployable_id,
+                filter_by(deployable_id=deployable_id,
                           in_use=False)
             values = {"in_use": True}
             ref = query.with_lockmode('update').one()
@@ -274,17 +273,16 @@ class Connection(api.Connection):
             session.flush()
         return ref
 
-    def attach_handle_allocate(self, context, attach_type, deployable_id):
-        """Allocate an attach handle with a given type and deployable.
+    def attach_handle_allocate(self, context, deployable_id):
+        """Allocate an attach handle with given deployable.
 
            To allocate is to get an unused resource and mark it as in_use.
         """
         try:
             ah = self._do_allocate_attach_handle(
-                context, attach_type, deployable_id)
+                context, deployable_id)
         except NoResultFound:
-            msg = 'Matching attach_type {0} and deployable_id {1}'.format(
-                attach_type, deployable_id)
+            msg = 'Matching deployable_id {0}'.format(deployable_id)
             raise exception.ResourceNotFound(
                 resource='AttachHandle', msg=msg)
         return ah
@@ -565,7 +563,6 @@ class Connection(api.Connection):
                 raise exception.DeviceProfileNotFound(uuid=uuid)
 
     def deployable_create(self, context, values):
-        raise NotImplementedError()  # TODO
         if not values.get('uuid'):
             values['uuid'] = uuidutils.generate_uuid()
         if values.get('id'):
@@ -582,7 +579,6 @@ class Connection(api.Connection):
             return deployable
 
     def deployable_get(self, context, uuid):
-        raise NotImplementedError()  # TODO
         query = model_query(
             context,
             models.Deployable).filter_by(uuid=uuid)
@@ -599,12 +595,10 @@ class Connection(api.Connection):
         return query.one()
 
     def deployable_list(self, context):
-        raise NotImplementedError()  # TODO
         query = model_query(context, models.Deployable)
         return query.all()
 
     def deployable_update(self, context, uuid, values):
-        raise NotImplementedError()  # TODO
         if 'uuid' in values:
             msg = _("Cannot overwrite UUID for an existing Deployable.")
             raise exception.InvalidParameterValue(err=msg)
@@ -631,7 +625,6 @@ class Connection(api.Connection):
 
     @oslo_db_api.retry_on_deadlock
     def deployable_delete(self, context, uuid):
-        raise NotImplementedError()  # TODO
         with _session_for_write():
             query = model_query(context, models.Deployable)
             query = add_identity_filter(query, uuid)
@@ -642,8 +635,6 @@ class Connection(api.Connection):
 
     def deployable_get_by_filters_with_attributes(self, context,
                                                   filters):
-        raise NotImplementedError()  # TODO
-
         exact_match_filter_names = ['id', 'uuid', 'name',
                                     'parent_id', 'root_id',
                                     'num_accelerators', 'device_id']
@@ -737,8 +728,6 @@ class Connection(api.Connection):
         keys. Deleted deployables will be returned by default, unless
         there's a filter that says otherwise.
         """
-        raise NotImplementedError()  # TODO
-
         if limit == 0:
             return []
 
@@ -759,7 +748,6 @@ class Connection(api.Connection):
                                limit, marker, sort_key, sort_dir)
 
     def attribute_create(self, context, values):
-        raise NotImplementedError()  # TODO
         if not values.get('uuid'):
             values['uuid'] = uuidutils.generate_uuid()
         if values.get('id'):
@@ -777,7 +765,6 @@ class Connection(api.Connection):
             return attribute
 
     def attribute_get(self, context, uuid):
-        raise NotImplementedError()  # TODO
         query = model_query(
             context,
             models.Attribute).filter_by(uuid=uuid)
@@ -787,14 +774,12 @@ class Connection(api.Connection):
             raise exception.AttributeNotFound(uuid=uuid)
 
     def attribute_get_by_deployable_id(self, context, deployable_id):
-        raise NotImplementedError()  # TODO
         query = model_query(
             context,
             models.Attribute).filter_by(deployable_id=deployable_id)
         return query.all()
 
     def attribute_get_by_filter(self, context, filters):
-        raise NotImplementedError()  # TODO
         """Return attributes that matches the filters
         """
         query_prefix = model_query(context, models.Attribute)
@@ -822,7 +807,6 @@ class Connection(api.Connection):
     #     return query
 
     def attribute_update(self, context, uuid, key, value):
-        raise NotImplementedError()  # TODO
         return self._do_update_attribute(context, uuid, key, value)
 
     @oslo_db_api.retry_on_deadlock
@@ -840,7 +824,6 @@ class Connection(api.Connection):
         return ref
 
     def attribute_delete(self, context, uuid):
-        raise NotImplementedError()  # TODO
         with _session_for_write():
             query = model_query(context, models.Attribute)
             query = add_identity_filter(query, uuid)
@@ -861,7 +844,6 @@ class Connection(api.Connection):
                                               values['device_profile_name'])
             values['device_profile_id'] = devprof['id']
         else:
-            # TODO Use proper exception
             raise exception.DeviceProfileNameNeeded()
 
         extarq = models.ExtArq()
@@ -885,7 +867,7 @@ class Connection(api.Connection):
                 raise exception.ExtArqNotFound(uuid=uuid)
 
     def extarq_update(self, context, uuid, values):
-        if 'uuid' in values:
+        if 'uuid' in values and values['uuid'] != uuid:
             msg = _("Cannot overwrite UUID for an existing ExtArq.")
             raise exception.InvalidParameterValue(err=msg)
         return self._do_update_extarq(context, uuid, values)
