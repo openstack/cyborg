@@ -26,3 +26,8 @@ ARQ_STATES = (ARQ_INITIAL, ARQ_BOUND, ARQ_UNBOUND, ARQ_BIND_FAILED) = \
 
 # Device type
 DEVICE_TYPE = (DEVICE_GPU, DEVICE_FPGA, DEVICE_AICHIP)
+
+# Attach handle type
+#  'TEST_PCI': used by fake driver, ignored by Nova virt driver.
+ATTACH_HANDLE_TYPES = (AH_TYPE_PCI, AH_TYPE_MDEV, AH_TYPE_TEST_PCI) = (
+    "PCI", "MDEV", "TEST_PCI")

@@ -164,7 +164,10 @@ class AttachHandle(Base):
                      ForeignKey('controlpath_ids.id', ondelete="RESTRICT"),
                      nullable=False)
     in_use = Column(Boolean, default=False)
-    attach_type = Column(Enum('PCI', 'MDEV', name='attach_type'),
+    attach_type = Column(Enum(constants.AH_TYPE_PCI,
+                              constants.AH_TYPE_MDEV,
+                              constants.AH_TYPE_TEST_PCI,
+                         name='attach_type'),
                          nullable=False)
     attach_info = Column(String(255), nullable=False)
 
