@@ -14,16 +14,19 @@ Overview
     user/architecture
     user/usage
 
-Configuration
--------------------
+API
+~~~
 
 .. toctree::
     :maxdepth: 1
 
-    configuration/index
+    api/api
 
-User Documentation
--------------------
+Documentation for Operators
+----------------------------
+
+The documentation in this section is aimed at Cloud
+Operators needing to install or configure Cyborg.
 
 Installation
 ~~~~~~~~~~~~
@@ -31,20 +34,21 @@ Installation
 .. toctree::
    :maxdepth: 1
 
-   install/installation
-   install/from-source
+   install/install-from-pip
+   install/install-from-source
    admin/config-wsgi
 
-API
-~~~
+Configuration Reference
+~~~~~~~~~~~~~~~~~~~~~~~
 
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 2
 
-   admin/api
+   configuration/index
+   reference/support-matrix
 
-CLI Reference
--------------
+Documentation for End Users
+----------------------------
 
 Information on the commands available through Cyborg's Command Line
 Interface (CLI) can be found in this section of documentation.
@@ -55,9 +59,8 @@ Interface (CLI) can be found in this section of documentation.
 
    cli/index
 
-
-Developer Documentation
------------------------
+Documentation for Developers
+----------------------------
 
 .. toctree::
    :maxdepth: 1
