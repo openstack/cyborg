@@ -30,7 +30,8 @@ def fake_db_deployable(**updates):
         'parent_id': None,
         'root_id': 1,
         'num_accelerators': 4,
-        'device_id': 0
+        'device_id': 0,
+        'driver_name': "fake-driver-name"
         }
 
     for name, field in objects.Deployable.fields.items():
