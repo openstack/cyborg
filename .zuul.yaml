@@ -3,6 +3,7 @@
       - openstack-python-jobs
       - check-requirements
       - release-notes-jobs-python3
+      - openstack-python3-train-jobs
       - publish-openstack-docs-pti
     check:
       jobs:

@@ -64,7 +64,7 @@ def _convert_from_dict_to_obj(arq_dict):
 
 def get_fake_extarq_objs():
     arq_list = _get_arqs_as_dict()
-    obj_extarqs = map(_convert_from_dict_to_obj, arq_list)
+    obj_extarqs = list(map(_convert_from_dict_to_obj, arq_list))
     return obj_extarqs
 
 

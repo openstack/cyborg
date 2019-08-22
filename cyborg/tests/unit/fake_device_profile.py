@@ -74,14 +74,14 @@ def _drop_uuid(dp_dict):
 
 def get_obj_devprofs():
     dp_list = _get_device_profiles_as_dict()
-    obj_devprofs = map(_convert_to_obj, dp_list)
+    obj_devprofs = list(map(_convert_to_obj, dp_list))
     return obj_devprofs
 
 
 def get_api_devprofs(drop_uuid=False):
     dp_list = _get_device_profiles_as_dict()
     if drop_uuid:
-        api_devprofs = map(_drop_uuid, dp_list)
+        api_devprofs = list(map(_drop_uuid, dp_list))
     else:
         api_devprofs = dp_list
     return api_devprofs
@@ -89,5 +89,5 @@ def get_api_devprofs(drop_uuid=False):
 
 def get_db_devprofs():
     dp_list = _get_device_profiles_as_dict()
-    db_devprofs = map(_convert_to_db_devprof, dp_list)
+    db_devprofs = list(map(_convert_to_db_devprof, dp_list))
     return db_devprofs

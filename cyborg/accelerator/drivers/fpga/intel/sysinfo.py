@@ -69,6 +69,8 @@ def link_real_path(p):
         os.path.join(os.path.dirname(p), os.readlink(p)))
 
 
+# TODO(s_shogo) This function name should be reconsidered in py3
+# env( filter() in py3 returns iterator, not list)
 def find_fpgas_by_know_list():
     return filter(
         lambda p: (
@@ -99,8 +101,8 @@ def all_vf_fpgas():
 
 
 def all_pfs_have_vf():
-    return filter(lambda p: glob.glob(os.path.join(p, "virtfn0")),
-                  all_fpgas())
+    return list(filter(lambda p: glob.glob(os.path.join(p, "virtfn0")),
+                all_fpgas()))
 
 
 def target_symbolic_map():

@@ -93,7 +93,7 @@ class TestGPUDriverUtils(base.TestCase):
             gpu_dep_list[0].as_dict()['attach_handle_list']
         self.assertEqual(expected['vendor'], gpu_dict['vendor'])
         self.assertEqual(expected['controlpath_id'],
-                         gpu_dict['controlpath_id'].as_dict())
+                         gpu_dict['controlpath_id'])
         self.assertEqual(expected['std_board_info'],
                          jsonutils.loads(gpu_dict['std_board_info']))
         self.assertEqual(expected['deployable_list'][0]['num_accelerators'],

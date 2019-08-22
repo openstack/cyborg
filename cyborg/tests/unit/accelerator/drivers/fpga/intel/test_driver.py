@@ -114,7 +114,7 @@ class TestIntelFPGADriver(base.TestCase):
                 fpga_dep_list[0].as_dict()['attach_handle_list']
             self.assertEqual(expected[i]['vendor'], fpga_dict['vendor'])
             self.assertEqual(expected[i]['controlpath_id'],
-                             fpga_dict['controlpath_id'].as_dict())
+                             fpga_dict['controlpath_id'])
             self.assertEqual(expected[i]['deployable_list'][0]
                              ['num_accelerators'],
                              fpga_dep_list[0].as_dict()['num_accelerators'])
