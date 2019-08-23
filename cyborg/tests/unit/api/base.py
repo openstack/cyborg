@@ -16,6 +16,7 @@
 """Base classes for API tests."""
 
 from oslo_config import cfg
+from oslo_context import context
 import pecan
 import pecan.testing
 
@@ -107,6 +108,10 @@ class BaseApiTest(base.DbTestCase):
                                   headers=headers, extra_environ=extra_environ,
                                   status=status, method="post")
 
+    def gen_context(self, value, **kwargs):
+        ct = context.RequestContext.from_dict(value, **kwargs)
+        return ct
+
     def gen_headers(self, context, **kw):
         """Generate a header for a simulated HTTP request to Pecan test app.
 
@@ -119,6 +124,10 @@ class BaseApiTest(base.DbTestCase):
         """
         ct = context.to_dict()
         ct.update(kw)
+        if ct.get("is_admin"):
+            role = "admin"
+        else:
+            role = "user"
         headers = {
             'X-User-Name': ct.get("user_name") or "user",
             'X-User-Id':
@@ -131,9 +140,8 @@ class BaseApiTest(base.DbTestCase):
             'X-User-Domain-Name': ct.get("domain_name") or "no_domain",
             'X-Auth-Token':
                 ct.get("auth_token") or "b9764005b8c145bf972634fb16a826e8",
-            'X-Roles': ct.get("roles") or "cyborg"
+            'X-Roles': ct.get("roles") or role
         }
-
         return headers
 
     def get_json(self, path, expect_errors=False, headers=None,

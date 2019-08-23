@@ -73,40 +73,37 @@ default_policies = [
 #       All of these may be overridden by configuration, but we can
 #       depend on their existence throughout the code.
 
-accelerator_policies = [
-    policy.RuleDefault('cyborg:accelerator:get',
+accelerator_request_policies = [
+    policy.RuleDefault('cyborg:arq:get_all',
                        'rule:default',
-                       description='Retrieve accelerator records'),
-    policy.RuleDefault('cyborg:accelerator:create',
+                       description='Retrieve accelerator request records.'),
+    policy.RuleDefault('cyborg:arq:get_one',
+                       'rule:default',
+                       description='Get an accelerator request record.'),
+    policy.RuleDefault('cyborg:arq:create',
                        'rule:allow',
-                       description='Create accelerator records'),
-    policy.RuleDefault('cyborg:accelerator:delete',
+                       description='Create accelerator request records.'),
+    policy.RuleDefault('cyborg:arq:delete',
                        'rule:default',
-                       description='Delete accelerator records'),
-    policy.RuleDefault('cyborg:accelerator:update',
+                       description='Delete accelerator request records.'),
+    policy.RuleDefault('cyborg:arq:update',
                        'rule:default',
-                       description='Update accelerator records'),
+                       description='Update accelerator request records.'),
 ]
 
-deployable_policies = [
-    policy.RuleDefault('cyborg:deployable:get_one',
-                       'rule:allow',
-                       description='Show deployable detail'),
-    policy.RuleDefault('cyborg:deployable:get_all',
-                       'rule:allow',
-                       description='Retrieve all deployable records'),
-    policy.RuleDefault('cyborg:deployable:create',
-                       'rule:admin_api',
-                       description='Create deployable records'),
-    policy.RuleDefault('cyborg:deployable:delete',
-                       'rule:admin_api',
-                       description='Delete deployable records'),
-    policy.RuleDefault('cyborg:deployable:update',
-                       'rule:admin_api',
-                       description='Update deployable records'),
-    policy.RuleDefault('cyborg:deployable:program',
-                       'rule:allow',
-                       description='Program deployable(FPGA) records'),
+device_profile_policies = [
+    policy.RuleDefault('cyborg:device_profile:get_all',
+                       'rule:default',
+                       description='Retrieve device_profile records.'),
+    policy.RuleDefault('cyborg:device_profile:get_one',
+                       'rule:default',
+                       description='Get a device_profile record.'),
+    policy.RuleDefault('cyborg:device_profile:create',
+                       'rule:is_admin',
+                       description='Create device_profile records.'),
+    policy.RuleDefault('cyborg:device_profile:delete',
+                       'rule:default',
+                       description='Delete device_profile records.'),
 ]
 
 fpga_policies = [
@@ -124,9 +121,9 @@ fpga_policies = [
 
 def list_policies():
     return default_policies \
-        + accelerator_policies \
-        + deployable_policies \
-        + fpga_policies
+        + fpga_policies \
+        + accelerator_request_policies \
+        + device_profile_policies
 
 
 @lockutils.synchronized('policy_enforcer', 'cyborg-')
