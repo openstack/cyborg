@@ -282,7 +282,7 @@ def _generate_dep_list(fpga, pf_has_vf):
 
 def _generate_attach_handle(fpga):
     driver_ah = driver_attach_handle.DriverAttachHandle()
-    driver_ah.attach_type = "PCI"
+    driver_ah.attach_type = constants.AH_TYPE_PCI
     driver_ah.attach_info = utils.pci_str_to_json(fpga["devices"])
     driver_ah.in_use = False
     return driver_ah

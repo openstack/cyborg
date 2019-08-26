@@ -65,3 +65,12 @@ def upgrade():
     op.alter_column(
         'extended_accelerator_requests', 'state',
         existing_type=ns, nullable=False, default=constants.ARQ_INITIAL)
+
+    # update attach type fields
+    new_attach_type = sa.Enum(constants.AH_TYPE_PCI,
+                              constants.AH_TYPE_MDEV,
+                              constants.AH_TYPE_TEST_PCI,
+                              name='attach_type')
+    op.alter_column('attach_handles', 'attach_type',
+                    existing_type=new_attach_type,
+                    nullable=False)

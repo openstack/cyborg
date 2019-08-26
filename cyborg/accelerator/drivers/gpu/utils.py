@@ -114,7 +114,7 @@ def _generate_dep_list(gpu):
 
 def _generate_attach_handle(gpu):
     driver_ah = driver_attach_handle.DriverAttachHandle()
-    driver_ah.attach_type = "PCI"
+    driver_ah.attach_type = constants.AH_TYPE_PCI
     driver_ah.in_use = False
     driver_ah.attach_info = utils.pci_str_to_json(gpu["devices"])
     return driver_ah

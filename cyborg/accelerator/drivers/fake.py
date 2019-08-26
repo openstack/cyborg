@@ -25,7 +25,7 @@ class FakeDriver(GenericDriver):
     def _generate_attach_handle(self, pci):
         driver_ah = driver_attach_handle.DriverAttachHandle()
         # The virt driver will ignore this type when attaching
-        driver_ah.attach_type = "fake"
+        driver_ah.attach_type = constants.AH_TYPE_TEST_PCI
         driver_ah.in_use = False
         driver_ah.attach_info = pci["slot"]
         return driver_ah
@@ -36,8 +36,7 @@ class FakeDriver(GenericDriver):
         attr_traits.value = "CUSTOM_FAKE_DEVICE"
         attr_rc = driver_attribute.DriverAttribute()
         attr_rc.key = "rc"
-        attr_rc.value = rc_fields.ResourceClass.normalize_name(
-            rc_fields.ResourceClass.FPGA)
+        attr_rc.value = orc.FPGA
         return [attr_traits, attr_rc]
 
     def _generate_dep_list(self, pci):
@@ -49,15 +48,14 @@ class FakeDriver(GenericDriver):
         return [driver_dep]
 
     def discover(self):
-        npu_list = []
+        fpga_list = []
         pci_addr = '{"domain":"0000","bus":"0c","device":"00","function":"0"}'
         pci_dict = {
             'slot': pci_addr,                    # PCI slot address
             'device': 'FakeDevice',              # Name of the device
-            'vendor_id': 'fake',                 # ID of the vendor
+            'vendor_id': '0xABCD',                 # ID of the vendor
             'class': 'Fake class',               # Name of the class
-            'device_id': 'fake',                 # ID of the device
-            'revision': '20'                     # Revision number
+            'device_id': '0xabcd'                 # ID of the device
         }
         device = driver_device.DriverDevice()
         device.vendor = pci_dict["vendor_id"]
@@ -66,11 +64,12 @@ class FakeDriver(GenericDriver):
                           'class': pci_dict.get('class', None)}
         device.std_board_info = jsonutils.dumps(std_board_info)
         device.vendor_board_info = 'fake_vendor_info'
-        device.type = orc.PGPU
+        device.type = constants.DEVICE_FPGA
+        device.stub = False
         device.controlpath_id = self._generate_controlpath_id(pci_dict)
         device.deployable_list = self._generate_dep_list(pci_dict)
-        npu_list.append(device)
-        return npu_list
+        fpga_list.append(device)
+        return fpga_list
 
     def update(self, control_path, image_path):
         return True

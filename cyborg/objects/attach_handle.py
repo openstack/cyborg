@@ -16,13 +16,12 @@
 from oslo_log import log as logging
 from oslo_versionedobjects import base as object_base
 
+from cyborg.common import constants
 from cyborg.db import api as dbapi
 from cyborg.objects import base
 from cyborg.objects import fields as object_fields
 
 LOG = logging.getLogger(__name__)
-
-ATTACH_TYPE = ["PCI", "MDEV"]
 
 
 @base.CyborgObjectRegistry.register
@@ -37,8 +36,9 @@ class AttachHandle(base.CyborgObject, object_base.VersionedObjectDictCompat):
         'uuid': object_fields.UUIDField(nullable=False),
         'deployable_id': object_fields.IntegerField(nullable=False),
         'cpid_id': object_fields.IntegerField(nullable=False),
-        'attach_type': object_fields.EnumField(valid_values=ATTACH_TYPE,
-                                               nullable=False),
+        'attach_type': object_fields.EnumField(
+            valid_values=constants.ATTACH_HANDLE_TYPES,
+            nullable=False),
         # attach_info should be JSON here.
         'attach_info': object_fields.StringField(nullable=False),
         'in_use': object_fields.BooleanField(nullable=False, default=False)
