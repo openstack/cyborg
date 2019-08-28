@@ -18,8 +18,8 @@ from oslo_log import log as logging
 from oslo_utils import timeutils
 import six
 
-from cyborg import db as db_api
 from cyborg.common import exception
+from cyborg import db as db_api
 
 LOG = logging.getLogger(__name__)
 

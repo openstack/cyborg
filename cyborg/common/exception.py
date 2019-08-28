@@ -86,6 +86,11 @@ class CyborgException(Exception):
         return unicode(self.args[0])
 
 
+class Forbidden(CyborgException):
+    msg_fmt = _("Forbidden")
+    code = http_client.FORBIDDEN
+
+
 class ARQInvalidState(CyborgException):
     _msg_fmt = _("Accelerator Requests cannot be requested with "
                  "state %(state)s.")
@@ -173,10 +178,10 @@ class PatchError(Invalid):
 
 class NotAuthorized(CyborgException):
     _msg_fmt = _("Not authorized.")
-    code = http_client.FORBIDDEN
+    code = http_client.UNAUTHORIZED
 
 
-class HTTPForbidden(NotAuthorized):
+class HTTPForbidden(Forbidden):
     _msg_fmt = _("Access was denied to the following resource: %(resource)s")
 
 
