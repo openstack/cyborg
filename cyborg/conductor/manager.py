@@ -13,24 +13,18 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from oslo_log import log as logging
 import oslo_messaging as messaging
 
 from cyborg.conf import CONF
 from cyborg import objects
+from cyborg.objects.attach_handle import AttachHandle
+from cyborg.objects.attribute import Attribute
+from cyborg.objects.control_path import ControlpathID
 from cyborg.objects.deployable import Deployable
 from cyborg.objects.device import Device
-from cyborg.objects.attribute import Attribute
-from cyborg.objects.attach_handle import AttachHandle
-from cyborg.objects.control_path import ControlpathID
-from cyborg.objects.driver_objects.driver_attribute import DriverAttribute
-from cyborg.objects.driver_objects.driver_controlpath_id import \
-    DriverControlPathID
-from cyborg.objects.driver_objects.driver_attach_handle import \
-    DriverAttachHandle
-from cyborg.objects.driver_objects.driver_deployable import DriverDeployable
 from cyborg.objects.driver_objects.driver_device import DriverDevice
 
-from oslo_log import log as logging
 LOG = logging.getLogger(__name__)
 
 
@@ -134,7 +128,7 @@ class ConductorManager(object):
         :param driver_device_list: a list of driver_device object
         discovered by agent in the host.
         """
-        # TODO: Everytime get from the DB?
+        # TODO(): Everytime get from the DB?
         # First retrieve the old_device_list from the DB.
         old_driver_device_list = DriverDevice.list(context, hostname)
         # TODO(wangzhh): Remove invalid driver_devices without controlpath_id.
@@ -146,9 +140,10 @@ class ConductorManager(object):
     def drv_device_make_diff(cls, context, host, old_driver_device_list,
                              new_driver_device_list):
         """Compare new driver-side device object list with the old one in
-        one host."""
+        one host.
+        """
         LOG.info("Start differing devices.")
-        # TODO:The placement report will be implemented here.
+        # TODO(): The placement report will be implemented here.
         # Use cpid.cpid_info to identify whether the device is the same.
         stub_cpid_list = [driver_dev_obj.controlpath_id.cpid_info for
                           driver_dev_obj in new_driver_device_list
@@ -200,7 +195,8 @@ class ConductorManager(object):
     def drv_deployable_make_diff(cls, context, device_id, cpid_id,
                                  old_driver_dep_list, new_driver_dep_list):
         """Compare new driver-side deployable object list with the old one in
-        one host."""
+        one host.
+        """
         # use name to identify whether the deployable is the same.
         LOG.info("Start differing deploybles.")
         new_name_list = [driver_dep_obj.name for driver_dep_obj in

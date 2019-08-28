@@ -27,16 +27,16 @@ def get_placement():
     return _PlacementClient()
 
 
-class _PlacementClient():
+class _PlacementClient(object):
 
     def __init__(self):
         global _CONN
         if _CONN is None:
             default_user = 'devstack-admin'
             try:
-                # TODO CONF access fails.
+                # TODO() CONF access fails.
                 auth_user = CONF.placement.username or default_user
-            except:
+            except Exception:
                 auth_user = default_user
             _CONN = connection.Connection(cloud=auth_user)
         self._client = _CONN.placement
@@ -56,9 +56,9 @@ class _PlacementClient():
         for trait in trait_names:
             resp = placement.put('/traits/' + trait, microversion='1.6')
             if resp.status_code == 201:
-                LOG.info("Created trait %s" % trait)
+                LOG.info("Created trait %(trait)s", {"trait": trait})
             elif resp.status_code == 204:
-                LOG.info("Trait %s already existed" % trait)
+                LOG.info("Trait %(trait)s already existed", {"trait": trait})
             else:
                 raise Exception(
                     "Failed to create trait %s: HTTP %d: %s" %
@@ -79,7 +79,8 @@ class _PlacementClient():
         traits = list(set(traits_json['traits'] + trait_names))
         traits_json['traits'] = traits
         self._put_rp_traits(rp_uuid, traits_json)
-        LOG.info('Added traits %s to RP %s' % (traits, rp_uuid))
+        LOG.info('Added traits %(traits)s to RP %(rp_uuid)s',
+                 {"traits": traits, "rp_uuid": rp_uuid})
 
     def delete_traits_with_prefixes(self, rp_uuid, trait_prefixes):
         traits_json = self._get_rp_traits(rp_uuid)
@@ -89,4 +90,5 @@ class _PlacementClient():
                        for prefix in trait_prefixes)]
         traits_json['traits'] = traits
         self._put_rp_traits(rp_uuid, traits_json)
-        LOG.info('Deleted traits %s from RP %s' % (traits, rp_uuid))
+        LOG.info('Deleted traits %(traits)s to RP %(rp_uuid)s',
+                 {"traits": traits, "rp_uuid": rp_uuid})

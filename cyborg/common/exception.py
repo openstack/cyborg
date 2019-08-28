@@ -63,7 +63,8 @@ class CyborgException(Exception):
                 # log the issue and the kwargs
                 LOG.exception('Exception in string format operation')
                 for name, value in kwargs.items():
-                    LOG.error("%s: %s" % (name, value))
+                    LOG.error("%(name)s: %(value)s",
+                              {"name": name, "value": value})
 
                 if CONF.fatal_exception_format_errors:
                     raise
@@ -77,13 +78,13 @@ class CyborgException(Exception):
     def __str__(self):
         """Encode to utf-8 then wsme api can consume it as well."""
         if not six.PY3:
-            return unicode(self.args[0]).encode('utf-8')
+            return six.text_type(self.args[0]).encode('utf-8')
 
         return self.args[0]
 
     def __unicode__(self):
         """Return a unicode representation of the exception message."""
-        return unicode(self.args[0])
+        return six.text_type(self.args[0])
 
 
 class Forbidden(CyborgException):
@@ -409,6 +410,6 @@ class InvalidType(Invalid):
                  "Expected: %(expected)s")
 
 
-# TODO Merge other NotFound in this generic one?
+# TODO() Merge other NotFound in this generic one?
 class ResourceNotFound(Invalid):
     _msg_fmt = _("%(resource)s not found %(msg)s")
