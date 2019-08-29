@@ -55,6 +55,8 @@ RESOURCES = {
     "fpga": RC_FPGA
 }
 
+DRIVER_NAME = "intel"
+
 
 def read_line(filename):
     with open(filename) as f:
@@ -268,6 +270,7 @@ def _generate_dep_list(fpga, pf_has_vf):
         driver_dep.attach_handle_list = \
             [_generate_attach_handle(fpga)]
         driver_dep.name = fpga["name"]
+        driver_dep.driver_name = DRIVER_NAME
     # pf with sriov enabled, may have several regions and several vfs.
     # For now, there is only region, this maybe improve in next release.
     else:
@@ -277,6 +280,7 @@ def _generate_dep_list(fpga, pf_has_vf):
             driver_dep.attach_handle_list.append(
                 _generate_attach_handle(vf))
             driver_dep.name = vf["name"]
+            driver_dep.driver_name = DRIVER_NAME
     return [driver_dep]
 
 

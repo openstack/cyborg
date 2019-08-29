@@ -37,7 +37,8 @@ class DriverDeployable(base.DriverObjectBase,
         # TODO: add field related to local_memory or just store in the
         # attribute list?
         'attach_handle_list': object_fields.ListOfObjectsField(
-            'DriverAttachHandle', default=[], nullable=True)
+            'DriverAttachHandle', default=[], nullable=True),
+        'driver_name': object_fields.StringField(nullable=True)
     }
 
     def create(self, context, device_id, cpid_id):
@@ -49,7 +50,8 @@ class DriverDeployable(base.DriverObjectBase,
         deployable_obj = Deployable(context=context,
                                     name=self.name,
                                     num_accelerators=self.num_accelerators,
-                                    device_id=device_id
+                                    device_id=device_id,
+                                    driver_name=self.driver_name
                                     )
         deployable_obj.create(context)
         # create attribute_list for this deployable

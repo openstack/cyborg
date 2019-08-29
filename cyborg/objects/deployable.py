@@ -44,8 +44,10 @@ class Deployable(base.CyborgObject, object_base.VersionedObjectDictCompat):
         # name of the deployable
         'num_accelerators': object_fields.IntegerField(nullable=False),
         # number of accelerators spawned by this deployable
-        'device_id': object_fields.IntegerField(nullable=False)
+        'device_id': object_fields.IntegerField(nullable=False),
         # Foreign key constrain to reference device table
+        'driver_name': object_fields.StringField(nullable=True)
+        # Will change it to non-nullable after other driver report it.
     }
 
     def _get_parent_root_id(self, context):
