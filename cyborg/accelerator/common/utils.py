@@ -12,8 +12,9 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from oslo_serialization import jsonutils
 import collections
+
+from oslo_serialization import jsonutils
 
 
 def pci_str_to_json(pci_address):

@@ -21,12 +21,16 @@ Cyborg Intel FPGA driver implementation.
 import glob
 import os
 import re
+
 from oslo_serialization import jsonutils
 
 from cyborg.accelerator.common import utils
-from cyborg.objects.driver_objects import driver_deployable, driver_device,\
-    driver_attach_handle, driver_controlpath_id, driver_attribute
 from cyborg.common import constants
+from cyborg.objects.driver_objects import driver_attach_handle
+from cyborg.objects.driver_objects import driver_attribute
+from cyborg.objects.driver_objects import driver_controlpath_id
+from cyborg.objects.driver_objects import driver_deployable
+from cyborg.objects.driver_objects import driver_device
 
 
 PCI_DEVICES_PATH = "/sys/bus/pci/devices"
@@ -279,7 +283,6 @@ def _generate_controlpath_id(fpga):
 
 
 def _generate_dep_list(fpga, pf_has_vf):
-    dep_list = []
     driver_dep = driver_deployable.DriverDeployable()
     driver_dep.attribute_list = _generate_attribute_list(fpga)
     driver_dep.attach_handle_list = []

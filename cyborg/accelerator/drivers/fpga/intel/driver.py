@@ -17,9 +17,9 @@
 Cyborg Intel FPGA driver implementation.
 """
 
-from oslo_log import log as logging
-from oslo_serialization import jsonutils
 import subprocess
+
+from oslo_log import log as logging
 
 from cyborg.accelerator.drivers.fpga.base import FPGADriver
 from cyborg.accelerator.drivers.fpga.intel import sysinfo
@@ -79,7 +79,7 @@ class IntelFPGADriver(FPGADriver):
         #    unify more bitstream types.
         cmd = ["sudo", "/usr/bin/fpgaconf"]
         """
-        # TODO Should driver do this or the agent?
+        # TODO() Should driver do this or the agent?
         controlpath_id['cpid_info'] = jsonutils.loads(
             controlpath_id['cpid_info'])
         """
@@ -90,12 +90,12 @@ class IntelFPGADriver(FPGADriver):
         cmd.append(image_file_path)
         LOG.info('Running command: %s', cmd)
         try:
-            # TODO Use oslo.privsep, not subprocess.Popen
-            out = subprocess.check_output(cmd, stderr=subprocess.STDOUT,
-                                          shell=False)
+            # TODO() Use oslo.privsep, not subprocess.Popen
+            subprocess.check_output(cmd, stderr=subprocess.STDOUT,
+                                    shell=False)
             return True
         except subprocess.CalledProcessError as e:
             LOG.error('Programming failed. Command: (%s) '
                       'Exception: (%s)', cmd, str(e))
-            # TODO if retryable error, try again
+            # TODO() if retryable error, try again
             return False

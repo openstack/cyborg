@@ -42,8 +42,7 @@ class GPUDriver(object):
         raise LookupError("Not find the GPU driver for vendor %s" % vendor)
 
     def discover(self):
-        """
-        Discover GPU information of current vendor(Identified by class).
+        """Discover GPU information of current vendor(Identified by class).
 
         :return: List of GPU information dict.
         """
@@ -51,8 +50,7 @@ class GPUDriver(object):
 
     @classmethod
     def discover_vendors(cls):
-        """
-        Discover GPU vendors of current node.
+        """Discover GPU vendors of current node.
 
         :return: GPU vendor ID list.
         """

@@ -1,11 +1,26 @@
-from cyborg.accelerator.drivers.driver import GenericDriver
-from cyborg.objects.driver_objects import driver_deployable, driver_device, \
-    driver_attach_handle, driver_controlpath_id, driver_attribute
-
-from cyborg.common import constants
+#
+#    Licensed under the Apache License, Version 2.0 (the "License"); you may
+#    not use this file except in compliance with the License. You may obtain
+#    a copy of the License at
+#
+#         http://www.apache.org/licenses/LICENSE-2.0
+#
+#    Unless required by applicable law or agreed to in writing, software
+#    distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+#    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+#    License for the specific language governing permissions and limitations
+#    under the License.
 
 import os_resource_classes as orc
 from oslo_serialization import jsonutils
+
+from cyborg.accelerator.drivers.driver import GenericDriver
+from cyborg.common import constants
+from cyborg.objects.driver_objects import driver_attach_handle
+from cyborg.objects.driver_objects import driver_attribute
+from cyborg.objects.driver_objects import driver_controlpath_id
+from cyborg.objects.driver_objects import driver_deployable
+from cyborg.objects.driver_objects import driver_device
 
 
 class FakeDriver(GenericDriver):

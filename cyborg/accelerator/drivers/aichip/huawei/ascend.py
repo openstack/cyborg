@@ -11,8 +11,10 @@
 # under the License.
 
 from cyborg.accelerator.drivers.driver import GenericDriver
-from cyborg.objects.driver_objects import driver_deployable, driver_device, \
-    driver_attach_handle, driver_controlpath_id
+from cyborg.objects.driver_objects import driver_attach_handle
+from cyborg.objects.driver_objects import driver_controlpath_id
+from cyborg.objects.driver_objects import driver_deployable
+from cyborg.objects.driver_objects import driver_device
 
 import re
 import subprocess
@@ -75,8 +77,7 @@ class AscendDriver(GenericDriver):
         return pci_lines
 
     def discover(self):
-        """
-        The PCI line would be matched as:
+        """The PCI line would be matched as:
 
         0000:0c:00.0 Processing acc [1200]: Device [19e5:d100] (rev 20)
 
