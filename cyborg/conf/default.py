@@ -48,6 +48,18 @@ service_opts = [
                default=60,
                help=_('Default interval (in seconds) for running periodic '
                       'tasks.')),
+    cfg.IntOpt(
+        'thread_pool_size',
+        default=10,
+        help=_("""
+            This option specifies the size of the pool of threads used by API
+            to do async jobs.It is possible to limit the number of concurrent
+            connections using this option.""")),
+    cfg.IntOpt(
+        'bind_timeout',
+        default=60,
+        help=_("""
+            This option specifies the timeout of async job for ARQ bind.""")),
 ]
 
 path_opts = [

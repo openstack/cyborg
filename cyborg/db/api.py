@@ -189,15 +189,15 @@ class Connection(object):
         """Delete an extarq."""
 
     @abc.abstractmethod
-    def extarq_update(self, context, uuid, values):
+    def extarq_update(self, context, uuid, values, state_scope=None):
         """Update an extarq."""
 
     @abc.abstractmethod
-    def extarq_list(self, context):
+    def extarq_list(self, context, uuid_range=None):
         """Get requested list of extarqs."""
 
     @abc.abstractmethod
-    def extarq_get(self, context, uuid):
+    def extarq_get(self, context, uuid, lock=False):
         """Get requested extarq."""
 
     # attach_handle

@@ -597,7 +597,10 @@ class Connection(api.Connection):
         query = model_query(
             context,
             models.Deployable).filter_by(rp_uuid=rp_uuid)
-        return query.one()
+        try:
+            return query.one()
+        except NoResultFound:
+            raise exception.DeployableNotFoundByRP(uuid=rp_uuid)
 
     def deployable_list(self, context):
         query = model_query(context, models.Deployable)
@@ -871,32 +874,44 @@ class Connection(api.Connection):
             if count != 1:
                 raise exception.ExtArqNotFound(uuid=uuid)
 
-    def extarq_update(self, context, uuid, values):
+    def extarq_update(self, context, uuid, values, state_scope=None):
         if 'uuid' in values and values['uuid'] != uuid:
             msg = _("Cannot overwrite UUID for an existing ExtArq.")
             raise exception.InvalidParameterValue(err=msg)
-        return self._do_update_extarq(context, uuid, values)
+        return self._do_update_extarq(context, uuid, values, state_scope)
 
     @oslo_db_api.retry_on_deadlock
-    def _do_update_extarq(self, context, uuid, values):
+    def _do_update_extarq(self, context, uuid, values, state_scope=None):
         with _session_for_write():
             query = model_query(context, models.ExtArq)
-            query = query.filter_by(uuid=uuid)
+            query = query_update = query.filter_by(
+                uuid=uuid).with_lockmode('update')
+            if type(state_scope) is list:
+                query_update = query_update.filter(
+                    models.ExtArq.state.in_(state_scope))
             try:
-                ref = query.with_lockmode('update').one()
+                query_update.update(
+                    values, synchronize_session="fetch")
             except NoResultFound:
                 raise exception.ExtArqNotFound(uuid=uuid)
-            ref.update(values)
+            ref = query.first()
         return ref
 
-    def extarq_list(self, context):
+    def extarq_list(self, context, uuid_range=None):
         query = model_query(context, models.ExtArq)
+        if type(uuid_range) is list:
+            query = query.filter(
+                models.ExtArq.uuid.in_(uuid_range))
         return _paginate_query(context, models.ExtArq, query)
 
-    def extarq_get(self, context, uuid):
+    @oslo_db_api.retry_on_deadlock
+    def extarq_get(self, context, uuid, lock=False):
         query = model_query(
             context,
             models.ExtArq).filter_by(uuid=uuid)
+        # NOTE we will support aync bind, so get query by lock
+        if lock:
+            query = query.with_for_update()
         try:
             return query.one()
         except NoResultFound:

@@ -25,15 +25,72 @@ ARQ_STATES = (ARQ_INITIAL, ARQ_BIND_STARTED, ARQ_BOUND, ARQ_UNBOUND,
               ARQ_BIND_FAILED, ARQ_DELETING) = (
     'Initial', 'BindStarted', 'Bound', 'Unbound', 'BindFailed', 'Deleting')
 
+
+ARQ_BIND_STAGE = (ARQ_PRE_BIND, ARQ_FINISH_BIND,
+                  ARQ_OUFOF_BIND_FLOW) = (
+    [ARQ_INITIAL, ARQ_BIND_STARTED], [ARQ_BOUND, ARQ_BIND_FAILED],
+    [ARQ_UNBOUND, ARQ_DELETING])
+
+
+ARQ_BIND_STATUS = (ARQ_BIND_STATUS_FINISH, ARQ_BIND_STATUS_FAILED) = (
+    "completed", "failed")
+
+
+ARQ_BIND_STATES_STATUS_MAP = {
+    ARQ_BOUND: ARQ_BIND_STATUS_FINISH,
+    ARQ_BIND_FAILED: ARQ_BIND_STATUS_FAILED
+}
+
+# TODO(Shaohe): maybe we can use oslo automaton lib
+# ref: https://docs.openstack.org/automaton/latest/user/examples.html
+# The states in value list can transfrom to the key state
+ARQ_STATES_TRANSFORM_MATRIX = {
+    ARQ_INITIAL: [],
+    ARQ_BIND_STARTED: [ARQ_INITIAL, ARQ_UNBOUND],
+    ARQ_BOUND: [ARQ_BIND_STARTED],
+    ARQ_UNBOUND: [ARQ_INITIAL, ARQ_BIND_STARTED, ARQ_BOUND, ARQ_BIND_FAILED],
+    ARQ_BIND_FAILED: [ARQ_BIND_STARTED, ARQ_BOUND],
+    ARQ_DELETING: [ARQ_INITIAL, ARQ_BIND_STARTED, ARQ_BOUND,
+                   ARQ_UNBOUND, ARQ_BIND_FAILED]
+}
+
+
 # Device type
 DEVICE_TYPE = (DEVICE_GPU, DEVICE_FPGA, DEVICE_AICHIP)
+
 
 # Attach handle type
 #  'TEST_PCI': used by fake driver, ignored by Nova virt driver.
 ATTACH_HANDLE_TYPES = (AH_TYPE_PCI, AH_TYPE_MDEV, AH_TYPE_TEST_PCI) = (
     "PCI", "MDEV", "TEST_PCI")
 
+
 # Resource Class
 RESOURCES = {
     "FPGA": orc.FPGA
 }
+
+
+ACCEL_SPECS = (
+    ACCEL_BITSTREAM_ID,
+    ACCEL_FUNCTION_ID
+) = (
+    "accel:bitstream_id",
+    "accel:function_id"
+)
+
+
+SUPPORT_RESOURCES = (
+    FPGA) = (
+    "FPGA"
+)
+
+
+FPGA_TRAITS = (
+    FPGA_FUNCTION_ID,
+) = (
+    "CUSTOM_FPGA_FUNCTION_ID",
+)
+
+
+RESOURCES_PREFIX = "resources:"

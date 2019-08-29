@@ -14,6 +14,7 @@
 
 from cyborg.objects import arq
 from cyborg.objects import ext_arq
+from cyborg.objects.extarq import fpga_ext_arq
 
 
 def _get_arqs_as_dict():
@@ -30,6 +31,10 @@ def _get_arqs_as_dict():
             "domain": "0",
             "function": "0"
         },
+        "device_profile_group": {
+            "trait:CUSTOM_FPGA_INTEL": "required",
+            "resources:FPGA": "1",
+            "accel:bitstream_id": "b069d97a-010a-4057-b70d-eca2b337fc9c"}
     }
     arqs = [  # Corresponds to 1st device profile in fake_device)profile.py
         {"uuid": "a097fefa-da62-4630-8e8b-424c0e3426dc",
@@ -59,12 +64,29 @@ def _convert_from_dict_to_obj(arq_dict):
         obj_arq[field] = arq_dict[field]
     obj_extarq = ext_arq.ExtARQ()
     obj_extarq.arq = obj_arq
+    obj_extarq.device_profile_group = arq_dict["device_profile_group"]
     return obj_extarq
 
 
 def get_fake_extarq_objs():
     arq_list = _get_arqs_as_dict()
     obj_extarqs = list(map(_convert_from_dict_to_obj, arq_list))
+    return obj_extarqs
+
+
+def _convert_from_dict_to_fpga_obj(arq_dict):
+    obj_arq = arq.ARQ()
+    for field in arq_dict.keys():
+        obj_arq[field] = arq_dict[field]
+    obj_extarq = fpga_ext_arq.FPGAExtARQ()
+    obj_extarq.arq = obj_arq
+    obj_extarq.device_profile_group = arq_dict["device_profile_group"]
+    return obj_extarq
+
+
+def get_fake_fpga_extarq_objs():
+    arq_list = _get_arqs_as_dict()
+    obj_extarqs = list(map(_convert_from_dict_to_fpga_obj, arq_list))
     return obj_extarqs
 
 
