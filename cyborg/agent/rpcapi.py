@@ -20,8 +20,8 @@ import oslo_messaging as messaging
 
 from cyborg.common import constants
 from cyborg.common import rpc
-from cyborg.objects import base as objects_base
 from cyborg import objects
+from cyborg.objects import base as objects_base
 
 from oslo_log import log
 
@@ -65,7 +65,7 @@ class AgentAPI(object):
 
         dpl_get = objects.Deployable.get(context, deployable_uuid)
         if not dpl_get:
-            # TODO (Li Liu) throw an exception here
+            # TODO(Li Liu) throw an exception here
             return 0
 
         cctxt = self.client.prepare(server=dpl_get.host, version=version)

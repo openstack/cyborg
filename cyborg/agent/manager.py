@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -21,9 +20,9 @@ from oslo_service import periodic_task
 from cyborg.accelerator.drivers.fpga.base import FPGADriver
 from cyborg.agent.resource_tracker import ResourceTracker
 from cyborg.agent.rpcapi import AgentAPI
-from cyborg.image.api import API as ImageAPI
 from cyborg.conductor import rpcapi as cond_api
 from cyborg.conf import CONF
+from cyborg.image.api import API as ImageAPI
 
 
 LOG = logging.getLogger(__name__)
@@ -53,8 +52,8 @@ class AgentManager(periodic_task.PeriodicTasks):
         pass
 
     def fpga_program(self, context, deployable_uuid, image_uuid):
-        """ Program a FPGA regoin, image can be a url or local file"""
-        # TODO (Shaohe Feng) Get image from glance.
+        """Program a FPGA region, image can be a url or local file"""
+        # TODO(Shaohe Feng) Get image from glance.
         # And add claim and rollback logical.
         path = self._download_bitstream(context, image_uuid)
         dep = self.cond_api.deployable_get(context, deployable_uuid)
@@ -63,7 +62,7 @@ class AgentManager(periodic_task.PeriodicTasks):
 
     def fpga_program_v2(self, context, controlpath_id,
                         bitstream_uuid, driver_name):
-        # TODO Use tempfile module?
+        # TODO() Use tempfile module?
         download_path = "/tmp/" + bitstream_uuid + ".gbs"
         self.image_api.download(context,
                                 bitstream_uuid,
@@ -74,7 +73,7 @@ class AgentManager(periodic_task.PeriodicTasks):
         os.remove(download_path)
 
     def _download_bitstream(self, context, bitstream_uuid):
-        """download the bistream
+        """Download the bistream
 
         :param context: the context
         :param bistream_uuid: v4 uuid of the bitstream to reprogram
@@ -88,5 +87,5 @@ class AgentManager(periodic_task.PeriodicTasks):
 
     @periodic_task.periodic_task(run_immediately=True)
     def update_available_resource(self, context, startup=True):
-        """update all kinds of accelerator resources from their drivers."""
+        """Update all kinds of accelerator resources from their drivers."""
         self._rt.update_usage(context)

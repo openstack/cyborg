@@ -44,9 +44,9 @@ class ResourceTracker(object):
         self.acc_drivers = []
         self._initialize_drivers()
 
-    def _initialize_drivers(self, enabled_drivers=[]):
-        """
-        Load accelerator drivers.
+    def _initialize_drivers(self, enabled_drivers=None):
+        """Load accelerator drivers.
+
         :return: [nvidia_gpu_driver_obj, intel_fpga_driver_obj]
         """
         acc_drivers = []

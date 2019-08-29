@@ -15,8 +15,8 @@
 
 """SQLAlchemy storage backend."""
 
-import threading
 import copy
+import threading
 import uuid
 
 from oslo_db import api as oslo_db_api
@@ -27,17 +27,15 @@ from oslo_log import log
 from oslo_utils import strutils
 from oslo_utils import timeutils
 from oslo_utils import uuidutils
-from sqlalchemy.orm import load_only
+from sqlalchemy import and_
+from sqlalchemy import or_
 from sqlalchemy.orm.exc import NoResultFound
-from sqlalchemy.sql import func
-
+from sqlalchemy.orm import load_only
 
 from cyborg.common import exception
 from cyborg.common.i18n import _
 from cyborg.db import api
 from cyborg.db.sqlalchemy import models
-from sqlalchemy import or_
-from sqlalchemy import and_
 
 _CONTEXT = threading.local()
 LOG = log.getLogger(__name__)
@@ -198,7 +196,7 @@ class Connection(api.Connection):
         return _paginate_query(context, models.AttachHandle, query_prefix,
                                limit, marker, sort_key, sort_dir)
 
-    def _exact_filter(self, model, query, filters, legal_keys=[]):
+    def _exact_filter(self, model, query, filters, legal_keys=None):
         """Applies exact match filtering to a deployable query.
         Returns the updated query.  Modifies filters argument to remove
         filters consumed.
@@ -211,6 +209,8 @@ class Connection(api.Connection):
         :param legal_keys: list of keys to apply exact filtering to
         """
 
+        if legal_keys is None:
+            legal_keys = []
         filter_dict = {}
 
         # Walk through all the keys
@@ -955,7 +955,7 @@ class Connection(api.Connection):
     def quota_reserve(self, context, resources, deltas, expire,
                       until_refresh, max_age, project_id=None,
                       is_allocated_reserve=False):
-        """ Create reservation record in DB according to params"""
+        """Create reservation record in DB according to params"""
         with _session_for_write() as session:
             if project_id is None:
                 project_id = context.project_id

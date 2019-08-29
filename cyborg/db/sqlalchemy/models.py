@@ -19,13 +19,18 @@ from oslo_db import options as db_options
 from oslo_db.sqlalchemy import models
 from oslo_utils import timeutils
 import six.moves.urllib.parse as urlparse
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import Column, String, Integer, Boolean, Enum, ForeignKey, \
-    Index
-from sqlalchemy import Text
-from sqlalchemy import schema
+from sqlalchemy import Boolean
+from sqlalchemy import Column
 from sqlalchemy import DateTime
+from sqlalchemy import Enum
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy import ForeignKey
+from sqlalchemy import Index
+from sqlalchemy import Integer
 from sqlalchemy import orm
+from sqlalchemy import schema
+from sqlalchemy import String
+from sqlalchemy import Text
 
 from cyborg.common import constants
 from cyborg.common import paths
@@ -114,7 +119,7 @@ class Deployable(Base):
     driver_name = Column(String(100), nullable=True)
     bitstream_id = Column(String(36), nullable=True)
 
-    # TODO Add programming_in_progress field
+    # TODO() Add programming_in_progress field
 
 
 class Attribute(Base):
@@ -131,7 +136,8 @@ class Attribute(Base):
 
 class ControlpathID(Base):
     """Identifier for the Device when driver reporting to agent, IDs is
-    needed especially when multiple PFs exist in one Devices."""
+    needed especially when multiple PFs exist in one Devices.
+    """
 
     __tablename__ = 'controlpath_ids'
 
@@ -189,7 +195,8 @@ class DeviceProfile(Base):
 
 class ExtArq(Base):
     """ExtArq is the abbreviation of ExtendedAcceleratorRequest, it represents
-    extended nova requests for attach related operations."""
+    extended nova requests for attach related operations.
+    """
 
     __tablename__ = 'extended_accelerator_requests'
     __table_args__ = (
