@@ -13,9 +13,9 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import json
 import inspect
 
+from oslo_serialization import jsonutils
 from oslo_utils import strutils
 from oslo_utils import uuidutils
 import wsme
@@ -90,7 +90,7 @@ class JsonType(wtypes.UserType):
     @staticmethod
     def validate(value):
         try:
-            json.dumps(value)
+            jsonutils.dumps(value)
         except TypeError:
             raise exception.InvalidJsonType(value=value)
         else:
