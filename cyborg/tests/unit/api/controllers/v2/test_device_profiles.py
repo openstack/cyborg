@@ -85,24 +85,26 @@ class TestDeviceProfileController(v2_test.APITestV2):
         # now, improve this case with assertRaises later.
         self.assertIn("Bad response: 403 Forbidden", exc.args[0])
 
-    @mock.patch('cyborg.objects.DeviceProfile.create')
-    def test_create(self, mock_obj_dp):
+    @mock.patch('cyborg.conductor.rpcapi.ConductorAPI.device_profile_create')
+    def test_create(self, mock_cond_dp):
         dp = [self.fake_dps[0]]
+        mock_cond_dp.return_value = self.fake_dp_objs[0]
         response = self.post_json(self.DP_URL, dp, headers=self.headers)
-        out_dp = jsonutils.loads(response.__dict__['controller_output'])
+        out_dp = jsonutils.loads(response.controller_output)
 
         self.assertEqual(http_client.CREATED, response.status_int)
         self._validate_dp(dp[0], out_dp)
 
-    @mock.patch('cyborg.objects.DeviceProfile.delete_by_name')
-    @mock.patch('cyborg.objects.DeviceProfile.delete_by_uuid')
-    def test_delete(self, mock_del1, mock_del2):
+    @mock.patch('cyborg.conductor.rpcapi.ConductorAPI.device_profile_delete')
+    @mock.patch('cyborg.objects.DeviceProfile.get_by_name')
+    @mock.patch('cyborg.objects.DeviceProfile.get_by_uuid')
+    def test_delete(self, mock_dp_uuid, mock_dp_name, mock_cond_del):
         # Delete by UUID
         url = self.DP_URL + "/5d2c0797-c3cd-4f4b-b0d0-2cc5e99ef66e"
         response = self.delete(url, headers=self.headers)
         self.assertEqual(http_client.NO_CONTENT, response.status_int)
         # Delete by name
-        url = self.DP_URL + "?value=mydp"
+        url = self.DP_URL + "/mydp"
         response = self.delete(url, headers=self.headers)
         self.assertEqual(http_client.NO_CONTENT, response.status_int)
 

@@ -476,8 +476,13 @@ class Connection(api.Connection):
             try:
                 session.add(device_profile)
                 session.flush()
-            except db_exc.DBDuplicateEntry:
-                raise exception.DeviceProfileAlreadyExists(uuid=values['uuid'])
+            except db_exc.DBDuplicateEntry as e:
+                if 'name' in e.columns:
+                    raise exception.DuplicateDeviceProfileName(
+                        name=values['name'])
+                else:
+                    raise exception.DeviceProfileAlreadyExists(
+                        uuid=values['uuid'])
             return device_profile
 
     def device_profile_get_by_uuid(self, context, uuid):

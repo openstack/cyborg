@@ -384,7 +384,7 @@ class ExtARQ(base.CyborgObject, object_base.VersionedObjectDictCompat):
         db_extarq['deployable_uuid'] = ''
 
         # Get the device profile group
-        obj_devprof = DeviceProfile.get(context, devprof['name'])
+        obj_devprof = DeviceProfile.get_by_name(context, devprof['name'])
         groups = obj_devprof['groups']
         db_extarq['device_profile_group'] = groups[devprof_group_id]
 

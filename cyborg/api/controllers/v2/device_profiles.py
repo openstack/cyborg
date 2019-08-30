@@ -113,9 +113,9 @@ class DeviceProfilesController(base.CyborgController):
         context = pecan.request.context
         obj_devprof = objects.DeviceProfile(context, **req_devprof)
 
-        # TODO(Sundar) Only the conductor must write to the db
-        obj_devprof.create(context)
-        ret = DeviceProfile.get_api_obj(obj_devprof)
+        new_devprof = pecan.request.conductor_api.device_profile_create(
+            context, obj_devprof)
+        ret = DeviceProfile.get_api_obj(new_devprof)
         return wsme.api.Response(ret, status_code=http_client.CREATED,
                                  return_type=wsme.types.DictType)
 
@@ -218,10 +218,13 @@ class DeviceProfilesController(base.CyborgController):
         if uuidutils.is_uuid_like(value):
             uuid = value
             LOG.info('[device_profiles] delete uuid=%s', uuid)
-            # TODO(Sundar) Implement device profile delete via conductor
-            objects.DeviceProfile.delete_by_uuid(context, uuid)
+            obj_devprof = objects.DeviceProfile.get_by_uuid(context, uuid)
+            pecan.request.conductor_api.device_profile_delete(
+                context, obj_devprof)
         else:
             names = value.split(",")
             LOG.info('[device_profiles] delete names=(%s)', names)
             for name in names:
-                objects.DeviceProfile.delete_by_name(context, name)
+                obj_devprof = objects.DeviceProfile.get_by_name(context, name)
+                pecan.request.conductor_api.device_profile_delete(
+                    context, obj_devprof)

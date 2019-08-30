@@ -127,6 +127,23 @@ class ConductorManager(object):
         """
         return objects.Deployable.list(context)
 
+    def device_profile_create(self, context, obj_devprof):
+        """Signal to conductor service to create a device_profile.
+
+        :param context: request context.
+        :param obj_devprof: a created (but not saved) device_profile object.
+        :returns: created device_profile object.
+        """
+        obj_devprof.create(context)
+        return obj_devprof
+
+    def device_profile_delete(self, context, obj_devprof):
+        """Signal to conductor service to delete a device_profile.
+        :param context: request context.
+        :param obj_devprof: a device_profile object to delete.
+        """
+        obj_devprof.destroy(context)
+
     def report_data(self, context, hostname, driver_device_list):
         """Update the Cyborg DB in one hostname according to the
         discovered device list.
