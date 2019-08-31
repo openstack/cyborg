@@ -41,7 +41,7 @@ class Attribute(base.CyborgObject, object_base.VersionedObjectDictCompat):
     }
 
     def create(self, context):
-        """Create a attribute record in the DB."""
+        """Create an attribute record in the DB."""
         if self.deployable_id is None:
             raise exception.AttributeInvalid()
 
@@ -59,20 +59,19 @@ class Attribute(base.CyborgObject, object_base.VersionedObjectDictCompat):
 
     @classmethod
     def get_by_deployable_id(cls, context, deployable_id):
-        """Get a attribute by deployable_id"""
+        """Get an attribute by deployable_id"""
         db_attr = cls.dbapi.attribute_get_by_deployable_id(context,
                                                            deployable_id)
         return cls._from_db_object_list(db_attr, context)
 
     @classmethod
     def get_by_filter(cls, context, filters):
-        """Get a attribute by specified filters"""
+        """Get an attribute by specified filters"""
         db_attr = cls.dbapi.attribute_get_by_filter(context, filters)
         return cls._from_db_object_list(db_attr, context)
 
     def save(self, context):
-        """Update a attribute record in the DB."""
-        updates = self.obj_get_changes()
+        """Update an attribute record in the DB."""
         db_attr = self.dbapi.attribute_update(context,
                                               self.uuid,
                                               self.key,
@@ -80,7 +79,7 @@ class Attribute(base.CyborgObject, object_base.VersionedObjectDictCompat):
         self._from_db_object(self, db_attr)
 
     def destroy(self, context):
-        """Delete a attribute from the DB."""
+        """Delete an attribute from the DB."""
         self.dbapi.attribute_delete(context, self.uuid)
         self.obj_reset_changes()
 

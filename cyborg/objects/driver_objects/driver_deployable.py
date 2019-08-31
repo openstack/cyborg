@@ -1,4 +1,4 @@
-# Copyright 2018 Lenovo (Beijing) Co.,LTD.
+# Copyright 2018 Lenovo (Beijing) Inc.
 # All Rights Reserved.
 #
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -14,13 +14,13 @@
 #    under the License.
 
 from oslo_versionedobjects import base as object_base
+
 from cyborg.objects import base
-from cyborg.objects import fields as object_fields
-from cyborg.objects.driver_objects.driver_attribute import DriverAttribute
+from cyborg.objects.deployable import Deployable
 from cyborg.objects.driver_objects.driver_attach_handle import \
     DriverAttachHandle
-from cyborg.objects.deployable import Deployable
-from cyborg.objects.attach_handle import AttachHandle
+from cyborg.objects.driver_objects.driver_attribute import DriverAttribute
+from cyborg.objects import fields as object_fields
 
 
 @base.CyborgObjectRegistry.register
@@ -34,7 +34,7 @@ class DriverDeployable(base.DriverObjectBase,
         'num_accelerators': object_fields.IntegerField(nullable=False),
         'attribute_list': object_fields.ListOfObjectsField(
             'DriverAttribute', default=[], nullable=True),
-        # TODO: add field related to local_memory or just store in the
+        # TODO() add field related to local_memory or just store in the
         # attribute list?
         'attach_handle_list': object_fields.ListOfObjectsField(
             'DriverAttachHandle', default=[], nullable=True),
@@ -44,7 +44,8 @@ class DriverDeployable(base.DriverObjectBase,
     def create(self, context, device_id, cpid_id):
         """Create a driver-side Deployable object into DB. This object will be
         stored in seperate db tables: deployable & attach_handle &
-        attribute table."""
+        attribute table.
+        """
 
         # first store in deployable table through Deployable Object.
         deployable_obj = Deployable(context=context,
@@ -68,7 +69,8 @@ class DriverDeployable(base.DriverObjectBase,
     def destroy(self, context, device_id):
         """delete one driver-side deployable by calling existing Deployable
         and AttachHandle Object. Use name&host to identify Deployable and
-        attach_info to identify the AttachHandle"""
+        attach_info to identify the AttachHandle
+        """
 
         # get deployable_id by name, get only one value.
         dep_obj = Deployable.get_by_name_deviceid(context, self.name,

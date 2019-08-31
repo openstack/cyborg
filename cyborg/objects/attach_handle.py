@@ -65,7 +65,7 @@ class AttachHandle(base.CyborgObject, object_base.VersionedObjectDictCompat):
         return obj_ah
 
     @classmethod
-    def list(cls, context, filters={}):
+    def list(cls, context, filters=None):
         """Return a list of AttachHandle objects."""
         if filters:
             sort_dir = filters.pop('sort_dir', 'desc')

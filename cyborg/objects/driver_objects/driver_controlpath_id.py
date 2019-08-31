@@ -14,9 +14,10 @@
 #    under the License.
 
 from oslo_versionedobjects import base as object_base
-from cyborg.objects import fields as object_fields
+
 from cyborg.objects import base
 from cyborg.objects.control_path import ControlpathID
+from cyborg.objects import fields as object_fields
 
 
 @base.CyborgObjectRegistry.register
@@ -33,7 +34,8 @@ class DriverControlPathID(base.DriverObjectBase,
 
     def create(self, context, device_id):
         """Create a driver-side ControlPathID for drivers. Call
-        ControlpathID object to store in DB."""
+        ControlpathID object to store in DB.
+        """
         cpid_obj = ControlpathID(context=context,
                                  device_id=device_id,
                                  cpid_type=self.cpid_type,

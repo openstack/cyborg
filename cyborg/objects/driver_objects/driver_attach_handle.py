@@ -13,11 +13,12 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from oslo_versionedobjects import base as object_base
-from cyborg.objects import fields as object_fields
-from cyborg.objects import base
-from cyborg.objects.attach_handle import AttachHandle
 from oslo_log import log as logging
+from oslo_versionedobjects import base as object_base
+
+from cyborg.objects.attach_handle import AttachHandle
+from cyborg.objects import base
+from cyborg.objects import fields as object_fields
 LOG = logging.getLogger(__name__)
 
 
@@ -37,7 +38,8 @@ class DriverAttachHandle(base.DriverObjectBase,
 
     def create(self, context, deployable_id, cpid_id):
         """Create a driver-side AttachHandle object, call AttachHandle
-        Object to store in DB."""
+        Object to store in DB.
+        """
         attach_handle_obj = AttachHandle(context=context,
                                          deployable_id=deployable_id,
                                          cpid_id=cpid_id,

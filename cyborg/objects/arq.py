@@ -18,7 +18,6 @@ from oslo_serialization import jsonutils
 from oslo_versionedobjects import base as object_base
 
 from cyborg.db import api as dbapi
-from cyborg import objects
 from cyborg.objects import base
 from cyborg.objects import fields as object_fields
 

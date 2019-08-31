@@ -19,14 +19,15 @@ from oslo_serialization import jsonutils
 from oslo_versionedobjects import base as object_base
 
 from cyborg.agent.rpcapi import AgentAPI
-from cyborg.db import api as dbapi
 from cyborg.common import constants
 from cyborg.common import exception
 from cyborg.common import nova_client
 from cyborg.common import placement_client
+from cyborg.conf import CONF
+from cyborg.db import api as dbapi
 from cyborg import objects
-from cyborg.objects import base
 from cyborg.objects.attach_handle import AttachHandle
+from cyborg.objects import base
 from cyborg.objects.deployable import Deployable
 from cyborg.objects.device_profile import DeviceProfile
 from cyborg.objects import fields as object_fields
@@ -36,13 +37,12 @@ LOG = logging.getLogger(__name__)
 
 @base.CyborgObjectRegistry.register
 class ExtARQ(base.CyborgObject, object_base.VersionedObjectDictCompat):
-    """ ExtARQ is a wrapper around ARQ with Cyborg-private fields.
-        Each ExtARQ object contains exactly one ARQ object as a field.
-        But, in the db layer, ExtARQ and ARQ are represented together
-        as a row in a single table. Both share a single UUID.
-
-        ExtARQ version is bumped up either if any of its fields change
-        or if the ARQ version changes.
+    """ExtARQ is a wrapper around ARQ with Cyborg-private fields.
+       Each ExtARQ object contains exactly one ARQ object as a field.
+       But, in the db layer, ExtARQ and ARQ are represented together
+       as a row in a single table. Both share a single UUID.
+       ExtARQ version is bumped up either if any of its fields change
+       or if the ARQ version changes.
     """
     # Version 1.0: Initial version
     # 1.1: v2 API and Nova integration
@@ -91,7 +91,7 @@ class ExtARQ(base.CyborgObject, object_base.VersionedObjectDictCompat):
     @classmethod
     def get(cls, context, uuid):
         """Find a DB ExtARQ and return an Obj ExtARQ."""
-        # TODO Fix warnings that '' is not an UUID
+        # TODO() Fix warnings that '' is not an UUID
         db_extarq = cls.dbapi.extarq_get(context, uuid)
         obj_arq = objects.ARQ(context)
         obj_extarq = ExtARQ(context)
@@ -121,7 +121,7 @@ class ExtARQ(base.CyborgObject, object_base.VersionedObjectDictCompat):
     def delete_by_uuid(cls, context, arq_uuid_list):
         for uuid in arq_uuid_list:
             obj_extarq = objects.ExtARQ.get(context, uuid)
-            # TODO Defer deletion to conductor
+            # TODO() Defer deletion to conductor
             if obj_extarq.arq.state != constants.ARQ_STATE_INITIAL:
                 obj_extarq.unbind(context)
             obj_extarq.destroy(context)
@@ -141,7 +141,7 @@ class ExtARQ(base.CyborgObject, object_base.VersionedObjectDictCompat):
         default_user = 'devstack-admin'
         try:
             auth_user = CONF.image.username or default_user
-        except:
+        except Exception:
             auth_user = default_user
         return connection.Connection(cloud=auth_user)
 
@@ -181,7 +181,7 @@ class ExtARQ(base.CyborgObject, object_base.VersionedObjectDictCompat):
         driver_name = deployable.driver_name
 
         query_filter = {"device_id": deployable.device_id}
-        # TODO We should probably get cpid from objects layer, not db layer
+        # TODO() We should probably get cpid from objects layer, not db layer
         cpid_list = self.dbapi.control_path_get_by_filters(
             context, query_filter)
         count = len(cpid_list)
@@ -197,14 +197,14 @@ class ExtARQ(base.CyborgObject, object_base.VersionedObjectDictCompat):
                  'bitstream_id (%s)', hostname,
                  deployable.uuid, bitstream_id)
         agent = AgentAPI()
-        # TODO do this asynchronously
-        # TODO do this in the conductor
+        # TODO() do this asynchronously
+        # TODO() do this in the conductor
         agent.fpga_program_v2(context, hostname,
                               controlpath_id, bitstream_id,
                               driver_name)
         LOG.info('Finished programming for host: (%s) deployable (%s)',
                  hostname, deployable.uuid)
-        # TODO propagate agent errors to caller
+        # TODO() propagate agent errors to caller
         return True
 
     def _update_placement(self, devrp_uuid, function_id, bitstream_md):
@@ -222,8 +222,8 @@ class ExtARQ(base.CyborgObject, object_base.VersionedObjectDictCompat):
             placement.add_traits_to_rp(devrp_uuid, trait_names)
 
     def bind(self, context, hostname, devrp_uuid, instance_uuid):
-        """ Given a device rp UUID, get the deployable UUID and
-            an attach handle.
+        """Given a device rp UUID, get the deployable UUID and
+           an attach handle.
         """
         LOG.info('[arqs:objs] bind. hostname: %s, devrp_uuid: %s'
                  'instance: %s', hostname, devrp_uuid, instance_uuid)
@@ -240,7 +240,7 @@ class ExtARQ(base.CyborgObject, object_base.VersionedObjectDictCompat):
 
         deployable = Deployable.get_by_device_rp_uuid(context, devrp_uuid)
 
-        # TODO Check that deployable.device.hostname matches param hostname
+        # TODO() Check that deployable.device.hostname matches param hostname
 
         # Note(Sundar): We associate the ARQ with instance UUID before the
         # programming starts. So, if programming fails and then Nova calls
@@ -271,9 +271,9 @@ class ExtARQ(base.CyborgObject, object_base.VersionedObjectDictCompat):
             bitstream_id = bitstream_md['id']
 
             if deployable.bitstream_id == bitstream_id:
-                LOG.info('Deployable %s already has the needed '
-                         'bitstream %s. Skipping programming.' %
-                         (deployable.uuid, bitstream_id))
+                LOG.info('Deployable %(uuid)s already has the needed '
+                         'bitstream %(stream_id)s. Skipping programming.',
+                         {"uuid": deployable.uuid, "stream_id": bitstream_id})
             else:
                 ok = self._do_programming(context, hostname,
                                           deployable, bitstream_id)
@@ -296,9 +296,11 @@ class ExtARQ(base.CyborgObject, object_base.VersionedObjectDictCompat):
             try:
                 ah = AttachHandle.allocate(context, deployable.id)
                 self.attach_handle_id = ah.id
-            except:
-                LOG.error("Failed to allocate attach handle for ARQ %s"
-                          "from deployable %s" % (arq.uuid, deployable.uuid))
+            except Exception:
+                LOG.error("Failed to allocate attach handle for ARQ "
+                          "%(arq_uuid)s from deployable %(deployable_uuid)s",
+                          {"arq_uuid": arq.uuid,
+                           "deployable_uuid": deployable.uuid})
                 arq.state = constants.ARQ_BIND_FAILED
 
         self.arq = arq
@@ -354,8 +356,8 @@ class ExtARQ(base.CyborgObject, object_base.VersionedObjectDictCompat):
 
     @classmethod
     def _fill_obj_extarq_fields(cls, context, db_extarq):
-        """ ExtARQ object has some fields that are not present
-            in db_extarq. We fill them out here.
+        """ExtARQ object has some fields that are not present
+           in db_extarq. We fill them out here.
         """
         # From the 2 fields in the ExtARQ, we obtain other fields.
         devprof_id = db_extarq['device_profile_id']
@@ -366,7 +368,7 @@ class ExtARQ(base.CyborgObject, object_base.VersionedObjectDictCompat):
 
         db_extarq['attach_handle_type'] = ''
         db_extarq['attach_handle_info'] = ''
-        if db_extarq['state'] == 'Bound':  # TODO Do proper bind
+        if db_extarq['state'] == 'Bound':  # TODO() Do proper bind
             db_ah = cls.dbapi.attach_handle_get_by_id(
                 context, db_extarq['attach_handle_id'])
             if db_ah is not None:
@@ -377,7 +379,7 @@ class ExtARQ(base.CyborgObject, object_base.VersionedObjectDictCompat):
                     resource='attach handle',
                     msg='')
 
-        # TODO Get the deployable_uuid
+        # TODO() Get the deployable_uuid
         db_extarq['deployable_uuid'] = ''
 
         # Get the device profile group
@@ -390,7 +392,6 @@ class ExtARQ(base.CyborgObject, object_base.VersionedObjectDictCompat):
     @classmethod
     def _from_db_object(cls, extarq, db_extarq, context):
         """Converts an ExtARQ to a formal object.
-
         :param extarq: An object of the class ExtARQ
         :param db_extarq: A DB model of the object
         :return: The object of the class with the database entity added

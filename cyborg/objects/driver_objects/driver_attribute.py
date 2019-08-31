@@ -14,9 +14,10 @@
 #    under the License.
 
 from oslo_versionedobjects import base as object_base
+
+from cyborg.objects.attribute import Attribute
 from cyborg.objects import base
 from cyborg.objects import fields as object_fields
-from cyborg.objects.attribute import Attribute
 
 
 @base.CyborgObjectRegistry.register
@@ -32,7 +33,8 @@ class DriverAttribute(base.DriverObjectBase,
 
     def create(self, context, deployable_id):
         """Convert driver-side Attribute into Attribute Object so as to
-        store in DB."""
+        store in DB.
+        """
         attr_obj = Attribute()
         attr_obj.deployable_id = deployable_id
         attr_obj.set_key_value_pair(self.key, self.value)

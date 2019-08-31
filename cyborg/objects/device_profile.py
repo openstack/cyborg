@@ -51,7 +51,7 @@ class DeviceProfile(base.CyborgObject, object_base.VersionedObjectDictCompat):
 
     def create(self, context):
         """Create a Device Profile record in the DB."""
-        # TODO validate with a JSON schema
+        # TODO() validate with a JSON schema
         if 'name' not in self:
             raise exception.ObjectActionError(action='create',
                                               reason='name is required')
@@ -69,7 +69,7 @@ class DeviceProfile(base.CyborgObject, object_base.VersionedObjectDictCompat):
         obj_devprof = cls._from_db_object(cls(context), db_devprof)
         return obj_devprof
 
-    # TODO add filters, limits, pagination, etc.
+    # TODO() add filters, limits, pagination, etc.
     @classmethod
     def list(cls, context):
         """Return a list of Device Profile objects."""

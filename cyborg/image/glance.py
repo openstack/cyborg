@@ -42,13 +42,12 @@ import six
 from six.moves import range
 import six.moves.urllib.parse as urlparse
 
-import cyborg.conf
 from cyborg.common import exception
+from cyborg.common import utils
+import cyborg.conf
 import cyborg.image.download as image_xfers
 from cyborg import objects
-from cyborg.objects import fields
 from cyborg import service_auth
-from cyborg.common import utils
 
 
 LOG = logging.getLogger(__name__)

@@ -20,7 +20,6 @@ from cyborg.common import constants
 from cyborg.db import api as dbapi
 from cyborg.objects import base
 from cyborg.objects import fields as object_fields
-from cyborg.objects.control_path import ControlpathID
 
 
 LOG = logging.getLogger(__name__)
@@ -60,7 +59,7 @@ class Device(base.CyborgObject, object_base.VersionedObjectDictCompat):
         return obj_device
 
     @classmethod
-    def list(cls, context, filters={}):
+    def list(cls, context, filters=None):
         """Return a list of Device objects."""
         if filters:
             sort_dir = filters.pop('sort_dir', 'desc')
@@ -90,7 +89,8 @@ class Device(base.CyborgObject, object_base.VersionedObjectDictCompat):
     @classmethod
     def get_list_by_hostname(cls, context, hostname):
         """get device object list from the hostname. return [] if not
-        exist."""
+        exist.
+        """
         dev_filter = {'hostname': hostname}
         device_obj_list = Device.list(context, dev_filter)
         return device_obj_list
@@ -98,7 +98,8 @@ class Device(base.CyborgObject, object_base.VersionedObjectDictCompat):
     @classmethod
     def get_by_device_id(cls, context, device_id):
         """get device object list from the device ID. return [] if not
-        exist."""
+        exist.
+        """
         dev_filter = {'device_id': device_id}
         device_obj_list = Device.list(context, dev_filter)
         return device_obj_list

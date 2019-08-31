@@ -14,8 +14,8 @@
 #    under the License.
 
 from oslo_log import log as logging
-from oslo_versionedobjects import base as object_base
 from oslo_serialization import jsonutils
+from oslo_versionedobjects import base as object_base
 
 from cyborg.db import api as dbapi
 from cyborg.objects import base
@@ -65,7 +65,7 @@ class ControlpathID(base.CyborgObject, object_base.VersionedObjectDictCompat):
         return obj_cp
 
     @classmethod
-    def list(cls, context, filters={}):
+    def list(cls, context, filters=None):
         """Return a list of ControlpathID objects."""
         if filters:
             sort_dir = filters.pop('sort_dir', 'desc')

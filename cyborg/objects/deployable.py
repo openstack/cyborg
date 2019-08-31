@@ -16,11 +16,10 @@
 from oslo_log import log as logging
 from oslo_versionedobjects import base as object_base
 
-from cyborg.common import exception
 from cyborg.db import api as dbapi
+from cyborg.objects.attribute import Attribute
 from cyborg.objects import base
 from cyborg.objects import fields as object_fields
-from cyborg.objects.attribute import Attribute
 
 LOG = logging.getLogger(__name__)
 
@@ -100,7 +99,7 @@ class Deployable(base.CyborgObject, object_base.VersionedObjectDictCompat):
         return obj_dep
 
     @classmethod
-    def list(cls, context, filters={}):
+    def list(cls, context, filters=None):
         """Return a list of Deployable objects."""
         if filters:
             sort_dir = filters.pop('sort_dir', 'desc')
@@ -141,8 +140,8 @@ class Deployable(base.CyborgObject, object_base.VersionedObjectDictCompat):
 
     def update(self, context, updates):
         """Update provided key, value pairs"""
-        db_dep = self.dbapi.deployable_update(context, self.uuid,
-                                              updates)
+        self.dbapi.deployable_update(context, self.uuid,
+                                     updates)
 
     def destroy(self, context):
         """Delete a Deployable from the DB."""
