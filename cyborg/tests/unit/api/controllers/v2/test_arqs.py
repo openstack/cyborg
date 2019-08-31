@@ -18,7 +18,6 @@ from six.moves import http_client
 
 from oslo_serialization import jsonutils
 
-from cyborg.common import exception
 from cyborg.tests.unit.api.controllers.v2 import base as v2_test
 from cyborg.tests.unit import fake_device_profile
 from cyborg.tests.unit import fake_extarq
@@ -69,7 +68,8 @@ class TestARQsController(v2_test.APITestV2):
         data = self.get_json(self.ARQ_URL, headers=self.headers)
         out_arqs = data['arqs']
 
-        self.assertTrue(isinstance(out_arqs, list))
+        result = isinstance(out_arqs, list)
+        self.assertTrue(result)
         self.assertTrue(len(out_arqs), len(self.fake_extarqs))
         for in_extarq, out_arq in zip(self.fake_extarqs, out_arqs):
             self._validate_arq(in_extarq.arq, out_arq)

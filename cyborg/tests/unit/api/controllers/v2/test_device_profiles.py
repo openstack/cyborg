@@ -18,8 +18,6 @@ from six.moves import http_client
 
 from oslo_serialization import jsonutils
 
-from cyborg.api.controllers.v2.device_profiles import DeviceProfilesController
-from cyborg.common import exception
 from cyborg.tests.unit.api.controllers.v2 import base as v2_test
 from cyborg.tests.unit import fake_device_profile
 
@@ -68,7 +66,8 @@ class TestDeviceProfileController(v2_test.APITestV2):
         data = self.get_json(self.DP_URL, headers=self.headers)
         out_dps = data['device_profiles']
 
-        self.assertTrue(isinstance(out_dps, list))
+        result = isinstance(out_dps, list)
+        self.assertTrue(result)
         self.assertTrue(len(out_dps), len(self.fake_dp_objs))
         for in_dp, out_dp in zip(self.fake_dp_objs, out_dps):
             self._validate_dp(in_dp, out_dp)

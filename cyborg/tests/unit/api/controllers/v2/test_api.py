@@ -27,4 +27,5 @@ class TestAPI(v2_test.APITestV2):
         self.assertEqual(data['status'], "CURRENT")
         self.assertEqual(data['max_version'], "2.0")
         self.assertEqual(data['id'], "v2.0")
-        self.assertTrue(isinstance(data['links'], list))
+        result = isinstance(data['links'], list)
+        self.assertTrue(result)

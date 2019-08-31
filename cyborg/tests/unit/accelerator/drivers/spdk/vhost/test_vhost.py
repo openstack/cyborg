@@ -13,11 +13,12 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from cyborg.tests import base
 import mock
-from cyborg.accelerator.drivers.spdk.vhost.vhost import VHOSTDRIVER
+
 from cyborg.accelerator.drivers.spdk.util import common_fun
 from cyborg.accelerator.drivers.spdk.util.pyspdk.vhost_client import VhostTgt
+from cyborg.accelerator.drivers.spdk.vhost.vhost import VHOSTDRIVER
+from cyborg.tests import base
 
 
 class TestVHOSTDRIVER(base.TestCase):

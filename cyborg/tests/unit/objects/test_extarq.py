@@ -16,9 +16,9 @@
 import mock
 
 from testtools.matchers import HasLength
+
 from cyborg import objects
 from cyborg.tests.unit.db import base
-from cyborg.tests.unit.db import utils
 from cyborg.tests.unit import fake_extarq
 
 
@@ -82,7 +82,7 @@ class TestExtARQObject(base.DbTestCase):
                    'instance_uuid': instance_uuid}
             }
         patch_list = {
-            str(uuid) : [
+            str(uuid): [
                 {"path": "/hostname", "op": "add",
                  "value": obj_extarq.arq.hostname},
                 {"path": "/device_rp_uuid", "op": "add",

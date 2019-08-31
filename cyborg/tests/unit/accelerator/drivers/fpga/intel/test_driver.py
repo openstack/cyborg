@@ -18,8 +18,8 @@ import subprocess
 
 import fixtures
 
-from cyborg.accelerator.drivers.fpga.intel import sysinfo
 from cyborg.accelerator.drivers.fpga.intel.driver import IntelFPGADriver
+from cyborg.accelerator.drivers.fpga.intel import sysinfo
 from cyborg.tests import base
 from cyborg.tests.unit.accelerator.drivers.fpga.intel import prepare_test_data
 

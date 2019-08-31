@@ -15,9 +15,12 @@
 """Unit tests for the DB api."""
 
 import datetime
-from cyborg.tests.unit.db import base
+
+from oslo_utils import timeutils
+
 from cyborg.db import api as dbapi
 from cyborg.db.sqlalchemy import api as sqlalchemyapi
+from cyborg.tests.unit.db import base
 
 
 def _quota_reserve(context, project_id):
@@ -36,7 +39,7 @@ def _quota_reserve(context, project_id):
         deltas[resource] = i + 1
     return sqlalchemy_api.quota_reserve(
         context, resources, deltas,
-        datetime.datetime.utcnow(), datetime.datetime.utcnow(),
+        timeutils.utcnow(), timeutils.utcnow(),
         datetime.timedelta(days=1), project_id
     )
 
@@ -89,7 +92,7 @@ class DBAPIReservationTestCase(base.DbTestCase):
             'project_id': 'project1',
             'resource': 'resource',
             'delta': 42,
-            'expire': (datetime.datetime.utcnow() +
+            'expire': (timeutils.utcnow() +
                        datetime.timedelta(days=1)),
             'usage': {'id': 1}
         }

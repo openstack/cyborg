@@ -13,8 +13,8 @@
 import json
 import mock
 
-from cyborg.tests import base
 from cyborg.accelerator.drivers.aichip.huawei.ascend import AscendDriver
+from cyborg.tests import base
 
 d100_pci_res = [
     "0000:00:0c.0 Processing accelerators [1200]:"

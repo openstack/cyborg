@@ -15,16 +15,15 @@
 
 import mock
 
-from testtools.matchers import HasLength
-from cyborg import objects
-from cyborg.tests.unit.db import base
-from cyborg.tests.unit.db import utils
-from cyborg.tests.unit import fake_device
-from cyborg.tests.unit import fake_deployable
-from cyborg.tests.unit import fake_attribute
-from cyborg.tests.unit.objects import test_objects
-from cyborg.tests.unit.db.base import DbTestCase
+from oslo_db import exception as db_exc
+
 from cyborg.common import exception
+from cyborg import objects
+from cyborg.tests.unit.db.base import DbTestCase
+from cyborg.tests.unit import fake_attribute
+from cyborg.tests.unit import fake_deployable
+from cyborg.tests.unit import fake_device
+from cyborg.tests.unit.objects import test_objects
 
 
 class _TestDeployableObject(DbTestCase):
@@ -197,20 +196,12 @@ class _TestDeployableObject(DbTestCase):
 
         dpl.device_id = device_get.id
         dpl.create(self.context)
-        dpl_get = objects.Deployable.get(self.context, dpl.uuid)
 
         db_dpl2 = self.fake_deployable2
         dpl2 = objects.Deployable(context=self.context,
                                   **db_dpl2)
         dpl2.device_id = device_get.id
         dpl2.create(self.context)
-        dpl2_get = objects.Deployable.get(self.context, dpl2.uuid)
-
-        db_attr = self.fake_attribute
-
-        db_attr2 = self.fake_attribute2
-
-        db_attr3 = self.fake_attribute3
 
         dpl.add_attribute(self.context, 'attr_key', 'attr_val')
         dpl.save(self.context)

@@ -16,10 +16,8 @@
 import mock
 from six.moves import http_client
 
-from cyborg.api.controllers.v1.deployables import Deployable
 from cyborg.tests.unit.api.controllers.v1 import base as v1_test
 from cyborg.tests.unit import fake_deployable
-from cyborg.agent.rpcapi import AgentAPI
 
 
 class TestFPGAProgramController(v1_test.APITestV1):

@@ -13,6 +13,7 @@
 #    under the License.
 
 from oslo_serialization import jsonutils
+
 from cyborg.objects import device_profile
 
 """

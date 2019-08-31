@@ -12,14 +12,12 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from oslo_serialization import jsonutils
-
 import mock
-import copy
 import subprocess
 
+from oslo_serialization import jsonutils
+
 from cyborg.accelerator.drivers.gpu import utils
-from cyborg import objects
 from cyborg.tests import base
 
 NVIDIA_GPU_INFO = "0000:00:06.0 3D controller [0302]: NVIDIA Corporation GP100GL " \

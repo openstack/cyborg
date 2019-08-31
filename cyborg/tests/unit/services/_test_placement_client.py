@@ -12,13 +12,15 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from cyborg.tests import base
 import mock
-from cyborg.services import report as placement_client
-from oslo_utils import uuidutils
-from cyborg.common import exception as c_exc
+
 from keystoneauth1 import exceptions as ks_exc
 from oslo_config import cfg
+from oslo_utils import uuidutils
+
+from cyborg.common import exception as c_exc
+from cyborg.services import report as placement_client
+from cyborg.tests import base
 
 
 class PlacementAPIClientTestCase(base.DietTestCase):

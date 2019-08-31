@@ -46,10 +46,10 @@ def _get_arqs_as_dict():
          },
     ]
     new_arqs = []
-    for idx, arq in enumerate(arqs):
-        arq.update(common)
-        arq.update(id=idx)
-        new_arqs.append(arq)
+    for idx, new_arq in enumerate(arqs):
+        new_arq.update(common)
+        new_arq.update(id=idx)
+        new_arqs.append(new_arq)
     return new_arqs
 
 

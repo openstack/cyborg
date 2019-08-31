@@ -231,7 +231,7 @@ def gen_fpga_vf_soft_link(path, bdf):
 
 
 def create_devices_path_and_files(tree, device_path, class_fpga_path,
-                                  vf=False, pfinfo={}):
+                                  vf=False, pfinfo=None):
     for k, v in tree.items():
         bdf = v["bdf"]
         pci_path = "pci" + bdf.rsplit(":", 1)[0]

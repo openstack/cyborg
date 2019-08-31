@@ -13,11 +13,12 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from cyborg.tests import base
 import mock
+
 from cyborg.accelerator.drivers.spdk.nvmf.nvmf import NVMFDRIVER
 from cyborg.accelerator.drivers.spdk.util import common_fun
 from cyborg.accelerator.drivers.spdk.util.pyspdk.nvmf_client import NvmfTgt
+from cyborg.tests import base
 
 
 class TestNVMFDRIVER(base.TestCase):

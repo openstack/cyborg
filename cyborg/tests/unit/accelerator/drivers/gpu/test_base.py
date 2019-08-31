@@ -20,7 +20,8 @@ from cyborg.tests import base
 
 class TestGPUDriver(base.TestCase):
     def test_create(self):
-        GPUDriver.create("nvidia")
+        # NVIDIAGPUDriver.VENDOR == 'nvidia'
+        GPUDriver.create(NVIDIAGPUDriver.VENDOR)
         self.assertRaises(LookupError, GPUDriver.create, "matrox")
 
     def test_discover(self):

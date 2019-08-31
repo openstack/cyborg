@@ -12,9 +12,6 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import datetime
-
-from oslo_serialization import jsonutils
 from oslo_utils import uuidutils
 
 from cyborg import objects
@@ -70,4 +67,4 @@ def fake_physical_function_obj(context, obj_pf_class=None, **updates):
                                       fake_db_physical_function(**updates),
                                       expected_attrs=expected_attrs)
     pf.obj_reset_changes()
-    return vf
+    return pf

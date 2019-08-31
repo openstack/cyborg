@@ -12,25 +12,12 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import contextlib
-import copy
 import datetime
-import inspect
-import os
 
-import fixtures
-import mock
 from oslo_log import log
-from oslo_utils import timeutils
-from oslo_versionedobjects import base as ovo_base
-from oslo_versionedobjects import exception as ovo_exc
-from oslo_versionedobjects import fixture
-import six
 
 from oslo_context import context
 
-from cyborg.common import exception
-from cyborg import objects
 from cyborg.objects import base
 from cyborg.objects import fields
 from cyborg import tests as test
