@@ -15,13 +15,14 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-
 from keystoneauth1.access import service_catalog as ksa_service_catalog
 from keystoneauth1 import plugin
 from oslo_context import context
 from oslo_db.sqlalchemy import enginefacade
 from oslo_utils import timeutils
 import six
+
+from cyborg.common import exception
 
 
 class _ContextAuthPlugin(plugin.BaseAuthPlugin):
