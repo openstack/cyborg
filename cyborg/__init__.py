@@ -12,11 +12,8 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import eventlet
 import pbr.version
 
 
 __version__ = pbr.version.VersionInfo(
     'openstack-cyborg').version_string()
-
-eventlet.monkey_patch(os=False)

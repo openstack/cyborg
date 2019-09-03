@@ -13,7 +13,9 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import eventlet
 import oslo_i18n as i18n
 
+eventlet.monkey_patch()
 
 i18n.install('cyborg')
