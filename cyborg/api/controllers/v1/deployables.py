@@ -130,7 +130,7 @@ class DeployablesController(base.CyborgController):
         obj_dep = objects.Deployable.get(pecan.request.context, uuid)
         # Set attribute of the new bitstream/image information
         obj_dep.add_attribute(pecan.request.context, 'image_uuid', image_uuid)
-        # TODO (Li Liu) Trigger the program api in Agnet.
+        # TODO(Li Liu) Trigger the program api in Agnet.
         agent_api.program_fpga_with_bitstream(pecan.request.context,
                                               uuid,
                                               image_uuid)

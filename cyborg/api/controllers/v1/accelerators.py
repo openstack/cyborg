@@ -14,7 +14,6 @@
 #    under the License.
 
 from oslo_log import log
-import pecan
 from six.moves import http_client
 import wsme
 from wsme import types as wtypes
@@ -23,11 +22,8 @@ from cyborg.api.controllers import base
 from cyborg.api.controllers import link
 from cyborg.api.controllers.v1 import deployables
 from cyborg.api.controllers.v1 import types
-from cyborg.api.controllers.v1 import utils as api_utils
 from cyborg.api import expose
-from cyborg.common import exception
 from cyborg.common import policy
-from cyborg import objects
 
 LOG = log.getLogger(__name__)
 
@@ -195,5 +191,4 @@ class AcceleratorsController(AcceleratorsControllerBase):
         :param uuid: UUID of an accelerator.
         """
         LOG.warning("v1 APIs for accelerator objects are deprecated.")
-        context = pecan.request.context
-        obj_acc = self._resource or self._get_resource(uuid)
+        pass
