@@ -14,7 +14,6 @@
 #    under the License.
 
 from oslo_concurrency import processutils
-from cyborg import context
 from oslo_log import log
 import oslo_messaging as messaging
 from oslo_service import service
@@ -27,6 +26,7 @@ from cyborg.common import exception
 from cyborg.common.i18n import _
 from cyborg.common import rpc
 from cyborg.conf import CONF
+from cyborg import context
 from cyborg import objects
 from cyborg.objects import base as objects_base
 
