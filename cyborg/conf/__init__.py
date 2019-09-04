@@ -19,9 +19,9 @@ from cyborg.conf import agent
 from cyborg.conf import api
 from cyborg.conf import database
 from cyborg.conf import default
-from cyborg.conf import service_token
 from cyborg.conf import glance
 from cyborg.conf import keystone
+from cyborg.conf import service_token
 
 CONF = cfg.CONF
 
