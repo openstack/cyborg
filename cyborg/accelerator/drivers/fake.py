@@ -43,6 +43,7 @@ class FakeDriver(GenericDriver):
         driver_dep = driver_deployable.DriverDeployable()
         driver_dep.attach_handle_list = [self._generate_attach_handle(pci)]
         driver_dep.name = pci.get('device')
+        driver_dep.driver_name = 'fake'
         driver_dep.num_accelerators = 1
         driver_dep.attribute_list = self._generate_attribute_list()
         return [driver_dep]
