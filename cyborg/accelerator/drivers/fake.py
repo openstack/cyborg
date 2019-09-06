@@ -2,7 +2,6 @@ from cyborg.accelerator.drivers.driver import GenericDriver
 from cyborg.objects.driver_objects import driver_deployable, driver_device, \
     driver_attach_handle, driver_controlpath_id, driver_attribute
 
-from cyborg.agent import rc_fields
 from cyborg.common import constants
 
 import os_resource_classes as orc
