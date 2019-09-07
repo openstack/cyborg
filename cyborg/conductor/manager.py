@@ -193,7 +193,7 @@ class ConductorManager(object):
         for d in deleted:
             old_driver_dev_obj = old_driver_device_list[old_cpid_list.index(d)]
             for driver_dep_obj in old_driver_dev_obj.deployable_list:
-                rp_uuid = self.get_pr_uuid_from_obj(driver_dep_obj)
+                rp_uuid = self.get_rp_uuid_from_obj(driver_dep_obj)
                 self._delete_provider_and_sub_providers(context, rp_uuid)
             old_driver_dev_obj.destroy(context, host)
         # device is added
@@ -230,7 +230,7 @@ class ConductorManager(object):
             if dep_obj.num_accelerators != new_driver_dep_obj.num_accelerators:
                 dep_obj.num_accelerators = new_driver_dep_obj.num_accelerators
                 dep_obj.save(context)
-                rp_uuid = self.get_pr_uuid_from_obj(new_driver_dep_obj)
+                rp_uuid = self.get_rp_uuid_from_obj(new_driver_dep_obj)
                 rc = new_driver_dep_obj.name
                 inv_date = \
                     self._gen_resource_inventory(
@@ -251,7 +251,7 @@ class ConductorManager(object):
         # name is deleted.
         for d in deleted:
             old_driver_dep_obj = old_driver_dep_list[old_name_list.index(d)]
-            rp_uuid = self.get_pr_uuid_from_obj(old_driver_dep_obj)
+            rp_uuid = self.get_rp_uuid_from_obj(old_driver_dep_obj)
             old_driver_dep_obj.destroy(context, device_id)
             self._delete_provider_and_sub_providers(context, rp_uuid)
         # name is added.
@@ -268,7 +268,7 @@ class ConductorManager(object):
         LOG.info("Start differing attributes.")
         dep_obj = Deployable.get_by_id(context, dep_id)
         driver_dep = DriverDeployable.get_by_name(context, dep_obj.name)
-        rp_uuid = self.get_pr_uuid_from_obj(driver_dep)
+        rp_uuid = self.get_rp_uuid_from_obj(driver_dep)
         new_key_list = [driver_attr_obj.key for driver_attr_obj in
                         new_driver_attr_list]
         old_key_list = [driver_attr_obj.key for driver_attr_obj in
@@ -355,7 +355,7 @@ class ConductorManager(object):
         return
 
     def _get_sub_provider(self, context, parent, name):
-        name = encodeutils.safe_encode(name)
+        name = encodeutils.safe_decode(name)
         old_sub_pr_uuid = str(uuid.uuid3(uuid.NAMESPACE_DNS, name))
         new_sub_pr_uuid = self.placement_client.ensure_resource_provider(
             context, old_sub_pr_uuid,
@@ -395,7 +395,7 @@ class ConductorManager(object):
         attrs = obj.attribute_list
         resource_class = [i.value for i in attrs if i.key == 'rc'][0]
         traits = [i.value for i in attrs
-                  if encodeutils.safe_encode(i.key).startswith("trait")]
+                  if encodeutils.safe_decode(i.key).startswith("trait")]
         total = obj.num_accelerators
         rp_uuid = self.provider_report(context, pr_name, resource_class,
                                        traits, total, parent_uuid)
@@ -413,9 +413,9 @@ class ConductorManager(object):
         }
         return result
 
-    def get_pr_uuid_from_obj(self, obj):
-        pr_name = encodeutils.safe_encode(obj.name)
-        return str(uuid.uuid3(uuid.NAMESPACE_DNS, pr_name))
+    def get_rp_uuid_from_obj(self, obj):
+        rp_name = encodeutils.safe_decode(obj.name)
+        return str(uuid.uuid3(uuid.NAMESPACE_DNS, rp_name))
 
     def _delete_provider_and_sub_providers(self, context, rp_uuid):
         rp_in_tree = self.placement_client._get_providers_in_tree(context,
