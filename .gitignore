@@ -19,6 +19,7 @@ doc/source/_static/cyborg.policy.yaml.sample
 etc/cyborg/policy.json.sample
 etc/cyborg/cyborg.conf.sample
 .idea/*
+.vscode/*
 
 # Editors
 *.sublime-workspace
