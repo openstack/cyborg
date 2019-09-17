@@ -8,6 +8,7 @@
     check:
       jobs:
         - cyborg-tempest
+        - cyborg-tempest-ipv6-only
     gate:
       jobs:
         - cyborg-tempest
