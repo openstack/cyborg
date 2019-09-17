@@ -428,5 +428,5 @@ class InvalidType(Invalid):
 
 
 # TODO() Merge other NotFound in this generic one?
-class ResourceNotFound(Invalid):
+class ResourceNotFound(NotFound):
     _msg_fmt = _("%(resource)s not found %(msg)s")
