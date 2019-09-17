@@ -19,16 +19,18 @@ import six
 
 from keystoneauth1 import exceptions as ks_exc
 from keystoneauth1 import loading as ks_loading
+from openstack import connection
+from openstack import exceptions as sdk_exc
 from os_service_types import service_types
 from oslo_concurrency import lockutils
 from oslo_log import log
 
 from cyborg.common import exception
+from cyborg.common.i18n import _
 import cyborg.conf
 
 
 LOG = log.getLogger(__name__)
-
 
 synchronized = lockutils.synchronized_with_prefix('cyborg-')
 _SERVICE_TYPES = service_types.ServiceTypes()
@@ -109,6 +111,47 @@ def get_ksa_adapter(service_type, ksa_auth=None, ksa_session=None,
     return ks_loading.load_adapter_from_conf_options(
         CONF, confgrp, session=ksa_session, auth=ksa_auth,
         min_version=min_version, max_version=max_version)
+
+
+def _get_conf_group(service_type):
+    # Get the conf group corresponding to the service type.
+    confgrp = _SERVICE_TYPES.get_project_name(service_type)
+    if not confgrp or not hasattr(CONF, confgrp):
+        raise exception.ConfGroupForServiceTypeNotFound(stype=service_type)
+    return confgrp
+
+
+def _get_auth_and_session(confgrp):
+    ksa_auth = ks_loading.load_auth_from_conf_options(CONF, confgrp)
+    return ks_loading.load_session_from_conf_options(
+        CONF, confgrp, auth=ksa_auth)
+
+
+def get_sdk_adapter(service_type, check_service=False):
+    """Construct an openstacksdk-brokered Adapter for a given service type.
+    We expect to find a conf group whose name corresponds to the service_type's
+    project according to the service-types-authority.  That conf group must
+    provide ksa auth, session, and adapter options.
+    :param service_type: String name of the service type for which the Adapter
+                         is to be constructed.
+    :param check_service: If True, we will query the endpoint to make sure the
+            service is alive, raising ServiceUnavailable if it is not.
+    :return: An openstack.proxy.Proxy object for the specified service_type.
+    :raise: ConfGroupForServiceTypeNotFound If no conf group name could be
+            found for the specified service_type.
+    :raise: ServiceUnavailable if check_service is True and the service is down
+    """
+    confgrp = _get_conf_group(service_type)
+    sess = _get_auth_and_session(confgrp)
+    try:
+        conn = connection.Connection(
+            session=sess, oslo_conf=CONF, service_types={service_type},
+            strict_proxies=check_service)
+    except sdk_exc.ServiceDiscoveryException as e:
+        raise exception.ServiceUnavailable(
+            _("The %(service_type)s service is unavailable: %(error)s") %
+            {'service_type': service_type, 'error': six.text_type(e)})
+    return getattr(conn, service_type)
 
 
 def get_endpoint(ksa_adapter):

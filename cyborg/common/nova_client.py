@@ -12,8 +12,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from cyborg.conf import CONF
-from openstack import connection
+from cyborg.common import utils
 from oslo_log import log as logging
 
 LOG = logging.getLogger(__name__)
@@ -21,13 +20,7 @@ LOG = logging.getLogger(__name__)
 
 class NovaAPI(object):
     def __init__(self):
-        default_user = "devstack-admin"
-        try:
-            auth_user = CONF.compute.username
-        except Exception:
-            auth_user = default_user
-        self.conn = connection.Connection(cloud=auth_user)
-        self.nova_client = self.conn.compute
+        self.nova_client = utils.get_sdk_adapter('compute')
 
     def _get_acc_changed_event(self, instance_uuid, dev_profile_name, status):
         return [{'name': 'accelerator-requests-bound',

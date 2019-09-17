@@ -196,6 +196,10 @@ class NotFound(CyborgException):
     code = http_client.NOT_FOUND
 
 
+class ServiceUnavailable(Invalid):
+    msg_fmt = _("Service is unavailable at this time.")
+
+
 class ServiceNotFound(NotFound):
     msg_fmt = _("Service %(service_id)s could not be found.")
 

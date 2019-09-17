@@ -21,6 +21,8 @@ from cyborg.conf import database
 from cyborg.conf import default
 from cyborg.conf import glance
 from cyborg.conf import keystone
+from cyborg.conf import nova
+from cyborg.conf import placement
 from cyborg.conf import service_token
 
 CONF = cfg.CONF
@@ -29,7 +31,8 @@ api.register_opts(CONF)
 agent.register_opts(CONF)
 database.register_opts(CONF)
 default.register_opts(CONF)
-default.register_placement_opts(CONF)
 service_token.register_opts(CONF)
 glance.register_opts(CONF)
 keystone.register_opts(CONF)
+nova.register_opts(CONF)
+placement.register_opts(CONF)

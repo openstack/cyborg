@@ -199,7 +199,6 @@ function configure_cyborg_placement {
     # Use the provided config file path or default to $CYBORG_CONF.
     local section=${1:-placement}
     local auth_section=${2:-keystone_authtoken}
-    iniset $CYBORG_CONF_FILE $section auth_section $auth_section
     iniset $CYBORG_CONF_FILE $section auth_type "password"
     iniset $CYBORG_CONF_FILE $section auth_url "$KEYSTONE_SERVICE_URI"
     iniset $CYBORG_CONF_FILE $section username $section
@@ -218,7 +217,6 @@ function configure_cyborg_placement {
 function configure_cyborg_glance {
     local section=${1:-glance}
     local auth_section=${2:-keystone_authtoken}
-    iniset $CYBORG_CONF_FILE $section auth_section $auth_section
     iniset $CYBORG_CONF_FILE $section auth_type "password"
     iniset $CYBORG_CONF_FILE $section auth_url "$KEYSTONE_SERVICE_URI"
     iniset $CYBORG_CONF_FILE $section username $section
@@ -227,6 +225,18 @@ function configure_cyborg_glance {
     iniset $CYBORG_CONF_FILE $section project_name "$SERVICE_TENANT_NAME"
     iniset $CYBORG_CONF_FILE $section project_domain_name "$SERVICE_DOMAIN_NAME"
     iniset $CYBORG_CONF_FILE $section api_servers "$GLANCE_URL"
+}
+
+function configure_cyborg_nova {
+    local section=${1:-nova}
+    local auth_section=${2:-keystone_authtoken}
+    iniset $CYBORG_CONF_FILE $section auth_type "password"
+    iniset $CYBORG_CONF_FILE $section auth_url "$KEYSTONE_SERVICE_URI"
+    iniset $CYBORG_CONF_FILE $section username $section
+    iniset $CYBORG_CONF_FILE $section password "$SERVICE_PASSWORD"
+    iniset $CYBORG_CONF_FILE $section user_domain_name "$SERVICE_DOMAIN_NAME"
+    iniset $CYBORG_CONF_FILE $section project_name "$SERVICE_TENANT_NAME"
+    iniset $CYBORG_CONF_FILE $section project_domain_name "$SERVICE_DOMAIN_NAME"
 }
 
 # configure_cyborg_conductor() - Is used by configure_cyborg().
@@ -240,6 +250,7 @@ function configure_cyborg_conductor {
     configure_auth_for service_catalog
     configure_cyborg_placement
     configure_cyborg_glance
+    configure_cyborg_nova
 
     sudo cp $CYBORG_DIR/etc/cyborg/rootwrap.conf $CYBORG_ROOTWRAP_CONF
     sudo cp -r $CYBORG_DIR/etc/cyborg/rootwrap.d $CYBORG_CONF_DIR

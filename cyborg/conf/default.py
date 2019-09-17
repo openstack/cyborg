@@ -18,11 +18,9 @@
 import os
 import socket
 
-from keystoneauth1 import loading as k_loading
 from oslo_config import cfg
 
 from cyborg.common.i18n import _
-from cyborg.conf import utils as confutils
 
 
 exc_log_opts = [
@@ -65,33 +63,6 @@ path_opts = [
                help=_("Top-level directory for maintaining cyborg's state.")),
 ]
 
-PLACEMENT_CONF_SECTION = 'placement'
-DEFAULT_SERVICE_TYPE = 'placement'
-
-placement_group = cfg.OptGroup(
-    PLACEMENT_CONF_SECTION,
-    title='Placement Service Options',
-    help="Configuration options for connecting to the placement API service")
-
-placement_opts = [
-    cfg.StrOpt('endpoint_type',
-               default='public',
-               choices=['public', 'admin', 'internal'],
-               help=_('Type of the placement endpoint to use.  This endpoint '
-                      'will be looked up in the keystone catalog and should '
-                      'be one of public, internal or admin.')),
-    cfg.BoolOpt(
-        'randomize_allocation_candidates',
-        default=False,
-        help=_('If True, when limiting allocation candidate results, the '
-               'results will be a random sampling of the full result set. '
-               'If False, allocation candidates are returned in a '
-               'deterministic but undefined order. That is, all things '
-               'being equal, two requests for allocation candidates will '
-               'return the same results in the same order; but no guarantees '
-               'are made as to how that order is determined.')),
-]
-
 
 def register_opts(conf):
     conf.register_opts(exc_log_opts)
@@ -99,24 +70,10 @@ def register_opts(conf):
     conf.register_opts(path_opts)
 
 
-def register_placement_opts(cfg=cfg.CONF):
-    cfg.register_group(placement_group)
-    cfg.register_opts(placement_opts, group=PLACEMENT_CONF_SECTION)
-    confutils.register_ksa_opts(cfg, placement_group, DEFAULT_SERVICE_TYPE)
-
-
 DEFAULT_OPTS = (exc_log_opts + service_opts + path_opts)
 
 
 def list_opts():
     return {
-        PLACEMENT_CONF_SECTION: (
-            placement_opts +
-            k_loading.get_session_conf_options() +
-            k_loading.get_auth_common_conf_options() +
-            k_loading.get_auth_plugin_conf_options('password') +
-            k_loading.get_auth_plugin_conf_options('v2password') +
-            k_loading.get_auth_plugin_conf_options('v3password') +
-            confutils.get_ksa_adapter_opts(DEFAULT_SERVICE_TYPE)),
         'DEFAULT': DEFAULT_OPTS
     }
