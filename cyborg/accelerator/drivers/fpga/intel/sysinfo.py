@@ -181,8 +181,8 @@ def get_region_ids(device_name):
         read_line,
         glob.glob(
             os.path.join(
-                SYS_FPGA, device_name, "device/physfn/fpga",
-                "intel-fpga-dev.*", "intel-fpga-fme.*", "pr/interface_id")
+                SYS_FPGA, device_name,
+                "intel-fpga-fme.*", "pr/interface_id")
         )
     )
 
@@ -193,19 +193,17 @@ def get_traits(device_name, product_id, vf=True):
     : param product_id: product id of PF/VF, for example, "0x09c4".
     : param vf: True if device_name is a VF, otherwise False.
     """
-    # "region_id" not support at present, "CUSTOM_FPGA_REGION_INTEL_UUID"
     # "CUSTOM_PROGRAMMABLE" not support at present
     traits = []
     if not vf:
         traits.append("CUSTOM_FPGA_INTEL")
         traits.append("CUSTOM_FPGA_INTEL_" + PRODUCT_MAP.get(product_id))
-    else:
-        for i in get_afu_ids(device_name):
-            l = "CUSTOM_FPGA_FUNCTION_ID_INTEL_" + i.upper()
-            traits.append(l)
-        for i in get_region_ids(device_name):
-            l = "CUSTOM_FPGA_REGION_INTEL_" + i.upper()
-            traits.append(l)
+    for i in get_afu_ids(device_name):
+        l = "CUSTOM_FPGA_FUNCTION_ID_INTEL_" + i.upper()
+        traits.append(l)
+    for i in get_region_ids(device_name):
+        l = "CUSTOM_FPGA_REGION_INTEL_" + i.upper()
+        traits.append(l)
     return {"traits": traits}
 
 
@@ -338,6 +336,5 @@ def _generate_attribute_list(fpga):
                         driver_attr = driver_attribute.DriverAttribute(
                             key="trait" + str(index), value=val)
                         index = index + 1
-                        # driver_attr.value = "CUSTOM_UPDATED_TRAITS2"
                         attr_list.append(driver_attr)
     return attr_list
