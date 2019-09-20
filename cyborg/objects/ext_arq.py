@@ -122,7 +122,7 @@ class ExtARQ(base.CyborgObject, object_base.VersionedObjectDictCompat):
         for uuid in arq_uuid_list:
             obj_extarq = objects.ExtARQ.get(context, uuid)
             # TODO() Defer deletion to conductor
-            if obj_extarq.arq.state != constants.ARQ_STATE_INITIAL:
+            if obj_extarq.arq.state != constants.ARQ_INITIAL:
                 obj_extarq.unbind(context)
             obj_extarq.destroy(context)
 
@@ -342,9 +342,9 @@ class ExtARQ(base.CyborgObject, object_base.VersionedObjectDictCompat):
 
     def unbind(self, context):
         arq = self.arq
-        arq.hostname = ''
-        arq.device_rp_uuid = ''
-        arq.instance_uuid = ''
+        arq.hostname = None
+        arq.device_rp_uuid = None
+        arq.instance_uuid = None
         arq.state = constants.ARQ_UNBOUND
 
         # Unbind: mark attach handles as freed
@@ -352,6 +352,7 @@ class ExtARQ(base.CyborgObject, object_base.VersionedObjectDictCompat):
         if ah_id:
             attach_handle = AttachHandle.get_by_id(context, ah_id)
             attach_handle.deallocate(context)
+        self.attach_handle_id = None
         self.save(context)
 
     @classmethod
