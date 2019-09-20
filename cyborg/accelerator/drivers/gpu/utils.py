@@ -86,6 +86,7 @@ def _generate_driver_device(gpu):
                       'controller': gpu.get('controller', None)}
     driver_device_obj.std_board_info = jsonutils.dumps(std_board_info)
     driver_device_obj.type = constants.DEVICE_GPU
+    driver_device_obj.stub = gpu.get('stub', False)
     driver_device_obj.controlpath_id = _generate_controlpath_id(gpu)
     driver_device_obj.deployable_list = _generate_dep_list(gpu)
     return driver_device_obj
