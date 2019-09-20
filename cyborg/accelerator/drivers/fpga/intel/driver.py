@@ -16,16 +16,30 @@
 """
 Cyborg Intel FPGA driver implementation.
 """
-
 import subprocess
 
+from oslo_concurrency import processutils
 from oslo_log import log as logging
 
 from cyborg.accelerator.drivers.fpga.base import FPGADriver
 from cyborg.accelerator.drivers.fpga.intel import sysinfo
 from cyborg.common import exception
+import cyborg.privsep
 
 LOG = logging.getLogger(__name__)
+
+
+@cyborg.privsep.sys_admin_pctxt.entrypoint
+def _fpga_program_privileged(cmd_args):
+    # NOTE(Sundar): If we take cmd as parameter, this function can
+    # be abused to run abritrary commands in privileged mode. So
+    # only cmd_args are passed in.
+    # TODO(Sundar) Do not hardcode fpgaconf.
+    # Use right tool based on bitstream type.
+    cmd = ["/usr/bin/fpgaconf"]
+    cmd.extend(cmd_args)
+    # processutils will log the command line.
+    return processutils.execute(*cmd)
 
 
 class IntelFPGADriver(FPGADriver):
@@ -74,28 +88,18 @@ class IntelFPGADriver(FPGADriver):
             raise exception.InvalidType(obj='controlpath_id',
                                         type=controlpath_id['cpid_type'],
                                         expected='PCI')
-        # TODO(Sundar) Do not hardcode fpgaconf. Use right tool based on
-        #    bitstream type. New OPAE version with secure updates will
-        #    unify more bitstream types.
-        cmd = ["sudo", "/usr/bin/fpgaconf"]
-        """
-        # TODO() Should driver do this or the agent?
-        controlpath_id['cpid_info'] = jsonutils.loads(
-            controlpath_id['cpid_info'])
-        """
+        cmd_args = []
         bdf_dict = controlpath_id['cpid_info']
         bdf = map(lambda x: bdf_dict[x], ["bus", "device", "function"])
         for i in zip(["--bus", "--device", "--function"], bdf):
-            cmd.extend(i)
-        cmd.append(image_file_path)
-        LOG.info('Running command: %s', cmd)
+            cmd_args.extend(i)
+        cmd_args.append(image_file_path)
+
         try:
-            # TODO() Use oslo.privsep, not subprocess.Popen
-            subprocess.check_output(cmd, stderr=subprocess.STDOUT,
-                                    shell=False)
+            # TODO(Sundar) Check return code if it is retryable
+            _fpga_program_privileged(cmd_args)
             return True
-        except subprocess.CalledProcessError as e:
-            LOG.error('Programming failed. Command: (%s) '
-                      'Exception: (%s)', cmd, str(e))
-            # TODO() if retryable error, try again
+        except Exception:
+            # NOTE(Sundar): processutils.exec will log the error.
+            # TODO(Sundar): If retryable error, try again.
             return False

@@ -207,7 +207,8 @@ class ExtARQ(base.CyborgObject, object_base.VersionedObjectDictCompat):
         # TODO() propagate agent errors to caller
         return True
 
-    def _update_placement(self, devrp_uuid, function_id, bitstream_md):
+    def _update_placement(self, devrp_uuid, function_id,
+                          bitstream_md, driver_name):
         placement = placement_client.PlacementClient()
         placement.delete_traits_with_prefixes(
             devrp_uuid, ['CUSTOM_FPGA_FUNCTION_ID'])
@@ -217,8 +218,9 @@ class ExtARQ(base.CyborgObject, object_base.VersionedObjectDictCompat):
         if function_id:
             function_id = function_id.upper().replace('-', '_-')
             # TODO(Sundar) Validate this is a valid trait name
-            # TODO(Sundar) Add vendor name to trait to match spec
-            trait_names = ['CUSTOM_FPGA_FUNCTION_ID_' + function_id]
+            # Assume driver name == vendor name for FPGA driver.
+            vendor = driver_name.upper()
+            trait_names = ['CUSTOM_FPGA_FUNCTION_ID_' + vendor + function_id]
             placement.add_traits_to_rp(devrp_uuid, trait_names)
 
     def bind(self, context, hostname, devrp_uuid, instance_uuid):
@@ -279,7 +281,8 @@ class ExtARQ(base.CyborgObject, object_base.VersionedObjectDictCompat):
                                           deployable, bitstream_id)
                 if ok:
                     self._update_placement(devrp_uuid, function_id,
-                                           bitstream_md)
+                                           bitstream_md,
+                                           deployable.driver_name)
                     deployable.update(context, {'bitstream_id': bitstream_id})
                     arq.state = constants.ARQ_BOUND
                 else:
