@@ -41,7 +41,6 @@ CYBORG_AUTH_CACHE_DIR=${CYBORG_AUTH_CACHE_DIR:-/var/cache/cyborg}
 CYBORG_CONF_DIR=${CYBORG_CONF_DIR:-/etc/cyborg}
 CYBORG_CONF_FILE=$CYBORG_CONF_DIR/cyborg.conf
 CYBORG_API_PASTE_INI=$CYBORG_CONF_DIR/api-paste.ini
-CYBORG_ROOTWRAP_CONF=$CYBORG_CONF_DIR/rootwrap.conf
 CYBORG_POLICY_JSON=$CYBORG_CONF_DIR/policy.json
 CYBORG_SERVICE_HOST=${CYBORG_SERVICE_HOST:-$SERVICE_HOST}
 CYBORG_SERVICE_PORT=${CYBORG_SERVICE_PORT:-6666}
@@ -150,7 +149,6 @@ function configure_cyborg {
     iniset $CYBORG_CONF_FILE DEFAULT state_path $CYBORG_STATE_PATH
     iniset $CYBORG_CONF_FILE DEFAULT use_syslog $SYSLOG
     iniset $CYBORG_CONF_FILE DEFAULT host $LOCAL_HOSTNAME
-    configure_rootwrap cyborg
 
     # Configure Cyborg conductor, if it was enabled.
     if is_service_enabled cyborg-cond; then
@@ -241,19 +239,7 @@ function configure_cyborg_conductor {
     configure_cyborg_placement
     configure_cyborg_glance
 
-    sudo cp $CYBORG_DIR/etc/cyborg/rootwrap.conf $CYBORG_ROOTWRAP_CONF
-    sudo cp -r $CYBORG_DIR/etc/cyborg/rootwrap.d $CYBORG_CONF_DIR
     sudo cp -p $CYBORG_DIR/etc/cyborg/api-paste.ini $CYBORG_API_PASTE_INI
-    local cyborg_rootwrap
-    cyborg_rootwrap=$(get_rootwrap_location cyborg)
-    local rootwrap_isudoer_cmd="$cyborg_rootwrap $CYBORG_CONF_DIR/rootwrap.conf *"
-
-    # Set up the rootwrap sudoers for cyborg
-    local tempfile
-    tempfile=`mktemp`
-    echo "$STACK_USER ALL=(root) NOPASSWD: $rootwrap_isudoer_cmd" >$tempfile
-    sudo chown root:root $tempfile
-    sudo mv $tempfile /etc/sudoers.d/cyborg-rootwrap
 
     # set up drivers / hardware types
     iniset $CYBORG_CONF_FILE agent enabled_drivers $CYBORG_ENABLED_DRIVERS
