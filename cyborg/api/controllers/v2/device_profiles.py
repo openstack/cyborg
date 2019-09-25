@@ -27,6 +27,7 @@ from cyborg.api.controllers import link
 from cyborg.api.controllers import types
 from cyborg.api import expose
 from cyborg.common import exception
+from cyborg.common import policy
 from cyborg import objects
 
 LOG = log.getLogger(__name__)
@@ -84,7 +85,7 @@ class DeviceProfileCollection(object):
 class DeviceProfilesController(base.CyborgController):
     """REST controller for Device Profiles."""
 
-    # @policy.authorize_wsgi("cyborg:device_profile", "create", False)
+    @policy.authorize_wsgi("cyborg:device_profile", "create", False)
     @expose.expose('json', body=types.jsontype,
                    status_code=http_client.CREATED)
     def post(self, req_devprof_list):
@@ -164,7 +165,7 @@ class DeviceProfilesController(base.CyborgController):
 
         return api_obj_devprofs
 
-    # @policy.authorize_wsgi("cyborg:device_profile", "get_all")
+    @policy.authorize_wsgi("cyborg:device_profile", "get_all", False)
     @expose.expose('json', wtypes.text)
     def get_all(self, name=None):
         """Retrieve a list of device profiles."""
@@ -181,7 +182,7 @@ class DeviceProfilesController(base.CyborgController):
         return wsme.api.Response(ret, status_code=http_client.OK,
                                  return_type=wsme.types.DictType)
 
-    # @policy.authorize_wsgi("cyborg:device_profile", "get_one")
+    @policy.authorize_wsgi("cyborg:device_profile", "get_one")
     @expose.expose('json', wtypes.text)
     def get_one(self, uuid):
         """Retrieve a single device profile by uuid."""
@@ -202,14 +203,14 @@ class DeviceProfilesController(base.CyborgController):
         return wsme.api.Response(ret, status_code=http_client.OK,
                                  return_type=wsme.types.DictType)
 
-    # @policy.authorize_wsgi("cyborg:device_profile", "delete")
+    @policy.authorize_wsgi("cyborg:device_profile", "delete")
     @expose.expose(None, wtypes.text, status_code=http_client.NO_CONTENT)
     def delete(self, value):
         """Delete one or more device_profiles.
 
         URL: /device_profiles/{uuid} OR /device_profiles?value=foo,bar
 
-        :param value: Tis should be one of these two:
+        :param value: This should be one of these two:
             - UUID of a device_profile.
             - Comma-delimited list of device profile names.
         """

@@ -23,7 +23,6 @@ from cyborg.tests.unit import fake_device_profile
 
 
 class TestDeviceProfileController(v2_test.APITestV2):
-
     DP_URL = '/device_profiles'
 
     def setUp(self):
@@ -72,6 +71,20 @@ class TestDeviceProfileController(v2_test.APITestV2):
         for in_dp, out_dp in zip(self.fake_dp_objs, out_dps):
             self._validate_dp(in_dp, out_dp)
 
+    def test_create_with_non_admin(self):
+        value = {"is_admin": False, "roles": "user", "is_admin_project": False}
+        ct = self.gen_context(value)
+        headers = self.gen_headers(ct)
+        dp = [self.fake_dps[0]]
+        exc = None
+        try:
+            self.post_json(self.DP_URL, dp, headers=headers)
+        except Exception as e:
+            exc = e
+        # Cyborg does not raise different exception when policy check failed
+        # now, improve this case with assertRaises later.
+        self.assertIn("Bad response: 403 Forbidden", exc.args[0])
+
     @mock.patch('cyborg.objects.DeviceProfile.create')
     def test_create(self, mock_obj_dp):
         dp = [self.fake_dps[0]]
@@ -92,3 +105,18 @@ class TestDeviceProfileController(v2_test.APITestV2):
         url = self.DP_URL + "?value=mydp"
         response = self.delete(url, headers=self.headers)
         self.assertEqual(http_client.NO_CONTENT, response.status_int)
+
+    def test_delete_with_non_default(self):
+        value = {"is_admin": False, "roles": "user", "is_admin_project": False}
+        ct = self.gen_context(value)
+        headers = self.gen_headers(ct)
+        dp = self.fake_dp_objs[0]
+        url = self.DP_URL + '/%s'
+        exc = None
+        try:
+            self.delete(url % dp['uuid'], headers=headers)
+        except Exception as e:
+            exc = e
+        # Cyborg does not raise different exception when policy check failed
+        # now, improve this case with assertRaises later.
+        self.assertIn("Bad response: 403 Forbidden", exc.args[0])

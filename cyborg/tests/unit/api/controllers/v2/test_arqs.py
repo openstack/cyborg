@@ -111,3 +111,19 @@ class TestARQsController(v2_test.APITestV2):
         args = '?' + "instance=" + instance
         response = self.delete(url + args, headers=self.headers)
         self.assertEqual(http_client.NO_CONTENT, response.status_int)
+
+    def test_delete_with_non_default(self):
+        value = {"is_admin": False, "roles": "user", "is_admin_project": False}
+        ct = self.gen_context(value)
+        headers = self.gen_headers(ct)
+        url = self.ARQ_URL
+        arq = self.fake_extarqs[0].arq
+        args = '?' + "arqs=" + str(arq['uuid'])
+        exc = None
+        try:
+            self.delete(url + args, headers=headers)
+        except Exception as e:
+            exc = e
+        # Cyborg does not raise different exception when policy check failed
+        # now, improve this case with assertRaises later.
+        self.assertIn("Bad response: 403 Forbidden", exc.args[0])
