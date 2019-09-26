@@ -18,6 +18,7 @@ from pecan import rest
 from wsme import types as wtypes
 
 from cyborg.api.controllers import base
+from cyborg.api.controllers import v1
 from cyborg.api.controllers import v2
 from cyborg.api import expose
 
@@ -51,6 +52,7 @@ class RootController(rest.RestController):
     """The default API version"""
 
     v2 = v2.Controller()
+    v1 = v1.Controller()
 
     @expose.expose(Root)
     def get(self):
