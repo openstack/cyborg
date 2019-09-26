@@ -16,11 +16,11 @@
 """
 Utils for GPU driver.
 """
-import re
-import subprocess
-
+from oslo_concurrency import processutils
 from oslo_log import log as logging
 from oslo_serialization import jsonutils
+
+import re
 
 from cyborg.accelerator.common import utils
 from cyborg.common import constants
@@ -28,6 +28,7 @@ from cyborg.objects.driver_objects import driver_attach_handle
 from cyborg.objects.driver_objects import driver_controlpath_id
 from cyborg.objects.driver_objects import driver_deployable
 from cyborg.objects.driver_objects import driver_device
+import cyborg.privsep
 
 LOG = logging.getLogger(__name__)
 
@@ -42,15 +43,27 @@ GPU_INFO_PATTERN = re.compile("(?P<devices>[0-9a-fA-F]{4}:[0-9a-fA-F]{2}:"
 # GPU.
 
 
+@cyborg.privsep.sys_admin_pctxt.entrypoint
+def lspci_privileged():
+    cmd = ['lspci', '-nnn', '-D']
+    return processutils.execute(*cmd)
+
+
+def get_pci_devices(pci_flags, vendor_id=None):
+    device_for_vendor_out = []
+    all_device_out = []
+    lspci_out = lspci_privileged()[0].split('\n')
+    for i in range(len(lspci_out)):
+        if any(x in lspci_out[i] for x in pci_flags):
+            all_device_out.append(lspci_out[i])
+            if vendor_id and vendor_id in lspci_out[i]:
+                device_for_vendor_out.append(lspci_out[i])
+    return device_for_vendor_out if vendor_id else all_device_out
+
+
 def discover_vendors():
-    cmd = "sudo lspci -nnn -D | grep -E '%s'"
-    cmd = cmd % "|".join(GPU_FLAGS)
-    # FIXME(wangzhh): Use oslo.privsep instead of subprocess here to prevent
-    # shell injection attacks.
-    p = subprocess.Popen(cmd, stdout=subprocess.PIPE, shell=True)
-    p.wait()
-    gpus = p.stdout.readlines()
     vendors = set()
+    gpus = get_pci_devices(GPU_FLAGS)
     for gpu in gpus:
         m = GPU_INFO_PATTERN.match(gpu)
         if m:
@@ -59,17 +72,9 @@ def discover_vendors():
     return vendors
 
 
-def discover_gpus(vender_id=None):
-    cmd = "sudo lspci -nnn -D| grep -E '%s'"
-    cmd = cmd % "|".join(GPU_FLAGS)
-    if vender_id:
-        cmd = cmd + "| grep " + vender_id
-    # FIXME(wangzhh): Use oslo.privsep instead of subprocess here to prevent
-    # shell injection attacks.
-    p = subprocess.Popen(cmd, stdout=subprocess.PIPE, shell=True)
-    p.wait()
-    gpus = p.stdout.readlines()
+def discover_gpus(vendor_id=None):
     gpu_list = []
+    gpus = get_pci_devices(GPU_FLAGS, vendor_id)
     for gpu in gpus:
         m = GPU_INFO_PATTERN.match(gpu)
         if m:

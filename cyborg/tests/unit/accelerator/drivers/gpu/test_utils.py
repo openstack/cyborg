@@ -13,7 +13,6 @@
 # under the License.
 
 import mock
-import subprocess
 
 from oslo_serialization import jsonutils
 
@@ -43,17 +42,17 @@ class TestGPUDriverUtils(base.TestCase):
         super(TestGPUDriverUtils, self).setUp()
         self.p = p()
 
-    @mock.patch.object(subprocess, 'Popen', autospec=True)
-    def test_discover_vendors(self, mock_popen):
-        mock_popen.return_value = self.p
-        gpu_venders = utils.discover_vendors()
-        self.assertEqual(1, len(gpu_venders))
+    @mock.patch('cyborg.accelerator.drivers.gpu.utils.lspci_privileged')
+    def test_discover_vendors(self, mock_devices):
+        mock_devices.return_value = self.p.stdout.readlines()
+        gpu_vendors = utils.discover_vendors()
+        self.assertEqual(1, len(gpu_vendors))
 
-    @mock.patch.object(subprocess, 'Popen', autospec=True)
-    def test_discover_gpus(self, mock_popen):
-        mock_popen.return_value = self.p
-        vender_id = '10de'
-        gpu_list = utils.discover_gpus(vender_id)
+    @mock.patch('cyborg.accelerator.drivers.gpu.utils.lspci_privileged')
+    def test_discover_gpus(self, mock_devices_for_vendor):
+        mock_devices_for_vendor.return_value = self.p.stdout.readlines()
+        vendor_id = '10de'
+        gpu_list = utils.discover_gpus(vendor_id)
         self.assertEqual(1, len(gpu_list))
         attach_handle_list = [
             {'attach_type': 'PCI',
