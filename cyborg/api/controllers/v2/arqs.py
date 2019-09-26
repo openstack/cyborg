@@ -103,7 +103,8 @@ class ARQsController(base.CyborgController):
            to do this, instead of the conductor.
         """
         try:
-            obj_devprof = objects.DeviceProfile.get(context, devprof_name)
+            obj_devprof = objects.DeviceProfile.get_by_name(context,
+                                                            devprof_name)
             return obj_devprof
         except Exception:
             return None

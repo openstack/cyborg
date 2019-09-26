@@ -63,15 +63,22 @@ class DeviceProfile(base.CyborgObject, object_base.VersionedObjectDictCompat):
         self._from_db_object(self, db_devprof)
 
     @classmethod
-    def get(cls, context, name):
+    def get_by_uuid(cls, context, uuid):
+        """Find a DB Device_profile and return an Obj Device_profile."""
+        db_devprof = cls.dbapi.device_profile_get_by_uuid(context, uuid)
+        obj_devprof = cls._from_db_object(cls(context), db_devprof)
+        return obj_devprof
+
+    @classmethod
+    def get_by_name(cls, context, name):
         """Find a DB Device Profile and return an Obj Device Profile."""
         db_devprof = cls.dbapi.device_profile_get(context, name)
         obj_devprof = cls._from_db_object(cls(context), db_devprof)
         return obj_devprof
 
-    # TODO() add filters, limits, pagination, etc.
     @classmethod
     def list(cls, context):
+        # TODO() add filters, limits, pagination, etc.
         """Return a list of Device Profile objects."""
         db_devprofs = cls.dbapi.device_profile_list(context)
         obj_dp_list = cls._from_db_object_list(db_devprofs, context)
@@ -90,23 +97,6 @@ class DeviceProfile(base.CyborgObject, object_base.VersionedObjectDictCompat):
         """Delete a Device Profile from the DB."""
         self.dbapi.device_profile_delete(context, self.uuid)
         self.obj_reset_changes()
-
-    @classmethod
-    def delete_by_name(cls, context, name):
-        obj_devprof = DeviceProfile.get(context, name)
-        # may raise exception.DeviceProfileNotFound(name=name)
-        if obj_devprof:
-            obj_devprof.destroy(context)
-
-    @classmethod
-    def delete_by_uuid(cls, context, uuid):
-        try:
-            obj_devprof = next((dp for dp in cls.list(context)
-                                if dp.uuid == uuid), None)
-            if obj_devprof:
-                obj_devprof.destroy(context)
-        except Exception:
-            raise exception.DeviceProfileNotFound(uuid=uuid)
 
     @classmethod
     def _from_db_object(cls, obj, db_obj):

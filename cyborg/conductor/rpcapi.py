@@ -152,3 +152,23 @@ class ConductorAPI(object):
         cctxt = self.client.prepare(topic=self.topic)
         cctxt.call(context, 'report_data', hostname=hostname,
                    driver_device_list=driver_device_list)
+
+    def device_profile_create(self, context, obj_devprof):
+        """Signal to conductor service to create a device_profile.
+
+        :param context: request context.
+        :param obj_devprof: a created (but not saved) device_profile object.
+        :returns: created device_profile object.
+        """
+        cctxt = self.client.prepare(topic=self.topic)
+        return cctxt.call(context, 'device_profile_create',
+                          obj_devprof=obj_devprof)
+
+    def device_profile_delete(self, context, obj_devprof):
+        """Signal to conductor service to delete a device_profile.
+        :param context: request context.
+        :param obj_devprof: a device_profile object to delete.
+        """
+        cctxt = self.client.prepare(topic=self.topic)
+        cctxt.call(context, 'device_profile_delete',
+                   obj_devprof=obj_devprof)

@@ -74,7 +74,7 @@ class TestARQsController(v2_test.APITestV2):
         for in_extarq, out_arq in zip(self.fake_extarqs, out_arqs):
             self._validate_arq(in_extarq.arq, out_arq)
 
-    @mock.patch('cyborg.objects.DeviceProfile.get')
+    @mock.patch('cyborg.objects.DeviceProfile.get_by_name')
     @mock.patch('cyborg.objects.ExtARQ.create')
     def test_create(self, mock_obj_extarq, mock_obj_dp):
         dp_list = fake_device_profile.get_obj_devprofs()
