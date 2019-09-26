@@ -12,11 +12,10 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import mock
-import os
-import subprocess
 
 import fixtures
+import mock
+import os
 
 from cyborg.accelerator.drivers.fpga.intel.driver import IntelFPGADriver
 from cyborg.accelerator.drivers.fpga.intel import sysinfo
@@ -121,21 +120,21 @@ class TestIntelFPGADriver(base.TestCase):
             self.assertEqual(attach_handle_list[i][0],
                              fpga_attach_handle_list[0].as_dict())
 
-    @mock.patch.object(subprocess, 'check_output', autospec=True)
-    def test_intel_program(self, mock_subprocess):
+    @mock.patch('cyborg.accelerator.drivers.fpga.intel.driver.'
+                '_fpga_program_privileged')
+    def test_intel_program(self, mock_prog):
         b = "0x5e"
         d = "0x00"
         f = "0x0"
-        expect_cmd = ['sudo', '/usr/bin/fpgaconf', '--bus', b,
-                      '--device', d, '--function', f, '/path/image']
-        mock_subprocess.return_value = bytes([0])
+        expect_cmd = ['--bus', b, '--device', d, '--function', f,
+                      '/path/image']
 
         intel = IntelFPGADriver()
-        cpid_info = {"domain": "0000", "bus": "0x5e",
-                     "device": "0x00", "function": "0x0"}
+        cpid_info = {"domain": "0000", "bus": b,
+                     "device": d, "function": f}
         cpid = {'cpid_type': 'PCI', 'cpid_info': cpid_info}
 
         # program PF
+        mock_prog.return_value = bytes([0])
         intel.program_v2(cpid, "/path/image")
-        mock_subprocess.assert_called_with(
-            expect_cmd, shell=False, stderr=subprocess.STDOUT)
+        mock_prog.assert_called_with(expect_cmd)
