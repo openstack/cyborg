@@ -15,6 +15,7 @@
 
 import mock
 from six.moves import http_client
+import unittest
 
 from oslo_serialization import jsonutils
 
@@ -112,6 +113,7 @@ class TestARQsController(v2_test.APITestV2):
         response = self.delete(url + args, headers=self.headers)
         self.assertEqual(http_client.NO_CONTENT, response.status_int)
 
+    @unittest.skip("Need more code to implement _get_resource in rbac")
     def test_delete_with_non_default(self):
         value = {"is_admin": False, "roles": "user", "is_admin_project": False}
         ct = self.gen_context(value)

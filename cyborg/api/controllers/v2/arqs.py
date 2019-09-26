@@ -205,7 +205,7 @@ class ARQsController(base.CyborgController):
         LOG.info('[arqs:get_all] Returned: %s', ret)
         return ret
 
-    @policy.authorize_wsgi("cyborg:arq", "delete")
+    @policy.authorize_wsgi("cyborg:arq", "delete", False)
     @expose.expose(None, wtypes.text, wtypes.text,
                    status_code=http_client.NO_CONTENT)
     def delete(self, arqs=None, instance=None):
