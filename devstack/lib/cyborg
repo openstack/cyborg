@@ -230,7 +230,6 @@ function configure_cyborg_glance {
     iniset $CYBORG_CONF_FILE $section user_domain_name "$SERVICE_DOMAIN_NAME"
     iniset $CYBORG_CONF_FILE $section project_name "$SERVICE_TENANT_NAME"
     iniset $CYBORG_CONF_FILE $section project_domain_name "$SERVICE_DOMAIN_NAME"
-    iniset $CYBORG_CONF_FILE $section api_servers "$GLANCE_URL"
 }
 
 function configure_cyborg_nova {

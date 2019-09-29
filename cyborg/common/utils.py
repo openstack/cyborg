@@ -469,3 +469,7 @@ class FactoryMixin(object):
             return cls
             LOG.info("Use default %s, do not find concrete class"
                      "by %s.", cls.__name__, typ)
+
+
+def strtime(at):
+    return at.strftime("%Y-%m-%dT%H:%M:%S.%f")
