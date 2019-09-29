@@ -14,33 +14,22 @@
 #    under the License.
 
 from cyborg.common import exception
-from cyborg.conf import CONF
+from cyborg.common import utils
 from keystoneauth1 import exceptions as ks_exc
 from oslo_log import log as logging
 from oslo_middleware import request_id
-
-from openstack import connection
 
 
 LOG = logging.getLogger(__name__)
 NESTED_PROVIDER_API_VERSION = '1.14'
 POST_RPS_RETURNS_PAYLOAD_API_VERSION = '1.20'
 PLACEMENT_CLIENT_SEMAPHORE = 'placement_client'
-_CONN = None
 
 
 class PlacementClient(object):
     """Client class for reporting to placement."""
     def __init__(self):
-        global _CONN
-        if _CONN is None:
-            default_user = 'devstack-admin'
-            try:
-                auth_user = CONF.placement.username or default_user
-            except Exception:
-                auth_user = default_user
-            _CONN = connection.Connection(cloud=auth_user)
-        self._client = _CONN.placement
+        self._client = utils.get_sdk_adapter('placement')
 
     def get(self, url, version=None, global_request_id=None):
         return self._client.get(url, microversion=version,
