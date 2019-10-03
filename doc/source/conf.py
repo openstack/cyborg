@@ -22,7 +22,6 @@ sys.path.insert(0, os.path.abspath('../..'))
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
 extensions = [
     'sphinx.ext.autodoc',
-    'sphinx_feature_classification.support_matrix',
     #'sphinx.ext.intersphinx',
     'openstackdocstheme',
     'oslo_config.sphinxconfiggen',
