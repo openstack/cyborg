@@ -3,7 +3,7 @@ Configuration Guide
 ===================
 
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 2
 
    config-options
    sample_config
