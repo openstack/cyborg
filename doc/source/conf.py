@@ -22,12 +22,12 @@ sys.path.insert(0, os.path.abspath('../..'))
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
 extensions = [
     'sphinx.ext.autodoc',
-    #'sphinx.ext.intersphinx',
     'openstackdocstheme',
     'oslo_config.sphinxconfiggen',
     'oslo_config.sphinxext',
     'oslo_policy.sphinxext',
     'oslo_policy.sphinxpolicygen',
+    'sphinxcontrib.rsvgconverter',
 ]
 
 # autodoc generation is a bit aggressive and a nuisance when doing heavy
@@ -85,13 +85,35 @@ htmlhelp_basename = 'cyborgdoc'
 html_title = 'Cyborg'
 html_theme = 'openstackdocs'
 
+# -- Options for LaTeX output -------------------------------------------------
+
+latex_elements = {
+    # The paper size ('letterpaper' or 'a4paper').
+    # 'papersize': 'letterpaper',
+
+    # The font size ('10pt', '11pt' or '12pt').
+    # 'pointsize': '10pt',
+
+    # Additional stuff for the LaTeX preamble.
+    # openany: Skip blank pages in generated PDFs
+    'maxlistdepth': 10,
+    'extraclassoptions': 'openany,oneside',
+    'preamble': r'\setcounter{tocdepth}{2}',
+    'makeindex': '',
+    'printindex': '',
+}
+
+# Disable usage of xindy https://bugzilla.redhat.com/show_bug.cgi?id=1643664
+# Some distros are missing xindy
+latex_use_xindy = False
+
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass
 # [howto/manual]).
 latex_documents = [
     ('index',
-     'cyborg.tex',
-     u'cyborg Documentation',
+     'doc-cyborg.tex',
+     u'Cyborg Documentation',
      u'OpenStack Foundation', 'manual'),
 ]
 
