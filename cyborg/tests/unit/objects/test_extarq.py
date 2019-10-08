@@ -17,8 +17,11 @@ import mock
 
 from testtools.matchers import HasLength
 
+from cyborg.common import constants
+from cyborg.common import exception
 from cyborg import objects
 from cyborg.tests.unit.db import base
+from cyborg.tests.unit import fake_deployable
 from cyborg.tests.unit import fake_extarq
 
 
@@ -28,6 +31,8 @@ class TestExtARQObject(base.DbTestCase):
         super(TestExtARQObject, self).setUp()
         self.fake_db_extarqs = fake_extarq.get_fake_db_extarqs()
         self.fake_obj_extarqs = fake_extarq.get_fake_extarq_objs()
+        self.fake_obj_fpga_extarqs = fake_extarq.get_fake_fpga_extarq_objs()
+        self.deployable_uuids = ['0acbf8d6-e02a-4394-aae3-57557d209498']
 
     @mock.patch('cyborg.objects.ExtARQ._from_db_object')
     def test_get(self, mock_from_db_obj):
@@ -71,8 +76,10 @@ class TestExtARQObject(base.DbTestCase):
     @mock.patch('cyborg.common.nova_client.NovaAPI.notify_binding')
     @mock.patch('cyborg.objects.ExtARQ.bind')
     @mock.patch('cyborg.objects.ExtARQ.get')
-    def test_apply_patch(self, mock_get, mock_bind, mock_notify_bind,
-                         mock_conn):
+    def test_apply_patch_to_bad_arq_state(
+            self, mock_get, mock_bind, mock_notify_bind, mock_conn):
+        good_states = constants.ARQ_STATES_TRANSFORM_MATRIX[
+            constants.ARQ_BIND_STARTED]
         mock_get.return_value = obj_extarq = self.fake_obj_extarqs[0]
         uuid = obj_extarq.arq.uuid
         instance_uuid = obj_extarq.arq.instance_uuid
@@ -91,10 +98,177 @@ class TestExtARQObject(base.DbTestCase):
                  "value": instance_uuid}
             ]
         }
+
+        for state in set(constants.ARQ_STATES) - set(good_states):
+            obj_extarq.arq.state = state
+            mock_get.return_value = obj_extarq
+            self.assertRaises(
+                exception.ARQInvalidState, objects.ExtARQ.apply_patch,
+                self.context, patch_list, valid_fields)
+
+    @mock.patch('openstack.connection.Connection')
+    @mock.patch('cyborg.common.nova_client.NovaAPI.notify_binding')
+    @mock.patch('cyborg.objects.ExtARQ._allocate_attach_handle')
+    @mock.patch('cyborg.objects.ExtARQ.get')
+    @mock.patch('cyborg.objects.ExtARQ.list')
+    @mock.patch('cyborg.objects.ExtARQ.update_check_state')
+    @mock.patch('cyborg.objects.deployable.Deployable.get_by_device_rp_uuid')
+    def test_apply_patch_for_common_extarq(
+        self, mock_get_dep, mock_check_state, mock_list, mock_get,
+        mock_attach_handle, mock_notify_bind, mock_conn):
+
+        good_states = constants.ARQ_STATES_TRANSFORM_MATRIX[
+            constants.ARQ_BIND_STARTED]
+        obj_extarq = self.fake_obj_extarqs[0]
+        obj_extarq.arq.state = good_states[0]
+
+        # TODO(Shaohe) we should control the state of arq to make
+        # better testcase.
+        # bound_extarq = copy.deepcopy(obj_extarq)
+        # bound_extarq.arq.state = constants.ARQ_BOUND
+        # mock_get.side_effect = [obj_extarq, bound_extarq]
+        mock_get.side_effect = [obj_extarq] * 2
+        mock_list.return_value = [obj_extarq]
+        uuid = obj_extarq.arq.uuid
+        instance_uuid = obj_extarq.arq.instance_uuid
+
+        dep_uuid = self.deployable_uuids[0]
+        fake_dep = fake_deployable.fake_deployable_obj(self.context,
+                                                       uuid=dep_uuid)
+        mock_get_dep.return_value = fake_dep
+        valid_fields = {
+            uuid: {'hostname': obj_extarq.arq.hostname,
+                   'device_rp_uuid': obj_extarq.arq.device_rp_uuid,
+                   'instance_uuid': instance_uuid}
+            }
+        patch_list = {
+            str(uuid): [
+                {"path": "/hostname", "op": "add",
+                 "value": obj_extarq.arq.hostname},
+                {"path": "/device_rp_uuid", "op": "add",
+                 "value": obj_extarq.arq.device_rp_uuid},
+                {"path": "/instance_uuid", "op": "add",
+                 "value": instance_uuid}
+            ]
+        }
         objects.ExtARQ.apply_patch(self.context, patch_list, valid_fields)
-        status = 'completed'
+        # NOTE(Shaohe) we set the fake_obj_extarqs state is ARQ_INITIAL
+        # TODO(Shaohe) we should control the state of arq to make
+        # complete status testcase.
+        status = 'failed'
         mock_notify_bind.assert_called_once_with(
             instance_uuid, obj_extarq.arq.device_profile_name, status)
+
+    @mock.patch('openstack.connection.Connection')
+    @mock.patch('cyborg.common.nova_client.NovaAPI.notify_binding')
+    @mock.patch('cyborg.objects.ExtARQ._allocate_attach_handle')
+    @mock.patch('cyborg.objects.ExtARQ.get')
+    @mock.patch('cyborg.objects.ExtARQ.list')
+    @mock.patch('cyborg.objects.ExtARQ.update_check_state')
+    @mock.patch('cyborg.objects.deployable.Deployable.get_by_device_rp_uuid')
+    @mock.patch('cyborg.common.utils.ThreadWorks.spawn')
+    def test_apply_patch_start_fpga_arq_job(
+        self, mock_spawn, mock_get_dep, mock_check_state, mock_list, mock_get,
+        mock_attach_handle, mock_notify_bind, mock_conn):
+        good_states = constants.ARQ_STATES_TRANSFORM_MATRIX[
+            constants.ARQ_BIND_STARTED]
+        obj_extarq = self.fake_obj_extarqs[0]
+        obj_fpga_extarq = self.fake_obj_fpga_extarqs[0]
+        obj_fpga_extarq.state = self.fake_obj_fpga_extarqs[0]
+        obj_extarq.arq.state = good_states[0]
+        obj_fpga_extarq.arq.state = good_states[0]
+
+        # TODO(Shaohe) we should control the state of arq to make
+        # better testcase.
+        # bound_extarq = copy.deepcopy(obj_extarq)
+        # bound_extarq.arq.state = constants.ARQ_BOUND
+        # mock_get.side_effect = [obj_extarq, bound_extarq]
+        mock_get.side_effect = [obj_extarq, obj_fpga_extarq]
+        mock_list.return_value = [obj_extarq]
+        uuid = obj_extarq.arq.uuid
+        instance_uuid = obj_extarq.arq.instance_uuid
+        # mock_job_get_ext_arq.side_effect = obj_extarq
+        dep_uuid = self.deployable_uuids[0]
+        fake_dep = fake_deployable.fake_deployable_obj(self.context,
+                                                       uuid=dep_uuid)
+        mock_get_dep.return_value = fake_dep
+        mock_spawn.return_value = None
+        valid_fields = {
+            uuid: {'hostname': obj_extarq.arq.hostname,
+                   'device_rp_uuid': obj_extarq.arq.device_rp_uuid,
+                   'instance_uuid': instance_uuid}
+            }
+        patch_list = {
+            str(uuid): [
+                {"path": "/hostname", "op": "add",
+                 "value": obj_extarq.arq.hostname},
+                {"path": "/device_rp_uuid", "op": "add",
+                 "value": obj_extarq.arq.device_rp_uuid},
+                {"path": "/instance_uuid", "op": "add",
+                 "value": instance_uuid}
+            ]
+        }
+        objects.ExtARQ.apply_patch(self.context, patch_list, valid_fields)
+        # NOTE(Shaohe) we set the fake_obj_extarqs state is ARQ_INITIAL
+        # TODO(Shaohe) we should control the state of arq to make
+        # better testcase.
+        status = 'failed'
+        mock_notify_bind.assert_called_once_with(
+            instance_uuid, obj_extarq.arq.device_profile_name, status)
+        # NOTE(Shaohe) check it spawn to start a job.
+        mock_spawn.assert_called_once_with(
+            obj_fpga_extarq.bind, self.context, fake_dep)
+
+    @mock.patch('openstack.connection.Connection')
+    @mock.patch('cyborg.common.nova_client.NovaAPI.notify_binding')
+    @mock.patch('cyborg.objects.ExtARQ._allocate_attach_handle')
+    @mock.patch('cyborg.objects.ExtARQ.get')
+    @mock.patch('cyborg.objects.ExtARQ.list')
+    @mock.patch('cyborg.objects.ExtARQ.update_check_state')
+    @mock.patch('cyborg.objects.deployable.Deployable.get_by_device_rp_uuid')
+    @mock.patch('cyborg.common.utils.ThreadWorks.spawn_master')
+    def test_apply_patch_fpga_arq_monitor_job(
+        self, mock_master, mock_get_dep, mock_check_state, mock_list,
+        mock_get, mock_attach_handle, mock_notify_bind, mock_conn):
+
+        good_states = constants.ARQ_STATES_TRANSFORM_MATRIX[
+            constants.ARQ_BIND_STARTED]
+        obj_extarq = self.fake_obj_extarqs[0]
+        obj_fpga_extarq = self.fake_obj_fpga_extarqs[0]
+        obj_fpga_extarq.state = self.fake_obj_fpga_extarqs[0]
+        obj_extarq.arq.state = good_states[0]
+        obj_fpga_extarq.arq.state = good_states[0]
+
+        # TODO(Shaohe) we should control the state of arq to make
+        # better testcase.
+        # bound_extarq = copy.deepcopy(obj_extarq)
+        # bound_extarq.arq.state = constants.ARQ_BOUND
+        # mock_get.side_effect = [obj_extarq, bound_extarq]
+        mock_get.side_effect = [obj_extarq, obj_fpga_extarq]
+        mock_list.return_value = [obj_extarq]
+        uuid = obj_extarq.arq.uuid
+        instance_uuid = obj_extarq.arq.instance_uuid
+        dep_uuid = self.deployable_uuids[0]
+        fake_dep = fake_deployable.fake_deployable_obj(self.context,
+                                                       uuid=dep_uuid)
+        mock_get_dep.return_value = fake_dep
+        valid_fields = {
+            uuid: {'hostname': obj_extarq.arq.hostname,
+                   'device_rp_uuid': obj_extarq.arq.device_rp_uuid,
+                   'instance_uuid': instance_uuid}
+            }
+        patch_list = {
+            str(uuid): [
+                {"path": "/hostname", "op": "add",
+                 "value": obj_extarq.arq.hostname},
+                {"path": "/device_rp_uuid", "op": "add",
+                 "value": obj_extarq.arq.device_rp_uuid},
+                {"path": "/instance_uuid", "op": "add",
+                 "value": instance_uuid}
+            ]
+        }
+        objects.ExtARQ.apply_patch(self.context, patch_list, valid_fields)
+        mock_master.assert_called_once()
 
     @mock.patch('cyborg.objects.ExtARQ.get')
     @mock.patch('cyborg.objects.ExtARQ._from_db_object')

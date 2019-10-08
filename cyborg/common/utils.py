@@ -15,7 +15,11 @@
 
 """Utilities and helper functions."""
 
+from concurrent.futures import ThreadPoolExecutor
+from functools import wraps
 import six
+import time
+import traceback
 
 from keystoneauth1 import exceptions as ks_exc
 from keystoneauth1 import loading as ks_loading
@@ -206,3 +210,262 @@ def get_endpoint(ksa_adapter):
     raise ks_exc.EndpointNotFound(
         "Could not find requested endpoint for any of the following "
         "interfaces: %s" % interfaces)
+
+
+class _Singleton(type):
+    """A metaclass that creates a Singleton base class when called."""
+
+    _instances = {}
+
+    def __call__(cls, *args, **kwargs):
+        ins = cls._instances.get(cls)
+        if not ins or (
+            hasattr(ins, "_reset") and isinstance(ins, cls) and ins._reset()):
+            cls._instances[cls] = super(
+                _Singleton, cls).__call__(*args, **kwargs)
+
+        return cls._instances[cls]
+
+
+class Singleton(_Singleton('SingletonMeta', (object,), {})):
+    """A class for Singleton pattern."""
+
+    pass
+
+
+class ThreadWorks(Singleton):
+    """Passthrough method for ThreadPoolExecutor.
+
+    It will also grab the context from the threadlocal store and add it to
+    the store on the new thread.  This allows for continuity in logging the
+    context when using this method to spawn a new thread.
+    """
+
+    def __init__(self, pool_size=CONF.thread_pool_size):
+        """Singleton ThreadWorks init."""
+        # Ref: https://pythonhosted.org/futures/
+        # NOTE(Shaohe) We can let eventlet greening ThreadPoolExecutor
+        # eventlet.patcher.monkey_patch(os=False, socket=True,
+        #     select=True, thread=True)
+        # futures = eventlet.import_patched('concurrent.futures')
+        # ThreadPoolExecutor = futures.ThreadPoolExecutor
+        self.executor = ThreadPoolExecutor(max_workers=pool_size)
+        self.masters = {}
+
+    def spawn(self, func, *args, **kwargs):
+        """Put a job in thread pool."""
+        LOG.debug("Add an async jobs. func: %s is with parameters args: %s, "
+                  "kwargs: %s", func, args, kwargs)
+        future = self.executor.submit(func, *args, **kwargs)
+        return future
+
+    def spawn_master(self, func, *args, **kwargs):
+        """Start a new thread for a job."""
+        executor = ThreadPoolExecutor()
+        # TODO(Shaohe) every submit func should be wrapped with exception catch
+        job = executor.submit(func, *args, **kwargs)
+        # NOTE(Shaohe) shutdown should be after job submit
+        executor.shutdown(wait=False)
+        # TODO(Shaohe) we need to consider resouce collection such as the
+        # follow code to recoder them with timestemp?
+        # master = {tag: {
+        #     "executor": executor,
+        #     "job": f,
+        #     "timestemp": time.time(),
+        #     "timeout": timeout}}
+        # self.masters.update(master)
+        return job
+
+    def _reset(self):
+        return self.executor._shutdown
+
+    def map(self, func, *iterables, **kwargs):
+        """Batch for job function."""
+        return self.executor.map(func, *iterables, **kwargs)
+
+    @classmethod
+    def get_workers_result(cls, fs=(), **kwargs):
+        """get a jobs worker result.
+
+        Waits workers util it finish or raise any Exception.
+        It will cancel the rest if one job worker fails.
+        If the future is cancelled before completing then CancelledError
+        will be raised.
+
+        Parameters:
+            fs: the workers list spawn return.
+            timeout: Wait workers timeout, it can be an int or float.
+                     If the worker hasn't yet completed then this method
+                     will wait up to timeout seconds. If the worker hasn't
+                     completed in timeout seconds, then a
+                     concurrent.futures.TimeoutError will be raised.
+                     If timeout is not specified or None, there is no limit
+                     to the wait time.
+        return a generator which include:
+            result: the value returned by the job workers.
+            exception_info: the exception details raised from workers.
+            state: The work state.
+        """
+        timeout = kwargs.get('timeout')
+        if timeout is not None:
+            end_time = timeout + time.time()
+            LOG.info("job timeout set as %s", timeout)
+
+        # Yield must be hidden in closure so that the futures are submitted
+        # before the first iterator value is required.
+        def future_iterator():
+            try:
+                # reverse to keep finishing order
+                fs.reverse()
+                while fs:
+                    # Careful not to keep a reference to the popped future
+                    if timeout is None:
+                        f = fs.pop()
+                        yield f.result(), f.exception_info(), f._state, None
+                    else:
+                        f = fs.pop()
+                        yield (f.result(end_time - time.time()),
+                               f.exception_info(), f._state, None)
+            except Exception as e:
+                err = traceback.format_exc()
+                LOG.error("Error during check the worker status. Exception "
+                          "info: %s, result: %s, state: %s. Reason %s",
+                          f.exception_info(), f._result, f._state, e.message)
+                if f:
+                    yield f._result, f.exception_info(), f._state, err
+            finally:
+                # Do best to cancel remain jobs.
+                if fs:
+                    LOG.info("Cancel the remained pending jobs")
+                for future in fs:
+                    future.cancel()
+        return future_iterator()
+
+    @classmethod
+    def check_workers_exception(cls, fs=(), **kwargs):
+        """check whether a jobs worker raise exception.
+
+        Waits workers util it finish or raise any Exception.
+        It will not cancel the rest if one job worker fails. As we discussed,
+        if the job has already started flashing the card, we shouldn't cancel
+        it then.
+        So in FPGA scenarios, that means we will let the remained FPGA program
+        go on, even one jobs failed.
+
+        Parameters:
+            fs: the workers list spawn return.
+            timeout: Wait workers timeout, it can be an int or float.
+                     If the worker hasn't yet completed then this method
+                     will wait up to timeout seconds. If the worker hasn't
+                     completed in timeout seconds, then a
+                     concurrent.futures.TimeoutError will be raised.
+                     If timeout is not specified or None, there is no limit
+
+        return a generator which include:
+            exception: Return the exception raised by the workers.
+            exception_info: the exception details raised from workers.
+            result: the value returned by the job workers.
+            state: The work state.
+                     to the wait time.
+        usage:
+        """
+        timeout = kwargs.get('timeout')
+        if timeout is not None:
+            LOG.info("job timeout set as %s", timeout)
+            end_time = timeout + time.time()
+
+        # Yield must be hidden in closure so that the futures are submitted
+        # before the first iterator value is required.
+        def exception_iterator():
+            try:
+                # reverse to keep finishing order
+                fs.reverse()
+                while fs:
+                    # Careful not to keep a reference to the popped future
+                    if timeout is None:
+                        f = fs.pop()
+                        yield (f.exception(), f.exception_info(),
+                               f._result, f._state)
+                    else:
+                        f = fs.pop()
+                        yield (f.exception(end_time - time.time()),
+                               f.exception_info(), f._result, f._state)
+            except Exception as e:
+                LOG.error("Error during check the worker status. Exception "
+                          "info: %s, result: %s, state: %s. Reason %s",
+                          f.exception_info(), f._result, f._state, e.message)
+            finally:
+                if fs:
+                    LOG.info("Cancel the remained pending jobs")
+                for future in fs:
+                    future.cancel()
+        return exception_iterator()
+
+
+# info https://www.oreilly.com/library/view/python-cookbook/
+# 0596001673/ch14s05.html
+def format_tb(tb, limit=None):
+    """Fromat traceback to a string list.
+
+    Print the usual traceback information, followed by a listing of all the
+    local variables in each frame.
+    """
+    if not tb:
+        return []
+    tbs = ['Traceback (most recent call last):\n']
+    while 1:
+        tbs = tbs + traceback.format_tb(tb, limit)
+        if not tb.tb_next:
+            break
+        tb = tb.tb_next
+    return tbs
+
+
+def wrap_job_tb(msg="Reason: %s"):
+    """Wrap a function with a is_job tag added, and catch Excetpion."""
+    def _wrap_job_tb(method):
+        @wraps(method)
+        def _impl(self, *args, **kwargs):
+            try:
+                output = method(self, *args, **kwargs)
+            except Exception as e:
+                LOG.error(msg, e.message)
+                LOG.error(traceback.format_exc())
+                raise
+            return output
+        setattr(_impl, "is_job", True)
+        return _impl
+    return _wrap_job_tb
+
+
+def factory_register(SuperClass, ClassName):
+    """Register an concrete class to a factory Class."""
+    def decorator(Class):
+        # return Class
+        if not hasattr(SuperClass, "_factory"):
+            setattr(SuperClass, "_factory", {})
+        SuperClass._factory[ClassName] = Class
+        setattr(Class, "_factory_type", ClassName)
+        return Class
+    return decorator
+
+
+class FactoryMixin(object):
+    """A factory Mixin to create an concrete class."""
+
+    @classmethod
+    def factory(cls, typ, *args, **kwargs):
+        """factory to create an concrete class."""
+        f = getattr(cls, "_factory", {})
+        sclass = f.get(typ, None)
+        if sclass:
+            LOG.info("Find %s of concrete %s by %s.",
+                     sclass.__name__, cls.__name__, typ)
+            return sclass
+        for sclass in cls.__subclasses__():
+            if typ == getattr(cls, "_factory_type", None):
+                return sclass
+        else:
+            return cls
+            LOG.info("Use default %s, do not find concrete class"
+                     "by %s.", cls.__name__, typ)

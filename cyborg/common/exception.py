@@ -229,6 +229,11 @@ class DeployableNotFound(NotFound):
     _msg_fmt = _("Deployable %(uuid)s could not be found.")
 
 
+class DeployableNotFoundByRP(NotFound):
+    _msg_fmt = _("Deployable could not be found by resource provider "
+                 "%(uuid)s.")
+
+
 class ExtArqNotFound(NotFound):
     _msg_fmt = _("ExtArq %(uuid)s could not be found.")
 

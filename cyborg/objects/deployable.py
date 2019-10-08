@@ -242,3 +242,11 @@ class Deployable(base.CyborgObject, object_base.VersionedObjectDictCompat):
             return dep_obj_list[0]
         else:
             return None
+
+    def get_cpid_list(self, context):
+        query_filter = {"device_id": self.device_id}
+        # TODO(Sundar) We should probably get cpid from objects layer,
+        # not db layer
+        cpid_list = self.dbapi.control_path_get_by_filters(
+            context, query_filter)
+        return cpid_list
