@@ -28,6 +28,7 @@ PLACEMENT_CLIENT_SEMAPHORE = 'placement_client'
 
 class PlacementClient(object):
     """Client class for reporting to placement."""
+
     def __init__(self):
         self._client = utils.get_sdk_adapter('placement')
 
@@ -226,6 +227,12 @@ class PlacementClient(object):
                 }
                 LOG.error(msg, args)
                 raise exception.InvalidResourceClass(resource_class=name)
+            elif resp.status_code == 204:
+                LOG.info("Resource class  %(rc_name)s already exists",
+                         {"rc_name": name})
+            elif resp.status_code == 201:
+                LOG.info("Successfully created resource class %(rc_name).", {
+                         "rc_name", name})
 
     def _get_providers_in_tree(self, context, uuid):
         """Queries the placement API for a list of the resource providers in
