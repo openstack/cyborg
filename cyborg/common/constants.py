@@ -81,8 +81,8 @@ ACCEL_SPECS = (
 
 
 SUPPORT_RESOURCES = (
-    FPGA) = (
-    "FPGA"
+    FPGA, GPU) = (
+    "FPGA", "GPU"
 )
 
 
