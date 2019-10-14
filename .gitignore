@@ -28,7 +28,6 @@ etc/cyborg/cyborg.conf.sample
 
 doc/source/_static/*.sample
 doc/build/*
-doc/source/api/*
 api-ref/build/*
 
 AUTHORS
