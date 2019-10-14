@@ -28,19 +28,6 @@ Documentation for Operators
 The documentation in this section is aimed at Cloud
 Operators needing to install or configure Cyborg.
 
-API
-~~
-
-.. toctree::
-    :maxdepth: 1
-
-    api/api
-
-Documentation for Operators
-----------------------------
-
-The documentation in this section is aimed at Cloud
-Operators needing to install or configure Cyborg.
 
 Installation
 ~~~~~~~~~~~~
@@ -58,6 +45,7 @@ Configuration Reference
 .. toctree::
    :maxdepth: 2
 
+   api/api
    configuration/index
    reference/support-matrix
 
