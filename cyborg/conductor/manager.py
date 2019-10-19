@@ -339,7 +339,7 @@ class ConductorManager(object):
             # get attach_handle obj
             new_driver_ah_obj = new_driver_ah_list[new_info_list.index(s)]
             old_driver_ah_obj = old_driver_ah_list[old_info_list.index(s)]
-            changed_key = ['in_use', 'attach_type']
+            changed_key = ['attach_type']
             ah_obj = AttachHandle.get_ah_by_depid_attachinfo(context,
                                                              dep_id, s)
             for c_k in changed_key:
