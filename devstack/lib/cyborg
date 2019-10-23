@@ -201,40 +201,9 @@ function configure_auth_for {
     iniset $CYBORG_CONF_FILE $service_config_section cafile $SSL_BUNDLE_FILE
 }
 
-function configure_cyborg_placement {
-    # Use the provided config file path or default to $CYBORG_CONF.
-    local section=${1:-placement}
-    local auth_section=${2:-keystone_authtoken}
-    iniset $CYBORG_CONF_FILE $section auth_type "password"
-    iniset $CYBORG_CONF_FILE $section auth_url "$KEYSTONE_SERVICE_URI"
-    iniset $CYBORG_CONF_FILE $section username $section
-    iniset $CYBORG_CONF_FILE $section password "$SERVICE_PASSWORD"
-    iniset $CYBORG_CONF_FILE $section user_domain_name "$SERVICE_DOMAIN_NAME"
-    iniset $CYBORG_CONF_FILE $section project_name "$SERVICE_TENANT_NAME"
-    iniset $CYBORG_CONF_FILE $section project_domain_name "$SERVICE_DOMAIN_NAME"
-    # TODO(cdent): auth_strategy, which is common to see in these
-    # blocks is not currently used here. For the time being the
-    # placement api uses the auth_strategy configuration setting
-    # established by the nova api. This avoids, for the time, being,
-    # creating redundant configuration items that are just used for
-    # testing.
-}
-
-function configure_cyborg_glance {
-    local section=${1:-glance}
-    local auth_section=${2:-keystone_authtoken}
-    iniset $CYBORG_CONF_FILE $section auth_type "password"
-    iniset $CYBORG_CONF_FILE $section auth_url "$KEYSTONE_SERVICE_URI"
-    iniset $CYBORG_CONF_FILE $section username $section
-    iniset $CYBORG_CONF_FILE $section password "$SERVICE_PASSWORD"
-    iniset $CYBORG_CONF_FILE $section user_domain_name "$SERVICE_DOMAIN_NAME"
-    iniset $CYBORG_CONF_FILE $section project_name "$SERVICE_TENANT_NAME"
-    iniset $CYBORG_CONF_FILE $section project_domain_name "$SERVICE_DOMAIN_NAME"
-}
-
-function configure_cyborg_nova {
-    local section=${1:-nova}
-    local auth_section=${2:-keystone_authtoken}
+function configure_cyborg_other_client_section {
+    # $1 can be nova placement or other.
+    local section=$1
     iniset $CYBORG_CONF_FILE $section auth_type "password"
     iniset $CYBORG_CONF_FILE $section auth_url "$KEYSTONE_SERVICE_URI"
     iniset $CYBORG_CONF_FILE $section username $section
@@ -253,9 +222,8 @@ function configure_cyborg_conductor {
 
     # this one is needed for lookup of Cyborg API endpoint via Keystone
     configure_auth_for service_catalog
-    configure_cyborg_placement
-    configure_cyborg_glance
-    configure_cyborg_nova
+    configure_cyborg_other_client_section nova
+    configure_cyborg_other_client_section placement
 
     sudo cp -p $CYBORG_DIR/etc/cyborg/api-paste.ini $CYBORG_API_PASTE_INI
 
