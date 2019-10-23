@@ -191,7 +191,7 @@ class ExtARQJobMixin(object):
 
     @classmethod
     def apply_patch(cls, context, patch_list, valid_fields):
-        """Apply JSON patch. See api/controllers/v1/arqs.py."""
+        """Apply JSON patch. See api/controllers/v2/arqs.py."""
         arq_binds = {}
         for arq_uuid, patch in patch_list.items():
             extarq = cls.get_suitable_ext_arq(context, arq_uuid)

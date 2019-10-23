@@ -110,7 +110,7 @@ class FPGAExtARQ(ExtARQ):
         return True
 
     def get_bitstream_md(self, context, deployable, function_id, bitstream_id):
-        """Get bitstream metadate from FPGA image."""
+        """Get bitstream metadata from FPGA image."""
         LOG.info("Get bitstream metadata for deployable(uuid:%s).",
                  deployable.uuid)
         # TODO(Shaohe) Check that deployable.device.hostname matches param
@@ -118,7 +118,7 @@ class FPGAExtARQ(ExtARQ):
         if not self._needs_programming(context, deployable):
             return
 
-        # FPGA aaS or ccelerated Function aaS
+        # FPGA aaS or accelerated Function aaS
         bitstream_md = (
             self._get_bitstream_md_from_bitstream_id(bitstream_id)
             if bitstream_id else
