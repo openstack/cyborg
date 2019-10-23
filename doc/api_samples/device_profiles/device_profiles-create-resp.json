@@ -1,0 +1,17 @@
+{
+   "links":[
+      {
+         "href":"http://192.168.23.76/accelerator/v2/device_profiles/1a939c88-0b01-408b-bab0-4c61d3a02d71",
+         "rel":"self"
+      }
+   ],
+   "name":"afexample_3",
+   "groups":[
+      {
+         "trait:CUSTOM_FUNCTION_ID_3AFB":"required",
+         "resources:CUSTOM_ACCELERATOR_FPGA":"1",
+         "trait:CUSTOM_FPGA_1":"required"
+      }
+   ],
+   "uuid":"1a939c88-0b01-408b-bab0-4c61d3a02d71"
+}

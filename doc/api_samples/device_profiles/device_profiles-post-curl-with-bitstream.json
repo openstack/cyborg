@@ -1,0 +1,10 @@
+curl -g -i -X POST $cyborg_endpoint_url/device_profiles \
+  -H "Accept: application/json" -H "Content-Type: application/json" \
+  -H "User-Agent:None" \
+  -H "X-Auth-Token: yourtoken" \
+  -d '[
+{"name": "afexample_3",
+ "groups": [{"resources:CUSTOM_ACCELERATOR_FPGA": "1",
+             "trait:CUSTOM_FPGA_1": "required",
+             "trait:CUSTOM_FUNCTION_ID_3AFB": "required",
+             "accel:bitstream_id": "a6a12670-7014-4cff-a563-cea949b57fb3"}]}]'
