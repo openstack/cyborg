@@ -1,0 +1,51 @@
+Before PATCH
+
+{
+   "instance_uuid":null,
+   "hostname":null,
+   "uuid":"89ec9c4d-73b2-4aaf-9225-485945aa7162",
+   "links":[
+      {
+         "href":"http://192.168.23.138/accelerator/v2/accelerator_requests/89ec9c4d-73b2-4aaf-9225-485945aa7162",
+         "rel":"self"
+      }
+   ],
+   "created_at":"2019-10-25T12:01:05+00:00",
+   "device_profile_group_id":0,
+   "attach_handle_type":"",
+   "updated_at":null,
+   "state":"Initial",
+   "device_rp_uuid":null,
+   "device_profile_name":"chenke-dp1",
+   "attach_handle_info":{
+
+   }
+}
+
+After PATCH
+
+{
+   "instance_uuid":"506220bc-18f2-4294-9b29-80267a021dc0",
+   "hostname":"centos-80",
+   "uuid":"89ec9c4d-73b2-4aaf-9225-485945aa7162",
+   "links":[
+      {
+         "href":"http://192.168.23.138/accelerator/v2/accelerator_requests/89ec9c4d-73b2-4aaf-9225-485945aa7162",
+         "rel":"self"
+      }
+   ],
+   "created_at":"2019-10-25T12:01:05+00:00",
+   "device_profile_group_id":0,
+   "attach_handle_type":"TEST_PCI",
+   "updated_at":"2019-10-25T12:49:49+00:00",
+   "state":"Bound",
+   "device_rp_uuid":"03631f82-20a9-3f67-a29d-dc1abe4042bf",
+   "device_profile_name":"chenke-dp1",
+   "attach_handle_info":{
+      "device":"00",
+      "bus":"0c",
+      "domain":"0000",
+      "function":"0"
+   }
+}
+

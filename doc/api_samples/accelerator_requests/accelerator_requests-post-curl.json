@@ -1,0 +1,6 @@
+curl -g -i -X POST http://192.168.23.138/accelerator/v2/accelerator_requests \
+  -H "Accept: application/json" \
+  -H "Content-Type: application/json" \
+  -H "User-Agent: None" \
+  -H "X-Auth-Token: yourtoken" \
+  -d '{"device_profile_name": "tmp-dp1"}'
