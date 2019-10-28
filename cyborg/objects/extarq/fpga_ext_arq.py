@@ -101,6 +101,11 @@ class FPGAExtARQ(ExtARQ):
             LOG.info('[arqs:objs] bind. Programming needed. '
                      'bitstream: (%s) function: (%s) Deployable UUID: (%s)',
                      bs_id or '', fun_id or '', deployable.uuid)
+        else:
+            # One situation is that fun_id is zero and device_profile
+            # has't bitstream. We should return False.
+            LOG.info('No programming is required. ')
+            return False
         if deployable.bitstream_id == bs_id:
             LOG.info('Deployable %s already has the needed '
                      'bitstream %s. Skipping programming.',
