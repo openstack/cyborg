@@ -2,7 +2,6 @@
 *.tox
 *.retry
 .coverage
-.coveragerc
 .coverage.*
 .venv
 .stestr/
