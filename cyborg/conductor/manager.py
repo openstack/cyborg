@@ -386,12 +386,9 @@ class ConductorManager(object):
     def provider_report(self, context, name, resource_class, traits, total,
                         parent):
         try:
-            self.placement_client.get("/resource_classes/%s" %
-                                      resource_class,
-                                      version='1.26')
+            self.placement_client.ensure_resource_classes(
+                context, [resource_class])
         except Exception as e:
-            self.placement_client.ensure_resource_classes(context,
-                                                          [resource_class])
             LOG.error("Error, could not access resource_classes."
                       "Details: %(info)s", {"info": e})
 
