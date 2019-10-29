@@ -31,6 +31,8 @@ doc/build/*
 doc/source/api/*
 api-ref/build/*
 
+cover
+
 AUTHORS
 Authors
 ChangeLog

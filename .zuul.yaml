@@ -1,6 +1,7 @@
 - project:
     templates:
       - openstack-python-jobs
+      - openstack-cover-jobs
       - check-requirements
       - release-notes-jobs-python3
       - openstack-python3-train-jobs
