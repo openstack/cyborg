@@ -138,6 +138,8 @@ class ExtARQJobMixin(object):
             elif state == constants.ARQ_BOUND:
                 LOG.info("ARQs(%s) bind status sync finish, status is %s.",
                          uuid, status)
+        if status == constants.ARQ_BIND_STATUS_FINISH:
+            LOG.info('All ARQs %s async bind jobs has finished.', arq_uuids)
         cls.bind_notify(device_profile_name, instance_uuid, status)
 
     @classmethod
@@ -154,7 +156,6 @@ class ExtARQJobMixin(object):
                 LOG.error(msg)
             # TODO(Shaohe) Rollback? Such as We have _update_placement,
             # should cancel it.
-        LOG.info('All ARQs %s async bind jobs has finished.', arq_uuids)
         if not arq_uuids:
             return
         cls.check_bindings_result(context, extarqs)
