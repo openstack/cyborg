@@ -250,11 +250,9 @@ class ConductorManager(object):
                 dep_obj.save(context)
                 rp_uuid = self.get_rp_uuid_from_obj(new_driver_dep_obj)
                 rc = new_driver_dep_obj.name
-                inv_date = \
-                    self._gen_resource_inventory(
-                        rc, total=dep_obj.num_accelerators)
-                self.placement_client._placement_client._update_inventory(
-                    rp_uuid, inv_date)
+                inv_data = self._gen_resource_inventory(
+                    rc, total=dep_obj.num_accelerators)
+                self.placement_client.update_inventory(rp_uuid, inv_data)
             # diff the internal layer: driver_attribute_list
             new_attribute_list = []
             if hasattr(new_driver_dep_obj, 'attribute_list'):
@@ -332,8 +330,8 @@ class ConductorManager(object):
         old_info_list = [driver_ah_obj.attach_info for driver_ah_obj in
                          old_driver_ah_list]
         same = set(new_info_list) & set(old_info_list)
-        LOG.info(new_info_list)
-        LOG.info(old_info_list)
+        LOG.info('new info list %s', new_info_list)
+        LOG.info('old info list %s', old_info_list)
         # attach-info is same
         for s in same:
             # get attach_handle obj
@@ -395,7 +393,7 @@ class ConductorManager(object):
         sub_pr_uuid = self._get_sub_provider(
             context, parent, name)
         result = self._gen_resource_inventory(resource_class, total)
-        self.placement_client._update_inventory(sub_pr_uuid, result)
+        self.placement_client.update_inventory(sub_pr_uuid, result)
         # traits = ["CUSTOM_FPGA_INTEL", "CUSTOM_FPGA_INTEL_ARRIA10",
         #           "CUSTOM_FPGA_INTEL_REGION_UUID",
         #           "CUSTOM_FPGA_FUNCTION_ID_INTEL_UUID",
@@ -432,11 +430,11 @@ class ConductorManager(object):
         return str(uuid.uuid3(uuid.NAMESPACE_DNS, six.ensure_str(obj.name)))
 
     def _delete_provider_and_sub_providers(self, context, rp_uuid):
-        rp_in_tree = self.placement_client._get_providers_in_tree(context,
-                                                                  rp_uuid)
+        rp_in_tree = self.placement_client.get_providers_in_tree(context,
+                                                                 rp_uuid)
         for rp in rp_in_tree[::-1]:
             if rp["parent_provider_uuid"] == rp_uuid or rp["uuid"] == rp_uuid:
-                self.placement_client._delete_provider(rp["uuid"])
+                self.placement_client.delete_provider(rp["uuid"])
                 LOG.info("Sucessfully delete resource provider %(rp_uuid)s",
                          {"rp_uuid": rp["uuid"]})
                 if rp["uuid"] == rp_uuid:
