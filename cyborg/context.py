@@ -23,6 +23,7 @@ from oslo_utils import timeutils
 import six
 
 from cyborg.common import exception
+from cyborg.common import utils
 
 
 class _ContextAuthPlugin(plugin.BaseAuthPlugin):
@@ -107,6 +108,50 @@ class RequestContext(context.RequestContext):
             return self.user_auth_plugin
         else:
             return _ContextAuthPlugin(self.auth_token, self.service_catalog)
+
+    def to_dict(self):
+        values = super(RequestContext, self).to_dict()
+        # FIXME(dims): defensive hasattr() checks need to be
+        # removed once we figure out why we are seeing stack
+        # traces
+        values.update({
+            'user_id': getattr(self, 'user_id', None),
+            'project_id': getattr(self, 'project_id', None),
+            'is_admin': getattr(self, 'is_admin', None),
+            'read_deleted': getattr(self, 'read_deleted', 'no'),
+            'remote_address': getattr(self, 'remote_address', None),
+            'timestamp': utils.strtime(self.timestamp) if hasattr(
+                self, 'timestamp') else None,
+            'request_id': getattr(self, 'request_id', None),
+            'quota_class': getattr(self, 'quota_class', None),
+            'user_name': getattr(self, 'user_name', None),
+            'service_catalog': getattr(self, 'service_catalog', None),
+            'project_name': getattr(self, 'project_name', None),
+        })
+        # NOTE(tonyb): This can be removed once we're certain to have a
+        # RequestContext contains 'is_admin_project', We can only get away with
+        # this because we "know" the default value of 'is_admin_project' which
+        # is very fragile.
+        values.update({
+            'is_admin_project': getattr(self, 'is_admin_project', True),
+        })
+        return values
+
+    @classmethod
+    def from_dict(cls, values):
+        return super(RequestContext, cls).from_dict(
+            values,
+            user_id=values.get('user_id'),
+            project_id=values.get('project_id'),
+            # TODO(sdague): oslo.context has show_deleted, if
+            # possible, we should migrate to that in the future so we
+            # don't need to be different here.
+            read_deleted=values.get('read_deleted', 'no'),
+            remote_address=values.get('remote_address'),
+            timestamp=values.get('timestamp'),
+            quota_class=values.get('quota_class'),
+            service_catalog=values.get('service_catalog'),
+        )
 
 
 def get_context():

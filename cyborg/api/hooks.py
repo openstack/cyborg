@@ -14,11 +14,12 @@
 #    under the License.
 
 from oslo_config import cfg
-from oslo_context import context
+from oslo_serialization import jsonutils
 from pecan import hooks
 
-from cyborg.common import policy
+from cyborg.common import exception
 from cyborg.conductor import rpcapi
+from cyborg import context
 
 
 class ConfigHook(hooks.PecanHook):
@@ -76,19 +77,25 @@ class ContextHook(hooks.PecanHook):
         super(ContextHook, self).__init__()
 
     def before(self, state):
-        headers = state.request.headers
+        req = state.request
 
-        creds = {
-            'user_name': headers.get('X-User-Name'),
-            'user': headers.get('X-User-Id'),
-            'project_name': headers.get('X-Project-Name'),
-            'tenant': headers.get('X-Project-Id'),
-            'domain': headers.get('X-User-Domain-Id'),
-            'domain_name': headers.get('X-User-Domain-Name'),
-            'auth_token': headers.get('X-Auth-Token'),
-            'roles': headers.get('X-Roles', '').split(','),
-        }
+        service_catalog = None
+        if req.headers.get('X_SERVICE_CATALOG') is not None:
+            try:
+                catalog_header = req.headers.get('X_SERVICE_CATALOG')
+                service_catalog = jsonutils.loads(catalog_header)
+            except ValueError:
+                raise exception.InvalidJsonType('service catalog')
 
-        is_admin = policy.authorize('is_admin', creds, creds)
-        state.request.context = context.RequestContext(
-            is_admin=is_admin, **creds)
+        # NOTE(jamielennox): This is a full auth plugin set by auth_token
+        # middleware in newer versions.
+        user_auth_plugin = req.environ.get('keystone.token_auth')
+
+        roles = req.headers.get('X-Roles', '').split(',')
+        is_admin = ('admin' in roles or 'administrator' in roles)
+
+        state.request.context = context.RequestContext.from_environ(
+            req.environ,
+            user_auth_plugin=user_auth_plugin,
+            is_admin=is_admin,
+            service_catalog=service_catalog)

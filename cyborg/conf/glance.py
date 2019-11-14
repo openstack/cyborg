@@ -26,23 +26,6 @@ glance_group = cfg.OptGroup(
     help='Configuration options for the Image service')
 
 glance_opts = [
-    # NOTE(sdague/efried): there is intentionally no default here. This
-    # requires configuration if ksa adapter config is not used.
-    cfg.ListOpt('api_servers',
-                help="""
-List of glance api servers endpoints available to cyborg.
-
-https is used for ssl-based glance api servers.
-
-NOTE: The preferred mechanism for endpoint discovery is via keystoneauth1
-loading options. Only use api_servers if you need multiple endpoints and are
-unable to use a load balancer for some reason.
-
-Possible values:
-
-* A list of any fully qualified url of the form "scheme://hostname:port[/path]"
-  (i.e. "http://10.0.1.0:9292" or "https://my.glance.server/image").
-"""),
     cfg.IntOpt('num_retries',
                default=0,
                min=0,

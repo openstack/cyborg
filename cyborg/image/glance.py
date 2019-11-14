@@ -21,7 +21,6 @@ import copy
 import inspect
 import itertools
 import os
-import random
 import re
 import stat
 import sys
@@ -107,29 +106,22 @@ def generate_identity_headers(context, status='Confirmed'):
 
 
 def get_api_servers(context):
-    """Shuffle a list of service endpoints and return an iterator that will
+    """Get a list of service endpoints and return an iterator that will
     cycle through the list, looping around to the beginning if necessary.
     """
-    # NOTE(efried): utils.get_ksa_adapter().get_endpoint() is the preferred
-    # mechanism for endpoint discovery. Only use `api_servers` if you really
-    # need to shuffle multiple endpoints.
-    if CONF.glance.api_servers:
-        api_servers = CONF.glance.api_servers
-        random.shuffle(api_servers)
-    else:
-        sess, auth = _session_and_auth(context)
-        ksa_adap = utils.get_ksa_adapter(
-            cyborg.conf.glance.DEFAULT_SERVICE_TYPE,
-            ksa_auth=auth, ksa_session=sess,
-            min_version='2.0', max_version='2.latest')
-        endpoint = utils.get_endpoint(ksa_adap)
-        if endpoint:
-            # NOTE(mriedem): Due to python-glanceclient bug 1707995 we have
-            # to massage the endpoint URL otherwise it won't work properly.
-            # We can't use glanceclient.common.utils.strip_version because
-            # of bug 1748009.
-            endpoint = re.sub(r'/v\d+(\.\d+)?/?$', '/', endpoint)
-        api_servers = [endpoint]
+    sess, auth = _session_and_auth(context)
+    ksa_adap = utils.get_ksa_adapter(
+        cyborg.conf.glance.DEFAULT_SERVICE_TYPE,
+        ksa_auth=auth, ksa_session=sess,
+        min_version='2.0', max_version='2.latest')
+    endpoint = utils.get_endpoint(ksa_adap)
+    if endpoint:
+        # NOTE(mriedem): Due to python-glanceclient bug 1707995 we have
+        # to massage the endpoint URL otherwise it won't work properly.
+        # We can't use glanceclient.common.utils.strip_version because
+        # of bug 1748009.
+        endpoint = re.sub(r'/v\d+(\.\d+)?/?$', '/', endpoint)
+    api_servers = [endpoint]
 
     return itertools.cycle(api_servers)
 
