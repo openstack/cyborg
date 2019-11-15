@@ -1,0 +1,12 @@
+[run]
+branch = True
+source = cyborg
+omit =
+    cyborg/tests/*
+    cyborg/hacking/*
+
+[report]
+ignore_errors = True
+exclude_lines =
+    @abc.abstract
+    raise NotImplementedError
