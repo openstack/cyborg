@@ -268,7 +268,7 @@ class Connection(api.Connection):
                 filter_by(deployable_id=deployable_id,
                           in_use=False)
             values = {"in_use": True}
-            ref = query.with_lockmode('update').one()
+            ref = query.with_lockmode('update').first()
             ref.update(values)
             session.flush()
         return ref

@@ -249,9 +249,10 @@ class ConductorManager(object):
                 dep_obj.num_accelerators = new_driver_dep_obj.num_accelerators
                 dep_obj.save(context)
                 rp_uuid = self.get_rp_uuid_from_obj(new_driver_dep_obj)
-                rc = new_driver_dep_obj.name
+                attrs = new_driver_dep_obj.attribute_list
+                resource_class = [i.value for i in attrs if i.key == 'rc'][0]
                 inv_data = self._gen_resource_inventory(
-                    rc, total=dep_obj.num_accelerators)
+                    resource_class, total=dep_obj.num_accelerators)
                 self.placement_client.update_inventory(rp_uuid, inv_data)
             # diff the internal layer: driver_attribute_list
             new_attribute_list = []

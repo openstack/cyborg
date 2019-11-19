@@ -29,6 +29,7 @@ class FakeDriver(GenericDriver):
        This is just a Fake drivers interface.
     """
     VENDOR = "fake"
+    NUM_ACCELERATORS = 16
 
     def _generate_controlpath_id(self, pci):
         driver_cpid = driver_controlpath_id.DriverControlPathID()
@@ -36,13 +37,29 @@ class FakeDriver(GenericDriver):
         driver_cpid.cpid_info = pci["slot"]
         return driver_cpid
 
-    def _generate_attach_handle(self, pci):
-        driver_ah = driver_attach_handle.DriverAttachHandle()
-        # The virt driver will ignore this type when attaching
-        driver_ah.attach_type = constants.AH_TYPE_TEST_PCI
-        driver_ah.in_use = False
-        driver_ah.attach_info = pci["slot"]
-        return driver_ah
+    def _generate_attach_handles(self, pci, num_accelerators):
+        """Returns list of attach handles, with same bus# but
+        differing in device/function numbers. Assumes
+        NUM_ACCELERATORS <= 256, otherwise bus# has to change too.
+        """
+        # In PCI bus-device-function address, 1 device can have 8 functions.
+        NUM_PCI_FN_PER_PCI_DEVICE = 8
+
+        ah_list = []
+        for fn in range(1, num_accelerators + 1):  # fn 0 is CPID
+            driver_ah = driver_attach_handle.DriverAttachHandle()
+            # The virt driver will ignore this type when attaching
+            driver_ah.attach_type = constants.AH_TYPE_TEST_PCI
+            driver_ah.in_use = False
+
+            pci_slot_dict = jsonutils.loads(pci['slot'])
+            pci_slot_dict['device'] = str(int(fn / NUM_PCI_FN_PER_PCI_DEVICE))
+            pci_slot_dict['function'] = str(fn % NUM_PCI_FN_PER_PCI_DEVICE)
+            pci_slot_str = jsonutils.dumps(pci_slot_dict)
+
+            driver_ah.attach_info = pci_slot_str
+            ah_list.append(driver_ah)
+        return ah_list
 
     def _generate_attribute_list(self):
         attr_traits = driver_attribute.DriverAttribute()
@@ -55,10 +72,11 @@ class FakeDriver(GenericDriver):
 
     def _generate_dep_list(self, pci):
         driver_dep = driver_deployable.DriverDeployable()
-        driver_dep.attach_handle_list = [self._generate_attach_handle(pci)]
+        driver_dep.attach_handle_list = self._generate_attach_handles(
+            pci, self.NUM_ACCELERATORS)
         driver_dep.name = pci.get('device')
         driver_dep.driver_name = 'fake'
-        driver_dep.num_accelerators = 1
+        driver_dep.num_accelerators = self.NUM_ACCELERATORS
         driver_dep.attribute_list = self._generate_attribute_list()
         return [driver_dep]
 
