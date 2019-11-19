@@ -118,7 +118,7 @@ class PlacementClient(object):
         if response is not None:
             return response.headers.get(request_id.HTTP_RESP_HEADER_REQUEST_ID)
 
-    def _update_inventory(
+    def update_inventory(
             self, resource_provider_uuid, inventories,
             resource_provider_generation=None):
         if resource_provider_generation is None:
@@ -234,7 +234,7 @@ class PlacementClient(object):
                 LOG.info("Successfully created resource class %(rc_name).", {
                          "rc_name", name})
 
-    def _get_providers_in_tree(self, context, uuid):
+    def get_providers_in_tree(self, context, uuid):
         """Queries the placement API for a list of the resource providers in
         the tree associated with the specified UUID.
 
@@ -265,7 +265,7 @@ class PlacementClient(object):
         LOG.error(msg, args)
         raise exception.ResourceProviderRetrievalFailed(uuid=uuid)
 
-    def _delete_provider(self, rp_uuid, global_request_id=None):
+    def delete_provider(self, rp_uuid, global_request_id=None):
         resp = self.delete('/resource_providers/%s' % rp_uuid,
                            global_request_id=global_request_id)
         # Check for 404 since we don't need to warn/raise if we tried to delete
