@@ -1,0 +1,5 @@
+---
+other:
+  - |
+    Drop support for python2 as per `this
+    <https://governance.openstack.org/tc/resolutions/20180529-python2-deprecation-timeline.html#python2-deprecation-timeline>`_ message
