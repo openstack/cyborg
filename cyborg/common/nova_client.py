@@ -21,6 +21,7 @@ LOG = logging.getLogger(__name__)
 class NovaAPI(object):
     def __init__(self):
         self.nova_client = utils.get_sdk_adapter('compute')
+        self.nova_client.default_microversion = 'latest'
 
     def _get_acc_changed_event(self, instance_uuid, dev_profile_name, status):
         return [{'name': 'accelerator-requests-bound',
