@@ -12,45 +12,62 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from oslo_utils import uuidutils
-
 from cyborg import objects
+from cyborg.objects import device
 from cyborg.objects import fields
 
 
-def fake_db_device(**updates):
-    root_uuid = uuidutils.generate_uuid()
-    db_device = {
-        'id': 1,
-        'uuid': root_uuid,
-        'type': 'FPGA',
-        'vendor': "vendor",
-        'model': "model",
-        'std_board_info': "std_board_info",
-        'vendor_board_info': "vendor_board_info",
-        'hostname': "hostname"
+def get_fake_devices_as_dict():
+    device1 = {
+        "id": 1,
+        "vendor": "0xABCD",
+        "uuid": u"1c6c9033-560d-4a7a-bb8e-94455d1e7825",
+        "hostname": "test-node-1",
+        "vendor_board_info": "fake_vendor_info",
+        "model": "miss model info",
+        "type": "FPGA",
+        "std_board_info": "{'class': 'Fake class', 'device_id': '0xabcd'}"
         }
+    device2 = {
+        "id": 2,
+        "vendor": "0xDCBA",
+        "uuid": u"1c6c9033-560d-4a7a-bb8e-94455d1e7826",
+        "hostname": "test-node-2",
+        "vendor_board_info": "fake_vendor_info",
+        "model": "miss model info",
+        "type": "GPU",
+        "std_board_info": "{'class': 'Fake class', 'device_id': '0xdcba'}"
+        }
+    return [device1, device2]
 
+
+def _convert_from_dict_to_obj(device_dict):
+    obj_device = device.Device()
+    for field in device_dict.keys():
+        obj_device[field] = device_dict[field]
+    return obj_device
+
+
+def _convert_to_db_device(device_dict):
     for name, field in objects.Device.fields.items():
-        if name in db_device:
+        if name in device_dict:
             continue
         if field.nullable:
-            db_device[name] = None
+            device_dict[name] = None
         elif field.default != fields.UnspecifiedDefault:
-            db_device[name] = field.default
+            device_dict[name] = field.default
         else:
             raise Exception('fake_db_device needs help with %s' % name)
-
-    if updates:
-        db_device.update(updates)
-
-    return db_device
+    return device_dict
 
 
-def fake_device_obj(context, obj_device_class=None, **updates):
-    if obj_device_class is None:
-        obj_device_class = objects.Device
-    device = obj_device_class._from_db_object(obj_device_class(),
-                                              fake_db_device(**updates))
-    device.obj_reset_changes()
-    return device
+def get_db_devices():
+    devices_list = get_fake_devices_as_dict()
+    db_devices = list(map(_convert_to_db_device, devices_list))
+    return db_devices
+
+
+def get_fake_devices_objs():
+    devices_list = get_fake_devices_as_dict()
+    obj_devices = list(map(_convert_from_dict_to_obj, devices_list))
+    return obj_devices

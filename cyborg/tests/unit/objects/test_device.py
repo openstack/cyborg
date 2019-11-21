@@ -17,14 +17,14 @@ import mock
 
 from cyborg import objects
 from cyborg.tests.unit.db import base
-from cyborg.tests.unit.db import utils
+from cyborg.tests.unit import fake_device
 
 
 class TestDeviceObject(base.DbTestCase):
 
     def setUp(self):
         super(TestDeviceObject, self).setUp()
-        self.fake_device = utils.get_test_device()
+        self.fake_device = fake_device.get_db_devices()[0]
 
     def test_get(self):
         uuid = self.fake_device['uuid']

@@ -435,8 +435,8 @@ class Connection(api.Connection):
         return _paginate_query(context, models.Device, query_prefix,
                                limit, marker, sort_key, sort_dir)
 
-    def device_list(self, context, limit=None, marker=None,
-                    sort_key=None, sort_dir=None):
+    def device_list(self, context, limit=None, marker=None, sort_key=None,
+                    sort_dir=None):
         query = model_query(context, models.Device)
         return _paginate_query(context, models.Device, query,
                                limit, marker, sort_key, sort_dir)

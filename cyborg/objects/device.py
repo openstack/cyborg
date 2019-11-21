@@ -66,11 +66,9 @@ class Device(base.CyborgObject, object_base.VersionedObjectDictCompat):
             sort_key = filters.pop('sort_key', 'created_at')
             limit = filters.pop('limit', None)
             marker = filters.pop('marker_obj', None)
-            db_devices = cls.dbapi.device_list_by_filters(context, filters,
-                                                          sort_dir=sort_dir,
-                                                          sort_key=sort_key,
-                                                          limit=limit,
-                                                          marker=marker)
+            db_devices = cls.dbapi.device_list_by_filters(
+                context, filters, sort_dir=sort_dir, sort_key=sort_key,
+                limit=limit, marker=marker)
         else:
             db_devices = cls.dbapi.device_list(context)
         return cls._from_db_object_list(db_devices, context)
