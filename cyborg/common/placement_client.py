@@ -16,6 +16,7 @@
 from cyborg.common import exception
 from cyborg.common import utils
 from keystoneauth1 import exceptions as ks_exc
+import os_resource_classes as orc
 from oslo_log import log as logging
 from oslo_middleware import request_id
 
@@ -213,6 +214,9 @@ class PlacementClient(object):
         to_ensure = set(names)
         for name in to_ensure:
             # no payload on the put request
+            # if rc exists in placement's db, skip it.
+            if name in orc.STANDARDS:
+                return
             resp = self.put(
                 "/resource_classes/%s" % name, None, version=version,
                 global_request_id=context.global_id)
