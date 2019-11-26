@@ -16,7 +16,7 @@ from oslo_utils import uuidutils
 
 from cyborg import objects
 from cyborg.objects import fields
-from cyborg.tests.unit import fake_db_deployable
+from cyborg.tests.unit.fake_deployable import fake_db_deployable
 
 
 def fake_db_attribute(**updates):
