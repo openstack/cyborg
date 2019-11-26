@@ -68,6 +68,7 @@ class TestARQsController(v2_test.APITestV2):
 
     @mock.patch('cyborg.objects.ExtARQ.list')
     def test_get_all(self, mock_extarqs):
+        # test get_all of any bind_state
         mock_extarqs.return_value = self.fake_extarqs
         data = self.get_json(self.ARQ_URL, headers=self.headers)
         out_arqs = data['arqs']
@@ -78,14 +79,46 @@ class TestARQsController(v2_test.APITestV2):
         for in_extarq, out_arq in zip(self.fake_extarqs, out_arqs):
             self._validate_arq(in_extarq.arq, out_arq)
 
-        # test get_all response "423 Locked"
+    @mock.patch('cyborg.objects.ExtARQ.list')
+    def test_get_all_with_invalid_bind_state(self, mock_extarqs):
+        # test get_all with bind_state=started
+        mock_extarqs.return_value = self.fake_extarqs
         instance_uuid = self.fake_extarqs[0].arq.instance_uuid
+        url = '%s?instance=%s&bind_state=started' % (
+            self.ARQ_URL, instance_uuid)
+        exc = None
+        try:
+            self.get_json(url, headers=self.headers)
+        except Exception as e:
+            exc = e
+        # TODO(all) Cyborg does not have fake HTTPRequest Object now, so just
+        # use assertIn here, improve this case with assertRaises later.
+        self.assertIn(
+            "Accelerator Requests cannot be requested with "
+            "state started.", exc.args[0])
+
+        url = '%s?bind_state=started' % (self.ARQ_URL)
+        exc = None
+        try:
+            self.get_json(url, headers=self.headers)
+        except Exception as e:
+            exc = e
+        # TODO(all) Cyborg does not have fake HTTPRequest Object now, so just
+        # use assertIn here, improve this case with assertRaises later.
+        self.assertIn(
+            "Accelerator Requests cannot be requested with "
+            "state started.", exc.args[0])
+
+    @mock.patch('cyborg.objects.ExtARQ.list')
+    def test_get_all_with_invalid_arq_state(self, mock_extarqs):
+        # test get_all response "423 Locked"
         # set ARQ state to 'BindStarted'
         self.fake_extarqs[0].arq.state = 'BindStarted'
         mock_extarqs.return_value = self.fake_extarqs
+        instance_uuid = self.fake_extarqs[0].arq.instance_uuid
         url = '%s?instance=%s&bind_state=resolved' % (
             self.ARQ_URL, instance_uuid)
-        response = self.get_json(url, self.headers)
+        response = self.get_json(url, headers=self.headers, expect_errors=True)
         self.assertEqual(http_client.LOCKED, response.status_int)
 
     @mock.patch('cyborg.objects.DeviceProfile.get_by_name')

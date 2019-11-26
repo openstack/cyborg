@@ -24,6 +24,7 @@ from cyborg.api.controllers import base
 from cyborg.api.controllers import link
 from cyborg.api.controllers import types
 from cyborg.api import expose
+from cyborg.common import constants
 from cyborg.common import exception
 from cyborg.common.i18n import _
 from cyborg.common import policy
@@ -181,25 +182,31 @@ class ARQsController(base.CyborgController):
                  bind_state or '', instance or '')
         context = pecan.request.context
         extarqs = objects.ExtARQ.list(context)
+        state_map = constants.ARQ_BIND_STATES_STATUS_MAP
+        valid_bind_states = list(state_map.keys())
         arqs = [extarq.arq for extarq in extarqs]
         # TODO(Sundar): Optimize by doing the filtering in the db layer
         # Apply instance filter before state filter.
-        if instance is not None:
+        if bind_state:
+            if bind_state != 'resolved':
+                raise exception.ARQInvalidState(state=bind_state)
+        if instance:
             new_arqs = [arq for arq in arqs
                         if arq['instance_uuid'] == instance]
             arqs = new_arqs
-        if bind_state is not None:
-            if bind_state != 'resolved':
-                raise exception.ARQInvalidState(state=bind_state)
-            unbound_flag = False
-            for arq in arqs:
-                if (arq['state'] != 'Bound' and
-                        arq['state'] != 'BindFailed'):
-                    unbound_flag = True
-            if instance is not None and unbound_flag:
-                # if any ARQ for this instance is not resolved.
-                # Return HTTP code '423 Locked'
-                return wsme.api.Response(None, status_code=http_client.LOCKED)
+            if bind_state:
+                for arq in new_arqs:
+                    if arq['state'] not in valid_bind_states:
+                        # NOTE(Sundar) This should return HTTP code 423
+                        # if any ARQ for this instance is not resolved.
+                        LOG.warning('Some of ARQs for instance %s is not '
+                                    'resolved', instance)
+                        return wsme.api.Response(
+                            None,
+                            status_code=http_client.LOCKED)
+        elif bind_state:
+            arqs = [arq for arq in arqs
+                    if arq['state'] in valid_bind_states]
 
         ret = ARQCollection.convert_with_links(arqs)
         LOG.info('[arqs:get_all] Returned: %s', ret)
