@@ -251,10 +251,8 @@ class ConductorManager(object):
                 rp_uuid = self.get_rp_uuid_from_obj(new_driver_dep_obj)
                 attrs = new_driver_dep_obj.attribute_list
                 resource_class = [i.value for i in attrs if i.key == 'rc'][0]
-                inv_data = self._gen_resource_inventory(
-                    resource_class,
-                    total=dep_obj.num_accelerators,
-                    max=dep_obj.num_accelerators)
+                inv_data = _gen_resource_inventory(
+                    resource_class, dep_obj.num_accelerators)
                 self.placement_client.update_inventory(rp_uuid, inv_data)
             # diff the internal layer: driver_attribute_list
             new_attribute_list = []
@@ -395,10 +393,7 @@ class ConductorManager(object):
 
         sub_pr_uuid = self._get_sub_provider(
             context, parent, name)
-        result = self._gen_resource_inventory(
-            resource_class,
-            total=total,
-            max=total)
+        result = _gen_resource_inventory(resource_class, total)
         self.placement_client.update_inventory(sub_pr_uuid, result)
         # traits = ["CUSTOM_FPGA_INTEL", "CUSTOM_FPGA_INTEL_ARRIA10",
         #           "CUSTOM_FPGA_INTEL_REGION_UUID",
@@ -422,16 +417,6 @@ class ConductorManager(object):
         dep_obj["rp_uuid"] = rp_uuid
         dep_obj.save(context)
 
-    def _gen_resource_inventory(self, name, total=0, max=1, min=1, step=1):
-        result = {}
-        result[name] = {
-            'total': total,
-            'min_unit': min,
-            'max_unit': max,
-            'step_size': step,
-        }
-        return result
-
     def get_rp_uuid_from_obj(self, obj):
         return str(uuid.uuid3(uuid.NAMESPACE_DNS, six.ensure_str(obj.name)))
 
@@ -445,3 +430,12 @@ class ConductorManager(object):
                          {"rp_uuid": rp["uuid"]})
                 if rp["uuid"] == rp_uuid:
                     break
+
+
+def _gen_resource_inventory(resource_class, total):
+    return {
+        resource_class: {
+            'total': total,
+            'max_unit': total,
+        },
+    }
