@@ -194,12 +194,9 @@ class ARQsController(base.CyborgController):
                         arq['state'] != 'BindFailed'):
                     unbound_flag = True
             if instance is not None and unbound_flag:
-                # Return HTTP code 'Locked'
-                # TODO(Sundar) This should return HTTP code 423
                 # if any ARQ for this instance is not resolved.
-                LOG.warning('HTTP Response should be 423')
-                pecan.response.status = http_client.LOCKED
-                return None
+                # Return HTTP code '423 Locked'
+                return wsme.api.Response(None, status_code=http_client.LOCKED)
 
         ret = ARQCollection.convert_with_links(arqs)
         LOG.info('[arqs:get_all] Returned: %s', ret)
