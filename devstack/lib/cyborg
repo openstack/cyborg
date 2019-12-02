@@ -279,7 +279,7 @@ function start_cyborg {
 # Starts Cyborg API server.
 function start_cyborg_api {
     if [ "$CYBORG_USE_UWSGI" == "True" ]; then
-        run_process cyborg-api "$CYBORG_BIN_DIR/uwsgi --ini $CYBORG_UWSGI_CONF"
+        run_process cyborg-api "$CYBORG_BIN_DIR/uwsgi --ini $CYBORG_UWSGI_CONF --procname-prefix cyborg-api"
     else
         run_process cyborg-api "$CYBORG_BIN_DIR/cyborg-api --config-file $CYBORG_CONF_FILE"
     fi
