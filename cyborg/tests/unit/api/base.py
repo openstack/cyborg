@@ -145,7 +145,7 @@ class BaseApiTest(base.DbTestCase):
         return headers
 
     def get_json(self, path, expect_errors=False, headers=None,
-                 extra_environ=None, q=None, **params):
+                 extra_environ=None, q=None, return_json=True, **params):
         """Sends simulated HTTP GET request to Pecan test app.
 
         :param path: url path of target service
@@ -178,7 +178,7 @@ class BaseApiTest(base.DbTestCase):
                                 headers=headers,
                                 extra_environ=extra_environ,
                                 expect_errors=expect_errors)
-        if not expect_errors:
+        if return_json and not expect_errors:
             response = response.json
         return response
 
