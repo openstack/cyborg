@@ -75,6 +75,16 @@ class TestARQsController(v2_test.APITestV2):
         for in_extarq, out_arq in zip(self.fake_extarqs, out_arqs):
             self._validate_arq(in_extarq.arq, out_arq)
 
+        # test get_all response "423 Locked"
+        instance_uuid = self.fake_extarqs[0].arq.instance_uuid
+        # set ARQ state to 'BindStarted'
+        self.fake_extarqs[0].arq.state = 'BindStarted'
+        mock_extarqs.return_value = self.fake_extarqs
+        url = '%s?instance=%s&bind_state=resolved' % (
+            self.ARQ_URL, instance_uuid)
+        response = self.get_json(url, self.headers)
+        self.assertEqual(http_client.LOCKED, response.status_int)
+
     @mock.patch('cyborg.objects.DeviceProfile.get_by_name')
     @mock.patch('cyborg.objects.ExtARQ.create')
     def test_create(self, mock_obj_extarq, mock_obj_dp):
