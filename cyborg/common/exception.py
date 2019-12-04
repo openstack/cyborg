@@ -351,6 +351,10 @@ class PlacementAPIConflict(CyborgException):
                 "placement API at URL %(url)s: %(error)s")
 
 
+class NovaAPIConnectFailure(CyborgException):
+    msg_fmt = _("Unable to communicate with Nova API. Details: %(msg)s")
+
+
 class ResourceProviderUpdateConflict(PlacementAPIConflict):
     """A 409 caused by generation mismatch from attempting to update an
     existing provider record or its associated data (aggregates, traits, etc.).
