@@ -18,7 +18,6 @@ Cyborg Generic driver modules implementation.
 """
 
 from cyborg.accelerator.common import exception
-from cyborg.accelerator.drivers import base
 from oslo_log import log as logging
 
 LOG = logging.getLogger(__name__)
@@ -49,7 +48,7 @@ def _parse_driver_info(driver):
     return d_info
 
 
-class GENERICDRIVER(base.BaseDriver):
+class GENERICDRIVER(object):
 
     def get_properties(self):
         """Return the properties of the generic driver.
