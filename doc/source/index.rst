@@ -14,14 +14,6 @@ Overview
     user/architecture
     user/usage
 
-API
-~~~
-
-.. toctree::
-    :maxdepth: 1
-
-    api/api
-
 Documentation for Operators
 ----------------------------
 
