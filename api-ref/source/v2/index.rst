@@ -10,3 +10,5 @@ in Ussuri.
 .. rest_expand_all::
 
 .. include:: device_profile.inc
+
+.. include:: arqs.inc

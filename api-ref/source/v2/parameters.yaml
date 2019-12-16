@@ -1,3 +1,16 @@
+# variables in path
+accelerator_request_uuid:
+  description: |
+    The UUID of one accelerator request.
+  in: path
+  required: true
+  type: string
+device_profile_name:
+  description: |
+    The display name of a device profile.
+  in: path
+  required: true
+  type: string
 device_profile_uuid:
   description: |
     The UUID of the device_profile for your accelerator request.
@@ -5,6 +18,7 @@ device_profile_uuid:
   in: path
   required: true
   type: string
+# variables in body
 device_prof_groups_req:
   description: |
     This is a list of dictionaries to describe requested accelerator resource
@@ -21,6 +35,25 @@ device_prof_groups_req:
 device_prof_name_req:
   description: |
     The display name of a device profile.
+  in: body
+  required: true
+  type: string
+device_rp_uuid_bind_unbind_req:
+  description: |
+    UUID of the target accelerator (resource provider) for bind or unbind of
+    one accelerator request.
+  in: body
+  required: true
+  type: string
+hostname_bind_unbind_req:
+  description: |
+    The name of the target host for bind or unbind of one accelerator request.
+  in: body
+  required: true
+  type: string
+instance_uuid_bind_unbind_req:
+  description: |
+    UUID of the target instance for bind or unbind of one accelerator request.
   in: body
   required: true
   type: string

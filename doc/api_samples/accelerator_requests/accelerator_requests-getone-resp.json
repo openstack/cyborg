@@ -1,0 +1,20 @@
+{
+   "instance_uuid":null,
+   "hostname":null,
+   "uuid":"234c1acf-beca-47b2-9532-6bea61630936",
+   "links":[
+      {
+         "href":"http://192.168.23.138/accelerator/v2/accelerator_requests/234c1acf-beca-47b2-9532-6bea61630936",
+         "rel":"self"
+      }
+   ],
+   "created_at":"2019-10-25T07:58:49+00:00",
+   "device_profile_group_id":0,
+   "attach_handle_type":"",
+   "updated_at":null,
+   "state":"Initial",
+   "device_rp_uuid":null,
+   "device_profile_name":"tmp-dp1",
+   "attach_handle_info":{
+   }
+}

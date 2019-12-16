@@ -1,0 +1,12 @@
+curl -g -i -X PATCH http://192.168.23.138/accelerator/v2/accelerator_requests \
+  -H "Accept: application/json" \
+  -H "Content-Type: application/json" \
+  -H "User-Agent: None" \
+  -H "X-Auth-Token: yourtoken" \
+  -d '
+{"89ec9c4d-73b2-4aaf-9225-485945aa7162":
+    [{"op": "add", "path": "/instance_uuid",
+        "value": "506220bc-18f2-4294-9b29-80267a021dc0"},
+     {"op": "add", "path": "/hostname", "value": "centos-80"},
+     {"op": "add", "path": "/device_rp_uuid",
+        "value": "03631f82-20a9-3f67-a29d-dc1abe4042bf"}]}'

@@ -1,0 +1,25 @@
+{
+   "arqs":[
+      {
+         "instance_uuid":null,
+         "hostname":null,
+         "uuid":"89ec9c4d-73b2-4aaf-9225-485945aa7162",
+         "links":[
+            {
+               "href":"http://192.168.23.138/accelerator/v2/accelerator_requests/89ec9c4d-73b2-4aaf-9225-485945aa7162",
+               "rel":"self"
+            }
+         ],
+         "created_at":"2019-10-25T12:01:05.896464+00:00",
+         "device_profile_group_id":0,
+         "attach_handle_type":"",
+         "updated_at":null,
+         "state":"Initial",
+         "device_rp_uuid":null,
+         "device_profile_name":"tmp-dp1",
+         "attach_handle_info":{
+
+         }
+      }
+   ]
+}
