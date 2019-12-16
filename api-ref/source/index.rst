@@ -8,4 +8,4 @@ the Cyborg project.
 .. toctree::
    :maxdepth: 1
 
-   v1/index
+   v2/index

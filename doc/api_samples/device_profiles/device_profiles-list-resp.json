@@ -1,0 +1,37 @@
+{
+   "device_profiles":[
+      {
+         "links":[
+            {
+               "href":"http://192.168.32.217/accelerator/v2/device_profiles/3d03fa5b-507c-4810-a344-759e9ef4337a",
+               "rel":"self"
+            }
+         ],
+         "name":"bym-1",
+         "groups":[
+            {
+               "resources:FPGA":"1",
+               "trait:CUSTOM_FPGA_C260":"required"
+            }
+         ],
+         "uuid":"3d03fa5b-507c-4810-a344-759e9ef4337a"
+      },
+      {
+         "links":[
+            {
+               "href":"http://192.168.32.217/accelerator/v2/device_profiles/5518a925-1c2c-49a2-a8bf-0927d9456f3e",
+               "rel":"self"
+            }
+         ],
+         "name":"fpga-dp1",
+         "groups":[
+            {
+               "trait:CUSTOM_CHENKE_TRAITS":"required",
+               "resources:FPGA":"1",
+               "accel:bitstream_id":"d5ca2f11-3108-4426-a11c-a959987565df"
+            }
+         ],
+         "uuid":"5518a925-1c2c-49a2-a8bf-0927d9456f3e"
+      }
+   ]
+}

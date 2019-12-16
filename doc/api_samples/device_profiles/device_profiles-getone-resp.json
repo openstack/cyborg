@@ -1,0 +1,19 @@
+{
+   "device_profile":{
+      "links":[
+         {
+            "href":"http://192.168.32.217/accelerator/v2/device_profiles/5518a925-1c2c-49a2-a8bf-0927d9456f3e",
+            "rel":"self"
+         }
+      ],
+      "name":"fpga-dp1",
+      "groups":[
+         {
+            "trait:CUSTOM_CHENKE_TRAITS":"required",
+            "resources:FPGA":"1",
+            "accel:bitstream_id":"d5ca2f11-3108-4426-a11c-a959987565df"
+         }
+      ],
+      "uuid":"5518a925-1c2c-49a2-a8bf-0927d9456f3e"
+   }
+}

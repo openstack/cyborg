@@ -1,0 +1,26 @@
+device_profile_uuid:
+  description: |
+    The UUID of the device_profile for your accelerator request.
+    This must be a valid UUID otherwise API will return 400.
+  in: path
+  required: true
+  type: string
+device_prof_groups_req:
+  description: |
+    This is a list of dictionaries to describe requested accelerator resource
+    by users, where users use keys to describe the resource_classes or traits
+    and values to indicate its quantity or property. This is intentionally
+    similar to extra_specs in nova flavor, and uses the same keywords for
+    resources and traits. The key-value pair can either be a resource/trait
+    or a Cyborg property. Cyborg property is of the form
+    "accel:<key>": "<value>". The valid key-value pairs can be found
+    `below <https://opendev.org/openstack/cyborg-specs/src/branch/master/specs/train/approved/device-profiles.rst#valid-accel-keys>`_.
+  in: body
+  required: true
+  type: a list of dictionaries
+device_prof_name_req:
+  description: |
+    The display name of a device profile.
+  in: body
+  required: true
+  type: string
