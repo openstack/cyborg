@@ -26,7 +26,7 @@ from cyborg.tests.unit import fake_device
 from cyborg.tests.unit.objects import test_objects
 
 
-class _TestDeployableObject(DbTestCase):
+class TestDeployableObject(DbTestCase):
 
     @property
     def fake_device(self):
@@ -233,7 +233,7 @@ class _TestDeployableObject(DbTestCase):
 
 
 class TestDeployableObject(test_objects._LocalTest,
-                           _TestDeployableObject):
+                           TestDeployableObject):
     def _test_save_objectfield_fk_constraint_fails(self, foreign_key,
                                                    expected_exception):
 
