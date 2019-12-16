@@ -36,6 +36,25 @@ def _get_arqs_as_dict():
             "resources:FPGA": "1",
             "accel:bitstream_id": "b069d97a-010a-4057-b70d-eca2b337fc9c"}
     }
+    dp_groups = [
+        {"device_profile_group": {"resources:GPU": "1"}},
+        {"device_profile_group": {
+            "trait:CUSTOM_FPGA_INTEL": "required",
+            "resources:FPGA": "1"}},
+        {"device_profile_group": {
+            "trait:CUSTOM_FPGA_INTEL": "required",
+            "resources:FPGA": "1",
+            "accel:bitstream_id": "b069d97a-010a-4057-b70d-eca2b337fc9c"}},
+        {"device_profile_group": {
+            "trait:CUSTOM_FPGA_INTEL": "required",
+            "resources:FPGA": "1",
+            "accel:function_id": "25453786-03e0-4ee7-a640-969eb5a5aa44"}},
+        {"device_profile_group": {
+            "trait:CUSTOM_FPGA_INTEL": "required",
+            "resources:FPGA": "1",
+            "accel:bitstream_id": "b069d97a-010a-4057-b70d-eca2b337fc9c",
+            "accel:function_id": "25453786-03e0-4ee7-a640-969eb5a5aa44"}},
+    ]
     arqs = [  # Corresponds to 1st device profile in fake_device)profile.py
         {"uuid": "a097fefa-da62-4630-8e8b-424c0e3426dc",
          "device_profile_group_id": 0,
@@ -49,9 +68,18 @@ def _get_arqs_as_dict():
          "device_profile_group_id": 1,
          "device_rp_uuid": "a1ec17f2-0051-4737-bac4-f074d8a01a9c",
          },
+        {"uuid": "3049ad04-a2b1-40a3-b9c8-480a5e661645",
+         "device_profile_group_id": 3,
+         "device_rp_uuid": "57455a49-bde4-490e-9179-9aa84a3870bb",
+         },
+        {"uuid": "3a9a07e7-d126-47a5-bf11-dcc04f9e60ff",
+         "device_profile_group_id": 4,
+         "device_rp_uuid": "fbd485e1-40b1-4a7e-84b9-f6b6959114a4",
+         },
     ]
     new_arqs = []
     for idx, new_arq in enumerate(arqs):
+        common.update(dp_groups[idx])
         new_arq.update(common)
         new_arq.update(id=idx)
         new_arqs.append(new_arq)
@@ -85,7 +113,7 @@ def _convert_from_dict_to_fpga_obj(arq_dict):
 
 
 def get_fake_fpga_extarq_objs():
-    arq_list = _get_arqs_as_dict()
+    arq_list = _get_arqs_as_dict()[1:]
     obj_extarqs = list(map(_convert_from_dict_to_fpga_obj, arq_list))
     return obj_extarqs
 
@@ -96,3 +124,7 @@ def get_fake_db_extarqs():
         db_extarq.update({'device_profile_id': 0})
         db_extarqs.append(db_extarq)
     return db_extarqs
+
+
+def get_fake_fpga_db_extarqs():
+    return get_fake_db_extarqs()[1:]

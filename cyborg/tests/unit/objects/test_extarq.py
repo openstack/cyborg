@@ -172,9 +172,9 @@ class TestExtARQObject(base.DbTestCase):
         mock_attach_handle, mock_notify_bind, mock_conn):
         good_states = constants.ARQ_STATES_TRANSFORM_MATRIX[
             constants.ARQ_BIND_STARTED]
-        obj_extarq = self.fake_obj_extarqs[0]
-        obj_fpga_extarq = self.fake_obj_fpga_extarqs[0]
-        obj_fpga_extarq.state = self.fake_obj_fpga_extarqs[0]
+        obj_extarq = self.fake_obj_extarqs[2]
+        obj_fpga_extarq = self.fake_obj_fpga_extarqs[1]
+        obj_fpga_extarq.state = self.fake_obj_fpga_extarqs[1]
         obj_extarq.arq.state = good_states[0]
         obj_fpga_extarq.arq.state = good_states[0]
 
@@ -233,9 +233,9 @@ class TestExtARQObject(base.DbTestCase):
 
         good_states = constants.ARQ_STATES_TRANSFORM_MATRIX[
             constants.ARQ_BIND_STARTED]
-        obj_extarq = self.fake_obj_extarqs[0]
-        obj_fpga_extarq = self.fake_obj_fpga_extarqs[0]
-        obj_fpga_extarq.state = self.fake_obj_fpga_extarqs[0]
+        obj_extarq = self.fake_obj_extarqs[2]
+        obj_fpga_extarq = self.fake_obj_fpga_extarqs[1]
+        obj_fpga_extarq.state = self.fake_obj_fpga_extarqs[1]
         obj_extarq.arq.state = good_states[0]
         obj_fpga_extarq.arq.state = good_states[0]
 
