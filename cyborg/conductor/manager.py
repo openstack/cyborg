@@ -252,7 +252,9 @@ class ConductorManager(object):
                 attrs = new_driver_dep_obj.attribute_list
                 resource_class = [i.value for i in attrs if i.key == 'rc'][0]
                 inv_data = self._gen_resource_inventory(
-                    resource_class, total=dep_obj.num_accelerators)
+                    resource_class,
+                    total=dep_obj.num_accelerators,
+                    max=dep_obj.num_accelerators)
                 self.placement_client.update_inventory(rp_uuid, inv_data)
             # diff the internal layer: driver_attribute_list
             new_attribute_list = []
@@ -393,7 +395,10 @@ class ConductorManager(object):
 
         sub_pr_uuid = self._get_sub_provider(
             context, parent, name)
-        result = self._gen_resource_inventory(resource_class, total)
+        result = self._gen_resource_inventory(
+            resource_class,
+            total=total,
+            max=total)
         self.placement_client.update_inventory(sub_pr_uuid, result)
         # traits = ["CUSTOM_FPGA_INTEL", "CUSTOM_FPGA_INTEL_ARRIA10",
         #           "CUSTOM_FPGA_INTEL_REGION_UUID",
