@@ -403,6 +403,15 @@ class Connection(api.Connection):
         except NoResultFound:
             raise exception.DeviceNotFound(uuid=uuid)
 
+    def device_get_by_id(self, context, id):
+        query = model_query(
+            context,
+            models.Device).filter_by(id=id)
+        try:
+            return query.one()
+        except NoResultFound:
+            raise exception.DeviceNotFound(id=id)
+
     def device_list_by_filters(self, context,
                                filters, sort_key='created_at',
                                sort_dir='desc', limit=None,

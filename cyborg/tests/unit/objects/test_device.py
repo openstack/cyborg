@@ -35,6 +35,18 @@ class TestDeviceObject(base.DbTestCase):
             mock_device_get.assert_called_once_with(self.context, uuid)
             self.assertEqual(self.context, device._context)
 
+    def test_get_by_id(self):
+        device_id = self.fake_device['id']
+        with mock.patch.object(self.dbapi, 'device_get_by_id',
+                               autospec=True) as mock_device_get_by_id:
+            mock_device_get_by_id.return_value = self.fake_device
+            device = objects.Device.get_by_device_id(self.context, device_id)
+            mock_device_get_by_id.assert_called_once_with(
+                self.context, device_id)
+            self.assertEqual(self.context, device._context)
+
+            # TODO(chenke) add testcase dbapi.device_get_by_id raise exception.
+
     def test_list(self):
         with mock.patch.object(self.dbapi, 'device_list',
                                autospec=True) as mock_device_list:

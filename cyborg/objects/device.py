@@ -97,9 +97,7 @@ class Device(base.CyborgObject, object_base.VersionedObjectDictCompat):
 
     @classmethod
     def get_by_device_id(cls, context, device_id):
-        """get device object list from the device ID. return [] if not
-        exist.
-        """
-        dev_filter = {'device_id': device_id}
-        device_obj_list = Device.list(context, dev_filter)
-        return device_obj_list
+        """get device object by the device ID."""
+        db_device = cls.dbapi.device_get_by_id(context, device_id)
+        obj_device = cls._from_db_object(cls(context), db_device)
+        return obj_device
