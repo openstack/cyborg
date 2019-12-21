@@ -204,10 +204,6 @@ class ServiceNotFound(NotFound):
     msg_fmt = _("Service %(service_id)s could not be found.")
 
 
-class AttachHandleNotFound(NotFound):
-    _msg_fmt = _("AttachHandle %(uuid)s could not be found.")
-
-
 class ControlpathIDNotFound(NotFound):
     _msg_fmt = _("ControlpathID %(uuid)s could not be found.")
 
