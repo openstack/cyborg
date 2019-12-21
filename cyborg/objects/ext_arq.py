@@ -13,6 +13,8 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import six
+
 from openstack import connection
 from oslo_log import log as logging
 from oslo_versionedobjects import base as object_base
@@ -181,7 +183,7 @@ class ExtARQ(base.CyborgObject, object_base.VersionedObjectDictCompat,
         except Exception as e:
             LOG.error("Failed to allocate attach handle for ARQ %s"
                       "from deployable %s. Reason: %s",
-                      self.arq.uuid, deployable.uuid, e.message)
+                      self.arq.uuid, deployable.uuid, six.text_type(e))
             # TODO(Shaohe) Rollback? We have _update_placement,
             # should cancel it.
             self.update_check_state(

@@ -150,8 +150,8 @@ class ExtARQJobMixin(object):
         msg = None
         arq_uuids = [ea.arq.uuid for ea in extarqs]
         LOG.info('Monitor master check ARQ %s async bind job.', arq_uuids)
-        for _, (exc, tb), _, err in works_generator:
-            msg = "".join(utils.format_tb(tb)) + str(exc) if exc else err
+        for _, exc, _, err in works_generator:
+            msg = exc or err
             if msg:
                 LOG.error(msg)
             # TODO(Shaohe) Rollback? Such as We have _update_placement,
