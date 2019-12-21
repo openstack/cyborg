@@ -65,7 +65,7 @@ def _get_arqs_as_dict():
          "device_rp_uuid": "a1ec17f2-0051-4737-bac4-f074d8a01a9c",
          },
         {"uuid": "292b2fa2-0831-484c-aeac-09c794428a5d",
-         "device_profile_group_id": 1,
+         "device_profile_group_id": 2,
          "device_rp_uuid": "a1ec17f2-0051-4737-bac4-f074d8a01a9c",
          },
         {"uuid": "3049ad04-a2b1-40a3-b9c8-480a5e661645",
