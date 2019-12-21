@@ -213,10 +213,6 @@ class ConfGroupForServiceTypeNotFound(ServiceNotFound):
                 "%(stype)s.")
 
 
-class DeviceNotFound(NotFound):
-    _msg_fmt = _("Device %(uuid)s could not be found.")
-
-
 class DeployableNotFound(NotFound):
     _msg_fmt = _("Deployable %(uuid)s could not be found.")
 
