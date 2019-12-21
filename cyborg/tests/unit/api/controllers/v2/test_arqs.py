@@ -106,6 +106,21 @@ class TestARQsController(v2_test.APITestV2):
                 dp_group_id = 0
             self.assertEqual(dp_group_id, out_arq['device_profile_group_id'])
 
+    @mock.patch('cyborg.objects.DeviceProfile.get_by_name')
+    @mock.patch('cyborg.objects.ExtARQ.create')
+    def test_create_with_wrong_dp(self, mock_obj_extarq, mock_obj_dp):
+        mock_obj_dp.side_effect = Exception
+        mock_obj_extarq.side_effect = self.fake_extarqs
+        params = {'device_profile_name': 'wrong_device_profile_name'}
+        exc = None
+        try:
+            self.post_json(self.ARQ_URL, params, headers=self.headers)
+        except Exception as e:
+            exc = e
+        self.assertIn(
+            "Device Profile not found with "
+            "name=wrong_device_profile_name", exc.args[0])
+
     @mock.patch('cyborg.objects.ExtARQ.delete_by_uuid')
     @mock.patch('cyborg.objects.ExtARQ.delete_by_instance')
     def test_delete(self, mock_by_inst, mock_by_arq):

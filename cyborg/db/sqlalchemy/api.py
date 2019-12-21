@@ -501,7 +501,9 @@ class Connection(api.Connection):
         try:
             return query.one()
         except NoResultFound:
-            raise exception.DeviceProfileNotFound(uuid=uuid)
+            raise exception.ResourceNotFound(
+                resource='Device Profile',
+                msg='with uuid=%s' % uuid)
 
     def device_profile_get_by_id(self, context, id):
         query = model_query(
@@ -510,7 +512,9 @@ class Connection(api.Connection):
         try:
             return query.one()
         except NoResultFound:
-            raise exception.DeviceProfileNotFound(id=id)
+            raise exception.ResourceNotFound(
+                resource='Device Profile',
+                msg='with id=%s' % id)
 
     def device_profile_get(self, context, name):
         query = model_query(
@@ -518,7 +522,9 @@ class Connection(api.Connection):
         try:
             return query.one()
         except NoResultFound:
-            raise exception.DeviceProfileNotFound(name=name)
+            raise exception.ResourceNotFound(
+                resource='Device Profile',
+                msg='with name=%s' % name)
 
     def device_profile_list_by_filters(
             self, context, filters, sort_key='created_at', sort_dir='desc',
@@ -562,7 +568,9 @@ class Connection(api.Connection):
             try:
                 ref = query.with_lockmode('update').one()
             except NoResultFound:
-                raise exception.DeviceProfileNotFound(uuid=uuid)
+                raise exception.ResourceNotFound(
+                    resource='Device Profile',
+                    msg='with uuid=%s' % uuid)
 
             ref.update(values)
         return ref
@@ -574,7 +582,9 @@ class Connection(api.Connection):
             query = add_identity_filter(query, uuid)
             count = query.delete()
             if count != 1:
-                raise exception.DeviceProfileNotFound(uuid=uuid)
+                raise exception.ResourceNotFound(
+                    resource='Device Profile',
+                    msg='with uuid=%s' % uuid)
 
     def deployable_create(self, context, values):
         if not values.get('uuid'):

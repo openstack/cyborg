@@ -130,7 +130,9 @@ class ARQsController(base.CyborgController):
         if dp_name is not None:
             devprof = self._get_devprof(context, dp_name)
             if devprof is None:
-                raise exception.DeviceProfileNameNotFound(name=dp_name)
+                raise exception.ResourceNotFound(
+                    resource='Device Profile',
+                    msg='with name=%s' % dp_name)
         else:
             raise exception.DeviceProfileNameNeeded()
         LOG.info('[arqs] post. device profile name=%s', dp_name)
