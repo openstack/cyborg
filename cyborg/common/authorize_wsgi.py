@@ -32,7 +32,8 @@ LOG = log.getLogger(__name__)
 
 @lockutils.synchronized('policy_enforcer', 'cyborg-')
 def init_enforcer(policy_file=None, rules=None,
-                  default_rule=None, use_conf=True):
+                  default_rule=None, use_conf=True,
+                  suppress_deprecation_warnings=False):
     """Synchronously initializes the policy enforcer
     :param policy_file: Custom policy file to use, if none is specified,
                         `CONF.oslo_policy.policy_file` will be used.
@@ -42,6 +43,8 @@ def init_enforcer(policy_file=None, rules=None,
                          CONF.oslo_policy.policy_default_rule will
                          be used if none is specified.
     :param use_conf: Whether to load rules from config file.
+    :param suppress_deprecation_warnings: Whether to suppress the
+                                          deprecation warnings.
     """
     global _ENFORCER
 
@@ -56,6 +59,8 @@ def init_enforcer(policy_file=None, rules=None,
                                 rules=rules,
                                 default_rule=default_rule,
                                 use_conf=use_conf)
+    if suppress_deprecation_warnings:
+        _ENFORCER.suppress_deprecation_warnings = True
     _ENFORCER.register_defaults(policies.list_policies())
 
 
