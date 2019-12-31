@@ -76,6 +76,7 @@ class TestDeviceProfileController(v2_test.APITestV2):
         ct = self.gen_context(value)
         headers = self.gen_headers(ct)
         dp = [self.fake_dps[0]]
+        dp[0]['created_at'] = str(dp[0]['created_at'])
         exc = None
         try:
             self.post_json(self.DP_URL, dp, headers=headers)
@@ -89,6 +90,7 @@ class TestDeviceProfileController(v2_test.APITestV2):
     def test_create(self, mock_cond_dp):
         dp = [self.fake_dps[0]]
         mock_cond_dp.return_value = self.fake_dp_objs[0]
+        dp[0]['created_at'] = str(dp[0]['created_at'])
         response = self.post_json(self.DP_URL, dp, headers=self.headers)
         out_dp = jsonutils.loads(response.controller_output)
 

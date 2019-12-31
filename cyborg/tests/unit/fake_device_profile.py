@@ -12,6 +12,8 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import datetime
+
 from oslo_serialization import jsonutils
 
 from cyborg.objects import device_profile
@@ -25,10 +27,18 @@ from cyborg.objects import device_profile
 
 
 def _get_device_profiles_as_dict():
+    date1 = datetime.datetime(
+        2019, 10, 9, 6, 31, 59,
+        tzinfo=datetime.timezone.utc)
+    date2 = datetime.datetime(
+        2019, 11, 8, 5, 30, 49,
+        tzinfo=datetime.timezone.utc)
     dp1 = {
         "id": 1,
         "uuid": u"a95e10ae-b3e3-4eab-a513-1afae6f17c51",
         "name": u'afaas_example_1',
+        "created_at": date1,
+        "updated_at": None,
         "groups": [
             {"resources:ACCELERATOR_FPGA": "1",
              "trait:CUSTOM_FPGA_INTEL_PAC_ARRIA10": "required",
@@ -43,6 +53,8 @@ def _get_device_profiles_as_dict():
         "id": 2,
         "uuid": u"199c46b7-63a7-431b-aa40-35da4b9420b1",
         "name": u'daas_example_1',
+        "created_at": date2,
+        "updated_at": None,
         "groups": [
             {"resources:ACCELERATOR_FPGA": "1",
              "trait:CUSTOM_REGION_ID_3ACD": "required",

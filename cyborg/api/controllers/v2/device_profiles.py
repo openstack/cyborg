@@ -65,6 +65,8 @@ class DeviceProfile(base.APIBase):
         # TODO(Sundar) add description field in db, objects and here
         for field in ['name', 'uuid', 'groups']:
             api_obj[field] = obj_devprof[field]
+        for field in ['created_at', 'updated_at']:
+            api_obj[field] = str(obj_devprof[field])
         api_obj['links'] = [
             link.Link.make_link_dict('device_profiles', api_obj['uuid'])
             ]
