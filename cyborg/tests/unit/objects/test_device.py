@@ -47,6 +47,32 @@ class TestDeviceObject(base.DbTestCase):
 
             # TODO(chenke) add testcase dbapi.device_get_by_id raise exception.
 
+    def test_get_by_hostname(self):
+        hostname = self.fake_device['hostname']
+        dev_filter = {'hostname': hostname}
+        with mock.patch.object(objects.Device, 'list',
+                               autospec=True) as mock_device_list:
+            mock_device_list.return_value = [self.fake_device]
+            devices = objects.Device.get_list_by_hostname(
+                self.context, hostname)
+            mock_device_list.assert_called_once_with(
+                self.context, dev_filter)
+            self.assertEqual(
+                hostname,
+                devices[0]['hostname'])
+
+        with mock.patch.object(objects.Device, 'list',
+                               autospec=True) as mock_device_list:
+            # test objects.Device.list return [] when hostname is None.
+            mock_device_list.return_value = []
+            hostname = None
+            dev_filter = {'hostname': hostname}
+            devices = objects.Device.get_list_by_hostname(
+                self.context, hostname)
+            mock_device_list.assert_called_once_with(
+                self.context, dev_filter)
+            self.assertEqual([], devices)
+
     def test_list(self):
         with mock.patch.object(self.dbapi, 'device_list',
                                autospec=True) as mock_device_list:
@@ -56,6 +82,24 @@ class TestDeviceObject(base.DbTestCase):
             self.assertEqual(1, len(devices))
             self.assertIsInstance(devices[0], objects.Device)
             self.assertEqual(self.context, devices[0]._context)
+
+    def test_list_with_filter(self):
+        with mock.patch.object(self.dbapi, 'device_list_by_filters',
+                               autospec=True) as mock_device_with_filter_list:
+            mock_device_with_filter_list.return_value = [self.fake_device]
+            filters = {'limit': 1}
+            devices = objects.Device.list(self.context, filters)
+            self.assertEqual(1, mock_device_with_filter_list.call_count)
+            self.assertEqual(1, len(devices))
+            self.assertIsInstance(devices[0], objects.Device)
+            mock_device_with_filter_list.assert_called_once_with(
+                self.context,
+                {},
+                sort_dir='desc',
+                sort_key='created_at',
+                limit=1,
+                marker=None,
+                )
 
     def test_create(self):
         with mock.patch.object(self.dbapi, 'device_create',
