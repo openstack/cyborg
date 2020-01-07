@@ -643,7 +643,9 @@ def _translate_image_exception(image_id, exc_value):
                   glanceclient.exc.Unauthorized)):
         return exception.ImageNotAuthorized(image_id=image_id)
     if isinstance(exc_value, glanceclient.exc.NotFound):
-        return exception.ImageNotFound(image_id=image_id)
+        return exception.ResourceNotFound(
+            resource='Image',
+            msg='with uuid=%s' % image_id)
     if isinstance(exc_value, glanceclient.exc.BadRequest):
         return exception.ImageBadRequest(image_id=image_id,
                                          response=six.text_type(exc_value))
