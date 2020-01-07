@@ -788,7 +788,9 @@ class Connection(api.Connection):
         try:
             return query.one()
         except NoResultFound:
-            raise exception.AttributeNotFound(uuid=uuid)
+            raise exception.ResourceNotFound(
+                resource='Attribute',
+                msg='with uuid=%s' % uuid)
 
     def attribute_get_by_deployable_id(self, context, deployable_id):
         query = model_query(
@@ -835,7 +837,9 @@ class Connection(api.Connection):
             try:
                 ref = query.with_lockmode('update').one()
             except NoResultFound:
-                raise exception.AttributeNotFound(uuid=uuid)
+                raise exception.ResourceNotFound(
+                    resource='Attribute',
+                    msg='with uuid=%s' % uuid)
 
             ref.update(update_fields)
         return ref
@@ -846,7 +850,9 @@ class Connection(api.Connection):
             query = add_identity_filter(query, uuid)
             count = query.delete()
             if count != 1:
-                raise exception.AttributeNotFound(uuid=uuid)
+                raise exception.ResourceNotFound(
+                    resource='Attribute',
+                    msg='with uuid=%s' % uuid)
 
     def extarq_create(self, context, values):
         if not values.get('uuid'):
@@ -881,7 +887,9 @@ class Connection(api.Connection):
             query = add_identity_filter(query, uuid)
             count = query.delete()
             if count != 1:
-                raise exception.ExtArqNotFound(uuid=uuid)
+                raise exception.ResourceNotFound(
+                    resource='ExtArq',
+                    msg='with uuid=%s' % uuid)
 
     def extarq_update(self, context, uuid, values, state_scope=None):
         if 'uuid' in values and values['uuid'] != uuid:
@@ -902,7 +910,9 @@ class Connection(api.Connection):
                 query_update.update(
                     values, synchronize_session="fetch")
             except NoResultFound:
-                raise exception.ExtArqNotFound(uuid=uuid)
+                raise exception.ResourceNotFound(
+                    resource='ExtArq',
+                    msg='with uuid=%s' % uuid)
             ref = query.first()
         return ref
 
@@ -924,7 +934,9 @@ class Connection(api.Connection):
         try:
             return query.one()
         except NoResultFound:
-            raise exception.ExtArqNotFound(uuid=uuid)
+            raise exception.ResourceNotFound(
+                resource='ExtArq',
+                msg='with uuid=%s' % uuid)
 
     def _get_quota_usages(self, context, project_id, resources=None):
         # Broken out for testability
