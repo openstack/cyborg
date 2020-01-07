@@ -136,7 +136,7 @@ class TestDeployableObject(DbTestCase):
         dpl.create(self.context)
         self.assertEqual(db_dpl['uuid'], dpl.uuid)
         dpl.destroy(self.context)
-        self.assertRaises(exception.DeployableNotFound,
+        self.assertRaises(exception.ResourceNotFound,
                           objects.Deployable.get, self.context,
                           dpl.uuid)
 
