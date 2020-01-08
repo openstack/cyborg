@@ -67,7 +67,9 @@ ATTACH_HANDLE_TYPES = (AH_TYPE_PCI, AH_TYPE_MDEV, AH_TYPE_TEST_PCI) = (
 
 # Resource Class
 RESOURCES = {
-    "FPGA": orc.FPGA
+    "FPGA": orc.FPGA,
+    "PGPU": orc.PGPU,
+    "VGPU": orc.VGPU
 }
 
 
@@ -81,8 +83,8 @@ ACCEL_SPECS = (
 
 
 SUPPORT_RESOURCES = (
-    FPGA, GPU) = (
-    "FPGA", "GPU"
+    FPGA, GPU, VGPU, PGPU) = (
+    "FPGA", "GPU", "VGPU", "PGPU"
 )
 
 

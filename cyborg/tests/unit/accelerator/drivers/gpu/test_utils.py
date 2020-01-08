@@ -62,21 +62,28 @@ class TestGPUDriverUtils(base.TestCase):
                             '"function": "0"}',
              'in_use': False}
         ]
+        attribute_list = [
+            {'key': 'rc', 'value': 'PGPU'},
+            {'key': 'trait0', 'value': 'CUSTOM_GPU_NVIDIA'},
+            {'key': 'trait1', 'value': 'CUSTOM_GPU_PRODUCT_ID_15F7'},
+        ]
         expected = {
             'vendor': '10de',
             'type': 'GPU',
             'std_board_info':
                 {"controller": "3D controller", "product_id": "15f7"},
+            'vendor_board_info': {"vendor_info": "gpu_vb_info"},
             'deployable_list':
                 [
                     {
                         'num_accelerators': 1,
+                        'driver_name': 'NVIDIA',
                         'name': 'NVIDIA Corporation GP100GL '
                                 '[Tesla P100 PCIe 12GB]_0000:00:06.0',
-                        'attach_handle_list': attach_handle_list
+                        'attach_handle_list': attach_handle_list,
+                        'attribute_list': attribute_list
                     },
                 ],
-
             'controlpath_id': {'cpid_info': '{"bus": "00", '
                                             '"device": "06", '
                                             '"domain": "0000", '
@@ -88,14 +95,24 @@ class TestGPUDriverUtils(base.TestCase):
         gpu_dep_list = gpu_dict['deployable_list']
         gpu_attach_handle_list = \
             gpu_dep_list[0].as_dict()['attach_handle_list']
+        gpu_attribute_list = \
+            gpu_dep_list[0].as_dict()['attribute_list']
+        attri_obj_data = []
+        [attri_obj_data.append(attr.as_dict()) for attr in gpu_attribute_list]
+        attribute_actual_data = sorted(attri_obj_data, key=lambda i: i['key'])
         self.assertEqual(expected['vendor'], gpu_dict['vendor'])
         self.assertEqual(expected['controlpath_id'],
                          gpu_dict['controlpath_id'])
         self.assertEqual(expected['std_board_info'],
                          jsonutils.loads(gpu_dict['std_board_info']))
+        self.assertEqual(expected['vendor_board_info'],
+                         jsonutils.loads(gpu_dict['vendor_board_info']))
         self.assertEqual(expected['deployable_list'][0]['num_accelerators'],
                          gpu_dep_list[0].as_dict()['num_accelerators'])
         self.assertEqual(expected['deployable_list'][0]['name'],
                          gpu_dep_list[0].as_dict()['name'])
+        self.assertEqual(expected['deployable_list'][0]['driver_name'],
+                         gpu_dep_list[0].as_dict()['driver_name'])
         self.assertEqual(attach_handle_list[0],
                          gpu_attach_handle_list[0].as_dict())
+        self.assertEqual(attribute_list, attribute_actual_data)
