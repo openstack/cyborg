@@ -41,14 +41,12 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'cyborg'
 copyright = u'2013, OpenStack Foundation'
 
 # openstackdocstheme options
 repository_name = 'openstack/cyborg'
 bug_project = 'cyborg'
 bug_tag = ''
-html_last_updated_fmt = '%Y-%m-%d %H:%M'
 
 config_generator_config_file = '../../tools/config/cyborg-config-generator.conf'
 sample_config_basename = '_static/cyborg'
@@ -80,7 +78,7 @@ pygments_style = 'sphinx'
 #html_static_path = ['_static']
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = '%sdoc' % project
+htmlhelp_basename = 'cyborgdoc'
 
 # The name for this set of Sphinx documents. If None, it defaults to
 # "<project> v<release> documentation".
@@ -92,8 +90,8 @@ html_theme = 'openstackdocs'
 # [howto/manual]).
 latex_documents = [
     ('index',
-     '%s.tex' % project,
-     u'%s Documentation' % project,
+     'cyborg.tex',
+     u'cyborg Documentation',
      u'OpenStack Foundation', 'manual'),
 ]
 
