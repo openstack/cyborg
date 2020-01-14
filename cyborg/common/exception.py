@@ -117,10 +117,6 @@ class DeviceProfileAlreadyExists(CyborgException):
     _msg_fmt = _("DeviceProfile with uuid %(uuid)s already exists.")
 
 
-class DeviceProfileNameNotFound(CyborgException):
-    _msg_fmt = _("DeviceProfile with name %(name)s not found.")
-
-
 class DeviceProfileNameNeeded(CyborgException):
     _msg_fmt = _("DeviceProfile name needed.")
 
@@ -219,10 +215,6 @@ class ConfGroupForServiceTypeNotFound(ServiceNotFound):
 
 class DeviceNotFound(NotFound):
     _msg_fmt = _("Device %(uuid)s could not be found.")
-
-
-class DeviceProfileNotFound(NotFound):
-    _msg_fmt = _("DeviceProfile %(uuid)s could not be found.")
 
 
 class DeployableNotFound(NotFound):
