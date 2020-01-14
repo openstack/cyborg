@@ -106,6 +106,15 @@ device_profile_policies = [
                        description='Delete device_profile records.'),
 ]
 
+device_policies = [
+    policy.RuleDefault('cyborg:device:get_one',
+                       'rule:allow',
+                       description='Show device detail'),
+    policy.RuleDefault('cyborg:device:get_all',
+                       'rule:allow',
+                       description='Retrieve all device records'),
+]
+
 fpga_policies = [
     policy.RuleDefault('cyborg:fpga:get_one',
                        'rule:allow',
@@ -123,7 +132,8 @@ def list_policies():
     return default_policies \
         + fpga_policies \
         + accelerator_request_policies \
-        + device_profile_policies
+        + device_profile_policies \
+        + device_policies
 
 
 @lockutils.synchronized('policy_enforcer', 'cyborg-')

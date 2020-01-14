@@ -30,10 +30,8 @@ class FilterType(wtypes.UserType):
     name = 'filtertype'
     basetype = wtypes.text
 
-    # TODO(Sundar): Ensure v1 and v2 APIs coexist.
     _supported_fields = wtypes.Enum(wtypes.text, 'parent_uuid', 'root_uuid',
-                                    'vendor', 'host', 'board', 'availability',
-                                    'assignable', 'interface_type',
+                                    'board', 'availability', 'interface_type',
                                     'instance_uuid', 'limit', 'marker',
                                     'sort_key', 'sort_dir')
 
