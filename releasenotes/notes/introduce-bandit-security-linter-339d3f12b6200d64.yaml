@@ -1,0 +1,7 @@
+---
+security:
+  - |
+    Introduce bandit check as the code security check, which can help us avoid 
+    possible security issues. For example, shell-related operations for drivers
+    may be insecure. With bandit test, it can check the potential security
+    issues.

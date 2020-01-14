@@ -9,7 +9,31 @@
       jobs:
         - cyborg-tempest
         - cyborg-tempest-ipv6-only
+        - cyborg-tox-bandit:
+            voting: false
     gate:
       jobs:
         - cyborg-tempest
 
+- job:
+    name: cyborg-tox-bandit
+    parent: openstack-tox
+    timeout: 2400
+    vars:
+      tox_envlist: bandit
+    required-projects:
+      - openstack/requirements
+    irrelevant-files: &gate-irrelevant-files
+      - ^(test-|)requirements.txt$
+      - ^.*\.rst$
+      - ^api-ref/.*$
+      - ^cyborg/cmd/status\.py$
+      - ^cyborg/hacking/.*$
+      - ^cyborg/tests/functional.*$
+      - ^cyborg/tests/unit.*$
+      - ^doc/.*$
+      - ^etc/.*$
+      - ^releasenotes/.*$
+      - ^setup.cfg$
+      - ^tools/.*$
+      - ^tox.ini$
