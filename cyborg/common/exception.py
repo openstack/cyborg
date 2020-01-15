@@ -209,15 +209,6 @@ class ConfGroupForServiceTypeNotFound(ServiceNotFound):
                 "%(stype)s.")
 
 
-class DeployableNotFound(NotFound):
-    _msg_fmt = _("Deployable %(uuid)s could not be found.")
-
-
-class DeployableNotFoundByRP(NotFound):
-    _msg_fmt = _("Deployable could not be found by resource provider "
-                 "%(uuid)s.")
-
-
 class InvalidDeployType(CyborgException):
     _msg_fmt = _("Deployable have an invalid type")
 

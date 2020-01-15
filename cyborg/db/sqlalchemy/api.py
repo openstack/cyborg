@@ -623,7 +623,9 @@ class Connection(api.Connection):
         try:
             return query.one()
         except NoResultFound:
-            raise exception.DeployableNotFound(uuid=uuid)
+            raise exception.ResourceNotFound(
+                resource='Deployable',
+                msg='with uuid=%s' % uuid)
 
     def deployable_get_by_rp_uuid(self, context, rp_uuid):
         """Get a deployable by resource provider UUID."""
@@ -633,7 +635,9 @@ class Connection(api.Connection):
         try:
             return query.one()
         except NoResultFound:
-            raise exception.DeployableNotFoundByRP(uuid=rp_uuid)
+            raise exception.ResourceNotFound(
+                resource='Deployable',
+                msg='with resource provider uuid=%s' % rp_uuid)
 
     def deployable_list(self, context):
         query = model_query(context, models.Deployable)
@@ -659,7 +663,9 @@ class Connection(api.Connection):
             try:
                 ref = query.with_lockmode('update').one()
             except NoResultFound:
-                raise exception.DeployableNotFound(uuid=uuid)
+                raise exception.ResourceNotFound(
+                    resource='Deployable',
+                    msg='with uuid=%s' % uuid)
 
             ref.update(values)
         return ref
@@ -672,7 +678,9 @@ class Connection(api.Connection):
             query.update({'root_id': None})
             count = query.delete()
             if count != 1:
-                raise exception.DeployableNotFound(uuid=uuid)
+                raise exception.ResourceNotFound(
+                    resource='Deployable',
+                    msg='with uuid=%s' % uuid)
 
     def deployable_get_by_filters_with_attributes(self, context,
                                                   filters):
