@@ -148,7 +148,9 @@ class Connection(api.Connection):
         try:
             return query.one()
         except NoResultFound:
-            raise exception.AttachHandleNotFound(uuid=uuid)
+            raise exception.ResourceNotFound(
+                resource='AttachHandle',
+                msg='with uuid=%s' % uuid)
 
     def attach_handle_get_by_id(self, context, id):
         query = model_query(
@@ -158,7 +160,7 @@ class Connection(api.Connection):
             return query.one()
         except NoResultFound:
             raise exception.ResourceNotFound(
-                resource='Attach Handle',
+                resource='AttachHandle',
                 msg='with id=%s' % id)
 
     def attach_handle_list_by_type(self, context, attach_type='PCI'):
@@ -168,7 +170,7 @@ class Connection(api.Connection):
             return query.all()
         except NoResultFound:
             raise exception.ResourceNotFound(
-                resource='Attach Handle',
+                resource='AttachHandle',
                 msg='with type=%s' % attach_type)
 
     def attach_handle_get_by_filters(self, context,
@@ -254,7 +256,9 @@ class Connection(api.Connection):
             try:
                 ref = query.with_lockmode('update').one()
             except NoResultFound:
-                raise exception.AttachHandleNotFound(uuid=uuid)
+                raise exception.ResourceNotFound(
+                    resource='AttachHandle',
+                    msg='with uuid=%s' % uuid)
             ref.update(values)
         return ref
 
@@ -296,7 +300,9 @@ class Connection(api.Connection):
             query = add_identity_filter(query, uuid)
             count = query.delete()
             if count != 1:
-                raise exception.AttachHandleNotFound(uuid=uuid)
+                raise exception.ResourceNotFound(
+                    resource='AttachHandle',
+                    msg='with uuid=%s' % uuid)
 
     def control_path_create(self, context, values):
         if not values.get('uuid'):
