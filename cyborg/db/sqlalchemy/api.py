@@ -401,7 +401,9 @@ class Connection(api.Connection):
         try:
             return query.one()
         except NoResultFound:
-            raise exception.DeviceNotFound(uuid=uuid)
+            raise exception.ResourceNotFound(
+                resource='Device',
+                msg='with uuid=%s' % uuid)
 
     def device_get_by_id(self, context, id):
         query = model_query(
@@ -410,7 +412,9 @@ class Connection(api.Connection):
         try:
             return query.one()
         except NoResultFound:
-            raise exception.DeviceNotFound(id=id)
+            raise exception.ResourceNotFound(
+                resource='Device',
+                msg='with id=%s' % id)
 
     def device_list_by_filters(self, context,
                                filters, sort_key='created_at',
@@ -460,7 +464,9 @@ class Connection(api.Connection):
             try:
                 ref = query.with_lockmode('update').one()
             except NoResultFound:
-                raise exception.DeviceNotFound(uuid=uuid)
+                raise exception.ResourceNotFound(
+                    resource='Device',
+                    msg='with uuid=%s' % uuid)
 
             ref.update(values)
         return ref
@@ -472,7 +478,9 @@ class Connection(api.Connection):
             query = add_identity_filter(query, uuid)
             count = query.delete()
             if count != 1:
-                raise exception.DeviceNotFound(uuid=uuid)
+                raise exception.ResourceNotFound(
+                    resource='Device',
+                    msg='with uuid=%s' % uuid)
 
     def device_profile_create(self, context, values):
         if not values.get('uuid'):
