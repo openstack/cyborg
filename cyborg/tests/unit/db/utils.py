@@ -16,21 +16,6 @@
 """Cyborg db test utilities."""
 
 
-def get_test_accelerator(**kw):
-    return {
-        'name': kw.get('name', 'name'),
-        'description': kw.get('description', 'description'),
-        'device_type': kw.get('device_type', 'device_type'),
-        'acc_type': kw.get('acc_type', 'acc_type'),
-        'acc_capability': kw.get('acc_capability', 'acc_capability'),
-        'vendor_id': kw.get('vendor_id', 'vendor_id'),
-        'product_id': kw.get('product_id', 'product_id'),
-        'remotable': kw.get('remotable', 1),
-        'project_id': kw.get('project_id', 'b492a6fb12964ae3bd291ce585107d48'),
-        'user_id': kw.get('user_id', '7009409e21614d1db1ef7a8c5ee101d8'),
-    }
-
-
 def get_test_deployable(**kw):
     return {
         'id': kw.get('id', 1),
@@ -47,7 +32,7 @@ def get_test_deployable(**kw):
 
 def get_test_extarq(**kwargs):
     return {
-        'uuid': kwargs.get('uuid', '10efe63d-dfea-4a37-ad94-4116fba5098'),
+        'uuid': kwargs.get('uuid', '10efe63d-dfea-4a37-ad94-4116fba50986'),
         'id': kwargs.get('id', 1),
         'state': kwargs.get('state', 'bound'),
         'device_profile_id': kwargs.get('id', 1),
@@ -65,7 +50,7 @@ def get_test_extarq(**kwargs):
 
 def get_test_arq(**kwargs):
     return {
-        'uuid': kwargs.get('uuid', '10efe63d-dfea-4a37-ad94-4116fba5098'),
+        'uuid': kwargs.get('uuid', '10efe63d-dfea-4a37-ad94-4116fba50986'),
         'id': kwargs.get('id', 1),
         'state': kwargs.get('state', 'Initial'),
         'device_profile': kwargs.get('device_profile', None),
@@ -84,7 +69,7 @@ def get_test_arq(**kwargs):
 
 def get_test_attach_handle(**kw):
     return {
-        'uuid': kw.get('uuid', '10efe63d-dfea-4a37-ad94-4116fba5098'),
+        'uuid': kw.get('uuid', '10efe63d-dfea-4a37-ad94-4116fba50986'),
         'id': kw.get('id', 1),
         'deployable_id': kw.get('deployable_id', 1),
         'cpid_id': kw.get('cpid_id', 1),
@@ -98,7 +83,7 @@ def get_test_attach_handle(**kw):
 
 def get_test_control_path(**kw):
     return {
-        'uuid': kw.get('uuid', '10efe63d-dfea-4a37-ad94-4116fba5098'),
+        'uuid': kw.get('uuid', '10efe63d-dfea-4a37-ad94-4116fba50986'),
         'id': kw.get('id', 1),
         'device_id': kw.get('device_id', 1),
         'cpid_type': kw.get('cpid_type', "PCI"),
