@@ -86,6 +86,21 @@ class TestDbDeviceProfile(base.DbTestCase):
                           self.dbapi.device_profile_get_by_uuid,
                           self.context, random_uuid)
 
+    def test_list_filter_is_none(self):
+        """The main test is filters=None. If filters=None,
+        it will be initialized to {}, that will return all device
+        profiles same as the List Device Profiles API response.
+        """
+        utils.create_test_device_profile(
+            self.context,
+            id=1,
+            uuid=uuidutils.generate_uuid(),
+            name="foo_dp")
+        res = self.dbapi.device_profile_list_by_filters(
+            self.context, filters=None)
+        self.assertEqual(1, len(res))
+        self.assertEqual('foo_dp', res[0]['name'])
+
     def test_update_with_uuid_not_exist(self):
         utils.create_test_device_profile(self.context)
         random_uuid = uuidutils.generate_uuid()

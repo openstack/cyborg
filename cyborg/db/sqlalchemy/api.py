@@ -211,6 +211,8 @@ class Connection(api.Connection):
         :param legal_keys: list of keys to apply exact filtering to
         """
 
+        if filters is None:
+            filters = {}
         if legal_keys is None:
             legal_keys = []
         filter_dict = {}
