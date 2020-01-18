@@ -92,9 +92,15 @@ class Forbidden(CyborgException):
     code = http_client.FORBIDDEN
 
 
+# TODO(Sundar): Eliminate this after ARQBadState is merged.
 class ARQInvalidState(CyborgException):
     _msg_fmt = _("Accelerator Requests cannot be requested with "
                  "state %(state)s.")
+
+
+class ARQBadState(CyborgException):
+    _msg_fmt = _('Bad state \"%(state)s\" for ARQ %(uuid)s. '
+                 'Expected state(s): %(expected)s')
 
 
 class AttachHandleAlreadyExists(CyborgException):
@@ -162,6 +168,12 @@ class InvalidJsonType(Invalid):
 class InvalidAPIVersionString(Invalid):
     msg_fmt = _("API Version String %(version)s is of invalid format. Must "
                 "be of format MajorNum.MinorNum.")
+
+
+# TODO(All): Consider whether Placement/Image exceptions can be included here.
+class InvalidAPIResponse(Invalid):
+    msg_fmt = _('Bad API response from %(service)s for %(api)s API. '
+                'Details: %(msg)s')
 
 
 # Cannot be templated as the error syntax varies.
@@ -312,10 +324,6 @@ class PlacementAPIConflict(CyborgException):
     """
     msg_fmt = _("A conflict was encountered attempting to invoke the "
                 "placement API at URL %(url)s: %(error)s")
-
-
-class NovaAPIConnectFailure(CyborgException):
-    msg_fmt = _("Unable to communicate with Nova API. Details: %(msg)s")
 
 
 class ResourceProviderUpdateConflict(PlacementAPIConflict):
