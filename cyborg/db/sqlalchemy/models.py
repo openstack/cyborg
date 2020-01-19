@@ -191,6 +191,7 @@ class DeviceProfile(Base):
     uuid = Column(String(36), nullable=False)
     name = Column(String(255), nullable=False, unique=True)
     profile_json = Column(Text, nullable=False)
+    description = Column(Text, nullable=True)
 
 
 class ExtArq(Base):

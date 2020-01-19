@@ -177,6 +177,7 @@ def get_test_device_profile(**kw):
         'id': kw.get('id', 1),
         'uuid': kw.get('uuid', 'c0f43d55-03bf-4831-8639-9bbdb6be2478'),
         'name': kw.get('name', 'name'),
+        'description': kw.get('description', 'fake_dp_desc'),
         'profile_json': kw.get(
             'profile_json',
             '{"version": "1.0", \
