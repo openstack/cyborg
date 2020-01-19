@@ -36,6 +36,7 @@ class TestDeviceProfileObject(base.DbTestCase):
             mock_db_devprof_get.assert_called_once_with(self.context, name)
             self.assertEqual(self.context, obj_devprof._context)
             self.assertEqual(name, obj_devprof.name)
+            self.assertIn('description', obj_devprof)
 
     def test_get_by_uuid(self):
         uuid = self.fake_device_profile['uuid']
@@ -46,6 +47,7 @@ class TestDeviceProfileObject(base.DbTestCase):
             mock_db_devprof_get.assert_called_once_with(self.context, uuid)
             self.assertEqual(self.context, obj_devprof._context)
             self.assertEqual(uuid, obj_devprof.uuid)
+            self.assertIn('description', obj_devprof)
 
     def test_list(self):
         with mock.patch.object(self.dbapi, 'device_profile_list',
@@ -58,6 +60,8 @@ class TestDeviceProfileObject(base.DbTestCase):
             self.assertEqual(self.context, obj_devprofs[0]._context)
             self.assertEqual(self.fake_device_profile['name'],
                              obj_devprofs[0].name)
+            self.assertEqual(self.fake_device_profile['description'],
+                             obj_devprofs[0].description)
 
     def test_create(self):
         api_devprofs = fake_device_profile.get_api_devprofs()

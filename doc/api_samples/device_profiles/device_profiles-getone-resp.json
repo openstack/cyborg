@@ -2,6 +2,7 @@
    "device_profile":{
       "name":"fpga-dp1",
       "uuid":"5518a925-1c2c-49a2-a8bf-0927d9456f3e",
+      "description": "",
       "groups":[
          {
             "trait:CUSTOM_CHENKE_TRAITS":"required",

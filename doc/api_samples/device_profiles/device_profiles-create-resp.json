@@ -1,6 +1,7 @@
 {
    "name":"afexample_3",
    "uuid":"1a939c88-0b01-408b-bab0-4c61d3a02d71",
+   "description": "",
    "groups":[
       {
          "trait:CUSTOM_FUNCTION_ID_3AFB":"required",

@@ -67,6 +67,7 @@ class TestExtARQJobMixin(base.DbTestCase):
             "id": self.fake_db_extarqs[0]['device_profile_id'],
             "uuid": uuid,
             "name": self.fake_db_extarqs[0]['device_profile_name'],
+            "description": "fake-device_profile_desc",
             "profile_json": jsonutils.dumps({"groups": groups}),
             "created_at": timeutils.utcnow().isoformat(),
             "updated_at": timeutils.utcnow().isoformat(),

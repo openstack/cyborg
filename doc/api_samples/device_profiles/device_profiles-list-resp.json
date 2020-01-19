@@ -3,6 +3,7 @@
       {
          "name":"bym-1",
          "uuid":"3d03fa5b-507c-4810-a344-759e9ef4337a",
+         "description": "",
          "groups":[
             {
                "resources:FPGA":"1",
@@ -21,6 +22,7 @@
       {
          "name":"fpga-dp1",
          "uuid":"5518a925-1c2c-49a2-a8bf-0927d9456f3e",
+         "description": "",
          "groups":[
             {
                "trait:CUSTOM_CHENKE_TRAITS":"required",
