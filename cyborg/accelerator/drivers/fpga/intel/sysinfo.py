@@ -321,7 +321,7 @@ def _generate_attribute_list(fpga):
             driver_attr.key, driver_attr.value = k, v
             attr_list.append(driver_attr)
         if k == "traits":
-            values = fpga.get(k, None)
+            values = fpga.get(k, [])
             for val in values:
                 driver_attr = driver_attribute.DriverAttribute()
                 driver_attr.key = "trait" + str(index)
