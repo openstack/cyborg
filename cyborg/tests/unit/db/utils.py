@@ -52,11 +52,11 @@ def get_test_device(**kw):
         }
     return {
         'id': kw.get('id', 1),
-        'uuid': kw.get('uuid', '20efe63d-dfea-4a37-ad94-4116fba5012'),
+        'uuid': kw.get('uuid', '20efe63d-dfea-4a37-ad94-4116fba50122'),
         'type': kw.get('type', "FPGA"),
         'vendor': kw.get('vendor', "0xABCD"),
         'model': kw.get('model', 'miss model info'),
-        'std_board_info': kw.get('std_board_info', std_board_info),
+        'std_board_info': kw.get('std_board_info', str(std_board_info)),
         'vendor_board_info': kw.get('vendor_board_info', 'fake_vendor_info'),
         'hostname': kw.get('hostname', "localhost"),
         'created_at': kw.get('created_at', None),
