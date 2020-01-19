@@ -21,12 +21,15 @@ from cyborg.db import api as db_api
 def get_test_deployable(**kw):
     return {
         'id': kw.get('id', 1),
-        'uuid': kw.get('uuid', '10efe63d-dfea-4a37-ad94-4116fba5011'),
+        'uuid': kw.get('uuid', '10efe63d-dfea-4a37-ad94-4116fba50112'),
         'parent_id': kw.get('parent_id', None),
         'root_id': kw.get('root_id', 0),
         'name': kw.get('name', 'name'),
         'num_accelerators': kw.get('num_accelerators', 4),
         'device_id': kw.get('device_id', 0),
+        'driver_name': kw.get('driver_name', 'NVIDIA'),
+        'rp_uuid': kw.get('rp_uuid', '1c559644-2b56-3470-8427-d9d71f0f8621'),
+        'bitstream_id': kw.get('bitstream_id', None),
         'created_at': kw.get('created_at', None),
         'updated_at': kw.get('updated_at', None)
     }
