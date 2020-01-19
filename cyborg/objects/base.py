@@ -16,11 +16,15 @@
 """Cyborg common internal object model"""
 
 import netaddr
+from oslo_log import log as logging
 from oslo_utils import versionutils
 from oslo_versionedobjects import base as object_base
 
 from cyborg import objects
 from cyborg.objects import fields as object_fields
+
+
+LOG = logging.getLogger(__name__)
 
 
 class CyborgObjectRegistry(object_base.VersionedObjectRegistry):
@@ -94,6 +98,22 @@ class CyborgObject(object_base.VersionedObject):
         for db_obj in db_objs:
             objs.append(cls._from_db_object(cls(context), db_obj))
         return objs
+
+    def obj_make_compatible(self, primitive, target_version):
+        """Make an object representation compatible with a target version.
+
+        This is responsible for taking the primitive representation of
+        an object and making it suitable for the given target_version.
+        This may mean converting the format of object attributes, removing
+        attributes that have been added since the target version, etc.
+
+        :param:primitive: The result of self.obj_to_primitive()
+        :param:target_version: The version string requested by the recipient
+                               of the object.
+        """
+        _log_backport(self, target_version)
+        super(CyborgObject, self).obj_make_compatible(primitive,
+                                                      target_version)
 
 
 class CyborgObjectSerializer(object_base.VersionedObjectSerializer):
@@ -199,3 +219,13 @@ class DriverObjectBase(CyborgObject):
 
         obj.obj_reset_changes()
         return obj
+
+
+def _log_backport(ovo, target_version):
+    """Log backported versioned objects."""
+    if target_version and target_version != ovo.VERSION:
+        LOG.debug('Backporting %(obj_name)s from version %(src_vers)s '
+                  'to version %(dst_vers)s',
+                  {'obj_name': ovo.obj_name(),
+                   'src_vers': ovo.VERSION,
+                   'dst_vers': target_version})
