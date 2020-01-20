@@ -81,7 +81,7 @@ def get_test_extarq(**kwargs):
     return {
         'uuid': kwargs.get('uuid', '10efe63d-dfea-4a37-ad94-4116fba50986'),
         'id': kwargs.get('id', 1),
-        'state': kwargs.get('state', 'bound'),
+        'state': kwargs.get('state', 'Bound'),
         'device_profile_id': kwargs.get('id', 1),
         'hostname': kwargs.get('hostname', 'testnode1'),
         'device_rp_uuid': kwargs.get('device_rp_uuid',
