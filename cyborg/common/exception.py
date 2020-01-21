@@ -297,10 +297,6 @@ class ResourceProviderUpdateFailed(CyborgException):
                 "%(error)s")
 
 
-class ResourceProviderNotFound(NotFound):
-    msg_fmt = _("No such resource provider %(name_or_uuid)s.")
-
-
 class ResourceProviderSyncFailed(CyborgException):
     msg_fmt = _("Failed to synchronize the placement service with resource "
                 "provider information supplied by the compute host.")
@@ -387,10 +383,6 @@ class ImageUnacceptable(Invalid):
 
 class ImageNotAuthorized(CyborgException):
     msg_fmt = _("Not authorized for image %(image_id)s.")
-
-
-class ImageNotFound(NotFound):
-    msg_fmt = _("Image %(image_id)s could not be found.")
 
 
 class ImageBadRequest(Invalid):
