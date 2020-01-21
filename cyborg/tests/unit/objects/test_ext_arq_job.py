@@ -192,6 +192,54 @@ class TestExtARQJobMixin(base.DbTestCase):
 
     @mock.patch('cyborg.objects.ExtARQ.bind_notify')
     @mock.patch('cyborg.objects.ExtARQ.list')
+    def test_check_bindings_result_with_arq_deleted(
+        self, mock_list, mock_notify):
+        bind_status = [
+            (e.arq.uuid, constants.ARQ_BIND_STATES_STATUS_MAP[e.arq.state])
+            for e in self.fake_obj_extarqs]
+        extarqs = self.fake_obj_extarqs
+        mock_list.return_value = self.fake_obj_fpga_extarqs
+        instance_uuid = extarqs[0].arq.instance_uuid
+        objects.ExtARQ.check_bindings_result(
+            self.context, extarqs)
+        mock_notify.assert_called_once_with(instance_uuid, bind_status)
+
+    @mock.patch('cyborg.objects.ExtARQ.bind_notify')
+    @mock.patch('cyborg.objects.ExtARQ.list')
+    def test_check_bindings_result_with_non_bound_arq(
+        self, mock_list, mock_notify):
+        bind_status = [
+            (e.arq.uuid, constants.ARQ_BIND_STATES_STATUS_MAP[e.arq.state])
+            for e in self.fake_obj_extarqs]
+        extarqs = self.fake_obj_extarqs
+        mock_list.return_value = extarqs
+        instance_uuid = extarqs[0].arq.instance_uuid
+        states = [constants.ARQ_BIND_STARTED, constants.ARQ_BIND_STARTED,
+                  constants.ARQ_UNBOUND, constants.ARQ_BOUND,
+                  constants.ARQ_BIND_FAILED, constants.ARQ_DELETING]
+        # Completed
+        objects.ExtARQ.check_bindings_result(self.context, extarqs)
+        mock_notify.assert_called_once_with(instance_uuid, bind_status)
+        # Exception
+        for s in states[:2]:
+            extarqs[0].arq.state = s
+            self.assertRaises(
+                exception.ARQBadState, objects.ExtARQ.check_bindings_result,
+                self.context, extarqs)
+        # Failed
+        for s in states[4:]:
+            extarqs[0].arq.state = s
+            bind_status[0] = (bind_status[0][0], "failed")
+            objects.ExtARQ.check_bindings_result(self.context, extarqs)
+            mock_notify.assert_called_with(instance_uuid, bind_status)
+        # Completed
+        bind_status[0] = (bind_status[0][0], "completed")
+        extarqs[0].arq.state = states[3]
+        objects.ExtARQ.check_bindings_result(self.context, extarqs)
+        mock_notify.assert_called_with(instance_uuid, bind_status)
+
+    @mock.patch('cyborg.objects.ExtARQ.bind_notify')
+    @mock.patch('cyborg.objects.ExtARQ.list')
     def test_check_bindings_result_with_arq_bound(
         self, mock_list, mock_notify):
         bind_status = [
