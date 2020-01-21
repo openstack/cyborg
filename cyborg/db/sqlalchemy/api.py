@@ -328,7 +328,9 @@ class Connection(api.Connection):
         try:
             return query.one()
         except NoResultFound:
-            raise exception.ControlpathIDNotFound(uuid=uuid)
+            raise exception.ResourceNotFound(
+                resource='ControlpathID',
+                msg='with uuid=%s' % uuid)
 
     def control_path_get_by_filters(self, context,
                                     filters, sort_key='created_at',
@@ -374,7 +376,9 @@ class Connection(api.Connection):
             try:
                 ref = query.with_lockmode('update').one()
             except NoResultFound:
-                raise exception.ControlpathIDNotFound(uuid=uuid)
+                raise exception.ResourceNotFound(
+                    resource='ControlpathID',
+                    msg='with uuid=%s' % uuid)
             ref.update(values)
         return ref
 
