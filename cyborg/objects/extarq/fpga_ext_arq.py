@@ -106,7 +106,7 @@ class FPGAExtARQ(ExtARQ):
             # has't bitstream. We should return False.
             LOG.info('No programming is required. ')
             return False
-        if deployable.bitstream_id == bs_id:
+        if bs_id and deployable.bitstream_id == bs_id:
             LOG.info('Deployable %s already has the needed '
                      'bitstream %s. Skipping programming.',
                      deployable.uuid, bs_id)
@@ -226,7 +226,7 @@ class FPGAExtARQ(ExtARQ):
         controlpath_id = cpid_list[0]
         controlpath_id['cpid_info'] = jsonutils.loads(
             controlpath_id['cpid_info'])
-        LOG.info('Found control path id: %s', controlpath_id.__dict__)
+        LOG.info('Found control path id: %s', controlpath_id)
 
         LOG.info('Starting programming for host: (%s) deployable (%s) '
                  'bitstream_id (%s)', hostname,
