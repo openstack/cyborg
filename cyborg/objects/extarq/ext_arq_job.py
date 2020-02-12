@@ -114,9 +114,10 @@ class ExtARQJobMixin(object):
             LOG.error("ARQs(%s) bind status sync error, status is %s. "
                       "For some ARQs %s are deleted.",
                       arq_uuids, constants.ARQ_BIND_STATUS_FAILED,
-                      set(arq_uuids) - set([[ea.arq.uuid for ea in extarqs]]))
+                      set(arq_uuids) - set([ea.arq.uuid for ea in extarqs]))
             cls.bind_notify(device_profile_name, instance_uuid,
                             constants.ARQ_BIND_STATUS_FAILED)
+            return
 
         status = constants.ARQ_BIND_STATUS_FINISH
         for extarq in extarqs:
@@ -129,7 +130,7 @@ class ExtARQJobMixin(object):
                           uuid, status)
                 break
             elif state in constants.ARQ_OUFOF_BIND_FLOW + [
-                constants.ARQ_BIND_STATUS_FAILED]:
+                constants.ARQ_BIND_FAILED]:
                 # OPEN ignore ARQ_OUFOF_BIND_FLOW?
                 status = constants.ARQ_BIND_STATUS_FAILED
                 LOG.error("ARQs(%s) bind status sync error, status is %s.",
