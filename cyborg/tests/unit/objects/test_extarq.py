@@ -14,6 +14,7 @@
 #    under the License.
 
 import mock
+import six
 
 from testtools.matchers import HasLength
 
@@ -285,6 +286,38 @@ class TestExtARQObject(base.DbTestCase):
                 extarq = objects.ExtARQ.get(self.context, uuid)
                 extarq.destroy(self.context)
                 mock_extarq_delete.assert_called_once_with(self.context, uuid)
+
+    @mock.patch('cyborg.objects.ExtARQ.update_check_state')
+    def test_allocate_attach_handle(self, mock_check_state):
+        obj_extarq = self.fake_obj_extarqs[0]
+        dep_uuid = self.deployable_uuids[0]
+        fake_dep = fake_deployable.fake_deployable_obj(self.context,
+                                                       uuid=dep_uuid)
+        self.assertRaises(
+            exception.ResourceNotFound,
+            obj_extarq._allocate_attach_handle, self.context, fake_dep)
+        mock_check_state.assert_called_once_with(
+            self.context, constants.ARQ_BIND_FAILED)
+
+    @mock.patch('logging.LoggerAdapter.error')
+    @mock.patch('cyborg.objects.attach_handle.AttachHandle.allocate')
+    @mock.patch('cyborg.objects.ExtARQ.update_check_state')
+    def test_allocate_attach_handle_with_error_log(
+        self, mock_check_state, mock_allocate, mock_log):
+        obj_extarq = self.fake_obj_extarqs[0]
+        dep_uuid = self.deployable_uuids[0]
+        e = exception.ResourceNotFound(
+            resource='AttachHandle', msg="Just for Test")
+        msg = ("Failed to allocate attach handle for ARQ %s"
+               "from deployable %s. Reason: %s")
+        mock_allocate.side_effect = e
+        fake_dep = fake_deployable.fake_deployable_obj(self.context,
+                                                       uuid=dep_uuid)
+        self.assertRaises(
+            exception.ResourceNotFound,
+            obj_extarq._allocate_attach_handle, self.context, fake_dep)
+        mock_log.assert_called_once_with(
+            msg, obj_extarq.arq.uuid, fake_dep.uuid, six.text_type(e))
 
     @mock.patch('cyborg.objects.ExtARQ.get')
     @mock.patch('cyborg.objects.ExtARQ._from_db_object')

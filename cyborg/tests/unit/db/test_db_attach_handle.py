@@ -134,3 +134,9 @@ class TestDbAttachHandle(base.DbTestCase):
         self.assertRaises(exception.ResourceNotFound,
                           self.dbapi.attach_handle_delete,
                           self.context, random_uuid)
+
+    def test_do_allocate_attach_handle(self):
+        dep_id = 100
+        self.assertRaises(exception.ResourceNotFound,
+                          self.dbapi._do_allocate_attach_handle,
+                          self.context, dep_id)

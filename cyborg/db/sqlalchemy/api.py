@@ -275,6 +275,10 @@ class Connection(api.Connection):
                           in_use=False)
             values = {"in_use": True}
             ref = query.with_lockmode('update').first()
+            if not ref:
+                msg = 'Matching deployable_id {0}'.format(deployable_id)
+                raise exception.ResourceNotFound(
+                    resource='AttachHandle', msg=msg)
             ref.update(values)
             session.flush()
         return ref

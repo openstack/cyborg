@@ -264,6 +264,8 @@ class ThreadWorks(Singleton):
         executor = ThreadPoolExecutor()
         # TODO(Shaohe) every submit func should be wrapped with exception catch
         job = executor.submit(func, *args, **kwargs)
+        LOG.debug("Spawn master job. func: %s is with parameters args: %s, "
+                  "kwargs: %s", func, args, kwargs)
         # NOTE(Shaohe) shutdown should be after job submit
         executor.shutdown(wait=False)
         # TODO(Shaohe) we need to consider resouce collection such as the
@@ -303,103 +305,50 @@ class ThreadWorks(Singleton):
                      to the wait time.
         return a generator which include:
             result: the value returned by the job workers.
-            exception_info: the exception details raised from workers.
+            exception: the exception details raised from workers.
             state: The work state.
         """
-        timeout = kwargs.get('timeout')
-        if timeout is not None:
-            end_time = timeout + time.time()
-            LOG.info("job timeout set as %s", timeout)
 
-        # Yield must be hidden in closure so that the futures are submitted
-        # before the first iterator value is required.
         def future_iterator():
+            # Yield must be hidden in closure so that the futures are submitted
+            # before the first iterator value is required.
             try:
                 # reverse to keep finishing order
                 fs.reverse()
                 while fs:
                     # Careful not to keep a reference to the popped future
+                    f = None
                     if timeout is None:
                         f = fs.pop()
-                        yield f.result(), f.exception_info(), f._state, None
+                        yield f.result(), f.exception(), f._state, None
                     else:
                         f = fs.pop()
                         yield (f.result(end_time - time.time()),
-                               f.exception_info(), f._state, None)
+                               f.exception(), f._state, None)
             except Exception as e:
                 err = traceback.format_exc()
                 LOG.error("Error during check the worker status. Exception "
-                          "info: %s, result: %s, state: %s. Reason %s",
-                          f.exception_info(), f._result, f._state, e.message)
+                          "info: %s", err)
                 if f:
-                    yield f._result, f.exception_info(), f._state, err
+                    LOG.error("Error during check the worker status. "
+                              "Exception info: %s, result: %s, state: %s. "
+                              "Reason %s", f.exception(), f._result,
+                              f._state, six.text_type(e))
+                    yield f._result, f.exception(), f._state, err
             finally:
                 # Do best to cancel remain jobs.
                 if fs:
                     LOG.info("Cancel the remained pending jobs")
                 for future in fs:
                     future.cancel()
-        return future_iterator()
 
-    @classmethod
-    def check_workers_exception(cls, fs=(), **kwargs):
-        """check whether a jobs worker raise exception.
-
-        Waits workers util it finish or raise any Exception.
-        It will not cancel the rest if one job worker fails. As we discussed,
-        if the job has already started flashing the card, we shouldn't cancel
-        it then.
-        So in FPGA scenarios, that means we will let the remained FPGA program
-        go on, even one jobs failed.
-
-        Parameters:
-            fs: the workers list spawn return.
-            timeout: Wait workers timeout, it can be an int or float.
-                     If the worker hasn't yet completed then this method
-                     will wait up to timeout seconds. If the worker hasn't
-                     completed in timeout seconds, then a
-                     concurrent.futures.TimeoutError will be raised.
-                     If timeout is not specified or None, there is no limit
-
-        return a generator which include:
-            exception: Return the exception raised by the workers.
-            exception_info: the exception details raised from workers.
-            result: the value returned by the job workers.
-            state: The work state.
-                     to the wait time.
-        usage:
-        """
         timeout = kwargs.get('timeout')
         if timeout is not None:
-            LOG.info("job timeout set as %s", timeout)
             end_time = timeout + time.time()
+            LOG.info("Job timeout set as %s", timeout)
+        fs = list(fs)
 
-        # Yield must be hidden in closure so that the futures are submitted
-        # before the first iterator value is required.
-        def exception_iterator():
-            try:
-                # reverse to keep finishing order
-                fs.reverse()
-                while fs:
-                    # Careful not to keep a reference to the popped future
-                    if timeout is None:
-                        f = fs.pop()
-                        yield (f.exception(), f.exception_info(),
-                               f._result, f._state)
-                    else:
-                        f = fs.pop()
-                        yield (f.exception(end_time - time.time()),
-                               f.exception_info(), f._result, f._state)
-            except Exception as e:
-                LOG.error("Error during check the worker status. Exception "
-                          "info: %s, result: %s, state: %s. Reason %s",
-                          f.exception_info(), f._result, f._state, e.message)
-            finally:
-                if fs:
-                    LOG.info("Cancel the remained pending jobs")
-                for future in fs:
-                    future.cancel()
-        return exception_iterator()
+        return future_iterator()
 
 
 # info https://www.oreilly.com/library/view/python-cookbook/
@@ -429,7 +378,7 @@ def wrap_job_tb(msg="Reason: %s"):
             try:
                 output = method(self, *args, **kwargs)
             except Exception as e:
-                LOG.error(msg, e.message)
+                LOG.error(msg, six.text_type(e))
                 LOG.error(traceback.format_exc())
                 raise
             return output
