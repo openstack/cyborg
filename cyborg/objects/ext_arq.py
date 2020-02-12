@@ -93,7 +93,6 @@ class ExtARQ(base.CyborgObject, object_base.VersionedObjectDictCompat,
     @classmethod
     def get(cls, context, uuid, lock=False):
         """Find a DB ExtARQ and return an Obj ExtARQ."""
-        # TODO() Fix warnings that '' is not an UUID
         db_extarq = cls.dbapi.extarq_get(context, uuid)
         obj_arq = objects.ARQ(context)
         obj_extarq = cls(context)
@@ -242,8 +241,14 @@ class ExtARQ(base.CyborgObject, object_base.VersionedObjectDictCompat,
                     resource='attach handle',
                     msg='')
 
-        # TODO() Get the deployable_uuid
-        db_extarq['deployable_uuid'] = ''
+        if db_extarq['deployable_id']:
+            dep = objects.Deployable.get_by_id(db_extarq['deployable_id'])
+            db_extarq['deployable_uuid'] = dep.uuid
+        else:
+            LOG.debug('Setting deployable UUID to zeroes for db_extarq %s',
+                      db_extarq['uuid'])
+            db_extarq['deployable_uuid'] = (
+                '00000000-0000-0000-0000-000000000000')
 
         # Get the device profile group
         obj_devprof = DeviceProfile.get_by_name(context, devprof['name'])
