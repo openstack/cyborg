@@ -27,63 +27,82 @@ class NovaAPITest(base.TestCase):
     def setUp(self):
         super(NovaAPITest, self).setUp()
         self.instance_uuid = '00000000-0000-0000-0000-000000000001'
-        self.event = {'name': 'accelerator-requests-bound',
-                      'tag': 'mydp',
-                      'server_uuid': self.instance_uuid,
-                      'status': 'completed'}
+        template = {'name': 'accelerator-request-bound',
+                    'server_uuid': self.instance_uuid,
+                    'code': 200,
+                    'status': 'completed'}
+        tags = ['00000000-0000-0000-0000-000000000002',
+                '00000000-0000-0000-0000-000000000003']
+        self.events = [dict(template, tag=tag) for tag in tags]
+
         self.mock_sdk = self.useFixture(fixtures.MockPatch(
             'cyborg.common.utils.get_sdk_adapter')).mock.return_value
         self.mock_log_info = self.useFixture(fixtures.MockPatch(
             'cyborg.common.nova_client.LOG.info')).mock
 
-    def test_send_event(self):
-        self.useFixture(fixtures.EnvironmentVariable('OS_LOG_CAPTURE', 'True'))
+    def test_send_events(self):
         self.mock_sdk.post.return_value = mock.Mock(status_code=200)
 
         nova = nova_client.NovaAPI()
-        result, resp = nova._send_event(self.event)
-        self.assertTrue(result)
-        self.assertEqual(resp.status_code, 200)
+        nova._send_events(self.events)
 
-        msg = 'Sucessfully sent event to Nova, event: %(event)s'
-        self.mock_log_info.assert_called_once_with(msg, {'event': self.event})
+        msg = 'Sucessfully sent events to Nova, events: %(events)s'
+        self.mock_log_info.assert_called_once_with(
+            msg, {'events': self.events})
 
-    def test_send_event_422(self):
-        # If Nova returns HTTP 207 with event code 422, ignore it.
-        resp_event = copy.deepcopy(self.event)
-        resp_event.update({'status': 'failed', 'code': 422})
-        nova_resp = {'events': [resp_event]}
+    def test_send_events_422(self):
+        # If Nova returns HTTP 207 with event code 422 for all events,
+        # ignore it.
+        resp_events = copy.deepcopy(self.events)
+        for ev in resp_events:
+            ev.update({'status': 'failed', 'code': 422})
+        nova_resp = {'events': resp_events}
         mock_ret = mock.Mock(status_code=207)
         mock_ret.json.return_value = nova_resp
         self.mock_sdk.post.return_value = mock_ret
 
         nova = nova_client.NovaAPI()
-        result, resp = nova._send_event(self.event)
-        self.assertTrue(result)
-        self.assertEqual(resp.status_code, 207)
+        nova._send_events(self.events)
 
         msg = ('Ignoring Nova notification error that the instance %s is not '
                'yet associated with a host.')
         self.mock_log_info.assert_called_once_with(msg, self.instance_uuid)
 
-    def test_send_event_failure(self):
+    def test_send_events_422_exception(self):
+        # If Nova returns HTTP 207 with event code 422 for some events,
+        # but not all, raise an exception. This is not expected to
+        # happen with current code.
+        resp_events = copy.deepcopy(self.events)
+        resp_events[0].update({'status': 'failed', 'code': 422})
+        nova_resp = {'events': resp_events}
+        mock_ret = mock.Mock(status_code=207)
+        mock_ret.json.return_value = nova_resp
+        self.mock_sdk.post.return_value = mock_ret
+
+        nova = nova_client.NovaAPI()
+        self.assertRaises(exception.InvalidAPIResponse,
+                          nova._send_events, self.events)
+
+    def test_send_events_non_422_exception(self):
+        # If Nova returns HTTP 207 with event code other than 422,
+        # raise an exception.
+        resp_events = copy.deepcopy(self.events)
+        resp_events[0].update({'status': 'failed', 'code': 400})
+        nova_resp = {'events': resp_events}
+        mock_ret = mock.Mock(status_code=207)
+        mock_ret.json.return_value = nova_resp
+        self.mock_sdk.post.return_value = mock_ret
+
+        nova = nova_client.NovaAPI()
+        self.assertRaises(exception.InvalidAPIResponse,
+                          nova._send_events, self.events)
+
+    def test_send_events_failure(self):
         # Nova is expected to return 200/207 but this is future-proofing.
         mock_ret = mock.Mock(status_code=400)
         mock_ret.json.return_value = {}  # Dummy response
         self.mock_sdk.post.return_value = mock_ret
 
         nova = nova_client.NovaAPI()
-        result, resp = nova._send_event(self.event)
-        self.assertFalse(result)
-        self.assertEqual(resp.status_code, 400)
-
-    @mock.patch('cyborg.common.nova_client.NovaAPI._get_acc_changed_event')
-    @mock.patch('cyborg.common.nova_client.NovaAPI._send_event')
-    def test_notify_bind(self, mock_send_event, mock_get_event):
-        nova_resp_text = 'itemNotFound'  # Dummy
-        mock_ret = mock.Mock(status_code=404, text=nova_resp_text)
-        mock_send_event.return_value = False, mock_ret
-
-        nova = nova_client.NovaAPI()
-        self.assertRaises(exception.NovaAPIConnectFailure,
-                          nova.notify_binding, mock.ANY, mock.ANY, mock.ANY)
+        self.assertRaises(exception.InvalidAPIResponse,
+                          nova._send_events, self.events)

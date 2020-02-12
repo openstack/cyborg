@@ -13,6 +13,7 @@
 # under the License.
 
 from cyborg.common import exception
+from cyborg.common.i18n import _
 from cyborg.common import utils
 from oslo_log import log as logging
 
@@ -25,52 +26,67 @@ class NovaAPI(object):
         # TODO(Sundar): change the version to 2.82 once Nova patches merge.
         self.nova_client.default_microversion = 'latest'
 
-    def _get_acc_changed_event(self, instance_uuid, dev_profile_name, status):
-        return {'name': 'accelerator-requests-bound',
-                'server_uuid': instance_uuid,
-                'tag': dev_profile_name,
-                'status': status}
+    def _get_acc_changed_events(self, instance_uuid, arq_bind_statuses):
+        return [{'name': 'accelerator-request-bound',
+                 'server_uuid': instance_uuid,
+                 'tag': arq_uuid,
+                 'status': arq_bind_status,
+                 } for (arq_uuid, arq_bind_status) in arq_bind_statuses]
 
-    def _send_event(self, event):
+    def _send_events(self, events):
+        """Send events to Nova external events API.
+
+        :param events: List of events to send to Nova.
+        :raises: exception.InvalidAPIResponse, on unexpected error
+        """
         url = "/os-server-external-events"
-        body = {"events": [event]}
+        body = {"events": events}
         response = self.nova_client.post(url, json=body)
         # NOTE(Sundar): Response status should always be 200/207. See
         # https://review.opendev.org/#/c/698037/
         if response.status_code == 200:
-            LOG.info("Sucessfully sent event to Nova, event: %(event)s",
-                     {"event": event})
-            return True, response
+            LOG.info("Sucessfully sent events to Nova, events: %(events)s",
+                     {"events": events})
         elif response.status_code == 207:
             # NOTE(Sundar): If Nova returns per-event code of 422, that
             # is due to a race condition where Nova has not associated
             # the instance with a host yet. See
             # https://bugs.launchpad.net/nova/+bug/1855752
-            err_event = response.json()['events'][0]  # Only 1 event in resp
-            if err_event['code'] == 422:
-                LOG.info('Ignoring Nova notification error that the '
-                         'instance %s is not yet associated with a host.',
-                         err_event['server_uuid'])
-                return True, response
+            events = [ev for ev in response.json()['events']]
+            event_codes = {ev['code'] for ev in events}
+            if len(event_codes) == 1:  # all events have same event code
+                if event_codes == {422}:
+                    LOG.info('Ignoring Nova notification error that the '
+                             'instance %s is not yet associated with a host.',
+                             events[0]['server_uuid'])
+                else:
+                    msg = _('Unexpected event code %(code)s '
+                            'for instance %(inst)s')
+                    msg = msg % {'code': event_codes[0],
+                                 'inst': events[0]["server_uuid"]}
+                    raise exception.InvalidAPIResponse(
+                        service='Nova', api=url[1:], msg=msg)
+            else:
+                msg = _('All event responses are expected to '
+                        'have the same event code. Instance: %(inst)s')
+                msg = msg % {'inst': events[0]['server_uuid']}
+                raise exception.InvalidAPIResponse(
+                    service='Nova', api=url[1:], msg=msg)
+        else:
+            # Unexpected return code from Nova
+            msg = _('Failed to send events %(ev)s: HTTP %(code)s: %(txt)s')
+            msg = msg % {'ev': events,
+                         'code': response.status_code,
+                         'txt': response.text}
+            raise exception.InvalidAPIResponse(
+                service='Nova', api=url[1:], msg=msg)
 
-        # Unexpected return code from Nova
-        return False, response
-
-    def notify_binding(self, instance_uuid, dev_profile_name, status):
+    def notify_binding(self, instance_uuid, arq_bind_statuses):
         """Notify Nova that ARQ bindings are resolved for a given instance.
 
         :param instance_uuid: UUID of the instance whose ARQs are resolved
-        :param dev_profile_name: Device profile name (tag for the event)
-        :param status: 'completed' or 'failed', i.e.,
-             cyborg.constants.ARQ_BIND_STATUS_FINISH or
-             cyborg.constants.ARQ_BIND_STATUS_FAILED
-        :raises: exception, if Nova notification fails
+        :param arq_bind_statuses: List of (arq_state, arq_bind_status) tuples
+        :returns: None
         """
-        event = self._get_acc_changed_event(instance_uuid, dev_profile_name,
-                                            status)
-        result, response = self._send_event(event)
-        if not result:
-            LOG.error("Failed to notify Nova service.")
-            msg = ('Failed to send event %s: HTTP %d: %s' %
-                   (event, response.status_code, response.text))
-            raise exception.NovaAPIConnectFailure(msg=msg)
+        events = self._get_acc_changed_events(instance_uuid, arq_bind_statuses)
+        self._send_events(events)

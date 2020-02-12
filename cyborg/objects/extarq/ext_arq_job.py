@@ -100,23 +100,62 @@ class ExtARQJobMixin(object):
             cls.job_monitor, context, works_generator, arq_binds.keys())
 
     @classmethod
-    def check_bindings_result(cls, context, extarqs):
-        """Check the ARQ bind status result."""
+    def get_arq_bind_statuses(cls, arq_list):
+        """Return the list of UUID/state pairs for each ARQ.
+
+        :param arq_list: List of ARQ objects.
+        :returns: List of (arq_uuid, arq_bind_status) tuples.
+        :raises: ARQBadState exception if any ARQ state is invalid.
+        """
+        # NOTE(Sundar): This should be called when all ARQs have
+        # completed binding, successfully or not. One or more may be in
+        # deleting state. So, arq_state must be 'Bound', 'BindFailed'
+        # or 'Deleting'
+        state_map = constants.ARQ_BIND_STATES_STATUS_MAP
+        good_states = list(state_map.keys())
+        arq_bind_statuses = []
+        for arq in arq_list:
+            if arq.state not in good_states:
+                raise exception.ARQBadState(
+                    state=arq.state, uuid=arq.uuid, expected=good_states)
+            arq_bind_status = (arq.uuid, state_map[arq.state])
+            arq_bind_statuses.append(arq_bind_status)
+        return arq_bind_statuses
+
+    @classmethod
+    def check_bindings_result(cls, context, instance_extarqs):
+        """Check the ARQ bind status result.
+
+        :param context: Security context
+        :param instance_extarqs: List of ExtARQs for one instance
+            at the time the async bind job was launched. Some of
+            them may have been deleted since then: see note below.
+        """
         # Batch get or get one by one? Maybe delete a ARQ
-        arq_uuids = [ea.arq.uuid for ea in extarqs]
+        arq_uuids = [ea.arq.uuid for ea in instance_extarqs]
+        arq_list = [extarq.arq for extarq in instance_extarqs]
 
-        extarqs = list(extarqs)
-        device_profile_name = extarqs[0].arq.device_profile_name
-        instance_uuid = extarqs[0].arq.instance_uuid
+        instance_extarqs = list(instance_extarqs)
+        instance_uuid = instance_extarqs[0].arq.instance_uuid
 
+        # NOTE(Sundar): While the async ARQ bind job is in progress, there
+        # could conceivably be calls to delete one or more of those ARQs.
+        # One way to handle that is by pending the deletions till binds
+        # complete. But the current implementation does not do that; so
+        # we check for deleted ARQs here.
+        # TODO(all): Revisit the handling of concurrent deletions.
+        #   In the current design, Nova gets notified only after all ARQs
+        # for an instance have completed binding, so concurrent deletions
+        # are not expected from Nova.
+        #   The extarq list() below returns only the currently available
+        # (not deleted) ARQs among the specified ones.
         extarqs = cls.list(context, arq_uuids)
         if len(extarqs) < len(arq_uuids):
             LOG.error("ARQs(%s) bind status sync error, status is %s. "
                       "For some ARQs %s are deleted.",
                       arq_uuids, constants.ARQ_BIND_STATUS_FAILED,
                       set(arq_uuids) - set([ea.arq.uuid for ea in extarqs]))
-            cls.bind_notify(device_profile_name, instance_uuid,
-                            constants.ARQ_BIND_STATUS_FAILED)
+            cls.bind_notify(instance_uuid, cls.get_arq_bind_statuses(arq_list))
             return
 
         status = constants.ARQ_BIND_STATUS_FINISH
@@ -141,7 +180,7 @@ class ExtARQJobMixin(object):
                          uuid, status)
         if status == constants.ARQ_BIND_STATUS_FINISH:
             LOG.info('All ARQs %s async bind jobs has finished.', arq_uuids)
-        cls.bind_notify(device_profile_name, instance_uuid, status)
+        cls.bind_notify(instance_uuid, cls.get_arq_bind_statuses(arq_list))
 
     @classmethod
     @utils.wrap_job_tb("Error in ARQ bind async job_monitor. Reason: %s")
@@ -157,16 +196,16 @@ class ExtARQJobMixin(object):
                 LOG.error(msg)
             # TODO(Shaohe) Rollback? Such as We have _update_placement,
             # should cancel it.
+        LOG.debug('Async bind job: join completed. ARQs: %s', arq_uuids)
         if not arq_uuids:
             return
         cls.check_bindings_result(context, extarqs)
 
     @classmethod
-    def bind_notify(cls, device_profile_name, instance_uuid, status):
+    def bind_notify(cls, instance_uuid, arq_bind_statuses):
         """Notify the bind status to nova."""
         nova_api = nova_client.NovaAPI()
-        nova_api.notify_binding(instance_uuid,
-                                device_profile_name, status)
+        nova_api.notify_binding(instance_uuid, arq_bind_statuses)
 
     def get_resources_from_device_profile_group(self):
         """parser device profile group."""
@@ -179,6 +218,7 @@ class ExtARQJobMixin(object):
             raise exception.InvalidParameterValue(
                 'No resources in device_profile_group: %s' % group)
         res_type, res_num = resources[0]
+        # TODO(Sundar): this should be caught in ARQ create, not bind.
         if res_type not in constants.SUPPORT_RESOURCES:
             raise exception.InvalidParameterValue(
                 'Unsupport resources %s from device_profile_group: %s' %

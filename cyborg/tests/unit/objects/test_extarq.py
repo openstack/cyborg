@@ -107,6 +107,10 @@ class TestExtARQObject(base.DbTestCase):
                 exception.ARQInvalidState, objects.ExtARQ.apply_patch,
                 self.context, patch_list, valid_fields)
 
+        mock_notify_bind.assert_not_called()
+
+    @mock.patch('cyborg.objects.extarq.ext_arq_job.ExtARQJobMixin.'
+                'get_arq_bind_statuses')
     @mock.patch('openstack.connection.Connection')
     @mock.patch('cyborg.common.nova_client.NovaAPI.notify_binding')
     @mock.patch('cyborg.objects.ExtARQ._allocate_attach_handle')
@@ -116,12 +120,18 @@ class TestExtARQObject(base.DbTestCase):
     @mock.patch('cyborg.objects.deployable.Deployable.get_by_device_rp_uuid')
     def test_apply_patch_for_common_extarq(
         self, mock_get_dep, mock_check_state, mock_list, mock_get,
-        mock_attach_handle, mock_notify_bind, mock_conn):
+        mock_attach_handle, mock_notify_bind, mock_conn, mock_get_bind_st):
 
         good_states = constants.ARQ_STATES_TRANSFORM_MATRIX[
             constants.ARQ_BIND_STARTED]
         obj_extarq = self.fake_obj_extarqs[0]
         obj_extarq.arq.state = good_states[0]
+
+        # NOTE(Sundar): Since update_check_state is mocked, ARQ state
+        # remains as 'Initial'. So, we mock get_arq_bind_statuses to
+        # prevent that from raising exception.
+        mock_get_bind_st.return_value = [
+            (obj_extarq.arq.uuid, constants.ARQ_BIND_STATUS_FINISH)]
 
         # TODO(Shaohe) we should control the state of arq to make
         # better testcase.
@@ -156,10 +166,13 @@ class TestExtARQObject(base.DbTestCase):
         # NOTE(Shaohe) we set the fake_obj_extarqs state is ARQ_INITIAL
         # TODO(Shaohe) we should control the state of arq to make
         # complete status testcase.
-        status = 'failed'
+        self.assertEqual(obj_extarq.arq.state, 'Initial')
         mock_notify_bind.assert_called_once_with(
-            instance_uuid, obj_extarq.arq.device_profile_name, status)
+            instance_uuid,
+            [(obj_extarq.arq.uuid, constants.ARQ_BIND_STATUS_FINISH)])
 
+    @mock.patch('cyborg.objects.extarq.ext_arq_job.ExtARQJobMixin.'
+                'get_arq_bind_statuses')
     @mock.patch('openstack.connection.Connection')
     @mock.patch('cyborg.common.nova_client.NovaAPI.notify_binding')
     @mock.patch('cyborg.objects.ExtARQ._allocate_attach_handle')
@@ -170,7 +183,7 @@ class TestExtARQObject(base.DbTestCase):
     @mock.patch('cyborg.common.utils.ThreadWorks.spawn')
     def test_apply_patch_start_fpga_arq_job(
         self, mock_spawn, mock_get_dep, mock_check_state, mock_list, mock_get,
-        mock_attach_handle, mock_notify_bind, mock_conn):
+        mock_attach_handle, mock_notify_bind, mock_conn, mock_get_bind_st):
         good_states = constants.ARQ_STATES_TRANSFORM_MATRIX[
             constants.ARQ_BIND_STARTED]
         obj_extarq = self.fake_obj_extarqs[2]
@@ -192,6 +205,8 @@ class TestExtARQObject(base.DbTestCase):
         dep_uuid = self.deployable_uuids[0]
         fake_dep = fake_deployable.fake_deployable_obj(self.context,
                                                        uuid=dep_uuid)
+        mock_get_bind_st.return_value = [
+            (obj_extarq.arq.uuid, constants.ARQ_BIND_STATUS_FINISH)]
         mock_get_dep.return_value = fake_dep
         mock_spawn.return_value = None
         valid_fields = {
@@ -213,9 +228,10 @@ class TestExtARQObject(base.DbTestCase):
         # NOTE(Shaohe) we set the fake_obj_extarqs state is ARQ_INITIAL
         # TODO(Shaohe) we should control the state of arq to make
         # better testcase.
-        status = 'failed'
+        self.assertEqual(obj_extarq.arq.state, 'Initial')
         mock_notify_bind.assert_called_once_with(
-            instance_uuid, obj_extarq.arq.device_profile_name, status)
+            instance_uuid,
+            [(obj_extarq.arq.uuid, constants.ARQ_BIND_STATUS_FINISH)])
         # NOTE(Shaohe) check it spawn to start a job.
         mock_spawn.assert_called_once_with(
             obj_fpga_extarq.bind, self.context, fake_dep)
@@ -335,3 +351,23 @@ class TestExtARQObject(base.DbTestCase):
             mock_extarq_update.return_value = fake_arq_updated
             obj_extarq.save(self.context)
             mock_extarq_update.assert_called_once()
+
+    def test_get_arq_bind_statuses(self):
+        # ARQ state is 'Bound'  by default in the fake extarqs
+        arq_list = [extarq.arq for extarq in self.fake_obj_extarqs]
+        bind_status = constants.ARQ_BIND_STATES_STATUS_MAP[
+            constants.ARQ_BOUND]
+        expected = [(arq.uuid, bind_status) for arq in arq_list]
+
+        result = objects.ExtARQ.get_arq_bind_statuses(arq_list)
+
+        self.assertEqual(expected, result)
+
+    def _test_get_arq_bind_statuses_exception(self):
+        extarqs = fake_extarq.get_fake_extarq_objs()
+        arq_list = [extarq.arq for extarq in extarqs]
+        for arq in arq_list:
+            arq['state'] = constants.ARQ_INITIAL
+
+        self.assertRaises(exception.ARQBadState,
+                          objects.ExtARQ.get_arq_bind_statuses, arq_list)
