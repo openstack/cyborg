@@ -200,10 +200,6 @@ class ServiceNotFound(NotFound):
     msg_fmt = _("Service %(service_id)s could not be found.")
 
 
-class ControlpathIDNotFound(NotFound):
-    _msg_fmt = _("ControlpathID %(uuid)s could not be found.")
-
-
 class ConfGroupForServiceTypeNotFound(ServiceNotFound):
     msg_fmt = _("No conf group name could be found for service type "
                 "%(stype)s.")
@@ -399,6 +395,5 @@ class InvalidType(Invalid):
                  "Expected: %(expected)s")
 
 
-# TODO() Merge other NotFound in this generic one?
 class ResourceNotFound(NotFound):
     _msg_fmt = _("%(resource)s not found %(msg)s")
