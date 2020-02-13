@@ -17,7 +17,6 @@ from oslo_log import log as logging
 from oslo_versionedobjects import base as object_base
 
 from cyborg.db import api as dbapi
-from cyborg.objects.attribute import Attribute
 from cyborg.objects import base
 from cyborg.objects import fields as object_fields
 
@@ -31,7 +30,6 @@ class Deployable(base.CyborgObject, object_base.VersionedObjectDictCompat):
     VERSION = '1.1'
 
     dbapi = dbapi.get_instance()
-    attributes_list = []
 
     fields = {
         'id': object_fields.IntegerField(nullable=False),
@@ -70,17 +68,10 @@ class Deployable(base.CyborgObject, object_base.VersionedObjectDictCompat):
         del self.attributes_list[:]
 
     @classmethod
-    def get(cls, context, uuid, with_attribute_list=True):
+    def get(cls, context, uuid):
         """Find a DB Deployable and return an Obj Deployable."""
         db_dep = cls.dbapi.deployable_get(context, uuid)
         obj_dep = cls._from_db_object(cls(context), db_dep)
-        # retrieve all the attributes for this deployable
-        if with_attribute_list:
-            query = {"deployable_id": obj_dep.id}
-            attr_get_list = Attribute.get_by_filter(context,
-                                                    query)
-            obj_dep.attributes_list = attr_get_list
-
         obj_dep.obj_reset_changes()
         return obj_dep
 
@@ -114,11 +105,6 @@ class Deployable(base.CyborgObject, object_base.VersionedObjectDictCompat):
         else:
             db_deps = cls.dbapi.deployable_list(context)
         obj_dpl_list = cls._from_db_object_list(db_deps, context)
-        for obj_dpl in obj_dpl_list:
-            query = {"deployable_id": obj_dpl.id}
-            attr_get_list = Attribute.get_by_filter(context,
-                                                    query)
-            obj_dpl.attributes_list = attr_get_list
         return obj_dpl_list
 
     def save(self, context):
@@ -133,10 +119,6 @@ class Deployable(base.CyborgObject, object_base.VersionedObjectDictCompat):
         db_dep = self.dbapi.deployable_update(context, self.uuid, updates)
         self.obj_reset_changes()
         self._from_db_object(self, db_dep)
-        query = {"deployable_id": self.id}
-        attr_get_list = Attribute.get_by_filter(context,
-                                                query)
-        self.attributes_list = attr_get_list
 
     def update(self, context, updates):
         """Update provided key, value pairs"""
@@ -145,62 +127,20 @@ class Deployable(base.CyborgObject, object_base.VersionedObjectDictCompat):
 
     def destroy(self, context):
         """Delete a Deployable from the DB."""
-        del self.attributes_list[:]
         self.dbapi.deployable_delete(context, self.uuid)
         self.obj_reset_changes()
-
-    def add_attribute(self, context, key, value):
-        """Add an attribute object to the attribute_list.
-        If the attribute already exists, it will update the value,
-        otherwise, the attribute will be appended to the list
-        """
-
-        for exist_attr in self.attributes_list:
-            if key == exist_attr.key:
-                LOG.warning("The attribute already exists")
-                if value != exist_attr.value:
-                    exist_attr.value = value
-                    exist_attr.save(context)
-                return None
-        # The attribute does not exist yet. Create it.
-        attr_vals = {
-            'deployable_id': self.id,
-            'key': key,
-            'value': value
-        }
-        attr = Attribute(context, **attr_vals)
-        attr.create(context)
-        self.attributes_list.append(attr)
-
-    def delete_attribute(self, context, attribute):
-        """Remove an attribute from the attributes_list
-        if the attribute does not exist, ignore it
-        """
-
-        idx = 0
-        for exist_attribute in self.attributes_list:
-            if base.obj_equal_prims(attribute, exist_attribute):
-                removed_attribute = self.attributes_list.pop(idx)
-                removed_attribute.destroy(context)
-                return
-            idx = idx + 1
-        LOG.warning("The removing attribute does not exist!")
 
     @classmethod
     def get_by_filter(cls, context,
                       filters):
         obj_dpl_list = []
-        db_dpl_list = cls.dbapi.deployable_get_by_filters_with_attributes(
+        db_dpl_list = cls.dbapi.deployable_get_by_filters(
             context,
             filters)
 
         if db_dpl_list:
             for db_dpl in db_dpl_list:
                 obj_dpl = cls._from_db_object(cls(context), db_dpl)
-                query = {"deployable_id": obj_dpl.id}
-                attr_get_list = Attribute.get_by_filter(context,
-                                                        query)
-                obj_dpl.attributes_list = attr_get_list
                 obj_dpl_list.append(obj_dpl)
 
         return obj_dpl_list

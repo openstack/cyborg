@@ -27,8 +27,6 @@ from oslo_log import log
 from oslo_utils import strutils
 from oslo_utils import timeutils
 from oslo_utils import uuidutils
-from sqlalchemy import and_
-from sqlalchemy import or_
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.orm import load_only
 
@@ -692,34 +690,6 @@ class Connection(api.Connection):
                     resource='Deployable',
                     msg='with uuid=%s' % uuid)
 
-    def deployable_get_by_filters_with_attributes(self, context,
-                                                  filters):
-        exact_match_filter_names = ['id', 'uuid', 'name',
-                                    'parent_id', 'root_id',
-                                    'num_accelerators', 'device_id']
-        attribute_filters = {}
-        filters_copy = copy.deepcopy(filters)
-        for key, value in filters_copy.items():
-            if key not in exact_match_filter_names:
-                # This key is not in the deployable regular fields
-                value = filters.pop(key)
-                attribute_filters.update({key: value})
-
-        query_prefix = model_query(context, models.Deployable)
-        filters = copy.deepcopy(filters)
-
-        # Filter the query
-        query_prefix = self._exact_deployable_filter_with_attributes(
-            query_prefix,
-            filters,
-            exact_match_filter_names,
-            attribute_filters
-            )
-        if query_prefix is None:
-            return []
-        deployables = query_prefix.all()
-        return deployables
-
     def deployable_get_by_filters(self, context,
                                   filters, sort_key='created_at',
                                   sort_dir='desc', limit=None,
@@ -733,52 +703,6 @@ class Connection(api.Connection):
                                                    join_columns=join_columns,
                                                    sort_key=sort_key,
                                                    sort_dir=sort_dir)
-
-    def _exact_deployable_filter_with_attributes(self, query,
-                                                 dpl_filters, legal_keys,
-                                                 attribute_filters):
-        """Applies exact match filtering to a deployable query.
-        Returns the updated query.  Modifies dpl_filters argument to remove
-        dpl_filters consumed.
-        :param query: query to apply dpl_filters and attribute_filters to
-        :param dpl_filters: dictionary of filters; values that are lists,
-                        tuples, sets, or frozensets cause an 'IN' test to
-                        be performed, while exact matching ('==' operator)
-                        is used for other values
-        :param legal_keys: list of keys to apply exact filtering to
-        :param attribute_filters: dictionary of attribute filters
-        """
-
-        filter_dict = {}
-        model = models.Deployable
-
-        # Walk through all the keys
-        for key in legal_keys:
-            # Skip ones we're not filtering on
-            if key not in dpl_filters:
-                continue
-
-            # OK, filtering on this key; what value do we search for?
-            value = dpl_filters.pop(key)
-
-            if isinstance(value, (list, tuple, set, frozenset)):
-                if not value:
-                    return None
-                # Looking for values in a list; apply to query directly
-                column_attr = getattr(model, key)
-                query = query.filter(column_attr.in_(value))
-            else:
-                filter_dict[key] = value
-        # Apply simple exact matches
-        if filter_dict:
-            query = query.filter(*[getattr(models.Deployable, k) == v
-                                   for k, v in filter_dict.items()])
-        if attribute_filters:
-            query = query.outerjoin(models.Attribute)
-            query = query.filter(or_(*[and_(models.Attribute.key == k,
-                                 models.Attribute.value == v)
-                                 for k, v in attribute_filters.items()]))
-        return query
 
     def deployable_get_by_filters_sort(self, context, filters, limit=None,
                                        marker=None, join_columns=None,

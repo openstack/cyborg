@@ -20,7 +20,6 @@ from oslo_db import exception as db_exc
 from cyborg.common import exception
 from cyborg import objects
 from cyborg.tests.unit.db.base import DbTestCase
-from cyborg.tests.unit import fake_attribute
 from cyborg.tests.unit import fake_deployable
 from cyborg.tests.unit import fake_device
 from cyborg.tests.unit.objects import test_objects
@@ -42,21 +41,6 @@ class TestDeployableObject(DbTestCase):
     def fake_deployable2(self):
         db_deploy = fake_deployable.fake_db_deployable(id=2)
         return db_deploy
-
-    @property
-    def fake_attribute(self):
-        db_attr = fake_attribute.fake_db_attribute(id=2)
-        return db_attr
-
-    @property
-    def fake_attribute2(self):
-        db_attr = fake_attribute.fake_db_attribute(id=3)
-        return db_attr
-
-    @property
-    def fake_attribute3(self):
-        db_attr = fake_attribute.fake_db_attribute(id=4)
-        return db_attr
 
     def test_create(self):
         db_device = self.fake_device
@@ -139,97 +123,6 @@ class TestDeployableObject(DbTestCase):
         self.assertRaises(exception.ResourceNotFound,
                           objects.Deployable.get, self.context,
                           dpl.uuid)
-
-    def test_add_attribute(self):
-        db_device = self.fake_device
-        device = objects.Device(context=self.context,
-                                **db_device)
-        device.create(self.context)
-        device_get = objects.Device.get(self.context, device.uuid)
-        db_dpl = self.fake_deployable
-        dpl = objects.Deployable(context=self.context,
-                                 **db_dpl)
-
-        dpl.device_id = device_get.id
-        dpl.create(self.context)
-        dpl_get = objects.Deployable.get(self.context, dpl.uuid)
-
-        db_attr = self.fake_attribute
-
-        dpl.add_attribute(self.context, db_attr['key'], db_attr['value'])
-        dpl.save(self.context)
-
-        dpl_get = objects.Deployable.get(self.context, dpl.uuid)
-        self.assertEqual(len(dpl_get.attributes_list), 1)
-
-    def test_delete_attribute(self):
-        db_device = self.fake_device
-        device = objects.Device(context=self.context,
-                                **db_device)
-        device.create(self.context)
-        device_get = objects.Device.get(self.context, device.uuid)
-        db_dpl = self.fake_deployable
-        dpl = objects.Deployable(context=self.context,
-                                 **db_dpl)
-
-        dpl.device_id = device_get.id
-        dpl.create(self.context)
-        dpl_get = objects.Deployable.get(self.context, dpl.uuid)
-        db_attr = self.fake_attribute
-        dpl_get.add_attribute(self.context, db_attr['key'], db_attr['value'])
-        dpl_get.save(self.context)
-        dpl_get = objects.Deployable.get(self.context, dpl_get.uuid)
-        self.assertEqual(len(dpl_get.attributes_list), 1)
-
-        dpl_get.delete_attribute(self.context, dpl_get.attributes_list[0])
-        self.assertEqual(len(dpl_get.attributes_list), 0)
-
-    def test_get_by_filter_with_attributes(self):
-        db_device = self.fake_device
-        device = objects.Device(context=self.context,
-                                **db_device)
-        device.create(self.context)
-        device_get = objects.Device.get(self.context, device.uuid)
-        db_dpl = self.fake_deployable
-        dpl = objects.Deployable(context=self.context,
-                                 **db_dpl)
-
-        dpl.device_id = device_get.id
-        dpl.create(self.context)
-
-        db_dpl2 = self.fake_deployable2
-        dpl2 = objects.Deployable(context=self.context,
-                                  **db_dpl2)
-        dpl2.device_id = device_get.id
-        dpl2.create(self.context)
-
-        dpl.add_attribute(self.context, 'attr_key', 'attr_val')
-        dpl.save(self.context)
-
-        dpl2.add_attribute(self.context, 'test_key', 'test_val')
-        dpl2.add_attribute(self.context, 'test_key3', 'test_val3')
-        dpl2.save(self.context)
-
-        query = {"attr_key": "attr_val"}
-
-        dpl_get_list = objects.Deployable.get_by_filter(self.context, query)
-        self.assertEqual(len(dpl_get_list), 1)
-        self.assertEqual(dpl_get_list[0].uuid, dpl.uuid)
-
-        query = {"test_key": "test_val"}
-        dpl_get_list = objects.Deployable.get_by_filter(self.context, query)
-        self.assertEqual(len(dpl_get_list), 1)
-        self.assertEqual(dpl_get_list[0].uuid, dpl2.uuid)
-
-        query = {"test_key": "test_val", "test_key3": "test_val3"}
-        dpl_get_list = objects.Deployable.get_by_filter(self.context, query)
-        self.assertEqual(len(dpl_get_list), 1)
-        self.assertEqual(dpl_get_list[0].uuid, dpl2.uuid)
-
-        query = {"num_accelerators": 4, "test_key3": "test_val3"}
-        dpl_get_list = objects.Deployable.get_by_filter(self.context, query)
-        self.assertEqual(len(dpl_get_list), 1)
-        self.assertEqual(dpl_get_list[0].uuid, dpl2.uuid)
 
 
 class TestDeployableObject(test_objects._LocalTest,
