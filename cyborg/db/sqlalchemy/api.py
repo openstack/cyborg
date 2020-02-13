@@ -795,7 +795,8 @@ class Connection(api.Connection):
 
         exact_match_filter_names = ['id', 'uuid', 'name',
                                     'parent_id', 'root_id',
-                                    'num_accelerators', 'device_id']
+                                    'num_accelerators', 'device_id',
+                                    'driver_name', 'rp_uuid', 'bitstream_id']
 
         # Filter the query
         query_prefix = self._exact_filter(models.Deployable, query_prefix,
