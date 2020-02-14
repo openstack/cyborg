@@ -307,6 +307,25 @@ class TestFPGAExtARQObject(base.DbTestCase):
         mock_program.assert_called_once_with(
             self.context, 'newtestnode1', self.cpid, bs_id, "intel_fpga")
 
+    @mock.patch('cyborg.objects.ExtARQ.update_check_state')
+    @mock.patch('cyborg.objects.Deployable.get_cpid_list')
+    def test_do_programming_with_not_one_cp(self, mock_cpid_list,
+                                            mock_check_state):
+        dep_uuid = self.deployable_uuids[0]
+        fake_dep = fake_deployable.fake_deployable_obj(
+            self.context, uuid=dep_uuid)
+
+        mock_cpid_list.return_value = []
+        obj_extarq = self.class_fgpa_objects["function_program"]
+        obj_extarq.arq.hostname = 'newtestnode1'
+        fake_dep.driver_name = "intel_fpga"
+        bs_id = obj_extarq._get_bitstream_id()
+        self.assertRaises(exception.ExpectedOneObject,
+                          obj_extarq._do_programming,
+                          self.context,
+                          fake_dep,
+                          bs_id)
+
     @mock.patch('cyborg.common.placement_client.PlacementClient.'
                 '__init__')
     @mock.patch('cyborg.common.placement_client.PlacementClient.'

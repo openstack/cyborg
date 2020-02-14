@@ -222,7 +222,7 @@ class FPGAExtARQ(ExtARQ):
         if count != 1:
             self.update_check_state(
                 context, constants.ARQ_BIND_FAILED)
-            raise exception.ExpectedOneObject(type='controlpath_id',
+            raise exception.ExpectedOneObject(obj='controlpath_id',
                                               count=count)
         controlpath_id = cpid_list[0]
         controlpath_id['cpid_info'] = jsonutils.loads(
