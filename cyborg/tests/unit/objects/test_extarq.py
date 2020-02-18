@@ -237,6 +237,57 @@ class TestExtARQObject(base.DbTestCase):
         mock_spawn.assert_called_once_with(
             obj_fpga_extarq.bind, self.context, fake_dep)
 
+    @mock.patch('openstack.connection.Connection')
+    @mock.patch('cyborg.common.nova_client.NovaAPI.notify_binding')
+    @mock.patch('cyborg.objects.ExtARQ._allocate_attach_handle')
+    @mock.patch('cyborg.objects.ExtARQ.get')
+    @mock.patch('cyborg.objects.ExtARQ.list')
+    @mock.patch('cyborg.objects.ExtARQ.update_check_state')
+    @mock.patch('cyborg.objects.deployable.Deployable.get_by_device_rp_uuid')
+    @mock.patch('cyborg.common.utils.ThreadWorks.spawn_master')
+    def test_apply_patch_fpga_arq_monitor_job(
+        self, mock_master, mock_get_dep, mock_check_state, mock_list,
+        mock_get, mock_attach_handle, mock_notify_bind, mock_conn):
+
+        good_states = constants.ARQ_STATES_TRANSFORM_MATRIX[
+            constants.ARQ_BIND_STARTED]
+        obj_extarq = self.fake_obj_extarqs[2]
+        obj_fpga_extarq = self.fake_obj_fpga_extarqs[1]
+        obj_fpga_extarq.state = self.fake_obj_fpga_extarqs[1]
+        obj_extarq.arq.state = good_states[0]
+        obj_fpga_extarq.arq.state = good_states[0]
+
+        # TODO(Shaohe) we should control the state of arq to make
+        # better testcase.
+        # bound_extarq = copy.deepcopy(obj_extarq)
+        # bound_extarq.arq.state = constants.ARQ_BOUND
+        # mock_get.side_effect = [obj_extarq, bound_extarq]
+        mock_get.side_effect = [obj_extarq, obj_fpga_extarq]
+        mock_list.return_value = [obj_extarq]
+        uuid = obj_extarq.arq.uuid
+        instance_uuid = obj_extarq.arq.instance_uuid
+        dep_uuid = self.deployable_uuids[0]
+        fake_dep = fake_deployable.fake_deployable_obj(self.context,
+                                                       uuid=dep_uuid)
+        mock_get_dep.return_value = fake_dep
+        valid_fields = {
+            uuid: {'hostname': obj_extarq.arq.hostname,
+                   'device_rp_uuid': obj_extarq.arq.device_rp_uuid,
+                   'instance_uuid': instance_uuid}
+            }
+        patch_list = {
+            str(uuid): [
+                {"path": "/hostname", "op": "add",
+                 "value": obj_extarq.arq.hostname},
+                {"path": "/device_rp_uuid", "op": "add",
+                 "value": obj_extarq.arq.device_rp_uuid},
+                {"path": "/instance_uuid", "op": "add",
+                 "value": instance_uuid}
+            ]
+        }
+        objects.ExtARQ.apply_patch(self.context, patch_list, valid_fields)
+        mock_master.assert_called_once()
+
     @mock.patch('cyborg.objects.ExtARQ.get')
     @mock.patch('cyborg.objects.ExtARQ._from_db_object')
     def test_destroy(self, mock_from_db_obj, mock_obj_extarq):
