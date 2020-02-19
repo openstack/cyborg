@@ -88,7 +88,7 @@ class CyborgException(Exception):
 
 
 class Forbidden(CyborgException):
-    msg_fmt = _("Forbidden")
+    _msg_fmt = _("Forbidden")
     code = http_client.FORBIDDEN
 
 
@@ -166,14 +166,14 @@ class InvalidJsonType(Invalid):
 
 
 class InvalidAPIVersionString(Invalid):
-    msg_fmt = _("API Version String %(version)s is of invalid format. Must "
-                "be of format MajorNum.MinorNum.")
+    _msg_fmt = _("API Version String %(version)s is of invalid format. Must "
+                 "be of format MajorNum.MinorNum.")
 
 
 # TODO(All): Consider whether Placement/Image exceptions can be included here.
 class InvalidAPIResponse(Invalid):
-    msg_fmt = _('Bad API response from %(service)s for %(api)s API. '
-                'Details: %(msg)s')
+    _msg_fmt = _('Bad API response from %(service)s for %(api)s API. '
+                 'Details: %(msg)s')
 
 
 # Cannot be templated as the error syntax varies.
@@ -205,16 +205,16 @@ class NotFound(CyborgException):
 
 
 class ServiceUnavailable(Invalid):
-    msg_fmt = _("Service is unavailable at this time.")
+    _msg_fmt = _("Service is unavailable at this time.")
 
 
 class ServiceNotFound(NotFound):
-    msg_fmt = _("Service %(service_id)s could not be found.")
+    _msg_fmt = _("Service %(service_id)s could not be found.")
 
 
 class ConfGroupForServiceTypeNotFound(ServiceNotFound):
-    msg_fmt = _("No conf group name could be found for service type "
-                "%(stype)s.")
+    _msg_fmt = _("No conf group name could be found for service type "
+                 "%(stype)s.")
 
 
 class InvalidDeployType(CyborgException):
@@ -239,7 +239,7 @@ class DuplicateDeployableName(Conflict):
 
 
 class PlacementEndpointNotFound(NotFound):
-    message = _("Placement API endpoint not found")
+    _msg_fmt = _("Placement API endpoint not found")
 
 
 class PlacementResourceProviderNotFound(NotFound):
@@ -248,13 +248,13 @@ class PlacementResourceProviderNotFound(NotFound):
 
 
 class PlacementInventoryNotFound(NotFound):
-    message = _("Placement inventory not found for resource provider "
-                "%(resource_provider)s, resource class %(resource_class)s.")
+    _msg_fmt = _("Placement inventory not found for resource provider "
+                 "%(resource_provider)s, resource class %(resource_class)s.")
 
 
 class PlacementInventoryUpdateConflict(Conflict):
-    message = _("Placement inventory update conflict for resource provider "
-                "%(resource_provider)s, resource class %(resource_class)s.")
+    _msg_fmt = _("Placement inventory update conflict for resource provider "
+                 "%(resource_provider)s, resource class %(resource_class)s.")
 
 
 class ObjectActionError(CyborgException):
@@ -272,84 +272,84 @@ class AttributeAlreadyExists(CyborgException):
 # An exception with this name is used on both sides of the placement/
 # cyborg interaction.
 class ResourceClassNotFound(NotFound):
-    msg_fmt = _("No such resource class %(name_or_uuid)s.")
+    _msg_fmt = _("No such resource class %(name_or_uuid)s.")
 
 
 class ResourceProviderInUse(CyborgException):
-    msg_fmt = _("Resource provider has allocations.")
+    _msg_fmt = _("Resource provider has allocations.")
 
 
 class ResourceProviderRetrievalFailed(CyborgException):
-    msg_fmt = _("Failed to get resource provider with UUID %(uuid)s")
+    _msg_fmt = _("Failed to get resource provider with UUID %(uuid)s")
 
 
 class ResourceProviderAggregateRetrievalFailed(CyborgException):
-    msg_fmt = _("Failed to get aggregates for resource provider with UUID"
-                " %(uuid)s")
+    _msg_fmt = _("Failed to get aggregates for resource provider with UUID"
+                 " %(uuid)s")
 
 
 class ResourceProviderTraitRetrievalFailed(CyborgException):
-    msg_fmt = _("Failed to get traits for resource provider with UUID"
-                " %(uuid)s")
+    _msg_fmt = _("Failed to get traits for resource provider with UUID"
+                 " %(uuid)s")
 
 
 class ResourceProviderCreationFailed(CyborgException):
-    msg_fmt = _("Failed to create resource provider %(name)s")
+    _msg_fmt = _("Failed to create resource provider %(name)s")
 
 
 class ResourceProviderDeletionFailed(CyborgException):
-    msg_fmt = _("Failed to delete resource provider %(uuid)s")
+    _msg_fmt = _("Failed to delete resource provider %(uuid)s")
 
 
 class ResourceProviderUpdateFailed(CyborgException):
-    msg_fmt = _("Failed to update resource provider via URL %(url)s: "
-                "%(error)s")
+    _msg_fmt = _("Failed to update resource provider via URL %(url)s: "
+                 "%(error)s")
 
 
 class ResourceProviderSyncFailed(CyborgException):
-    msg_fmt = _("Failed to synchronize the placement service with resource "
-                "provider information supplied by the compute host.")
+    _msg_fmt = _("Failed to synchronize the placement service with resource "
+                 "provider information supplied by the compute host.")
 
 
 class PlacementAPIConnectFailure(CyborgException):
-    msg_fmt = _("Unable to communicate with the Placement API.")
+    _msg_fmt = _("Unable to communicate with the Placement API.")
 
 
 class PlacementAPIConflict(CyborgException):
     """Any 409 error from placement APIs should use (a subclass of) this
     exception.
     """
-    msg_fmt = _("A conflict was encountered attempting to invoke the "
-                "placement API at URL %(url)s: %(error)s")
+    _msg_fmt = _("A conflict was encountered attempting to invoke the "
+                 "placement API at URL %(url)s: %(error)s")
 
 
 class ResourceProviderUpdateConflict(PlacementAPIConflict):
     """A 409 caused by generation mismatch from attempting to update an
     existing provider record or its associated data (aggregates, traits, etc.).
     """
-    msg_fmt = _("A conflict was encountered attempting to update resource "
-                "provider %(uuid)s (generation %(generation)d): %(error)s")
+    _msg_fmt = _("A conflict was encountered attempting to update resource "
+                 "provider %(uuid)s (generation %(generation)d): %(error)s")
 
 
 class TraitCreationFailed(CyborgException):
-    msg_fmt = _("Failed to create trait %(name)s: %(error)s")
+    _msg_fmt = _("Failed to create trait %(name)s: %(error)s")
 
 
 class TraitRetrievalFailed(CyborgException):
-    msg_fmt = _("Failed to retrieve traits from the placement API: %(error)s")
+    _msg_fmt = _("Failed to retrieve traits from the placement API: %(error)s")
 
 
 class InvalidResourceClass(Invalid):
-    msg_fmt = _("Resource class '%(resource_class)s' invalid.")
+    _msg_fmt = _("Resource class '%(resource_class)s' invalid.")
 
 
 class InvalidResourceAmount(Invalid):
-    msg_fmt = _("Resource amounts must be integers. Received '%(amount)s'.")
+    _msg_fmt = _("Resource amounts must be integers. Received '%(amount)s'.")
 
 
 class InvalidInventory(Invalid):
-    msg_fmt = _("Inventory for '%(resource_class)s' on "
-                "resource provider '%(resource_provider)s' invalid.")
+    _msg_fmt = _("Inventory for '%(resource_class)s' on "
+                 "resource provider '%(resource_provider)s' invalid.")
 
 
 # An exception with this name is used on both sides of the placement/
@@ -357,42 +357,42 @@ class InvalidInventory(Invalid):
 class InventoryInUse(InvalidInventory):
     # NOTE(mriedem): This message cannot change without impacting the
     # cyborg.services.client.report._RE_INV_IN_USE regex.
-    msg_fmt = _("Inventory for '%(resource_classes)s' on "
-                "resource provider '%(resource_provider)s' in use.")
+    _msg_fmt = _("Inventory for '%(resource_classes)s' on "
+                 "resource provider '%(resource_provider)s' in use.")
 
 
 class QuotaNotFound(NotFound):
-    message = _("Quota could not be found")
+    _msg_fmt = _("Quota could not be found")
 
 
 class QuotaUsageNotFound(QuotaNotFound):
-    message = _("Quota usage for project %(project_id)s could not be found.")
+    _msg_fmt = _("Quota usage for project %(project_id)s could not be found.")
 
 
 class QuotaResourceUnknown(QuotaNotFound):
-    message = _("Unknown quota resources %(unknown)s.")
+    _msg_fmt = _("Unknown quota resources %(unknown)s.")
 
 
 class InvalidReservationExpiration(Invalid):
-    message = _("Invalid reservation expiration %(expire)s.")
+    _msg_fmt = _("Invalid reservation expiration %(expire)s.")
 
 
 class GlanceConnectionFailed(CyborgException):
-    msg_fmt = _("Connection to glance host %(server)s failed: "
-                "%(reason)s")
+    _msg_fmt = _("Connection to glance host %(server)s failed: "
+                 "%(reason)s")
 
 
 class ImageUnacceptable(Invalid):
-    msg_fmt = _("Image %(image_id)s is unacceptable: %(reason)s")
+    _msg_fmt = _("Image %(image_id)s is unacceptable: %(reason)s")
 
 
 class ImageNotAuthorized(CyborgException):
-    msg_fmt = _("Not authorized for image %(image_id)s.")
+    _msg_fmt = _("Not authorized for image %(image_id)s.")
 
 
 class ImageBadRequest(Invalid):
-    msg_fmt = _("Request of image %(image_id)s got BadRequest response: "
-                "%(response)s")
+    _msg_fmt = _("Request of image %(image_id)s got BadRequest response: "
+                 "%(response)s")
 
 
 class InvalidDriver(Invalid):
