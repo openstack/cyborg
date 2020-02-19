@@ -243,7 +243,8 @@ class PlacementEndpointNotFound(NotFound):
 
 
 class PlacementResourceProviderNotFound(NotFound):
-    message = _("Placement resource provider not found %(resource_provider)s.")
+    _msg_fmt = _("Placement resource provider not found: "
+                 "%(resource_provider)s.")
 
 
 class PlacementInventoryNotFound(NotFound):

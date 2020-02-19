@@ -13,6 +13,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import mock
 
 """Cyborg agent resource_tracker test cases."""
 from cyborg.agent.resource_tracker import ResourceTracker
@@ -49,3 +50,13 @@ class TestResourceTracker(base.TestCase):
         enabled_drivers = ['invalid_driver']
         self.assertRaises(exception.InvalidDriver, self.rt._initialize_drivers,
                           enabled_drivers)
+
+    @mock.patch('cyborg.agent.resource_tracker.LOG')
+    def test_update_usage_failed_parent_provider(self, mock_log):
+        with mock.patch.object(self.rt.conductor_api, 'report_data') as m:
+            m.side_effect = exception.PlacementResourceProviderNotFound(
+                resource_provider='foo')
+            self.rt.update_usage(None)
+            m.assert_called_once_with(None, 'fake-mini', [])
+        mock_log.error.assert_called_once_with('Unable to report usage: %s',
+                                               m.side_effect)

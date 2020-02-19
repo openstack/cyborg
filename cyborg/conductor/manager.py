@@ -364,8 +364,8 @@ class ConductorManager(object):
             pr_uuid = provider["resource_providers"][0]["uuid"]
             return pr_uuid
         except IndexError:
-            LOG.error("Error, provider %(hostname)s can not be found",
-                      {"hostname": hostname})
+            raise exception.PlacementResourceProviderNotFound(
+                resource_provider=hostname)
         except Exception as e:
             LOG.error("Error, could not access placement. Details: %(info)s",
                       {"info": e})

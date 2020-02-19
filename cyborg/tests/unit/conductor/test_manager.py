@@ -12,6 +12,7 @@
 import fixtures
 import mock
 
+from cyborg.common import exception
 from cyborg.conductor import manager
 from cyborg.tests import base
 
@@ -70,3 +71,18 @@ class ConductorManagerTest(base.TestCase):
         self.placement_mock.add_traits_to_rp.assert_called_once_with(
             sub_pr_uuid, traits)
         self.assertEqual(sub_pr_uuid, actual)
+
+    def test_get_root_provider(self):
+        self.placement_mock.get.return_value.json.return_value = {
+            'resource_providers': [{'uuid': mock.sentinel.uuid}],
+        }
+        uuid = self.cm._get_root_provider(mock.sentinel.context, 'foo')
+        self.assertEqual(mock.sentinel.uuid, uuid)
+
+    def test_get_root_provider_not_found(self):
+        self.placement_mock.get.return_value.json.return_value = {
+            'resource_providers': [],
+        }
+        self.assertRaises(exception.PlacementResourceProviderNotFound,
+                          self.cm._get_root_provider,
+                          mock.sentinel.context, 'foo')
