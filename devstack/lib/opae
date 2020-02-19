@@ -6,6 +6,7 @@
 # Dependencies:
 #
 
+# TODO(sean-k-mooney): this should not be required.
 # ensure we don't re-source this in the same environment
 [[ -z "$_OPAE_PKG_FNS" ]] || return 0
 declare -r -g _OPAE_PKG_FNS=1
