@@ -19,11 +19,6 @@
 # - stop_cyborg
 # - cleanup_cyborg
 
-# TODO(sean-k-mooney): this should not be required.
-# ensure we don't re-source this in the same environment
-[[ -z "$_CYBORG_DEVSTACK_LIB" ]] || return 0
-declare -r -g _CYBORG_DEVSTACK_LIB=1
-
 function install_cyborg_in_controller {
     if is_service_enabled cyborg-api; then
         local req_services="key"
@@ -40,12 +35,6 @@ function install_cyborg_in_controller {
 function install_cyborg {
     # make sure all needed services are enabled
     install_cyborg_in_controller
-    # TODO(sean-k-mooney): This is a bug and does not conform to
-    # the devstack plugin interface. devstack plugins should not
-    # reclone the repo they are packaged in over the directory
-    # they are executing form.
-    git_clone $CYBORG_REPO $CYBORG_DIR $CYBORG_BRANCH
-
     setup_develop $CYBORG_DIR
 }
 
@@ -97,13 +86,6 @@ function create_cyborg_accounts {
             "$CYBORG_API_URL/v2" \
             "$CYBORG_API_URL/v2" \
             "$CYBORG_API_URL/v2"
-        # NOTE (Sundar): If you need v1 API, enable the section below.
-        # get_or_create_service "cyborg_legacy" "accelerator_legacy" "Cyborg Legacy"
-        # get_or_create_endpoint "cyborg_legacy" \
-        #   "$REGION_NAME" \
-        #   "$CYBORG_API_URL/v1" \
-        #   "$CYBORG_API_URL/v1" \
-        #   "$CYBORG_API_URL/v1"
     fi
 }
 

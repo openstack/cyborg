@@ -55,8 +55,6 @@ Host settings
 ::
 
   [[local|localrc]]
-  # Multi-host settings
-  MULTI_HOST=False
   HOST_IP=YOUR_IP_CONFIG
   SERVICE_HOST=$HOST_IP
   DATABASE_TYPE=mysql
@@ -64,8 +62,6 @@ Host settings
   RABBIT_HOST=$HOST_IP
 
 - Replace YOUR_IP_CONFIG with your host IP (e.g. 10.0.0.72 or localhost).
-- If you are not configuring OpenStack env in multi-host settings, please set
-  MULTI_HOST=False.
 
 Password settings
 >>>>>>>>>>>>>>>>>
@@ -165,6 +161,23 @@ Compute Nodes
 
 - If you do not want to setup cyborg-agent on controller, you can disable it.
 - You do not need to enable cyborg-api and cyborg-cond on compute nodes.
+
+Testing with unmerged changes
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+To test with changes that have not been merged, the enable_plugin
+line can be modifed to specify the branch/reference to be cloned.
+
+::
+
+  enable_plugin cyborg https://review.opendev.org/openstack/cyborg refs/changes/28/708728/1
+
+the format is
+
+::
+
+  enable_plugin <directory name> <git repo url> <change/revision>
+
 
 Cell V2 Deployment
 >>>>>>>>>>>>>>>>>>
