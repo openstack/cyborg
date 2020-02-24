@@ -119,6 +119,8 @@ def _generate_driver_device(gpu):
 
 def _generate_controlpath_id(gpu):
     driver_cpid = driver_controlpath_id.DriverControlPathID()
+    # NOTE: GPUs (either pGPU or vGPU), they all report "PCI" as
+    # their cpid_type, while attach_handle_type of them are different.
     driver_cpid.cpid_type = "PCI"
     driver_cpid.cpid_info = utils.pci_str_to_json(gpu["devices"])
     return driver_cpid
@@ -147,7 +149,10 @@ def _generate_dep_list(gpu):
 
 def _generate_attach_handle(gpu):
     driver_ah = driver_attach_handle.DriverAttachHandle()
-    driver_ah.attach_type = constants.AH_TYPE_PCI
+    if gpu["rc"] == "PGPU":
+        driver_ah.attach_type = constants.AH_TYPE_PCI
+    else:
+        driver_ah.attach_type = constants.AH_TYPE_MDEV
     driver_ah.in_use = False
     driver_ah.attach_info = utils.pci_str_to_json(gpu["devices"])
     return driver_ah

@@ -17,13 +17,12 @@ from oslo_log import log as logging
 from oslo_serialization import jsonutils
 from oslo_versionedobjects import base as object_base
 
+from cyborg.common import constants
 from cyborg.db import api as dbapi
 from cyborg.objects import base
 from cyborg.objects import fields as object_fields
 
 LOG = logging.getLogger(__name__)
-
-CPID_TYPE = ["PCI", "MDEV"]
 
 
 @base.CyborgObjectRegistry.register
@@ -38,8 +37,9 @@ class ControlpathID(base.CyborgObject, object_base.VersionedObjectDictCompat):
         'id': object_fields.IntegerField(nullable=False),
         'uuid': object_fields.UUIDField(nullable=False),
         'device_id': object_fields.IntegerField(nullable=False),
-        'cpid_type': object_fields.EnumField(valid_values=CPID_TYPE,
-                                             nullable=False),
+        'cpid_type': object_fields.EnumField(
+            valid_values=constants.CPID_TYPE,
+            nullable=False),
         'cpid_info': object_fields.StringField(nullable=False)
     }
 
