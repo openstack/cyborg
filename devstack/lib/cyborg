@@ -52,6 +52,19 @@ function cleanup_agent {
     fi
 }
 
+
+function clone_cyborg_client {
+    if [[ "${CYBORG_CLIENT_INSTALL}" == "True" ]]; then
+        git_clone ${CYBORG_CLIENT_REPO} ${CYBORG_CLIENT_DIR} ${CYBORG_CLIENT_BRANCH}
+    fi
+}
+
+function install_cyborg_client {
+    if [[ "${CYBORG_CLIENT_INSTALL}" == "True" ]]; then
+        setup_develop ${CYBORG_CLIENT_DIR}
+    fi
+}
+
 # install_cyborg() - Install the things!
 function install_cyborg {
     # make sure all needed services are enabled

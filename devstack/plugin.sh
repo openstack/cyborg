@@ -13,10 +13,12 @@ case $1 in
         case $2 in
             "pre-install")
                 pre_install_agent
+                clone_cyborg_client
                 ;;
             "install")
                 echo_summary "Installing Cyborg"
                 install_cyborg
+                install_cyborg_client
                 ;;
             "post-config")
                 # stack/post-config - Called after the layer 0 and 2 services
