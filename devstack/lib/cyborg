@@ -19,6 +19,8 @@
 # - stop_cyborg
 # - cleanup_cyborg
 
+# TODO(sean-k-mooney): this does not install anything
+# consider renameing.
 function install_cyborg_in_controller {
     if is_service_enabled cyborg-api; then
         local req_services="key"
@@ -31,13 +33,48 @@ function install_cyborg_in_controller {
     fi
 }
 
+function pre_install_agent {
+    if is_service_enabled cyborg-agent; then
+        # stack/pre-install - Called after (OS) setup is complete and before
+        # project source is installed
+        echo_summary "Installing additional Cyborg packages"
+        if [[ "$OPAE_INSTALL_ENABLE" == "True" ]] && install_opae_packages; then
+           echo_summary "INFO: Additional Cyborg packages installed"
+        elif [[ "$OPAE_INSTALL_ENABLE" == "True" ]]; then
+           echo "WARNING: Failed to install additional Cyborg packages"
+        fi
+    fi
+}
+
+# TODO(sean-k-mooney): this function is not required
+# cyborg does not depend on libvirt so if n-cpu is not
+# enabled it should not be installed.
+function install_agent {
+    if is_service_enabled cyborg-agent; then
+        # stack/install - Called after the layer 1 and 2 projects source and
+        # their dependencies have been installed
+        if ! is_service_enabled n-cpu; then
+            source $RC_DIR/lib/nova_plugins/functions-libvirt
+            install_libvirt
+        fi
+    fi
+}
+
+function cleanup_agent {
+    if is_service_enabled cyborg-agent; then
+        if [[ "$OPAE_INSTALL_ENABLE" == "True" ]]; then
+            uninstall_opae_packages
+        fi
+    fi
+}
+
 # install_cyborg() - Install the things!
 function install_cyborg {
     # make sure all needed services are enabled
     install_cyborg_in_controller
+    # install the cyborg project from git
     setup_develop $CYBORG_DIR
 }
-
 
 # cleanup_cyborg_config_files() - Remove residual cache/config/log files,
 # left over from previous runs that would need to clean up.
@@ -46,7 +83,6 @@ function cleanup_cyborg_config_files {
     sudo rm -rf $CYBORG_AUTH_CACHE_DIR
 }
 
-
 # cleanup_cyborg() - Clean everything left from Cyborg
 function cleanup_cyborg {
     cleanup_cyborg_config_files
@@ -54,7 +90,6 @@ function cleanup_cyborg {
         remove_uwsgi_config "$CYBORG_UWSGI_CONF" "$CYBORG_UWSGI"
     fi
 }
-
 
 # configure_cyborg_dirs() - Create all directories required by Cyborg and
 # associated services.
@@ -67,7 +102,6 @@ function configure_cyborg_dirs {
         install -d -o $STACK_USER $CYBORG_DEPLOY_LOGS_LOCAL_PATH
     fi
 }
-
 
 # Defaults
 # --------
@@ -89,18 +123,11 @@ function create_cyborg_accounts {
     fi
 }
 
-
 # configure_cyborg() - Set config files, create data dirs, etc
 function configure_cyborg {
-    configure_cyborg_dirs
-
-    # Copy over cyborg configuration file and configure common parameters.
-    iniset $CYBORG_CONF_FILE DEFAULT debug True
-    inicomment $CYBORG_CONF_FILE DEFAULT log_file
-    iniset $CYBORG_CONF_FILE database connection `database_connection_url cyborg`
-    iniset $CYBORG_CONF_FILE DEFAULT state_path $CYBORG_STATE_PATH
-    iniset $CYBORG_CONF_FILE DEFAULT use_syslog $SYSLOG
-    iniset $CYBORG_CONF_FILE DEFAULT host $LOCAL_HOSTNAME
+    if is_service_enabled cyborg; then
+        configure_cyborg_common
+    fi
 
     # Configure Cyborg conductor, if it was enabled.
     if is_service_enabled cyborg-cond; then
@@ -112,8 +139,29 @@ function configure_cyborg {
         configure_cyborg_api
     fi
 
+    if is_service_enabled cyborg-agent; then
+        configure_cyborg_agent
+    fi
+
     # NOTE(crushil) Need to add logging
 
+}
+
+function configure_cyborg_common {
+    configure_cyborg_dirs
+    # Copy over cyborg configuration file and configure common parameters.
+    iniset $CYBORG_CONF_FILE DEFAULT debug True
+    inicomment $CYBORG_CONF_FILE DEFAULT log_file
+    iniset $CYBORG_CONF_FILE database connection `database_connection_url cyborg`
+    iniset $CYBORG_CONF_FILE DEFAULT state_path $CYBORG_STATE_PATH
+    iniset $CYBORG_CONF_FILE DEFAULT use_syslog $SYSLOG
+    iniset $CYBORG_CONF_FILE DEFAULT host $LOCAL_HOSTNAME
+    iniset_rpc_backend cyborg $CYBORG_CONF_FILE
+}
+
+function configure_cyborg_agent {
+    # set up drivers / hardware types
+    iniset $CYBORG_CONF_FILE agent enabled_drivers $CYBORG_ENABLED_DRIVERS
 }
 
 # configure_cyborg_api() - Is used by configure_cyborg(). Performs
@@ -123,13 +171,12 @@ function configure_cyborg_api {
     configure_auth_token_middleware $CYBORG_CONF_FILE cyborg $CYBORG_AUTH_CACHE_DIR/api
     iniset $CYBORG_CONF_FILE oslo_policy policy_file $CYBORG_POLICY_JSON
 
-    iniset_rpc_backend cyborg $CYBORG_CONF_FILE
-
     iniset $CYBORG_CONF_FILE conductor automated_clean $CYBORG_AUTOMATED_CLEAN_ENABLED
 
     if [ "$CYBORG_USE_UWSGI" == "True" ]; then
         write_uwsgi_config "$CYBORG_UWSGI_CONF" "$CYBORG_UWSGI" "/accelerator"
     fi
+    sudo cp -p $CYBORG_DIR/etc/cyborg/api-paste.ini $CYBORG_API_PASTE_INI
 }
 
 function configure_auth_for {
@@ -169,11 +216,9 @@ function configure_cyborg_conductor {
     configure_cyborg_other_client_section nova
     configure_cyborg_other_client_section placement
 
-    sudo cp -p $CYBORG_DIR/etc/cyborg/api-paste.ini $CYBORG_API_PASTE_INI
-
-    # set up drivers / hardware types
-    iniset $CYBORG_CONF_FILE agent enabled_drivers $CYBORG_ENABLED_DRIVERS
-
+    # NOTE(sean-k-mooney) it is not obvious why this is in the conductor
+    # section or what sets is_deployed_by_agent so this should either be
+    # documented, removed or moved to the correct locaiton.
     if is_deployed_by_agent; then
         iniset $CYBORG_CONF_FILE api ramdisk_heartbeat_timeout 30
     fi
