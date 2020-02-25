@@ -152,7 +152,6 @@ function configure_cyborg_common {
     iniset $CYBORG_CONF_FILE database connection `database_connection_url cyborg`
     iniset $CYBORG_CONF_FILE DEFAULT state_path $CYBORG_STATE_PATH
     iniset $CYBORG_CONF_FILE DEFAULT use_syslog $SYSLOG
-    iniset $CYBORG_CONF_FILE DEFAULT host $LOCAL_HOSTNAME
     iniset_rpc_backend cyborg $CYBORG_CONF_FILE
 }
 
