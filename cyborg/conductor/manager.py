@@ -22,7 +22,6 @@ import uuid
 from cyborg.common import exception
 from cyborg.common import placement_client
 from cyborg.conf import CONF
-from cyborg import objects
 from cyborg.objects.attach_handle import AttachHandle
 from cyborg.objects.attribute import Attribute
 from cyborg.objects.control_path import ControlpathID
@@ -48,84 +47,6 @@ class ConductorManager(object):
 
     def periodic_tasks(self, context, raise_on_error=False):
         pass
-
-    def accelerator_create(self, context, obj_acc):
-        """Create a new accelerator.
-
-        :param context: request context.
-        :param obj_acc: a changed (but not saved) accelerator object.
-        :returns: created accelerator object.
-        """
-        base_options = {
-            'project_id': context.tenant,
-            'user_id': context.user
-            }
-        obj_acc.update(base_options)
-        obj_acc.create(context)
-        return obj_acc
-
-    def accelerator_update(self, context, obj_acc):
-        """Update an accelerator.
-
-        :param context: request context.
-        :param obj_acc: an accelerator object to update.
-        :returns: updated accelerator object.
-        """
-        obj_acc.save(context)
-        return obj_acc
-
-    def accelerator_delete(self, context, obj_acc):
-        """Delete an accelerator.
-
-        :param context: request context.
-        :param obj_acc: an accelerator object to delete.
-        """
-        obj_acc.destroy(context)
-
-    def deployable_create(self, context, obj_dep):
-        """Create a new deployable.
-
-        :param context: request context.
-        :param obj_dep: a changed (but not saved) obj_dep object.
-        :returns: created obj_dep object.
-        """
-        obj_dep.create(context)
-        return obj_dep
-
-    def deployable_update(self, context, obj_dep):
-        """Update a deployable.
-
-        :param context: request context.
-        :param obj_dep: a deployable object to update.
-        :returns: updated deployable object.
-        """
-        obj_dep.save(context)
-        return obj_dep
-
-    def deployable_delete(self, context, obj_dep):
-        """Delete a deployable.
-
-        :param context: request context.
-        :param obj_dep: a deployable object to delete.
-        """
-        obj_dep.destroy(context)
-
-    def deployable_get(self, context, uuid):
-        """Retrieve a deployable.
-
-        :param context: request context.
-        :param uuid: UUID of a deployable.
-        :returns: requested deployable object.
-        """
-        return objects.Deployable.get(context, uuid)
-
-    def deployable_list(self, context):
-        """Retrieve a list of deployables.
-
-        :param context: request context.
-        :returns: a list of deployable objects.
-        """
-        return objects.Deployable.list(context)
 
     def device_profile_create(self, context, obj_devprof):
         """Signal to conductor service to create a device_profile.
