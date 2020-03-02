@@ -123,7 +123,7 @@ class TestFakeDriver(base.TestCase):
 
         deployables = devices[0].deployable_list
         self.assertEqual(1, len(deployables))
-        self.assertEqual('FakeDevice', deployables[0]['name'])
+        self.assertEqual('fake-mini_FakeDevice', deployables[0]['name'])
         self.assertGreater(deployables[0]['num_accelerators'], 1)
 
         # Since num_accelerators can change, we don't test for its value.

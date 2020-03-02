@@ -11,11 +11,14 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import re
+
 import os_resource_classes as orc
 from oslo_serialization import jsonutils
 
 from cyborg.accelerator.drivers.driver import GenericDriver
 from cyborg.common import constants
+from cyborg.conf import CONF
 from cyborg.objects.driver_objects import driver_attach_handle
 from cyborg.objects.driver_objects import driver_attribute
 from cyborg.objects.driver_objects import driver_controlpath_id
@@ -74,7 +77,15 @@ class FakeDriver(GenericDriver):
         driver_dep = driver_deployable.DriverDeployable()
         driver_dep.attach_handle_list = self._generate_attach_handles(
             pci, self.NUM_ACCELERATORS)
-        driver_dep.name = pci.get('device')
+        # NOTE(sean-k-mooney): we need to prepend the host name to the
+        # device name as this is used to generate the RP name and uuid in
+        # the cyborg conductor when updating placement. As such this needs
+        # to be unique per host to allow multi node testing with the fake
+        # driver.
+        name = "%s_%s" % (CONF.host, pci.get('device'))
+        # Replace any non alphanumeric, hyphen or underscore character with
+        # underscore to comply with placement RP name requirements
+        driver_dep.name = re.sub("(?![a-zA-Z0-9_\-]).", "_", name)
         driver_dep.driver_name = 'fake'
         driver_dep.num_accelerators = self.NUM_ACCELERATORS
         driver_dep.attribute_list = self._generate_attribute_list()
