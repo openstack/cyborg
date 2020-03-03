@@ -1,5 +1,53 @@
 enable_service cyborg cyborg-api cyborg-cond cyborg-agent
 
+# cyborg setting
+# Defaults
+# --------
+
+# NOTE(sean-k-mooney): these should be removed in the future as
+# devstack plugins should not clone the repo they are packaged in.
+# Cloning the repo from within the plugin will result in the plugin
+# script replacing the directory it is executing form.
+# Set up default repos
+CYBORG_REPO=${CYBORG_REPO:-${GIT_BASE}/openstack/cyborg.git}
+CYBORG_BRANCH=${CYBORG_BRANCH:-master}
+
+# Set up default directories
+# then name of the directory where cyborg is cloned is set by the first
+# argument to enable_plugin so we should not assume it will be cyborg
+CYBORG_DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && cd .. && pwd )
+CYBORG_DEVSTACK_DIR=$CYBORG_DIR/devstack
+CYBORG_DEVSTACK_FILES_DIR=$CYBORG_DEVSTACK_DIR/files
+CYBORG_DATA_DIR=$DATA_DIR/cyborg
+CYBORG_STATE_PATH=/var/lib/cyborg
+CYBORG_AUTH_CACHE_DIR=${CYBORG_AUTH_CACHE_DIR:-/var/cache/cyborg}
+CYBORG_CONF_DIR=${CYBORG_CONF_DIR:-/etc/cyborg}
+CYBORG_CONF_FILE=$CYBORG_CONF_DIR/cyborg.conf
+CYBORG_API_PASTE_INI=$CYBORG_CONF_DIR/api-paste.ini
+CYBORG_POLICY_JSON=$CYBORG_CONF_DIR/policy.json
+CYBORG_SERVICE_HOST=${CYBORG_SERVICE_HOST:-$SERVICE_HOST}
+CYBORG_SERVICE_PORT=${CYBORG_SERVICE_PORT:-6666}
+CYBORG_SERVICE_PROTOCOL=${CYBORG_SERVICE_PROTOCOL:-$SERVICE_PROTOCOL}
+CYBORG_ENABLED_DRIVERS=${CYBORG_ENABLED_DRIVERS:-fake_driver}
+
+if [[ -d ${CYBORG_DIR}/bin ]]; then
+    CYBORG_BIN_DIR=${CYBORG_DIR}/bin
+else
+    CYBORG_BIN_DIR=$(get_python_exec_prefix)
+fi
+
+# Toggle for deploying Cyborg-API under a wsgi server
+CYBORG_USE_UWSGI=${CYBORG_USE_UWSGI:-True}
+
+CYBORG_UWSGI=$CYBORG_BIN_DIR/cyborg-wsgi-api
+CYBORG_UWSGI_CONF=$CYBORG_CONF_DIR/cyborg-api-uwsgi.ini
+
+if [[ "$CYBORG_USE_UWSGI" == "True" ]]; then
+    CYBORG_API_URL="$CYBORG_SERVICE_PROTOCOL://$CYBORG_SERVICE_HOST/accelerator"
+else
+    CYBORG_API_URL="$CYBORG_SERVICE_PROTOCOL://$CYBORG_SERVICE_HOST:$CYBORG_SERVICE_PORT"
+fi
+
 # OPAE settings
 # OPAE packages are not yet upstreamed into OS repos
 # We need to download them from OPAE releases page on GitHub
