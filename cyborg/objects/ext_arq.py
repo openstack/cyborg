@@ -225,7 +225,7 @@ class ExtARQ(base.CyborgObject, object_base.VersionedObjectDictCompat,
         devprof_id = db_extarq['device_profile_id']
         devprof_group_id = db_extarq['device_profile_group_id']
 
-        devprof = cls.dbapi.device_profile_get_by_id(context, devprof_id)
+        devprof = DeviceProfile.get_by_id(context, devprof_id)
         db_extarq['device_profile_name'] = devprof['name']
 
         db_extarq['attach_handle_type'] = ''
@@ -250,9 +250,7 @@ class ExtARQ(base.CyborgObject, object_base.VersionedObjectDictCompat,
             db_extarq['deployable_uuid'] = (
                 '00000000-0000-0000-0000-000000000000')
 
-        # Get the device profile group
-        obj_devprof = DeviceProfile.get_by_name(context, devprof['name'])
-        groups = obj_devprof['groups']
+        groups = devprof['groups']
         db_extarq['device_profile_group'] = groups[devprof_group_id]
 
         return db_extarq

@@ -101,9 +101,7 @@ class TestARQsController(v2_test.APITestV2):
         for in_extarq, out_arq in zip(self.fake_extarqs, out_arqs):
             self._validate_arq(in_extarq.arq, out_arq)
         for idx, out_arq in enumerate(out_arqs):
-            dp_group_id = 1
-            if idx == 0:  # 1st arq has group_id '0', other 2 have '1'
-                dp_group_id = 0
+            dp_group_id = idx
             self.assertEqual(dp_group_id, out_arq['device_profile_group_id'])
 
     @mock.patch('cyborg.objects.DeviceProfile.get_by_name')

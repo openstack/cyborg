@@ -63,6 +63,13 @@ class DeviceProfile(base.CyborgObject, object_base.VersionedObjectDictCompat):
         self._from_db_object(self, db_devprof)
 
     @classmethod
+    def get_by_id(cls, context, id):
+        """Find a DB Device_profile and return an Obj Device_profile."""
+        db_devprof = cls.dbapi.device_profile_get_by_id(context, id)
+        obj_devprof = cls._from_db_object(cls(context), db_devprof)
+        return obj_devprof
+
+    @classmethod
     def get_by_uuid(cls, context, uuid):
         """Find a DB Device_profile and return an Obj Device_profile."""
         db_devprof = cls.dbapi.device_profile_get_by_uuid(context, uuid)
