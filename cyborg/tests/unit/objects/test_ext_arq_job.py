@@ -180,6 +180,33 @@ class TestExtARQJobMixin(base.DbTestCase):
                 mock_aysnc_bind, self.context, fake_dep)
             mock_bind.assert_not_called()
 
+    @mock.patch('cyborg.common.utils.ThreadWorks.get_workers_result')
+    @mock.patch('cyborg.common.utils.ThreadWorks.spawn_master')
+    def test_master_with_async_jobs(self, mock_spawn, mock_get_result):
+        # There are async job, so will start to monitor the job status
+        def job(context, deployable):
+            pass
+
+        works = utils.ThreadWorks()
+        dep_uuid = self.deployable_uuids[0]
+        fake_dep = fake_deployable.fake_deployable_obj(self.context,
+                                                       uuid=dep_uuid)
+        arq_job_binds = {
+            self.class_objects["bitstream_program"]:
+            works.spawn(job, self.context, fake_dep),
+            self.class_objects["function_program"]:
+            works.spawn(job, self.context, fake_dep)
+        }
+        arq_binds = {
+            self.class_objects["gpu"]: None,
+            self.class_objects["no_program"]: None,
+        }
+        arq_binds.update(arq_job_binds)
+        objects.ext_arq.ExtARQJobMixin.master(self.context, arq_binds)
+        mock_get_result.return_value = "Jobs_Generator"
+        mock_get_result.assert_called_once()
+        mock_spawn.assert_called_once()
+
     @mock.patch('cyborg.objects.ext_arq.ExtARQJobMixin.check_bindings_result')
     def test_master_with_instant(self, mock_result):
         # There are no async job, so will not start to monitor the job status
@@ -253,6 +280,36 @@ class TestExtARQJobMixin(base.DbTestCase):
         mock_notify.assert_called_once_with(instance_uuid, bind_status)
 
     @mock.patch('cyborg.objects.ext_arq.ExtARQJobMixin.check_bindings_result')
+    def test_job_monitor_with_job_exception(self, mock_result):
+        works = utils.ThreadWorks()
+        err_job = works.spawn(lambda x: x / 0, 1)
+        good_job = works.spawn(lambda x: x, 1)
+        works_generator = works.get_workers_result(
+            [err_job, good_job], timeout=CONF.bind_timeout)
+
+        extarqs = [self.class_objects["bitstream_program"],
+                   self.class_objects["function_program"]]
+
+        objects.ext_arq.ExtARQ.job_monitor(
+            self.context, works_generator, extarqs)
+        mock_result.assert_called_once_with(self.context, extarqs)
+
+    @mock.patch('cyborg.objects.ext_arq.ExtARQJobMixin.check_bindings_result')
+    def test_job_monitor_with_job_successful(self, mock_result):
+        works = utils.ThreadWorks()
+        job1 = works.spawn(lambda x: x, 1)
+        job2 = works.spawn(lambda x: x, 2)
+        works_generator = works.get_workers_result(
+            [job1, job2], timeout=CONF.bind_timeout)
+
+        extarqs = [self.class_objects["bitstream_program"],
+                   self.class_objects["function_program"]]
+
+        objects.ext_arq.ExtARQ.job_monitor(
+            self.context, works_generator, extarqs)
+        mock_result.assert_called_once_with(self.context, extarqs)
+
+    @mock.patch('cyborg.objects.ext_arq.ExtARQJobMixin.check_bindings_result')
     def test_job_monitor_without_jobs(self, mock_result):
         works = utils.ThreadWorks()
         works_generator = works.get_workers_result(
@@ -264,6 +321,18 @@ class TestExtARQJobMixin(base.DbTestCase):
         objects.ext_arq.ExtARQ.job_monitor(
             self.context, works_generator, extarqs)
         mock_result.assert_called_once_with(self.context, extarqs)
+
+    @mock.patch('cyborg.objects.ext_arq.ExtARQJobMixin.check_bindings_result')
+    def test_job_monitor_with_empty_arq(self, mock_result):
+        works = utils.ThreadWorks()
+        good_job = works.spawn(lambda x: x, 1)
+        works_generator = works.get_workers_result(
+            [good_job], timeout=CONF.bind_timeout)
+        extarqs = []
+
+        objects.ext_arq.ExtARQ.job_monitor(
+            self.context, works_generator, extarqs)
+        mock_result.assert_not_called()
 
     @mock.patch('cyborg.common.nova_client.NovaAPI.notify_binding')
     @mock.patch('cyborg.common.nova_client.NovaAPI')
