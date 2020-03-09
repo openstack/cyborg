@@ -1,5 +1,5 @@
-Welcome to Cyborg's documentation!
-==================================
+OpenStack Accelerator (Cyborg)
+==============================
 
 Cyborg is a general management framework for accelerators
 
@@ -39,17 +39,39 @@ Configuration Reference
    configuration/index
    reference/support-matrix
 
-Documentation for End Users
-----------------------------
+For End Users
+-------------
+
+As an end user of Cyborg, you'll use Cyborg to create and
+manage accelerators with either tools or the API directly.
+
+Tools for using Cyborg
+~~~~~~~~~~~~~~~~~~~~~~
 
 Information on the commands available through Cyborg's Command Line
 Interface (CLI) can be found in this section of documentation.
-
 
 .. toctree::
    :maxdepth: 1
 
    cli/index
+
+Using the API
+~~~~~~~~~~~~~
+
+All end user (and some administrative) features of Cyborg are exposed via a
+REST API, which can be used to build more complicated logic or automation with
+Cyborg. This can be consumed directly, or via various SDKs. The following
+resources will help you get started with consuming the API directly.
+
+* `Cyborg API Reference <https://docs.openstack.org/api-ref/accelerator/>`_:
+  The complete reference for the accelerator API, including all methods and
+  request / response parameters and their meaning.
+
+.. # TODO(brinzhang): After completing the
+   `Cyborg API v2 <https://specs.openstack.org/openstack/cyborg-specs/specs/ussuri/approved/cyborg-api.html>`_
+   API, the "Cyborg API Microversion History <https://xxx>"" management
+   document will be added, and it will also be added here.
 
 Documentation for Developers
 ----------------------------
@@ -64,6 +86,4 @@ Documentation for Developers
 Indices and tables
 ==================
 
-* :ref:`genindex`
-* :ref:`modindex`
 * :ref:`search`
