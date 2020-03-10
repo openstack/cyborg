@@ -1,11 +1,6 @@
 {
-   "links":[
-      {
-         "href":"http://192.168.23.76/accelerator/v2/device_profiles/1a939c88-0b01-408b-bab0-4c61d3a02d71",
-         "rel":"self"
-      }
-   ],
    "name":"afexample_3",
+   "uuid":"1a939c88-0b01-408b-bab0-4c61d3a02d71",
    "groups":[
       {
          "trait:CUSTOM_FUNCTION_ID_3AFB":"required",
@@ -13,5 +8,12 @@
          "trait:CUSTOM_FPGA_1":"required"
       }
    ],
-   "uuid":"1a939c88-0b01-408b-bab0-4c61d3a02d71"
+   "created_at": "2020-03-09 11:26:05+00:00",
+   "updated_at": null,
+   "links":[
+      {
+         "href":"http://192.168.23.76/accelerator/v2/device_profiles/1a939c88-0b01-408b-bab0-4c61d3a02d71",
+         "rel":"self"
+      }
+   ]
 }
