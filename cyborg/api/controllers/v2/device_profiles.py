@@ -59,8 +59,7 @@ class DeviceProfile(base.APIBase):
     a device profile. See module notes above.
     """
 
-    @classmethod
-    def get_api_obj(cls, obj_devprof):
+    def get_device_profile(self, obj_devprof):
         api_obj = {}
         for field in ['name', 'description', 'uuid', 'groups']:
             api_obj[field] = obj_devprof[field]
@@ -72,18 +71,18 @@ class DeviceProfile(base.APIBase):
         return api_obj
 
 
-class DeviceProfileCollection(object):
+class DeviceProfileCollection(DeviceProfile):
     """API representation of a collection of device profiles."""
 
-    @classmethod
-    def get_api_objs(cls, obj_devprofs):
+    def get_device_profiles(self, obj_devprofs):
         api_obj_devprofs = [
-            DeviceProfile.get_api_obj(obj_devprof)
+            self.get_device_profile(obj_devprof)
             for obj_devprof in obj_devprofs]
         return api_obj_devprofs
 
 
-class DeviceProfilesController(base.CyborgController):
+class DeviceProfilesController(base.CyborgController,
+                               DeviceProfileCollection):
     """REST controller for Device Profiles."""
 
     @policy.authorize_wsgi("cyborg:device_profile", "create", False)
@@ -116,7 +115,7 @@ class DeviceProfilesController(base.CyborgController):
 
         new_devprof = pecan.request.conductor_api.device_profile_create(
             context, obj_devprof)
-        ret = DeviceProfile.get_api_obj(new_devprof)
+        ret = self.get_device_profile(new_devprof)
         return wsme.api.Response(ret, status_code=http_client.CREATED,
                                  return_type=wsme.types.DictType)
 
@@ -162,7 +161,7 @@ class DeviceProfilesController(base.CyborgController):
                                 if devprof['uuid'] == uuid]
             obj_devprofs = new_obj_devprofs
 
-        api_obj_devprofs = DeviceProfileCollection.get_api_objs(obj_devprofs)
+        api_obj_devprofs = self.get_device_profiles(obj_devprofs)
 
         return api_obj_devprofs
 
