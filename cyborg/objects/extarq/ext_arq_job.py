@@ -33,10 +33,10 @@ class ExtARQJobMixin(object):
     def _bind_job(self, context, deployable):
         """The bind process of an acclerator."""
         check_extra_job = getattr(self, "_need_extra_bind_job", None)
-        need_job = None
+        need_job = False
         if check_extra_job:
             need_job = check_extra_job(context, deployable)
-        if getattr(self.bind, "is_job", False) and need_job is not False:
+        if getattr(self.bind, "is_job", False) and need_job:
             LOG.info("Start job for ARQ(%s) bind.", self.arq.uuid)
             works = utils.ThreadWorks()
             job = works.spawn(self.bind, context, deployable)
@@ -228,7 +228,7 @@ class ExtARQJobMixin(object):
         except ValueError:
             raise exception.InvalidParameterValue(
                 'Resources nummber is a invalid in'
-                'device_profile_group: %s' % group)
+                ' device_profile_group: %s' % group)
         return res_type, res_num
 
     @classmethod
