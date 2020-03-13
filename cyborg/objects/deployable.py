@@ -65,7 +65,6 @@ class Deployable(base.CyborgObject, object_base.VersionedObjectDictCompat):
         db_dep = self.dbapi.deployable_create(context, values)
         self._from_db_object(self, db_dep)
         self.obj_reset_changes()
-        del self.attributes_list[:]
 
     @classmethod
     def get(cls, context, uuid):
@@ -144,20 +143,6 @@ class Deployable(base.CyborgObject, object_base.VersionedObjectDictCompat):
                 obj_dpl_list.append(obj_dpl)
 
         return obj_dpl_list
-
-    @staticmethod
-    def _from_db_object(obj, db_obj):
-        """Converts a deployable to a formal object.
-
-        :param obj: An object of the class.
-        :param db_obj: A DB model of the object
-        :return: The object of the class with the database entity added
-        """
-        for field in obj.fields:
-            obj[field] = db_obj[field]
-        obj.attributes_list = []
-
-        return obj
 
     @classmethod
     def get_list_by_device_id(cls, context, device_id):
