@@ -115,6 +115,16 @@ device_policies = [
                        description='Retrieve all device records'),
 ]
 
+deployable_policies = [
+    policy.RuleDefault('cyborg:deployable:get_one',
+                       'rule:allow',
+                       description='Show deployable detail'),
+    policy.RuleDefault('cyborg:deployable:get_all',
+                       'rule:allow',
+                       description='Retrieve all deployable records'),
+]
+
+
 fpga_policies = [
     policy.RuleDefault('cyborg:fpga:get_one',
                        'rule:allow',
@@ -133,7 +143,8 @@ def list_policies():
         + fpga_policies \
         + accelerator_request_policies \
         + device_profile_policies \
-        + device_policies
+        + device_policies \
+        + deployable_policies
 
 
 @lockutils.synchronized('policy_enforcer', 'cyborg-')
