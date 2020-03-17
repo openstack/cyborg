@@ -315,6 +315,10 @@ class PlacementAPIConnectFailure(CyborgException):
     _msg_fmt = _("Unable to communicate with the Placement API.")
 
 
+class PlacementServerError(CyborgException):
+    _msg_fmt = _("Placement Server has some error at this time.")
+
+
 class PlacementAPIConflict(CyborgException):
     """Any 409 error from placement APIs should use (a subclass of) this
     exception.

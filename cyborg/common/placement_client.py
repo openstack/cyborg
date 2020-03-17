@@ -34,24 +34,40 @@ class PlacementClient(object):
         self._client = utils.get_sdk_adapter('placement')
 
     def get(self, url, version=None, global_request_id=None):
-        return self._client.get(url, microversion=version,
-                                global_request_id=global_request_id)
+        res = self._client.get(url, microversion=version,
+                               global_request_id=global_request_id)
+        if res.status_code >= 500:
+            raise exception.PlacementServerError(
+                "Placement Server has some error at this time.")
+        return res
 
     def post(self, url, data, version=None, global_request_id=None):
-        return self._client.post(url, json=data, microversion=version,
-                                 global_request_id=global_request_id)
+        res = self._client.post(url, json=data, microversion=version,
+                                global_request_id=global_request_id)
+        if res.status_code >= 500:
+            raise exception.PlacementServerError(
+                "Placement Server has some error at this time.")
+        return res
 
     def put(self, url, data, version=None, global_request_id=None):
         kwargs = {}
         if data is not None:
             kwargs['json'] = data
-        return self._client.put(url, microversion=version,
-                                global_request_id=global_request_id,
-                                **kwargs)
+        res = self._client.put(url, microversion=version,
+                               global_request_id=global_request_id,
+                               **kwargs)
+        if res.status_code >= 500:
+            raise exception.PlacementServerError(
+                "Placement Server has some error at this time.")
+        return res
 
     def delete(self, url, version=None, global_request_id=None):
-        return self._client.delete(url, microversion=version,
-                                   global_request_id=global_request_id)
+        res = self._client.delete(url, microversion=version,
+                                  global_request_id=global_request_id)
+        if res.status_code >= 500:
+            raise exception.PlacementServerError(
+                "Placement Server has some error at this time.")
+        return res
 
     def _get_rp_traits(self, rp_uuid):
         resp = self.get("/resource_providers/%s/traits" % rp_uuid,

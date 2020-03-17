@@ -52,11 +52,7 @@ class ConductorManagerTest(base.TestCase):
                 'max_unit': total,
             },
         }
-        # Test this exception path, since it doesn't actually change the flow.
-        # Use a random exception, because it doesn't matter.
-        self.placement_mock.ensure_resource_classes.side_effect = ValueError(
-            'fail')
-
+        self.placement_mock.ensure_resource_classes.return_value = None
         actual = self.cm.provider_report(
             mock.sentinel.context, mock.sentinel.name, rc, traits, total,
             mock.sentinel.parent)
@@ -84,5 +80,12 @@ class ConductorManagerTest(base.TestCase):
             'resource_providers': [],
         }
         self.assertRaises(exception.PlacementResourceProviderNotFound,
+                          self.cm._get_root_provider,
+                          mock.sentinel.context, 'foo')
+
+    def test_get_root_provider_unavailable(self):
+        self.placement_mock.get.side_effect = exception.PlacementServerError(
+            "Placement Server has some error at this time.")
+        self.assertRaises(exception.PlacementServerError,
                           self.cm._get_root_provider,
                           mock.sentinel.context, 'foo')
