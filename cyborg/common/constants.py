@@ -66,6 +66,10 @@ ATTACH_HANDLE_TYPES = (AH_TYPE_PCI, AH_TYPE_MDEV, AH_TYPE_TEST_PCI) = (
     "PCI", "MDEV", "TEST_PCI")
 
 
+# Control Path ID type
+CPID_TYPE = (CPID_TYPE_PCI) = ("PCI")
+
+
 # Resource Class
 RESOURCES = {
     "FPGA": orc.FPGA,
