@@ -16,12 +16,10 @@ from oslo_utils import uuidutils
 
 from cyborg import objects
 from cyborg.objects import fields
-import json
 
 
 def fake_db_deployable(**updates):
     root_uuid = uuidutils.generate_uuid()
-    bdf = {"domain": "0000", "bus": "00", "device": "01", "function": "1"}
     db_deployable = {
         'id': 1,
         'uuid': root_uuid,
@@ -33,7 +31,6 @@ def fake_db_deployable(**updates):
         'driver_name': "fake-driver-name",
         'rp_uuid': None,
         'bitstream_id': None,
-        "cpid_info": json.dumps(bdf).encode('utf-8')
         }
 
     for name, field in objects.Deployable.fields.items():

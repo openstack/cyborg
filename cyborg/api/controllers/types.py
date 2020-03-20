@@ -33,7 +33,7 @@ class FilterType(wtypes.UserType):
     _supported_fields = wtypes.Enum(wtypes.text, 'parent_uuid', 'root_uuid',
                                     'board', 'availability', 'interface_type',
                                     'instance_uuid', 'limit', 'marker',
-                                    'sort_key', 'sort_dir')
+                                    'sort_key', 'sort_dir', 'name')
 
     field = wsme.wsattr(_supported_fields, mandatory=True)
     value = wsme.wsattr(wtypes.text, mandatory=True)
