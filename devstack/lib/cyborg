@@ -19,9 +19,7 @@
 # - stop_cyborg
 # - cleanup_cyborg
 
-# TODO(sean-k-mooney): this does not install anything
-# consider renameing.
-function install_cyborg_in_controller {
+function check_cyborg_service_deps {
     if is_service_enabled cyborg-api; then
         local req_services="key"
         req_services+=" placement"
@@ -46,20 +44,6 @@ function pre_install_agent {
     fi
 }
 
-# TODO(sean-k-mooney): this function is not required
-# cyborg does not depend on libvirt so if n-cpu is not
-# enabled it should not be installed.
-function install_agent {
-    if is_service_enabled cyborg-agent; then
-        # stack/install - Called after the layer 1 and 2 projects source and
-        # their dependencies have been installed
-        if ! is_service_enabled n-cpu; then
-            source $RC_DIR/lib/nova_plugins/functions-libvirt
-            install_libvirt
-        fi
-    fi
-}
-
 function cleanup_agent {
     if is_service_enabled cyborg-agent; then
         if [[ "$OPAE_INSTALL_ENABLE" == "True" ]]; then
@@ -71,7 +55,7 @@ function cleanup_agent {
 # install_cyborg() - Install the things!
 function install_cyborg {
     # make sure all needed services are enabled
-    install_cyborg_in_controller
+    check_cyborg_service_deps
     # install the cyborg project from git
     setup_develop $CYBORG_DIR
 }
