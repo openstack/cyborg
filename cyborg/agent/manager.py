@@ -47,19 +47,6 @@ class AgentManager(periodic_task.PeriodicTasks):
     def periodic_tasks(self, context, raise_on_error=False):
         return self.run_periodic_tasks(context, raise_on_error=raise_on_error)
 
-    def hardware_list(self, context, values):
-        """List installed hardware."""
-        pass
-
-    def fpga_program(self, context, deployable_uuid, image_uuid):
-        """Program a FPGA region, image can be a url or local file"""
-        # TODO(Shaohe Feng) Get image from glance.
-        # And add claim and rollback logical.
-        path = self._download_bitstream(context, image_uuid)
-        dep = self.cond_api.deployable_get(context, deployable_uuid)
-        driver = self.fpga_driver.create(dep.vendor)
-        driver.program(dep.address, path)
-
     def fpga_program_v2(self, context, controlpath_id,
                         bitstream_uuid, driver_name):
         # TODO() Use tempfile module?
@@ -71,19 +58,6 @@ class AgentManager(periodic_task.PeriodicTasks):
         ret = driver.program_v2(controlpath_id, download_path)
         LOG.info('Driver program() API returned code %s', ret)
         os.remove(download_path)
-
-    def _download_bitstream(self, context, bitstream_uuid):
-        """Download the bistream
-
-        :param context: the context
-        :param bistream_uuid: v4 uuid of the bitstream to reprogram
-        :returns: the path to bitstream downloaded, None if fail to download
-        """
-        download_path = "/tmp/" + bitstream_uuid + ".bin"
-        self.image_api.download(context,
-                                bitstream_uuid,
-                                dest_path=download_path)
-        return download_path
 
     @periodic_task.periodic_task(run_immediately=True)
     def update_available_resource(self, context, startup=True):
