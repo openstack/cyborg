@@ -3,15 +3,6 @@ enable_service cyborg cyborg-api cyborg-cond cyborg-agent
 # cyborg setting
 # Defaults
 # --------
-
-# NOTE(sean-k-mooney): these should be removed in the future as
-# devstack plugins should not clone the repo they are packaged in.
-# Cloning the repo from within the plugin will result in the plugin
-# script replacing the directory it is executing form.
-# Set up default repos
-CYBORG_REPO=${CYBORG_REPO:-${GIT_BASE}/openstack/cyborg.git}
-CYBORG_BRANCH=${CYBORG_BRANCH:-master}
-
 # Set up default directories
 # then name of the directory where cyborg is cloned is set by the first
 # argument to enable_plugin so we should not assume it will be cyborg
