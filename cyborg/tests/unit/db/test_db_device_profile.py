@@ -31,18 +31,26 @@ class TestDbDeviceProfile(base.DbTestCase):
         queried_dp = self.dbapi.device_profile_get_by_uuid(
             self.context, created_dp['uuid'])
         self.assertEqual(created_dp['uuid'], queried_dp['uuid'])
+        self.assertIn('description', queried_dp)
 
     def test_get_by_id(self):
         created_dp = utils.create_test_device_profile(self.context)
         queried_dp = self.dbapi.device_profile_get_by_id(
             self.context, created_dp['id'])
         self.assertEqual(created_dp['id'], queried_dp['id'])
+        self.assertIn('description', queried_dp)
 
-    def test_update(self):
+    def test_update_with_name(self):
         created_dp = utils.create_test_device_profile(self.context)
         queried_dp = self.dbapi.device_profile_update(
             self.context, created_dp['uuid'], {'name': 'updated_name'})
         self.assertEqual('updated_name', queried_dp['name'])
+
+    def test_update_with_description(self):
+        created_dp = utils.create_test_device_profile(self.context)
+        queried_dp = self.dbapi.device_profile_update(
+            self.context, created_dp['uuid'], {'description': 'fake-desc'})
+        self.assertEqual('fake-desc', queried_dp['description'])
 
     def test_list(self):
         uuids = []
