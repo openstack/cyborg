@@ -62,8 +62,7 @@ class DeviceProfile(base.APIBase):
     @classmethod
     def get_api_obj(cls, obj_devprof):
         api_obj = {}
-        # TODO(Sundar) add description field in db, objects and here
-        for field in ['name', 'uuid', 'groups']:
+        for field in ['name', 'description', 'uuid', 'groups']:
             api_obj[field] = obj_devprof[field]
         for field in ['created_at', 'updated_at']:
             api_obj[field] = str(obj_devprof[field])

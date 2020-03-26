@@ -15,6 +15,7 @@
 
 from oslo_log import log as logging
 from oslo_serialization import jsonutils
+from oslo_utils import versionutils
 from oslo_versionedobjects import base as object_base
 
 from cyborg.common import exception
@@ -29,7 +30,8 @@ LOG = logging.getLogger(__name__)
 @base.CyborgObjectRegistry.register
 class DeviceProfile(base.CyborgObject, object_base.VersionedObjectDictCompat):
     # Version 1.0: Initial version
-    VERSION = '1.0'
+    # Version 1.1: Added description field.
+    VERSION = '1.1'
 
     dbapi = dbapi.get_instance()
 
@@ -38,7 +40,15 @@ class DeviceProfile(base.CyborgObject, object_base.VersionedObjectDictCompat):
         'uuid': object_fields.StringField(nullable=False),
         'name': object_fields.StringField(nullable=False),
         'groups': object_fields.ListOfDictOfNullableStringsField(),
+        'description': object_fields.StringField(nullable=True),
     }
+
+    def obj_make_compatible(self, primitive, target_version):
+        super(DeviceProfile, self).obj_make_compatible(
+            primitive, target_version)
+        target_version = versionutils.convert_version_to_tuple(target_version)
+        if target_version < (1, 1) and 'description' in primitive:
+            del primitive['description']
 
     def _to_profile_json(self, obj_changes):
         if 'groups' in obj_changes:  # Convert to profile_json string

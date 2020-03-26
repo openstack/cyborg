@@ -1,0 +1,6 @@
+---
+features:
+  - |
+    Add ``description`` as a column of the ``device_profiles`` table
+    in the device profile to allow end users to set some descriptions
+    for the device profile when creating a device profile.
