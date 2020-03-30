@@ -24,12 +24,12 @@ from cyborg.common import constants
 
 from oslo_serialization import jsonutils
 
-PCI_INFO_PATTERN = re.compile("(?P<slot>[0-9a-f]{4}:[0-9a-f]{2}:"
-                              "[0-9a-f]{2}\.[0-9a-f]) "
-                              "(?P<class>.*) [\[].*]: (?P<device>.*) .*"
-                              "[\[](?P<vendor_id>[0-9a-fA-F]"
-                              "{4}):(?P<device_id>[0-9a-fA-F]{4})].*"
-                              "[(rev ](?P<revision>[0-9a-f]{2})")
+PCI_INFO_PATTERN = re.compile(r"(?P<slot>[0-9a-f]{4}:[0-9a-f]{2}:"
+                              r"[0-9a-f]{2}\.[0-9a-f]) "
+                              r"(?P<class>.*) [\[].*]: (?P<device>.*) .*"
+                              r"[\[](?P<vendor_id>[0-9a-fA-F]"
+                              r"{4}):(?P<device_id>[0-9a-fA-F]{4})].*"
+                              r"[(rev ](?P<revision>[0-9a-f]{2})")
 
 
 class AscendDriver(GenericDriver):

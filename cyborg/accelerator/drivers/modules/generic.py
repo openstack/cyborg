@@ -59,16 +59,16 @@ class GENERICDRIVER(object):
 
     def attach(self, accelerator, instance):
 
-            def install(self, accelerator):
-                pass
+        def install(self, accelerator):
+            pass
 
     def detach(self, accelerator, instance):
 
-            def uninstall(self, accelerator):
-                pass
+        def uninstall(self, accelerator):
+            pass
 
-            def delete(self):
-                pass
+        def delete(self):
+            pass
 
     def discover(self):
         pass

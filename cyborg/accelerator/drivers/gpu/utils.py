@@ -34,11 +34,11 @@ import cyborg.privsep
 LOG = logging.getLogger(__name__)
 
 GPU_FLAGS = ["VGA compatible controller", "3D controller"]
-GPU_INFO_PATTERN = re.compile("(?P<devices>[0-9a-fA-F]{4}:[0-9a-fA-F]{2}:"
-                              "[0-9a-fA-F]{2}\.[0-9a-fA-F]) "
-                              "(?P<controller>.*) [\[].*]: (?P<name>.*) .*"
-                              "[\[](?P<vendor_id>[0-9a-fA-F]"
-                              "{4}):(?P<product_id>[0-9a-fA-F]{4})].*")
+GPU_INFO_PATTERN = re.compile(r"(?P<devices>[0-9a-fA-F]{4}:[0-9a-fA-F]{2}:"
+                              r"[0-9a-fA-F]{2}\.[0-9a-fA-F]) "
+                              r"(?P<controller>.*) [\[].*]: (?P<name>.*) .*"
+                              r"[\[](?P<vendor_id>[0-9a-fA-F]"
+                              r"{4}):(?P<product_id>[0-9a-fA-F]{4})].*")
 
 VENDOR_MAPS = {"10de": "nvidia", "102b": "matrox"}
 

@@ -187,4 +187,5 @@ class DbQuotaDriver(object):
             # logged, however, because this is less than optimal.
             LOG.exception("Failed to commit reservations %s", reservations)
 
+
 QUOTAS = QuotaEngine()

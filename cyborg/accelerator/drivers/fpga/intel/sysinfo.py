@@ -44,7 +44,7 @@ DEVICE = "device"
 PF = "physfn"
 VF = "virtfn*"
 BDF_PATTERN = re.compile(
-    "^[a-fA-F\d]{4}:[a-fA-F\d]{2}:[a-fA-F\d]{2}\.[a-fA-F\d]$")
+    r"^[a-fA-F\d]{4}:[a-fA-F\d]{2}:[a-fA-F\d]{2}\.[a-fA-F\d]$")
 
 DEVICE_FILE_MAP = {"vendor": "vendor",
                    "device": "product_id"}
@@ -199,11 +199,11 @@ def get_traits(device_name, product_id, vf=True):
         traits.append("CUSTOM_FPGA_INTEL")
         traits.append("CUSTOM_FPGA_INTEL_" + PRODUCT_MAP.get(product_id))
     for i in get_afu_ids(device_name):
-        l = "CUSTOM_FPGA_FUNCTION_ID_INTEL_" + i.upper()
-        traits.append(l)
+        la = "CUSTOM_FPGA_FUNCTION_ID_INTEL_" + i.upper()
+        traits.append(la)
     for i in get_region_ids(device_name):
-        l = "CUSTOM_FPGA_REGION_INTEL_" + i.upper()
-        traits.append(l)
+        la = "CUSTOM_FPGA_REGION_INTEL_" + i.upper()
+        traits.append(la)
     return {"traits": traits}
 
 
