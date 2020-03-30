@@ -1,0 +1,18 @@
+{
+    "uuid": "359c0990-0258-44fd-8b05-fc510ac3d022",
+    "type": "FPGA",
+    "vendor": "0xABCD",
+    "model": "miss model info",
+    "std_board_info": "{'device_id': '0xabcd', 'class': 'Fake class'}",
+    "vendor_board_info": "fake_vendor_info",
+    "hostname": "computenode",
+    "created_at": "2020-03-13T02:26:31+00:00",
+    "updated_at": null,
+    "links":
+    [
+        {
+            "href": "http://localhost/accelerator/v2/devices/359c0990-0258-44fd-8b05-fc510ac3d022",
+            "rel": "self"
+        }
+    ]
+}

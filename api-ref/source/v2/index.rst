@@ -12,3 +12,7 @@ in Ussuri.
 .. include:: device_profile.inc
 
 .. include:: arqs.inc
+
+.. include:: devices.inc
+
+.. include:: deployables.inc
