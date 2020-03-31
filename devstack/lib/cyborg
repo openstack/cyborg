@@ -287,9 +287,8 @@ function stop_cyborg {
     if [ "$CYBORG_USE_UWSGI" == "True" ]; then
         disable_apache_site cyborg-api
         restart_apache_server
-    else
-        stop_process cyborg-api
     fi
+    stop_process cyborg-api
     stop_process cyborg-cond
     stop_process cyborg-agent
 }
