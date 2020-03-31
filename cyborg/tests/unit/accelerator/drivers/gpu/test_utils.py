@@ -19,8 +19,8 @@ from oslo_serialization import jsonutils
 from cyborg.accelerator.drivers.gpu import utils
 from cyborg.tests import base
 
-NVIDIA_GPU_INFO = "0000:00:06.0 3D controller [0302]: NVIDIA Corporation GP100GL " \
-                  "[Tesla P100 PCIe 12GB] [10de:15f7] (rev a1)"
+NVIDIA_GPU_INFO = "0000:00:06.0 3D controller [0302]: NVIDIA Corporation " \
+                  "GP100GL [Tesla P100 PCIe 12GB] [10de:15f7] (rev a1)"
 
 
 class stdout(object):

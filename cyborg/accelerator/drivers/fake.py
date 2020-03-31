@@ -85,7 +85,7 @@ class FakeDriver(GenericDriver):
         name = "%s_%s" % (CONF.host, pci.get('device'))
         # Replace any non alphanumeric, hyphen or underscore character with
         # underscore to comply with placement RP name requirements
-        driver_dep.name = re.sub("(?![a-zA-Z0-9_\-]).", "_", name)
+        driver_dep.name = re.sub(r"(?![a-zA-Z0-9_\-]).", "_", name)
         driver_dep.driver_name = 'fake'
         driver_dep.num_accelerators = self.NUM_ACCELERATORS
         driver_dep.attribute_list = self._generate_attribute_list()
