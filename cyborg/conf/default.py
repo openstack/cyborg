@@ -34,7 +34,7 @@ exc_log_opts = [
 
 service_opts = [
     cfg.HostAddressOpt('host',
-                       default=socket.getfqdn(),
+                       default=socket.gethostname(),
                        sample_default='localhost',
                        help=_('Name of this node. This can be an opaque '
                               'identifier. It is not necessarily a hostname, '
