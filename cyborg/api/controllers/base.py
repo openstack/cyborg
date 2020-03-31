@@ -21,7 +21,6 @@ from pecan import rest
 import wsme
 from wsme import types as wtypes
 
-API_V1 = 'v1'
 API_V2 = 'v2'
 
 
