@@ -23,8 +23,7 @@ LOG = logging.getLogger(__name__)
 class NovaAPI(object):
     def __init__(self):
         self.nova_client = utils.get_sdk_adapter('compute')
-        # TODO(Sundar): change the version to 2.82 once Nova patches merge.
-        self.nova_client.default_microversion = 'latest'
+        self.nova_client.default_microversion = '2.82'
 
     def _get_acc_changed_events(self, instance_uuid, arq_bind_statuses):
         return [{'name': 'accelerator-request-bound',
