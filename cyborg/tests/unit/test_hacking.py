@@ -245,3 +245,13 @@ class HackingTestCase(base.TestCase):
         self.assertEqual(len(list(checks.check_explicit_underscore_import(
             "msg = _('My message')",
             "magnum/tests/other_files3.py"))), 0)
+
+    def test_import_stock_mock(self):
+        self._assert_has_errors(
+            "import mock",
+            checks.import_stock_mock, expected_errors=[(1, 0, 'N366')])
+        code = """
+                    from unittest import mock
+                    import unittest.mock
+               """
+        self._assert_has_no_errors(code, checks.import_stock_mock)
