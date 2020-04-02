@@ -15,10 +15,10 @@
 
 from io import BytesIO
 import json
-import mock
 import requests
 from requests import structures
 from requests import utils
+from unittest import mock
 
 from testtools.matchers import HasLength
 

@@ -14,7 +14,7 @@
 #    under the License.
 import copy
 import fixtures
-import mock
+from unittest import mock
 
 from cyborg.common import exception
 from cyborg.common import nova_client

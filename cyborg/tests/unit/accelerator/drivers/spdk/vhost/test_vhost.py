@@ -13,7 +13,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import mock
+from unittest import mock
 
 from cyborg.accelerator.drivers.spdk.util import common_fun
 from cyborg.accelerator.drivers.spdk.util.pyspdk.vhost_client import VhostTgt

@@ -12,8 +12,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-
-import mock
+from unittest import mock
 
 from cyborg import objects
 from cyborg.tests.unit.db import base
@@ -47,31 +46,22 @@ class TestDeviceObject(base.DbTestCase):
 
             # TODO(chenke) add testcase dbapi.device_get_by_id raise exception.
 
-    def test_get_by_hostname(self):
+    @mock.patch.object(objects.Device, 'list')
+    def test_get_by_hostname(self, mock_list):
         hostname = self.fake_device['hostname']
         dev_filter = {'hostname': hostname}
-        with mock.patch.object(objects.Device, 'list',
-                               autospec=True) as mock_device_list:
-            mock_device_list.return_value = [self.fake_device]
-            devices = objects.Device.get_list_by_hostname(
-                self.context, hostname)
-            mock_device_list.assert_called_once_with(
-                self.context, dev_filter)
-            self.assertEqual(
-                hostname,
-                devices[0]['hostname'])
+        mock_list.return_value = [self.fake_device]
+        devices = objects.Device.get_list_by_hostname(self.context, hostname)
+        mock_list.assert_called_once_with(self.context, dev_filter)
+        self.assertEqual(hostname, devices[0]['hostname'])
 
-        with mock.patch.object(objects.Device, 'list',
-                               autospec=True) as mock_device_list:
-            # test objects.Device.list return [] when hostname is None.
-            mock_device_list.return_value = []
-            hostname = None
-            dev_filter = {'hostname': hostname}
-            devices = objects.Device.get_list_by_hostname(
-                self.context, hostname)
-            mock_device_list.assert_called_once_with(
-                self.context, dev_filter)
-            self.assertEqual([], devices)
+        # test objects.Device.list return [] when hostname is None.
+        mock_list.return_value = []
+        hostname = None
+        dev_filter = {'hostname': hostname}
+        devices = objects.Device.get_list_by_hostname(self.context, hostname)
+        mock_list.assert_called_with(self.context, dev_filter)
+        self.assertEqual([], devices)
 
     def test_list(self):
         with mock.patch.object(self.dbapi, 'device_list',

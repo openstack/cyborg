@@ -13,9 +13,9 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import mock
 from six.moves import http_client
 import unittest
+from unittest import mock
 
 from oslo_serialization import jsonutils
 

@@ -12,8 +12,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-
-import mock
+from unittest import mock
 
 from cyborg import objects
 from cyborg.tests.unit.db import base
@@ -44,39 +43,33 @@ class TestAttachHandleObject(base.DbTestCase):
             mock_attach_handle_get.assert_called_once_with(self.context, id)
             self.assertEqual(self.context, attach_handle._context)
 
-    def test_get_attach_handle_by_deployable_id(self):
+    @mock.patch.object(objects.AttachHandle, 'list')
+    def test_get_attach_handle_by_deployable_id(self, mock_list):
+        mock_list.return_value = [self.fake_attach_handle]
         deployable_id = self.fake_attach_handle['deployable_id']
         ah_filter = {'deployable_id': deployable_id}
-        with mock.patch.object(objects.AttachHandle, 'list',
-                               autospec=True) as mock_attach_handle_list:
-            mock_attach_handle_list.return_value = [self.fake_attach_handle]
-            attach_handles = objects.AttachHandle.get_ah_list_by_deployable_id(
-                self.context, deployable_id)
-            mock_attach_handle_list.assert_called_once_with(
-                self.context, ah_filter)
-            self.assertEqual(
-                deployable_id,
-                attach_handles[0]['deployable_id'])
+        attach_handles = objects.AttachHandle.get_ah_list_by_deployable_id(
+            self.context, deployable_id)
+        mock_list.assert_called_once_with(self.context, ah_filter)
+        self.assertEqual(deployable_id, attach_handles[0]['deployable_id'])
 
-    def test_get_attach_handle_by_depid_attachinfo(self):
+    @mock.patch.object(objects.AttachHandle, 'list')
+    def test_get_attach_handle_by_depid_attachinfo(self, mock_list):
+        mock_list.return_value = [self.fake_attach_handle]
         deployable_id = self.fake_attach_handle['deployable_id']
         attach_info = self.fake_attach_handle['attach_info']
         ah_filter = {'deployable_id': deployable_id,
                      'attach_info': attach_info}
-        with mock.patch.object(objects.AttachHandle, 'list',
-                               autospec=True) as mock_attach_handle_list:
-            mock_attach_handle_list.return_value = [self.fake_attach_handle]
-            attach_handles = objects.AttachHandle.get_ah_by_depid_attachinfo(
-                self.context, deployable_id, attach_info)
-            mock_attach_handle_list.assert_called_once_with(
-                self.context, ah_filter)
-            self.assertEqual(attach_info, attach_handles['attach_info'])
+        attach_handles = objects.AttachHandle.get_ah_by_depid_attachinfo(
+            self.context, deployable_id, attach_info)
+        mock_list.assert_called_once_with(self.context, ah_filter)
+        self.assertEqual(attach_info, attach_handles['attach_info'])
 
-            # test objects.AttachHandle.list() return []
-            mock_attach_handle_list.return_value = []
-            attach_handle = objects.AttachHandle.get_ah_by_depid_attachinfo(
-                self.context, deployable_id, attach_info)
-            self.assertIsNone(attach_handle)
+        # test objects.AttachHandle.list() return []
+        mock_list.return_value = []
+        attach_handle = objects.AttachHandle.get_ah_by_depid_attachinfo(
+            self.context, deployable_id, attach_info)
+        self.assertIsNone(attach_handle)
 
     def test_list(self):
         with mock.patch.object(self.dbapi, 'attach_handle_list',

@@ -13,8 +13,8 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import mock
 import six
+from unittest import mock
 
 from testtools.matchers import HasLength
 
