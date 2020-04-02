@@ -214,6 +214,14 @@ class ARQsController(base.CyborgController):
             DELETE /v2/accelerator_requests?arqs=uuid1,uuid2,...
             DELETE /v2/accelerator_requests?instance=uuid
 
+        The second form is idempotent, i.e., it would have the same effect
+        if called repeatedly with the same instance UUID. In other words,
+        it would not raise an error on the second and later attempts even if
+        the first one has deleted the ARQs. Whereas the first form is not
+        idempotent: if one or more of the ARQs do not exist, it would raise
+        an error. Nova uses the second form: so repeated calls do not cause
+        issues.
+
         :param arq: List of ARQ UUIDs
         :param instance: UUID of instance whose ARQs need to be deleted
         """

@@ -149,6 +149,12 @@ class ExtARQ(base.CyborgObject, object_base.VersionedObjectDictCompat,
 
     @classmethod
     def delete_by_uuid(cls, context, arq_uuid_list):
+        """Delete a list of ARQs based on their UUIDs.
+
+        This is not idempotent, i.e., if the first call to delete an
+        ARQ has succeeded, second and later calls to delete the same ARQ
+        will get errored out.
+        """
         for uuid in arq_uuid_list:
             obj_extarq = objects.ExtARQ.get(context, uuid)
             # TODO() Defer deletion to conductor
@@ -158,7 +164,13 @@ class ExtARQ(base.CyborgObject, object_base.VersionedObjectDictCompat,
 
     @classmethod
     def delete_by_instance(cls, context, instance_uuid):
-        """Delete all ARQs for given instance."""
+        """Delete all ARQs for given instance.
+
+        This is idempotent, i.e., it would have the same effect if called
+        repeatedly with the same instance UUID. In other words, it would
+        not raise an error on the second and later attempts even if the
+        first one has deleted the ARQs.
+        """
         obj_extarqs = [extarq for extarq in objects.ExtARQ.list(context)
                        if extarq.arq['instance_uuid'] == instance_uuid]
         for obj_extarq in obj_extarqs:
