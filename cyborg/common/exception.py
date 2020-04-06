@@ -187,7 +187,7 @@ class NeedAtleastOne(Invalid):
 
 
 class PatchError(Invalid):
-    _msg_fmt = _("Couldn't apply patch '%(patch)s'. Reason: %(reason)s")
+    _msg_fmt = _("Couldn't apply patch. Reason: %(reason)s")
 
 
 class NotAuthorized(CyborgException):

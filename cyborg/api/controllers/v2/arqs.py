@@ -25,6 +25,7 @@ from cyborg.api.controllers import link
 from cyborg.api.controllers import types
 from cyborg.api import expose
 from cyborg.common import exception
+from cyborg.common.i18n import _
 from cyborg.common import policy
 from cyborg import objects
 
@@ -265,9 +266,24 @@ class ARQsController(base.CyborgController):
                      if value is None]
         if patch[0]['op'] == 'add' and len(not_found) > 0:
             msg = ','.join(not_found)
-            reason = 'Fields absent in patch {}'.format(msg)
+            reason = _('Fields absent in patch {}').format(msg)
             raise exception.PatchError(reason=reason)
+
         return valid_fields
+
+    @staticmethod
+    def _check_if_already_bound(context, valid_fields):
+        patch_fields = list(valid_fields.values())[0]
+        instance_uuid = patch_fields['instance_uuid']
+        extarqs = objects.ExtARQ.list(context)
+        extarqs_for_instance = [
+            extarq for extarq in extarqs
+            if extarq.arq['instance_uuid'] == instance_uuid]
+        if extarqs_for_instance:  # duplicate binding request
+            msg = _('Instance {} already has accelerator requests. '
+                    'Cannot bind additional ARQs.')
+            reason = msg.format(instance_uuid)
+            raise exception.PatchError(reason=reason)
 
     @policy.authorize_wsgi("cyborg:arq", "update", False)
     @expose.expose(None, body=types.jsontype,
@@ -295,6 +311,18 @@ class ARQsController(base.CyborgController):
         valid_fields = {}
         for arq_uuid, patch in patch_list.items():
             valid_fields[arq_uuid] = self._validate_arq_patch(patch)
+
+        # NOTE(Sundar): In the ARQ create/bind flow, new ARQs can be created
+        # for a device profile any time. However, they should not be bound to
+        # an instance which already has other ARQs bound to it. In the future,
+        # we may allow that for hot adds, but not now.
+        # See commit message of https://review.opendev.org/712231 for details.
+        #
+        # So, for bind requests, we first check that no ARQs are already
+        # associated with the instance specified in the binding.
+        patch = list(patch_list.values())[0]
+        if patch[0]['op'] == 'add':
+            self._check_if_already_bound(context, valid_fields)
 
         # TODO(Sundar) Defer to conductor and do all concurently.
         objects.ExtARQ.apply_patch(context, patch_list, valid_fields)
