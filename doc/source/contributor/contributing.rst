@@ -1,145 +1,74 @@
-============
-Contributing
-============
+============================
+So You Want to Contribute...
+============================
 
-Contributions are most welcome!  You must first create a
-Launchpad account and `follow the instructions here <https://docs.openstack.org/infra/manual/developers.html#account-setup>`_
-to get started as a new OpenStack contributor.
+For general information on contributing to OpenStack, please check out the
+`contributor guide <https://docs.openstack.org/contributors/>`_ to get started.
+It covers all the basics that are common to all OpenStack projects: the
+accounts you need, the basics of interacting with our Gerrit review system,
+how we communicate as a community, etc.
 
-Once you've signed the contributor license agreement and read through
-the above documentation, add your public SSH key under the 'SSH Public Keys'
-section of review.openstack.org_.
+Below will cover the more project specific information you need to get started
+with {{cookiecutter.service}}.
 
-.. _review.openstack.org: https://review.openstack.org/#/settings/
+Communication
+~~~~~~~~~~~~~
 
-You can view your public key using:
+We use the #openstack-cyborg IRC channel.
 
-::
+The weekly meetings happen in this channel. You can find the meeting times,
+previous meeting logs and proposed meeting agendas at
+`Cyborg Team Meeting Page
+<https://wiki.openstack.org/wiki/Meetings/CyborgTeamMeeting>`_.
 
-    $ cat ~/.ssh/id_*.pub
+Contacting the Core Team
+~~~~~~~~~~~~~~~~~~~~~~~~
 
-Set your username and email for review.openstack.org:
+The core reviewers of Cyborg and their emails are listed in
+`Cyborg core team <https://review.opendev.org/#/admin/groups/1243,members>`_.
 
-::
+New Feature Planning
+~~~~~~~~~~~~~~~~~~~~
 
-    $ git config --global user.email "example@example.com"
-    $ git config --global user.name "example"
-    $ git config --global --add gitreview.username "example"
+To propose or plan new features, we add a new story in the
+`Cyborg Storyboard
+<https://storyboard.openstack.org/#!/project/openstack/cyborg>`_
+and/or propose a specification in the
+`cyborg-specs <https://opendev.org/openstack/cyborg-specs>`_ repository.
 
-Next, Clone the github repository:
+Task Tracking
+~~~~~~~~~~~~~
 
-::
+We track our tasks in the `Cyborg Storyboard
+<https://storyboard.openstack.org/#!/project/openstack/cyborg>`_.
 
-    $ git clone https://github.com/openstack/cyborg.git
+If you're looking for some smaller, easier work item to pick up and get started
+on, ask in the IRC meeting.
 
-You need to have git-review in order to be able to submit patches using
-the gerrit code review system. You can install it using:
+Reporting a Bug
+~~~~~~~~~~~~~~~
 
-::
+You found an issue and want to make sure we are aware of it? You can do so
+by adding an entry in the `Cyborg Storyboard
+<https://storyboard.openstack.org/#!/project/openstack/cyborg>`_ or raising
+it in the IRC meeting.
 
-    $ sudo yum install git-review
+Getting Your Patch Merged
+~~~~~~~~~~~~~~~~~~~~~~~~~
 
-To set up your cloned repository to work with OpenStack Gerrit
+To merge a patch, it must pass all voting Zuul checks and get two +2s from
+core reviewers. We strive to avoid scenarios where one person from a company
+or organization proposes a patch, and two other core reviewers from the
+same organization approve it to get it merged. In other words, at least
+one among the patch author and the two approving reviwers must be from
+another organization.
 
-::
+We are constantly striving to improve quality. Proposed patches must
+generally have unit tests and/or functional tests that cover the changes,
+and strive to improve code coverage.
 
-    $ git review -s
+Project Team Lead Duties
+~~~~~~~~~~~~~~~~~~~~~~~~
 
-It's useful to create a branch to do your work, name it something
-related to the change you'd like to introduce.
-
-::
-
-    $ cd cyborg
-    $ git branch my_special_enhancement
-    $ git checkout !$
-
-Make your changes and then commit them using the instructions
-below.
-
-::
-
-    $ git add /path/to/files/changed
-    $ git commit
-
-Use a descriptive commit title followed by an empty space.
-You should type a small justification of what you are
-changing and why.
-
-Now you're ready to submit your changes for review:
-
-::
-
-    $ git review
-
-
-If you want to make another patchset from the same commit you can
-use the amend feature after further modification and saving.
-
-::
-
-    $ git add /path/to/files/changed
-    $ git commit --amend
-    $ git review
-
-If you want to submit a new patchset from a different location
-(perhaps on a different machine or computer for example) you can
-clone the Cyborg repo again (if it doesn't already exist) and then
-use git review against your unique Change-ID:
-
-::
-
-    $ git review -d Change-Id
-
-Change-Id is the change id number as seen in Gerrit and will be
-generated after your first successful submission.
-
-The above command downloads your patch onto a separate branch. You might
-need to rebase your local branch with remote master before running it to
-avoid merge conflicts when you resubmit the edited patch.  To avoid this
-go back to a "safe" commit using:
-
-::
-
-    $ git reset --hard commit-number
-
-Then,
-
-::
-
-    $ git fetch origin
-
-::
-
-    $ git rebase origin/master
-
-Make the changes on the branch that was setup by using the git review -d
-(the name of the branch is along the lines of
-review/username/branch_name/patchsetnumber).
-
-Add the files to git and commit your changes using,
-
-::
-
-    $ git commit --amend
-
-You can edit your commit message as well in the prompt shown upon
-executing above command.
-
-Finally, push the patch for review using,
-
-::
-
-    $ git review
-
-Adding functionality
---------------------
-
-If you are adding new functionality to Cyborg please add testing for that
-functionality and provide a detailed commit message outlining the goals of
-your commit and how you achived them.
-
-If the functionality you wish to add doesn't fix in an existing part of the
-Cyborg achitecture diagram drop by our team meetings to disscuss how it
-could be implemented
-
+All common PTL duties are enumerated in the `PTL guide
+<https://docs.openstack.org/project-team-guide/ptl.html>`_.
