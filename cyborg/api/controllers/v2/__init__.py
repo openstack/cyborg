@@ -17,16 +17,33 @@
 
 import pecan
 from pecan import rest
+from webob import exc
 from wsme import types as wtypes
+
+from cyborg.api import expose
 
 from cyborg.api.controllers import base
 from cyborg.api.controllers import link
-from cyborg.api.controllers.v2 import api_version_request
 from cyborg.api.controllers.v2 import arqs
 from cyborg.api.controllers.v2 import deployables
 from cyborg.api.controllers.v2 import device_profiles
 from cyborg.api.controllers.v2 import devices
-from cyborg.api import expose
+
+from cyborg.api.controllers.v2 import versions
+
+
+def min_version():
+    return base.Version(
+        {base.Version.current_api_version: ' '.join(
+            [versions.service_type_string(), versions.min_version_string()])},
+        versions.min_version_string(), versions.max_version_string())
+
+
+def max_version():
+    return base.Version(
+        {base.Version.current_api_version: ' '.join(
+            [versions.service_type_string(), versions.max_version_string()])},
+        versions.min_version_string(), versions.max_version_string())
 
 
 class V2(base.APIBase):
@@ -51,8 +68,8 @@ class V2(base.APIBase):
     def convert():
         v2 = V2()
         v2.id = 'v2.0'
-        v2.max_version = api_version_request.max_api_version().get_string()
-        v2.min_version = api_version_request.min_api_version().get_string()
+        v2.max_version = str(max_version())
+        v2.min_version = str(min_version())
         v2.status = 'CURRENT'
         v2.links = [
             link.Link.make_link('self', pecan.request.public_url,
@@ -72,6 +89,51 @@ class Controller(rest.RestController):
     @expose.expose(V2)
     def get(self):
         return V2.convert()
+
+    def _check_version(self, version, headers=None):
+        if headers is None:
+            headers = {}
+        # ensure that major version in the URL matches the header
+        if version.major != versions.BASE_VERSION:
+            raise exc.HTTPNotAcceptable(
+                "Mutually exclusive versions requested. Version %(ver)s "
+                "requested but not supported by this service. The supported "
+                "version range is: [%(min)s, %(max)s]." %
+                {'ver': version, 'min': versions.min_version_string(),
+                 'max': versions.max_version_string()},
+                headers=headers)
+        # ensure the minor version is within the supported range
+        if version < min_version() or version > max_version():
+            raise exc.HTTPNotAcceptable(
+                "Version %(ver)s was requested but the minor version is not "
+                "supported by this service. The supported version range is: "
+                "[%(min)s, %(max)s]." %
+                {'ver': version, 'min': versions.min_version_string(),
+                 'max': versions.max_version_string()},
+                headers=headers)
+
+    @pecan.expose()
+    def _route(self, args, request=None):
+        v = base.Version(pecan.request.headers, versions.min_version_string(),
+                         versions.max_version_string())
+
+        # The Vary header is used as a hint to caching proxies and user agents
+        # that the response is also dependent on the OpenStack-API-Version and
+        # not just the body and query parameters. See RFC 7231 for details.
+        pecan.response.headers['Vary'] = base.Version.current_api_version
+
+        # Always set the min and max headers
+        pecan.response.headers[base.Version.min_api_version] = (
+            versions.min_version_string())
+        pecan.response.headers[base.Version.max_api_version] = (
+            versions.max_version_string())
+
+        # assert that requested version is supported
+        self._check_version(v, pecan.response.headers)
+        pecan.response.headers[base.Version.current_api_version] = str(v)
+        pecan.request.version = v
+
+        return super(Controller, self)._route(args, request)
 
 
 __all__ = ('Controller',)

@@ -13,13 +13,58 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import importlib
 import pecan
 from pecan import rest
 from wsme import types as wtypes
 
 from cyborg.api.controllers import base
+from cyborg.api.controllers import link
 from cyborg.api.controllers import v2
 from cyborg.api import expose
+
+
+class APIStatus(object):
+    CURRENT = "CURRENT"
+    SUPPORTED = "SUPPORTED"
+    DEPRECATED = "DEPRECATED"
+    EXPERIMENTAL = "EXPERIMENTAL"
+
+
+class Version(base.APIBase):
+    """An API version representation."""
+
+    id = wtypes.text
+    """The ID of the version, also acts as the release number"""
+
+    status = wtypes.text
+    """The state of this API version"""
+
+    max_version = wtypes.text
+    """The maximum version supported"""
+
+    min_version = wtypes.text
+    """The minimum version supported"""
+
+    links = [link.Link]
+    """A Link that points to a specific version of the API"""
+
+    @staticmethod
+    def convert(id, status=APIStatus.CURRENT):
+        version = Version()
+        if id == "v1":
+            version.max_version = None
+            version.min_version = None
+        else:
+            v = importlib.import_module(
+                'cyborg.api.controllers.%s.versions' % id)
+            version.max_version = v.max_version_string()
+            version.min_version = v.min_version_string()
+        version.id = id
+        version.status = status
+        version.links = [link.Link.make_link('self', pecan.request.host_url,
+                                             id, '', bookmark=True)]
+        return version
 
 
 class Root(base.APIBase):
@@ -29,17 +74,22 @@ class Root(base.APIBase):
     description = wtypes.text
     """Some information about this API"""
 
+    versions = [Version]
+    """Links to all the versions available in this API"""
+
+    default_version = Version
+    """A link to the default version of the API"""
+
     @staticmethod
     def convert():
         root = Root()
         root.name = 'OpenStack Cyborg API'
         root.description = (
-            'Cyborg (previously known as Nomad) is an '
-            'OpenStack project that aims to provide a general '
-            'purpose management framework for acceleration '
-            'resources (i.e. various types of accelerators '
-            'such as Crypto cards, GPU, FPGA, NVMe/NOF SSDs, '
-            'ODP, DPDK/SPDK and so on).')
+            "Cyborg is the OpenStack project for lifecycle "
+            "management of hardware accelerators, such as GPUs,"
+            "FPGAs, AI chips, security accelerators, etc.")
+        root.versions = [Version.convert('v2')]
+        root.default_version = Version.convert('v2')
         return root
 
 

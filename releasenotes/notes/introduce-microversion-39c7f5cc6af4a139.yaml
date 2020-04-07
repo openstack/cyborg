@@ -1,0 +1,8 @@
+---
+features:
+  - |
+    Cyborg now supports microversion in order to allow changes to the API while
+    preserving backward compatibility. User requests must include an HTTP header
+    ``OpenStack-API-Version: accelerator 2.0`` which is a monotonically increasing
+    semantic version number starting from 2.0. If that header is absent, the
+    request defaults to the default microverison 2.0.

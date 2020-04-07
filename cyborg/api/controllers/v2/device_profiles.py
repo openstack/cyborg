@@ -29,9 +29,7 @@ from cyborg.api import expose
 from cyborg.common import exception
 from cyborg.common import policy
 from cyborg import objects
-
 LOG = log.getLogger(__name__)
-
 
 """
 The device profile object and db table has a profile_json field, which has
