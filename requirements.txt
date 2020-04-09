@@ -31,3 +31,4 @@ python-glanceclient>=2.3.0 # Apache-2.0
 oslo.privsep>=1.32.0 # Apache-2.0
 cursive>=0.2.1 # Apache-2.0
 microversion_parse>=0.2.1 # Apache-2.0
+openstacksdk>=0.46.0 # Apache-2.0
