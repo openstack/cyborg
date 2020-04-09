@@ -111,10 +111,29 @@ class ConductorManager(object):
         for a in added:
             new_driver_dev_obj = new_driver_device_list[new_cpid_list.index(a)]
             new_driver_dev_obj.create(context, host)
+            # TODO(All): If report data to Placement raise exception, we
+            # should revert driver device created in Cyborg and rp created
+            # in Placement to reduce the risk of data inconsistency here
+            # between Cyborg and Placement, we will consider to fix in V
+            # release.
+            cleanup_inconsistency_resources = False
             for driver_dep_obj in new_driver_dev_obj.deployable_list:
-                self.get_placement_needed_info_and_report(context,
-                                                          driver_dep_obj,
-                                                          host_rp)
+                try:
+                    self.get_placement_needed_info_and_report(context,
+                                                              driver_dep_obj,
+                                                              host_rp)
+                except Exception as exc:
+                    LOG.info("Failed to add device %(device)s. "
+                             "Reason: %(reason)s",
+                             {'device': new_driver_dev_obj,
+                              'reason': exc})
+                    cleanup_inconsistency_resources = True
+                    break
+            if cleanup_inconsistency_resources:
+                new_driver_dev_obj.destroy(context, host)
+                for driver_dep_obj in new_driver_dev_obj.deployable_list:
+                    rp_uuid = self.get_rp_uuid_from_obj(driver_dep_obj)
+                    self._delete_provider_and_sub_providers(context, rp_uuid)
         for s in same:
             # get the driver_dev_obj, diff the driver_device layer
             new_driver_dev_obj = new_driver_device_list[new_cpid_list.index(s)]
@@ -169,9 +188,23 @@ class ConductorManager(object):
         for a in added:
             new_driver_dep_obj = new_driver_dep_list[new_name_list.index(a)]
             new_driver_dep_obj.create(context, device_id, cpid_id)
-            self.get_placement_needed_info_and_report(context,
-                                                      new_driver_dep_obj,
-                                                      host_rp)
+            try:
+                self.get_placement_needed_info_and_report(context,
+                                                          new_driver_dep_obj,
+                                                          host_rp)
+            except Exception as exc:
+                LOG.info("Failed to add deployable %(deployable)s. "
+                         "Reason: %(reason)s",
+                         {'deployable': new_driver_dep_obj,
+                          'reason': exc})
+                new_driver_dep_obj.destroy(context, device_id)
+                rp_uuid = self.get_rp_uuid_from_obj(new_driver_dep_obj)
+                # TODO(All): If report data to Placement raise exception, we
+                # should revert driver deployable created in Cyborg and
+                # rp created in Placement to reduce the risk of data
+                # inconsistency here between Cyborg and Placement,
+                # we will consider to fix in V release.
+                self._delete_provider_and_sub_providers(context, rp_uuid)
         for s in same:
             # get the driver_dep_obj, diff the driver_dep layer
             new_driver_dep_obj = new_driver_dep_list[new_name_list.index(s)]
