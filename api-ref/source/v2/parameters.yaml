@@ -5,6 +5,13 @@ accelerator_request_uuid:
   in: path
   required: true
   type: string
+deployable_uuid:
+  description: |
+    The UUID of the deployable.
+    This must be a valid UUID otherwise API will return 400.
+  in: path
+  required: true
+  type: string
 device_profile_name:
   description: |
     The display name of a device profile.
@@ -14,6 +21,13 @@ device_profile_name:
 device_profile_uuid:
   description: |
     The UUID of the device_profile for your accelerator request.
+    This must be a valid UUID otherwise API will return 400.
+  in: path
+  required: true
+  type: string
+device_uuid:
+  description: |
+    The UUID of the device.
     This must be a valid UUID otherwise API will return 400.
   in: path
   required: true
