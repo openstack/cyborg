@@ -16,7 +16,6 @@ from oslo_utils import uuidutils
 
 from cyborg import objects
 from cyborg.objects import fields
-from cyborg.tests.unit.fake_deployable import fake_db_deployable
 
 
 def fake_db_attribute(**updates):
@@ -25,8 +24,8 @@ def fake_db_attribute(**updates):
         'id': 0,
         'uuid': attr_uuid,
         'deployable_id': 1,
-        'key': 'attr_key',
-        'value': 'attr_val'
+        'key': 'rc',
+        'value': 'FPGA'
         }
 
     for name, field in objects.Attribute.fields.items():
@@ -48,10 +47,8 @@ def fake_db_attribute(**updates):
 def fake_attribute_obj(context, obj_attr_class=None, **updates):
     if obj_attr_class is None:
         obj_attr_class = objects.Attribute
-    expected_attrs = updates.pop('expected_attrs', None)
-    attribute = obj_attr_class._from_db_object(context,
-                                               obj_attr_class(),
-                                               fake_db_deployable(**updates),
-                                               expected_attrs=expected_attrs)
+    attribute = obj_attr_class._from_db_object(
+        obj_attr_class(),
+        fake_db_attribute(**updates))
     attribute.obj_reset_changes()
     return attribute
