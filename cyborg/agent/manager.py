@@ -13,13 +13,17 @@
 # under the License.
 
 import os
+import tempfile
+
 from oslo_log import log as logging
 import oslo_messaging as messaging
 from oslo_service import periodic_task
+from oslo_utils import uuidutils
 
 from cyborg.accelerator.drivers.fpga.base import FPGADriver
 from cyborg.agent.resource_tracker import ResourceTracker
 from cyborg.agent.rpcapi import AgentAPI
+from cyborg.common import exception
 from cyborg.conductor import rpcapi as cond_api
 from cyborg.conf import CONF
 from cyborg.image.api import API as ImageAPI
@@ -49,15 +53,18 @@ class AgentManager(periodic_task.PeriodicTasks):
 
     def fpga_program_v2(self, context, controlpath_id,
                         bitstream_uuid, driver_name):
-        # TODO() Use tempfile module?
-        download_path = "/tmp/" + bitstream_uuid + ".gbs"
+        bitstream_uuid = str(bitstream_uuid)
+        if not uuidutils.is_uuid_like(bitstream_uuid):
+            raise exception.InvalidUUID(uuid=bitstream_uuid)
+        download_path = tempfile.NamedTemporaryFile(suffix=".gbs",
+                                                    prefix=bitstream_uuid)
         self.image_api.download(context,
                                 bitstream_uuid,
-                                dest_path=download_path)
+                                dest_path=download_path.name)
         driver = self.fpga_driver.create(driver_name)
-        ret = driver.program_v2(controlpath_id, download_path)
+        ret = driver.program_v2(controlpath_id, download_path.name)
         LOG.info('Driver program() API returned code %s', ret)
-        os.remove(download_path)
+        os.remove(download_path.name)
 
     @periodic_task.periodic_task(run_immediately=True)
     def update_available_resource(self, context, startup=True):
