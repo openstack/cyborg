@@ -17,7 +17,7 @@
 # See https://pecan.readthedocs.org/en/latest/configuration.html#server-configuration # noqa
 server = {
     'port': '6666',
-    'host': '0.0.0.0'
+    'host': '127.0.0.1'
 }
 
 # Pecan Application Configurations

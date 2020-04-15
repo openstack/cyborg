@@ -20,7 +20,7 @@ from cyborg.common.i18n import _
 
 opts = [
     cfg.HostAddressOpt('host_ip',
-                       default='0.0.0.0',
+                       default='127.0.0.1',
                        help=_('The IP address on which cyborg-api listens.')),
     cfg.PortOpt('port',
                 default=6666,
