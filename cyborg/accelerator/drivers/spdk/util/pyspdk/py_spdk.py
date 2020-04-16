@@ -16,7 +16,10 @@ import psutil
 import re
 import subprocess
 
+from oslo_concurrency import processutils
 from oslo_log import log as logging
+
+import cyborg.privsep
 
 LOG = logging.getLogger(__name__)
 
@@ -28,6 +31,7 @@ class PySPDK(object):
         self.pid = None
         self.pname = pname
 
+    @cyborg.privsep.sys_admin_pctxt.entrypoint
     def start_server(self, spdk_dir, server_name):
         if not self.is_alive():
             self.init_hugepages(spdk_dir)
@@ -35,23 +39,18 @@ class PySPDK(object):
             file_dir = self._search_file(server_dir, server_name)
             LOG.info(file_dir)
             os.chdir(file_dir)
-            p = subprocess.Popen(
-                'sudo ./%s' % server_name,
-                shell=True, stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE)
-            out, err = p.communicate()
+            cmd = ['bash', server_name]
+            out, err = processutils.execute(*cmd)
             return out
 
+    @cyborg.privsep.sys_admin_pctxt.entrypoint
     def init_hugepages(self, spdk_dir):
         huge_dir = os.path.join(spdk_dir, 'scripts/')
         file_dir = self._search_file(huge_dir, 'setup.sh')
         LOG.info(file_dir)
         os.chdir(file_dir)
-        p = subprocess.Popen(
-            'sudo ./setup.sh',
-            shell=True, stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE)
-        out, err = p.communicate()
+        cmd = ['bash', 'setup.sh']
+        out, err = processutils.execute(*cmd)
         return out
 
     @staticmethod
