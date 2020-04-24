@@ -16,18 +16,17 @@ import mock
 from cyborg.accelerator.drivers.aichip.huawei.ascend import AscendDriver
 from cyborg.tests import base
 
-d100_pci_res = [
-    "0000:00:0c.0 Processing accelerators [1200]:"
-    " Device [19e5:d100] (rev 20)\n",
-    "0000:00:0d.0 Processing accelerators [1200]:"
-    " Device [19e5:d100] (rev 20)"
-]
+d100_pci_res = (
+    '0000:00:0c.0 Processing accelerators [1200]:'
+    ' Device [19e5:d100] (rev 20)\n'
+    '0000:00:0d.0 Processing accelerators [1200]:'
+    ' Device [19e5:d100] (rev 20)\n',)
 
 
 class TestAscendDriver(base.TestCase):
 
     @mock.patch('cyborg.accelerator.drivers.aichip.'
-                'huawei.ascend.AscendDriver._get_pci_lines',
+                'huawei.ascend.lspci_privileged',
                 return_value=d100_pci_res)
     def test_discover(self, mock_pci):
         ascend_driver = AscendDriver()
