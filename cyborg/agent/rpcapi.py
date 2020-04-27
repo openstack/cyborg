@@ -13,7 +13,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-"""Client side of the conductor RPC API."""
+"""Client side of the Agent RPC API."""
 
 from oslo_config import cfg
 import oslo_messaging as messaging
