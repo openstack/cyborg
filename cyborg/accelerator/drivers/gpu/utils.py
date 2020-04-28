@@ -160,7 +160,6 @@ def _generate_attach_handle(gpu):
 
 def _generate_attribute_list(gpu):
     attr_list = []
-    index = 0
     for k, v in gpu.items():
         if k == "rc":
             driver_attr = driver_attribute.DriverAttribute()
@@ -168,9 +167,8 @@ def _generate_attribute_list(gpu):
             attr_list.append(driver_attr)
         if k == "traits":
             values = gpu.get(k, [])
-            for val in values:
+            for index, val in enumerate(values):
                 driver_attr = driver_attribute.DriverAttribute(
                     key="trait" + str(index), value=val)
-                index = index + 1
                 attr_list.append(driver_attr)
     return attr_list
