@@ -34,6 +34,9 @@ class TestARQsController(v2_test.APITestV2):
         super(TestARQsController, self).setUp()
         self.headers = self.gen_headers(self.context)
         self.fake_extarqs = fake_extarq.get_fake_extarq_objs()
+        self.fake_bind_extarqs = fake_extarq.get_fake_extarq_bind_objs()
+        self.fake_resolved_extarqs = (
+            fake_extarq.get_fake_extarq_resolved_objs())
         self.arqs_controller = arqs.ARQsController()
 
     def _validate_links(self, links, arq_uuid):
@@ -78,6 +81,65 @@ class TestARQsController(v2_test.APITestV2):
         self.assertTrue(len(out_arqs), len(self.fake_extarqs))
         for in_extarq, out_arq in zip(self.fake_extarqs, out_arqs):
             self._validate_arq(in_extarq.arq, out_arq)
+
+    @mock.patch('cyborg.objects.ExtARQ.list')
+    def test_get_all_with_instance(self, mock_extarqs):
+        # test get_all with instance
+        mock_extarqs.return_value = self.fake_bind_extarqs
+        instance_uuid = self.fake_bind_extarqs[0].arq.instance_uuid
+        url = '%s?instance=%s' % (self.ARQ_URL, instance_uuid)
+        data = self.get_json(url, headers=self.headers)
+        out_arqs = data['arqs']
+
+        result = isinstance(out_arqs, list)
+        self.assertTrue(result)
+        self.assertTrue(len(out_arqs), len(self.fake_bind_extarqs[:2]))
+        for in_extarq, out_arq in zip(self.fake_bind_extarqs[:2], out_arqs):
+            self._validate_arq(in_extarq.arq, out_arq)
+
+    @mock.patch('cyborg.objects.ExtARQ.list')
+    def test_get_all_with_bind_state(self, mock_extarqs):
+        # test get_all with valid bind_state(resolved)
+        mock_extarqs.return_value = self.fake_resolved_extarqs
+        url = '%s?bind_state=resolved' % self.ARQ_URL
+        data = self.get_json(url, headers=self.headers)
+        out_arqs = data['arqs']
+
+        result = isinstance(out_arqs, list)
+        self.assertTrue(result)
+        self.assertTrue(len(out_arqs), len(self.fake_resolved_extarqs[1:]))
+        for in_extarq, out_arq in zip(self.fake_resolved_extarqs[1:],
+                                      out_arqs):
+            self._validate_arq(in_extarq.arq, out_arq)
+
+    @mock.patch('cyborg.objects.ExtARQ.list')
+    def test_get_all_with_instance_and_bind_state(self, mock_extarqs):
+        # test get_all with instance and valid bind_state(resolved)
+        mock_extarqs.return_value = self.fake_bind_extarqs[:3]
+        instance_uuid = self.fake_bind_extarqs[0].arq.instance_uuid
+        url = '%s?instance=%s&bind_state=resolved' % (
+            self.ARQ_URL, instance_uuid)
+        data = self.get_json(url, headers=self.headers)
+        out_arqs = data['arqs']
+
+        result = isinstance(out_arqs, list)
+        self.assertTrue(result)
+        self.assertTrue(len(out_arqs), len(self.fake_bind_extarqs[:2]))
+        for in_extarq, out_arq in zip(self.fake_bind_extarqs[:2], out_arqs):
+            self._validate_arq(in_extarq.arq, out_arq)
+
+    @mock.patch('cyborg.objects.ExtARQ.list')
+    def test_get_all_with_http_client_LOCKED(self, mock_extarqs):
+        # test get_all if not all ARQs are in bound state
+        mock_extarqs.return_value = self.fake_bind_extarqs
+        instance_uuid = self.fake_bind_extarqs[0].arq.instance_uuid
+        url = '%s?instance=%s&bind_state=resolved' % (
+            self.ARQ_URL, instance_uuid)
+        try:
+            self.get_json(url, headers=self.headers)
+        except Exception as e:
+            exc = e
+        self.assertIn('423 Locked', exc.args[0])
 
     @mock.patch('cyborg.objects.ExtARQ.list')
     def test_get_all_with_invalid_bind_state(self, mock_extarqs):
