@@ -42,6 +42,12 @@
      - The driver for Intel NIC Cards.
      - None
      - Test results reported at Feb 2021. Please reference: `Intel NIC Driver Test Report <https://wiki.openstack.org/wiki/Cyborg/TestReport/IntelNic>`_
+   * - Inspur NVMe SSD Driver
+     - None
+     - The driver for Inspur NVMe SSD DISK.
+     - None
+     - Test results reported at Feb 2021. Please reference: `Inspur NVMe SSD Driver Test Report <https://wiki.openstack.org/wiki/Cyborg/TestReport/InspurNVMeSSD>`_
+
 
 .. note:: Temporary Test Report: This is a temporary test report, it is only
      valid for a short time, if you encounter problems, please contact the

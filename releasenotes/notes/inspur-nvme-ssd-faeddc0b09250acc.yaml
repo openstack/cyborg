@@ -1,0 +1,7 @@
+---
+features:
+  - |
+    The Inspur NVMe SSD driver provides the discover and report proposal of
+    Inspur NVMe SSD disks, then we can use these disks binding and unbinding
+    with VM like PGPU to accelerator the io rate for the VM. The Inspur NVMe
+    SSD doesnot support virtualization, one disk can be only bind to one VM.
