@@ -202,7 +202,7 @@ def gen_fpga_content(path, dev):
                 f.write(v + "\n")
         elif type(v) is list:
             with open(p, 'a') as f:
-                f.writelines([l + "\n" for l in v])
+                f.writelines([item + "\n" for item in v])
 
 
 def gen_fpga_sub_dir(path):
