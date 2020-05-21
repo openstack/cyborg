@@ -15,9 +15,9 @@ extensions = [
 ]
 
 # openstackdocstheme options
-repository_name = 'openstack/cyborg'
-bug_project = 'openstack-cyborg'
-bug_tag = ''
+openstackdocs_repo_name = 'openstack/cyborg'
+openstackdocs_bug_project = 'openstack-cyborg'
+openstackdocs_bug_tag = ''
 
 # The suffix(es) of source filenames.
 # You can specify multiple suffix as a list of string:
@@ -54,7 +54,7 @@ language = None
 exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 
 # The name of the Pygments (syntax highlighting) style to use.
-pygments_style = 'sphinx'
+pygments_style = 'native'
 
 # If true, `todo` and `todoList` produce output, else they produce nothing.
 todo_include_todos = False

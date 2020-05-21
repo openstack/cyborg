@@ -44,9 +44,10 @@ master_doc = 'index'
 copyright = u'2013, OpenStack Foundation'
 
 # openstackdocstheme options
-repository_name = 'openstack/cyborg'
-bug_project = 'cyborg'
-bug_tag = ''
+openstackdocs_repo_name = 'openstack/cyborg'
+openstackdocs_pdf_link = True
+openstackdocs_bug_project = 'cyborg'
+openstackdocs_bug_tag = ''
 
 config_generator_config_file = '../../tools/config/cyborg-config-generator.conf'
 sample_config_basename = '_static/cyborg'
@@ -64,7 +65,7 @@ add_function_parentheses = True
 add_module_names = True
 
 # The name of the Pygments (syntax highlighting) style to use.
-pygments_style = 'sphinx'
+pygments_style = 'native'
 
 # -- Options for HTML output --------------------------------------------------
 

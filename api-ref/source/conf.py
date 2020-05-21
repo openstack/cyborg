@@ -42,12 +42,12 @@ master_doc = 'index'
 copyright = u'2016-present, OpenStack Foundation'
 
 # openstackdocstheme options
-repository_name = 'openstack/cyborg'
-bug_project = 'cyborg'
-bug_tag = 'api-ref'
+openstackdocs_repo_name = 'openstack/cyborg'
+openstackdocs_bug_project = 'cyborg'
+openstackdocs_bug_tag = 'api-ref'
 
 # The name of the Pygments (syntax highlighting) style to use.
-pygments_style = 'sphinx'
+pygments_style = 'native'
 
 # -- Options for HTML output --------------------------------------------------
 
