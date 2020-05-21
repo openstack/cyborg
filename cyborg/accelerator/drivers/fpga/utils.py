@@ -21,7 +21,7 @@ import glob
 import re
 
 
-VENDORS = ["intel"]  # can extend, such as ["intel", "xilinx"]
+VENDORS = ["intel", "inspur"]  # can extend, such as ["intel", "xilinx"]
 
 SYS_FPGA_PATH = "/sys/class/fpga"
 VENDORS_PATTERN = re.compile("|".join(["(%s)" % v for v in VENDORS]))

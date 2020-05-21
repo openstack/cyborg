@@ -1,4 +1,4 @@
-# Copyright 2018 Intel, Inc.
+# Copyright 2020 Inspur, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -14,40 +14,27 @@
 
 
 """
-Cyborg FPGA driver implementation.
+Cyborg Inspur FPGA driver implementation.
 """
 
-from cyborg.accelerator.drivers.fpga import utils
+from oslo_log import log as logging
+
+from cyborg.accelerator.drivers.fpga.base import FPGADriver
+from cyborg.accelerator.drivers.fpga.inspur import sysinfo
+
+LOG = logging.getLogger(__name__)
 
 
-VENDOR_MAPS = {"0x8086": "intel",
-               "1bd4": 'inspur'}
-
-
-class FPGADriver(object):
+class InspurFPGADriver(FPGADriver):
     """Base class for FPGA drivers.
 
        This is just a virtual FPGA drivers interface.
        Vendor should implement their specific drivers.
     """
-
-    @classmethod
-    def create(cls, vendor, *args, **kwargs):
-        for sclass in cls.__subclasses__():
-            vendor = VENDOR_MAPS.get(vendor, vendor)
-            if vendor == sclass.VENDOR:
-                return sclass(*args, **kwargs)
-        raise LookupError("Not find the FPGA driver for vendor %s" % vendor)
+    VENDOR = "inspur"
 
     def __init__(self, *args, **kwargs):
         pass
 
     def discover(self):
-        raise NotImplementedError()
-
-    def program(self, device_path, image):
-        raise NotImplementedError()
-
-    @classmethod
-    def discover_vendors(cls):
-        return utils.discover_vendors()
+        return sysinfo.fpga_tree()

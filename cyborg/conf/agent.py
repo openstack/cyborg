@@ -21,7 +21,8 @@ opts = [
     cfg.ListOpt('enabled_drivers',
                 default=[],
                 help=_('The accelerator drivers enabled on this agent. Such '
-                       'as intel_fpga_driver, nvidia_gpu_driver, etc.')),
+                       'as intel_fpga_driver, inspur_fpga_driver,'
+                       'nvidia_gpu_driver, etc.')),
 ]
 
 opt_group = cfg.OptGroup(name='agent',
