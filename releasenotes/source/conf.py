@@ -16,8 +16,7 @@ extensions = [
 
 # openstackdocstheme options
 openstackdocs_repo_name = 'openstack/cyborg'
-openstackdocs_bug_project = 'openstack-cyborg'
-openstackdocs_bug_tag = ''
+openstackdocs_use_storyboard = True
 
 # The suffix(es) of source filenames.
 # You can specify multiple suffix as a list of string:
