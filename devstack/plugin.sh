@@ -6,13 +6,11 @@
 
 echo_summary "cyborg devstack plugin.sh called: $1/$2"
 source $DEST/cyborg/devstack/lib/cyborg
-source $DEST/cyborg/devstack/lib/opae
 
 case $1 in
     "stack")
         case $2 in
             "pre-install")
-                pre_install_agent
                 clone_cyborg_client
                 ;;
             "install")
@@ -47,6 +45,5 @@ case $1 in
         # clean - Called by clean.sh before other services are cleaned, but after
         # unstack.sh has been called.
         cleanup_cyborg
-        cleanup_agent
         ;;
 esac
