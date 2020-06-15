@@ -1,0 +1,13 @@
+---
+deprecations:
+  - |
+    Intel OPAE driver dependency is removed from the devstack installation
+    dependencies due to the following reasons:
+    1) In the kolla cyborg-agent image we install OPAE, but OPAE is
+    not available for CentOS 8 for the moment. This will make the cyborg-agent
+    image unbuildable in Ussuri. 2) In devstack, due to the fact that OPAE
+    packages depend on libjson0, which is not available after Ubuntu 16.04, so
+    cyborg can't be installed on Ubuntu higher than 16.04 now(unless disable
+    dependency manually). Moreover,from cyborg's perspective, it does not need
+    to contain any hardware driver dependency, we can assume the admin should
+    know about it and install the correct version.
