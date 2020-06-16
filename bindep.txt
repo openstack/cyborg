@@ -3,3 +3,10 @@
 
 # Required for running the 'lspci' command
 pciutils
+
+# libsrvg2 is needed for sphinxcontrib-svg2pdfconverter in docs builds.
+librsvg2-tools [doc platform:rpm]
+librsvg2-bin [doc platform:dpkg]
+latexmk [pdf-docs]
+fonts-freefont-otf [pdf-docs]
+texlive-xetex [pdf-docs]
