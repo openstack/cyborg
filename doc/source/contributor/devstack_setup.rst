@@ -2,12 +2,6 @@
 DevStack Quick Start
 ====================
 
-.. note::
-
-   Because OPAE packages depend on libjson0, which is not available
-   after Ubuntu 16.04, so cyborg can't be installed on Ubuntu
-   higher than 16.04 now.
-
 Create stack user (optional)
 ----------------------------
 
@@ -119,24 +113,6 @@ Enable services
 
   If you got version conflicts, please set `PIP_UPGRADE` to `True` in local.conf
 
-Disable OPAE install
->>>>>>>>>>>>>>>>>>>>
-
-::
-
-  OPAE_INSTALL_ENABLE=false
-
-- By default OPAE_INSTALL_ENABLE is True.
-
-- You need to set OPAE_INSTALL_ENABLE as false explicitly,
-  if not need OPEA enviroment.
-
-- At present OPAE depends on OS verson heavily.
-
-.. note::
-
-  If you do not want to try Intel FPGA, you can disable OPAE install. Then you
-  do not depend on specific OS verson.
 
 Multi-Node Lab
 --------------

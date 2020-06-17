@@ -31,27 +31,6 @@ function check_cyborg_service_deps {
     fi
 }
 
-function pre_install_agent {
-    if is_service_enabled cyborg-agent; then
-        # stack/pre-install - Called after (OS) setup is complete and before
-        # project source is installed
-        echo_summary "Installing additional Cyborg packages"
-        if [[ "$OPAE_INSTALL_ENABLE" == "True" ]] && install_opae_packages; then
-           echo_summary "INFO: Additional Cyborg packages installed"
-        elif [[ "$OPAE_INSTALL_ENABLE" == "True" ]]; then
-           echo "WARNING: Failed to install additional Cyborg packages"
-        fi
-    fi
-}
-
-function cleanup_agent {
-    if is_service_enabled cyborg-agent; then
-        if [[ "$OPAE_INSTALL_ENABLE" == "True" ]]; then
-            uninstall_opae_packages
-        fi
-    fi
-}
-
 
 function clone_cyborg_client {
     if [[ "${CYBORG_CLIENT_INSTALL}" == "True" ]]; then
