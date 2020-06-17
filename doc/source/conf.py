@@ -46,8 +46,7 @@ copyright = u'2013, OpenStack Foundation'
 # openstackdocstheme options
 openstackdocs_repo_name = 'openstack/cyborg'
 openstackdocs_pdf_link = True
-openstackdocs_bug_project = 'cyborg'
-openstackdocs_bug_tag = ''
+openstackdocs_use_storyboard = True
 
 config_generator_config_file = '../../tools/config/cyborg-config-generator.conf'
 sample_config_basename = '_static/cyborg'
