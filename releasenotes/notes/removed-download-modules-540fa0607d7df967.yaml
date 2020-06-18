@@ -1,0 +1,7 @@
+---
+upgrade:
+  - |
+    ``cyborg.image.download.modules`` extension point and support
+    for ``allow_direct_url_schemes`` configuration setting, which
+    have been deprecated since the Queens release, have been
+    removed.

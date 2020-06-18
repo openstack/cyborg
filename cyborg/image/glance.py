@@ -36,12 +36,10 @@ from oslo_utils import excutils
 from oslo_utils import timeutils
 import six
 from six.moves import range
-import six.moves.urllib.parse as urlparse
 
 from cyborg.common import exception
 from cyborg.common import utils
 import cyborg.conf
-import cyborg.image.download as image_xfers
 from cyborg import objects
 from cyborg import service_auth
 
@@ -187,24 +185,6 @@ class GlanceImageServiceV2(object):
 
     def __init__(self, client=None):
         self._client = client or GlanceClientWrapper()
-        # NOTE(jbresnah) build the table of download handlers at the beginning
-        # so that operators can catch errors at load time rather than whenever
-        # a user attempts to use a module.  Note this cannot be done in glance
-        # space when this python module is loaded because the download module
-        # may require configuration options to be parsed.
-        self._download_handlers = {}
-        download_modules = image_xfers.load_transfer_modules()
-
-        for scheme, mod in download_modules.items():
-            if scheme not in CONF.glance.allowed_direct_url_schemes:
-                continue
-
-            try:
-                self._download_handlers[scheme] = mod.get_download_handler()
-            except Exception as ex:
-                LOG.error('When loading the module %(module_str)s the '
-                          'following error occurred: %(ex)s',
-                          {'module_str': str(mod), 'ex': ex})
 
     @staticmethod
     def _safe_fsync(fh):
@@ -234,21 +214,6 @@ class GlanceImageServiceV2(object):
 
     def download(self, context, image_id, data=None, dst_path=None):
         """Calls out to Glance for data and writes data."""
-        if CONF.glance.allowed_direct_url_schemes and dst_path is not None:
-            image = self.show(context, image_id, include_locations=True)
-            for entry in image.get('locations', []):
-                loc_url = entry['url']
-                loc_meta = entry['metadata']
-                o = urlparse.urlparse(loc_url)
-                xfer_mod = self._get_transfer_module(o.scheme)
-                if xfer_mod:
-                    try:
-                        xfer_mod.download(context, o, dst_path, loc_meta)
-                        LOG.info("Successfully transferred using %s", o.scheme)
-                        return
-                    except Exception:
-                        LOG.exception("Download image error")
-
         try:
             image_chunks = self._client.call(context, 2, 'data', image_id)
         except Exception:
