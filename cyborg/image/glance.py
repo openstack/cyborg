@@ -17,7 +17,6 @@
 
 import copy
 import inspect
-import itertools
 import os
 import re
 import stat
@@ -75,8 +74,8 @@ def _glanceclient_from_endpoint(context, endpoint, version):
 
 
 def generate_glance_url(context):
-    """Return a random glance url from the api servers we know about."""
-    return next(get_api_servers(context))
+    """Return the glance url."""
+    return get_api_server(context)
 
 
 def _endpoint_from_image_ref(image_href):
@@ -103,10 +102,8 @@ def generate_identity_headers(context, status='Confirmed'):
     }
 
 
-def get_api_servers(context):
-    """Get a list of service endpoints and return an iterator that will
-    cycle through the list, looping around to the beginning if necessary.
-    """
+def get_api_server(context):
+    """Get the service endpoint."""
     sess, auth = _session_and_auth(context)
     ksa_adap = utils.get_ksa_adapter(
         cyborg.conf.glance.DEFAULT_SERVICE_TYPE,
@@ -119,9 +116,8 @@ def get_api_servers(context):
         # We can't use glanceclient.common.utils.strip_version because
         # of bug 1748009.
         endpoint = re.sub(r'/v\d+(\.\d+)?/?$', '/', endpoint)
-    api_servers = [endpoint]
 
-    return itertools.cycle(api_servers)
+    return endpoint
 
 
 class GlanceClientWrapper(object):
@@ -135,7 +131,7 @@ class GlanceClientWrapper(object):
                                                      version)
         else:
             self.client = None
-        self.api_servers = None
+        self.api_server = None
 
     def _create_static_client(self, context, endpoint, version):
         """Create a client that we'll use for every call."""
@@ -144,9 +140,8 @@ class GlanceClientWrapper(object):
 
     def _create_onetime_client(self, context, version):
         """Create a client that will be used for one call."""
-        if self.api_servers is None:
-            self.api_servers = get_api_servers(context)
-        self.api_server = next(self.api_servers)
+        if self.api_server is None:
+            self.api_server = get_api_server(context)
         return _glanceclient_from_endpoint(context, self.api_server, version)
 
     def call(self, context, version, method, *args, **kwargs):
