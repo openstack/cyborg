@@ -41,92 +41,6 @@ class API(object):
         """
         return glance.get_remote_image_service(context, id_or_uri)
 
-    def _get_session(self, _context):
-        """Returns a client session that can be used to query for image
-        information.
-
-        :param _context: The `cyborg.context.Context` object for the request
-        """
-        return glance.get_default_image_service()
-
-    @staticmethod
-    def generate_image_url(image_ref, context):
-        """Generate an image URL from an image_ref.
-
-        :param image_ref: The image ref to generate URL
-        :param context: The `cyborg.context.Context` object for the request
-        """
-        return "%s/images/%s" % (
-            glance.get_api_server(context),
-            image_ref,
-        )
-
-    def get_all(self, context, **kwargs):
-        """Retrieves all information records about all acclerator images
-        available to show to the requesting user. If the requesting user is an
-        admin, all images in an ACTIVE status are returned. If the requesting
-        user is not an admin, the all public images and all private images
-        that are owned by the requesting user in the ACTIVE status are
-        returned.
-
-        :param context: The `cyborg.context.Context` object for the request
-        :param kwargs: A dictionary of filter and pagination values that
-                       may be passed to the underlying image info driver.
-        """
-        session = self._get_session(context)
-        return session.detail(context, **kwargs)
-
-    def get(self, context, id_or_uri):
-        """Retrieves the information record for a single acclerator image.
-        If the supplied identifier parameter is a UUID, the default driver will
-        be used to return information about the image. If the supplied
-        identifier is a URI, then the driver that matches that URI endpoint
-        will be used to query for image information.
-
-        :param context: The `cyborg.context.Context` object for the request
-        :param id_or_uri: A UUID identifier or an image URI to look up image
-                          information for.
-        """
-        session, image_id = self._get_session_and_image_id(context, id_or_uri)
-        return session.show(context, image_id,
-                            include_locations=False,
-                            show_deleted=False)
-
-    def update(self, context, id_or_uri, image_info,
-               data=None, purge_props=False):
-        """Update the information about an image, optionally along with a file
-        handle or bytestream iterator for image bits. If the optional file
-        handle for updated image bits is supplied, the image may not have
-        already uploaded bits for the image.
-
-        :param context: The `cyborg.context.Context` object for the request
-        :param id_or_uri: A UUID identifier or an image URI to look up image
-                          information for.
-        :param image_info: A dict of information about the image that is
-                           passed to the image registry.
-        :param data: Optional file handle or bytestream iterator that is
-                     passed to backend storage.
-        :param purge_props: Optional, defaults to False. If set, the backend
-                            image registry will clear all image properties
-                            and replace them the image properties supplied
-                            in the image_info dictionary's 'properties'
-                            collection.
-        """
-        session, image_id = self._get_session_and_image_id(context, id_or_uri)
-        return session.update(context, image_id, image_info, data=data,
-                              purge_props=purge_props)
-
-    def delete(self, context, id_or_uri):
-        """Delete the information about an image and mark the image bits for
-        deletion.
-
-        :param context: The `cyborg.context.Context` object for the request
-        :param id_or_uri: A UUID identifier or an image URI to look up image
-                          information for.
-        """
-        session, image_id = self._get_session_and_image_id(context, id_or_uri)
-        return session.delete(context, image_id)
-
     def download(self, context, id_or_uri, data=None, dest_path=None):
         """Transfer image bits from Glance or a known source location to the
         supplied destination filepath.
@@ -159,7 +73,3 @@ class API(object):
         session, image_id = self._get_session_and_image_id(context, id_or_uri)
         return session.download(context, image_id, data=data,
                                 dst_path=dest_path)
-
-    def get_images_by_properties(self, context, properties):
-        session = self._get_session(context)
-        return session.get_images_by_properties(context, properties)
