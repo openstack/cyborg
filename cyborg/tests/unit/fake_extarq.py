@@ -86,6 +86,145 @@ def _get_arqs_as_dict():
     return new_arqs
 
 
+def _get_arqs_resloved_as_dict():
+    arqs = [  # Corresponds to 1st device profile in fake_device)profile.py
+        {"uuid": 'a097fefa-da62-4630-8e8b-424c0e3426dd',
+         "device_profile_group_id": 0,
+         "state": "Initial",
+         "device_profile_name": "afaas_example_1",
+         "device_rp_uuid": None,
+         "hostname": None,
+         "instance_uuid": None,
+         "attach_handle_type": None,
+         # attach_handle info should vary across ARQs but ignored for testing
+         "attach_handle_info": {},
+         "device_profile_group": {}
+         },
+        {"uuid": 'aa140114-4869-45ea-8213-45f530804b0e',
+         "device_profile_group_id": 1,
+         "device_rp_uuid": "fbd485e1-40b1-4a7e-84b9-f6b6959114a5",
+         "state": "Bound",
+         "device_profile_name": "afaas_example_1",
+         "hostname": "myhost",
+         "instance_uuid": "5922a70f-1e06-4cfd-88dd-a332120d7144",
+         "attach_handle_type": "PCI",
+         # attach_handle info should vary across ARQs but ignored for testing
+         "attach_handle_info": {
+             "bus": "1",
+             "device": "0",
+             "domain": "0",
+             "function": "0"
+         },
+         "device_profile_group": {
+             "trait:CUSTOM_FPGA_INTEL": "required",
+             "resources:FPGA": "1",
+             "accel:bitstream_id": "b069d97a-010a-4057-b70d-eca2b337fc9c"}
+         },
+    ]
+    new_arqs = []
+    for idx, new_arq in enumerate(arqs):
+        new_arq.update(id=idx)
+        new_arqs.append(new_arq)
+    return new_arqs
+
+
+def _get_arqs_bind_as_dict():
+    common = [
+        {
+            "state": "Bound",
+            "device_profile_name": "afaas_example_1",
+            "hostname": "myhost1",
+            "instance_uuid": "5922a70f-1e06-4cfd-88dd-a332120d7144",
+            "attach_handle_type": "PCI",
+            # attach_handle info should vary across ARQs but ignored for
+            # testing
+            "attach_handle_info": {
+                "bus": "1",
+                "device": "0",
+                "domain": "0",
+                "function": "0"
+            },
+            "device_profile_group": {"resources:GPU": "1"}
+        }, {
+            "state": "Deleting",
+            "device_profile_name": "afaas_example_2",
+            "hostname": "myhost1",
+            "instance_uuid": "5922a70f-1e06-4cfd-88dd-a332120d7144",
+            "attach_handle_type": "PCI",
+            # attach_handle info should vary across ARQs but ignored for
+            # testing
+            "attach_handle_info": {
+                "bus": "2",
+                "device": "0",
+                "domain": "0",
+                "function": "0"
+            },
+            "device_profile_group": {
+                "trait:CUSTOM_FPGA_INTEL": "required",
+                "resources:FPGA": "1"}
+        }, {
+            "state": "Deleting",
+            "device_profile_name": "afaas_example_3",
+            "hostname": "myhost3",
+            "instance_uuid": "5922a70f-1e06-4cfd-88dd-a332120d7146",
+            "attach_handle_type": "PCI",
+            # attach_handle info should vary across ARQs but ignored for
+            # testing
+            "attach_handle_info": {
+                "bus": "3",
+                "device": "0",
+                "domain": "0",
+                "function": "0"
+            },
+            "device_profile_group": {
+                "trait:CUSTOM_FPGA_INTEL": "required",
+                "resources:FPGA": "1",
+                "accel:bitstream_id": "b069d97a-010a-4057-b70d-eca2b337fc9e"}
+        }, {
+            "state": "Unbound",
+            "device_profile_name": "afaas_example_2",
+            "hostname": "myhost1",
+            "instance_uuid": "5922a70f-1e06-4cfd-88dd-a332120d7144",
+            "attach_handle_type": "PCI",
+            # attach_handle info should vary across ARQs but ignored for
+            # testing
+            "attach_handle_info": {
+                "bus": "2",
+                "device": "0",
+                "domain": "0",
+                "function": "0"
+            },
+            "device_profile_group": {
+                "trait:CUSTOM_FPGA_INTEL": "required",
+                "resources:FPGA": "1"}
+        },
+    ]
+    arqs = [  # Corresponds to 1st device profile in fake_device)profile.py
+        {"uuid": "a097fefa-da62-4630-8e8b-424c0e3426de",
+         "device_profile_group_id": 0,
+         "device_rp_uuid": "8787595e-9954-49f8-b5c1-cdb55b59062e",
+         },
+        {"uuid": "aa140114-4869-45ea-8213-45f530804b0d",
+         "device_profile_group_id": 0,
+         "device_rp_uuid": "a1ec17f2-0051-4737-bac4-f074d8a01a9d",
+         },
+        {"uuid": "292b2fa2-0831-484c-aeac-09c794428a5e",
+         "device_profile_group_id": 0,
+         "device_rp_uuid": "57455a49-bde4-490e-9179-9aa84a3870bb",
+         },
+        {"uuid": "292b2fa2-0831-484c-aeac-09c794428a5d",
+         "device_profile_group_id": 0,
+         "device_rp_uuid": "57455a49-bde4-490e-9179-9aa84a3870bc",
+         }
+    ]
+    new_arqs = []
+    for idx, new_arq in enumerate(arqs):
+        new_arq.update(common[idx])
+        new_arq.update(id=idx)
+        new_arqs.append(new_arq)
+    return new_arqs
+
+
 def _convert_from_dict_to_obj(arq_dict):
     obj_arq = arq.ARQ()
     for field in arq_dict.keys():
@@ -98,6 +237,18 @@ def _convert_from_dict_to_obj(arq_dict):
 
 def get_fake_extarq_objs():
     arq_list = _get_arqs_as_dict()
+    obj_extarqs = list(map(_convert_from_dict_to_obj, arq_list))
+    return obj_extarqs
+
+
+def get_fake_extarq_resolved_objs():
+    arq_list = _get_arqs_resloved_as_dict()
+    obj_extarqs = list(map(_convert_from_dict_to_obj, arq_list))
+    return obj_extarqs
+
+
+def get_fake_extarq_bind_objs():
+    arq_list = _get_arqs_bind_as_dict()
     obj_extarqs = list(map(_convert_from_dict_to_obj, arq_list))
     return obj_extarqs
 
