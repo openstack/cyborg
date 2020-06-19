@@ -11,7 +11,7 @@
 # under the License.
 
 import json
-import mock
+from unittest import mock
 
 from cyborg.accelerator.drivers.aichip.huawei.ascend import AscendDriver
 from cyborg.tests import base

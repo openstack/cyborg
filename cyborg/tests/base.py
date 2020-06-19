@@ -14,6 +14,7 @@
 #    under the License.
 
 import os
+from unittest import mock
 
 from oslo_config import cfg
 from oslo_config import fixture as config_fixture
@@ -25,7 +26,6 @@ from oslotest import base
 
 import contextlib
 import eventlet
-import mock
 import testtools
 
 from cyborg.common import config as cyborg_config

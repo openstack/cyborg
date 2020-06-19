@@ -13,7 +13,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import mock
+from unittest import mock
 
 """Cyborg agent resource_tracker test cases."""
 from cyborg.agent.resource_tracker import ResourceTracker

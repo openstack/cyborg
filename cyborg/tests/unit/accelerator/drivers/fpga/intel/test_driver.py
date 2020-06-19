@@ -14,8 +14,8 @@
 
 
 import fixtures
-import mock
 import os
+from unittest import mock
 
 from cyborg.accelerator.drivers.fpga.intel.driver import IntelFPGADriver
 from cyborg.accelerator.drivers.fpga.intel import sysinfo
