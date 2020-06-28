@@ -56,8 +56,10 @@ class API(object):
         :param image_ref: The image ref to generate URL
         :param context: The `cyborg.context.Context` object for the request
         """
-        return "%s/images/%s" % (next(glance.get_api_servers(context)),
-                                 image_ref)
+        return "%s/images/%s" % (
+            glance.get_api_server(context),
+            image_ref,
+        )
 
     def get_all(self, context, **kwargs):
         """Retrieves all information records about all acclerator images
