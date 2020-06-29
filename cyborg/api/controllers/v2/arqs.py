@@ -23,6 +23,8 @@ from oslo_log import log
 from cyborg.api.controllers import base
 from cyborg.api.controllers import link
 from cyborg.api.controllers import types
+from cyborg.api.controllers.v2 import utils
+from cyborg.api.controllers.v2 import versions
 from cyborg.api import expose
 from cyborg.common import constants
 from cyborg.common import exception
@@ -54,6 +56,8 @@ class ARQ(base.APIBase):
 
     instance_uuid = wtypes.text
     """The UUID of the instance associated with this ARQ, if any"""
+    project_id = wtypes.text
+    """The UUID of the instance project_id associated with this ARQ, if any"""
 
     attach_handle_type = wtypes.text
     attach_handle_info = {wtypes.text: wtypes.text}
@@ -257,6 +261,8 @@ class ARQsController(base.CyborgController):
         valid_fields = {'hostname': None,
                         'device_rp_uuid': None,
                         'instance_uuid': None}
+        if utils.allow_project_id():
+            valid_fields['project_id'] = None
         if ((not all(p['op'] == 'add' for p in patch)) and
            (not all(p['op'] == 'remove' for p in patch))):
             raise exception.PatchError(
@@ -264,6 +270,12 @@ class ARQsController(base.CyborgController):
 
         for p in patch:
             path = p['path'].lstrip('/')
+            if path == 'project_id' and not utils.allow_project_id():
+                raise exception.NotAcceptable(_(
+                    "Request not acceptable. The minimal required API "
+                    "version should be %(base)s.%(opr)s") %
+                    {'base': versions.BASE_VERSION,
+                     'opr': versions.MINOR_1_PROJECT_ID})
             if path not in valid_fields.keys():
                 reason = 'Invalid path in patch {}'.format(p['path'])
                 raise exception.PatchError(reason=reason)
@@ -306,6 +318,7 @@ class ARQsController(base.CyborgController):
                 {"path": "/hostname", "op": ADD/RM, "value": "..."},
                 {"path": "/device_rp_uuid", "op": ADD/RM, "value": "..."},
                 {"path": "/instance_uuid", "op": ADD/RM, "value": "..."},
+                {"path": "/project_id", "op": ADD/RM, "value": "..."},
                ],
              "$arq_uuid": [...]
             }

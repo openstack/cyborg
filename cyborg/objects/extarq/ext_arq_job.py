@@ -65,12 +65,17 @@ class ExtARQJobMixin(object):
         hostname = valid_fields[self.arq.uuid]['hostname']
         devrp_uuid = valid_fields[self.arq.uuid]['device_rp_uuid']
         instance_uuid = valid_fields[self.arq.uuid]['instance_uuid']
-        LOG.info('[arqs:objs] bind. hostname: %s, devrp_uuid: %s'
-                 'instance: %s', hostname, devrp_uuid, instance_uuid)
+        project_id = valid_fields[self.arq.uuid].get('project_id')
+        LOG.info('[arqs:objs] bind. hostname: %(hostname)s,'
+                 ' devrp_uuid: %(devrp_uuid)s, instance: %(instance)s, '
+                 'project_id: %(project_id)s',
+                 {'hostname': hostname, 'devrp_uuid': devrp_uuid,
+                  'instance_uuid': instance_uuid, 'project_id': project_id})
 
         self.arq.hostname = hostname
         self.arq.device_rp_uuid = devrp_uuid
         self.arq.instance_uuid = instance_uuid
+        self.arq.project_id = project_id
 
         # If prog fails, we'll change this ARQ state changes get committed here
         self.update_check_state(context, constants.ARQ_BIND_STARTED)

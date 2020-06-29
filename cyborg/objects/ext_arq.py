@@ -278,7 +278,7 @@ class ExtARQ(base.CyborgObject, object_base.VersionedObjectDictCompat,
 
         for field in extarq.fields:
             if field != 'arq':
-                extarq[field] = db_extarq[field]
+                extarq[field] = db_extarq.get(field)
         extarq.arq = objects.ARQ()
         extarq.arq._from_db_object(extarq.arq, db_extarq)
         extarq.obj_reset_changes()

@@ -288,7 +288,8 @@ def get_patch_list(same_device=True):
         must be for the same device.
     """
     arqs = _get_arqs_as_dict()
-    host_binding = {'path': '/hostname', 'op': 'add', 'value': 'myhost'}
+    host_binding = {'path': '/hostname', 'op': 'add',
+                    'value': arqs[0]['hostname']}
     inst_binding = {'path': '/instance_uuid', 'op': 'add',
                     'value': arqs[0]['instance_uuid']}
     device_rp_uuid = 'fb16c293-5739-4c84-8590-926f9ab16669'
@@ -298,4 +299,4 @@ def get_patch_list(same_device=True):
         dev_binding = {'path': '/device_rp_uuid', 'op': 'add',
                        'value': dev_uuid}
         patch_list[newarq['uuid']] = [host_binding, inst_binding, dev_binding]
-    return patch_list
+    return patch_list, device_rp_uuid
