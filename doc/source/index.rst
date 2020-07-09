@@ -61,8 +61,15 @@ Using the API
 
 All end user (and some administrative) features of Cyborg are exposed via a
 REST API, which can be used to build more complicated logic or automation with
-Cyborg. This can be consumed directly, or via various SDKs. The following
-resources will help you get started with consuming the API directly.
+Cyborg. This can be consumed directly, or via various SDKs. The Cyborg API
+has experienced an evolution from V1 API to V2 API. Cyborg introduced and
+landed a totally `new DB modeling schema
+<https://specs.openstack.org/openstack/cyborg-specs/specs/stein/approved/cyborg-database-model-proposal.html>`_.
+for tracking cyborg resources in Stein release. The legacy v1 api does not
+match the new data model, which we changed pretty much. So cyborg introduced
+version 2.0 APIs and deprecated V1 APIs in Train release. Then in the Ussuri
+release, V1 APIs are removed, and full V2 APIs and microversion are supported.
+The following resource may help you get started with V2 APIs directly.
 
 * `Cyborg API Reference <https://docs.openstack.org/api-ref/accelerator/>`_:
   The complete reference for the accelerator API, including all methods and
