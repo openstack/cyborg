@@ -59,10 +59,18 @@ Interface (CLI) can be found in this section of documentation.
 Using the API
 ~~~~~~~~~~~~~
 
-All end user (and some administrative) features of Cyborg are exposed via a
-REST API, which can be used to build more complicated logic or automation with
-Cyborg. This can be consumed directly, or via various SDKs. The following
-resources will help you get started with consuming the API directly.
+Following the Ussuri release, every Cyborg deployment should have the
+following endpoints:
+
+/ - list of available versions
+
+/v2 - the version 2 of the Acceleration API, it uses microversions
+
+/v2.0 - same API as v2, except uses microversions
+
+The follwoing guide concentrates on documenting the v2 API, please note that
+the v2.0 is the first microversion of the v2 API and are also covered by this
+guide.
 
 * `Cyborg API Reference <https://docs.openstack.org/api-ref/accelerator/>`_:
   The complete reference for the accelerator API, including all methods and
