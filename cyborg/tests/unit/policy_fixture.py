@@ -19,7 +19,7 @@ import fixtures
 from oslo_config import cfg
 from oslo_policy import opts as policy_opts
 
-from cyborg.common import policy as cyborg_policy
+from cyborg.common import authorize_wsgi as cyborg_policy
 
 
 CONF = cfg.CONF

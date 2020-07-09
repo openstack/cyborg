@@ -23,7 +23,7 @@ from cyborg.api.controllers import base
 from cyborg.api.controllers import link
 from cyborg.api.controllers import types
 from cyborg.api import expose
-from cyborg.common import policy
+from cyborg.common import authorize_wsgi
 from cyborg import objects
 
 LOG = log.getLogger(__name__)
@@ -93,7 +93,7 @@ class DeviceCollection(base.APIBase):
 class DevicesController(base.CyborgController):
     """REST controller for Devices."""
 
-    @policy.authorize_wsgi("cyborg:device", "get_one")
+    @authorize_wsgi.authorize_wsgi("cyborg:device", "get_one")
     @expose.expose(Device, wtypes.text)
     def get_one(self, uuid):
         """Get a single device by UUID.
@@ -103,7 +103,7 @@ class DevicesController(base.CyborgController):
         device = objects.Device.get(context, uuid)
         return Device.convert_with_links(device)
 
-    @policy.authorize_wsgi("cyborg:device", "get_all", False)
+    @authorize_wsgi.authorize_wsgi("cyborg:device", "get_all", False)
     @expose.expose(DeviceCollection, wtypes.text, wtypes.text, wtypes.text,
                    wtypes.ArrayType(types.FilterType))
     def get_all(self, type=None, vendor=None, hostname=None, filters=None):
