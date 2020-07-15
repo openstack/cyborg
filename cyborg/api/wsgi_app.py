@@ -31,6 +31,9 @@ from cyborg.common import service
 
 def init_application():
     CONF = cfg.CONF
+    # NOTE(hberaud): Call reset to ensure the ConfigOpts object doesn't
+    # already contain registered options if the app is reloaded.
+    CONF.reset()
 
     i18n.install('cyborg')
 
