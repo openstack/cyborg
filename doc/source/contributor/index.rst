@@ -18,6 +18,10 @@ Basic Information
 Reviewing
 =========
 
+* :doc:`/contributor/microversions`: How the API is (micro)versioned and what
+  you need to do when adding an API exposed feature that needs a new
+  microversion.
+
 * :doc:`/contributor/releasenotes`: When we need a release note for a
   contribution.
 
@@ -31,6 +35,7 @@ Reviewing
 .. toctree::
    :hidden:
 
+   microversions
    releasenotes
    devstack_setup
    driver-development-guide
