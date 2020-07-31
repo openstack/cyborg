@@ -66,21 +66,6 @@ default_policies = [
     policy.RuleDefault('default',
                        'rule:admin_or_owner',
                        description='Default API access rule'),
-    policy.RuleDefault("system_admin_api",
-                       'role:admin and system_scope:all',
-                       "Default rule for System Admin APIs."),
-    policy.RuleDefault("system_reader_api",
-                       "role:reader and system_scope:all",
-                       "Default rule for System level read only APIs."),
-    policy.RuleDefault("project_reader_api",
-                       "role:reader and project_id:%(project_id)s",
-                       "Default rule for Project level read only APIs."),
-    policy.RuleDefault("system_or_project_reader",
-                       "rule:system_reader_api or rule:project_reader_api",
-                       "Default rule for System+Project read only APIs."),
-    policy.RuleDefault("project_member_api",
-                       "role:member and project_id:%(project_id)s",
-                       "Default rule for Project member APIs."),
 ]
 
 # NOTE: to follow policy-in-code spec, we define defaults for
