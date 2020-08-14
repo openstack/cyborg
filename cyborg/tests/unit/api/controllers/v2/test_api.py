@@ -13,6 +13,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from cyborg.api.controllers.v2 import versions
 from cyborg.tests.unit.api.controllers.v2 import base as v2_test
 
 
@@ -25,7 +26,7 @@ class TestAPI(v2_test.APITestV2):
     def test_get_api_v2(self):
         data = self.get_json('/', headers=self.headers)
         self.assertEqual(data['status'], "CURRENT")
-        self.assertEqual(data['max_version'], "2.0")
+        self.assertEqual(data['max_version'], versions._MAX_VERSION_STRING)
         self.assertEqual(data['id'], "v2.0")
         result = isinstance(data['links'], list)
         self.assertTrue(result)

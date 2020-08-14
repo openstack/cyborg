@@ -17,9 +17,26 @@
 # This is the version 2 API
 BASE_VERSION = 2
 
+
+# Here goes a short log of changes in every version.
+# Refer to cyborg/api/rest_api-version-history.rst for a detailed
+# explanation of what each version contains.
+#
+# v2.0: Initial minor version.
+MINOR_0_INITIAL_VERSION = 0
+
+
+# When adding another version, update:
+# - MINOR_MAX_VERSION
+# - cyborg/api/rest_api-version-history.rst with a detailed
+#   explanation of what changed in the new version
+
+
+MINOR_MAX_VERSION = MINOR_0_INITIAL_VERSION
+
 # String representations of the minor and maximum versions
-_MIN_VERSION_STRING = "2.0"
-_MAX_VERSION_STRING = "2.0"
+_MIN_VERSION_STRING = '{}.{}'.format(BASE_VERSION, MINOR_0_INITIAL_VERSION)
+_MAX_VERSION_STRING = '{}.{}'.format(BASE_VERSION, MINOR_MAX_VERSION)
 
 
 def service_type_string():
