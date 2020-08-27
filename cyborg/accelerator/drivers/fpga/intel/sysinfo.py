@@ -21,6 +21,7 @@ Cyborg Intel FPGA driver implementation.
 import glob
 import os
 import re
+import socket
 
 from oslo_serialization import jsonutils
 
@@ -38,7 +39,6 @@ PCI_DEVICES_PATH_PATTERN = "/sys/bus/pci/devices/*"
 # TODO(shaohe) The KNOWN_FPGAS can be configurable.
 KNOWN_FPGAS = [("0x8086", "0x09c4")]
 
-INTEL_FPGA_DEV_PREFIX = "intel-fpga-dev"
 SYS_FPGA = "/sys/class/fpga"
 DEVICE = "device"
 PF = "physfn"
@@ -231,7 +231,7 @@ def fpga_tree():
         # name = os.path.basename(path)
         fpga = {"type": constants.DEVICE_FPGA,
                 "devices": bdf, "stub": True,
-                "name": "_".join((INTEL_FPGA_DEV_PREFIX, bdf))}
+                "name": "_".join((socket.gethostname(), bdf))}
         d_info = fpga_device(path)
         fpga.update(d_info)
         if names:
