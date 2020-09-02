@@ -43,7 +43,7 @@ class DriverDeployable(base.DriverObjectBase,
 
     def create(self, context, device_id, cpid_id):
         """Create a driver-side Deployable object into DB. This object will be
-        stored in seperate db tables: deployable & attach_handle &
+        stored in separate db tables: deployable & attach_handle &
         attribute table.
         """
 
