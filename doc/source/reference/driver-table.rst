@@ -32,3 +32,12 @@
      - The driver for Intel QAT Cards.
      - None
      - Test results reported at Aug 2020. Please reference: `Intel QAT Driver Test Report <https://wiki.openstack.org/wiki/Cyborg/TestReport/IntelQAT>`_
+   * - Inspur FPGA Driver
+     - None
+     - The driver for Inspur FPGA Cards.
+     - None
+     - Test results reported at Aug 2020. Please reference: `Inspur FPGA Driver Test Report <https://wiki.openstack.org/wiki/Cyborg/TestReport/InspurFPGA>`_
+
+.. note:: Temporary Test Report: This is a temporary test report, it is only
+     valid for a short time, if you encounter problems, please contact the
+     `Cyborg team <https://review.opendev.org/#/admin/groups/1243,members>`_.
