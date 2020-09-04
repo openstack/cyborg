@@ -24,6 +24,7 @@ import re
 
 from cyborg.accelerator.common import utils
 from cyborg.common import constants
+from cyborg.conf import CONF
 from cyborg.objects.driver_objects import driver_attach_handle
 from cyborg.objects.driver_objects import driver_attribute
 from cyborg.objects.driver_objects import driver_controlpath_id
@@ -36,7 +37,7 @@ LOG = logging.getLogger(__name__)
 GPU_FLAGS = ["VGA compatible controller", "3D controller"]
 GPU_INFO_PATTERN = re.compile(r"(?P<devices>[0-9a-fA-F]{4}:[0-9a-fA-F]{2}:"
                               r"[0-9a-fA-F]{2}\.[0-9a-fA-F]) "
-                              r"(?P<controller>.*) [\[].*]: (?P<name>.*) .*"
+                              r"(?P<controller>.*) [\[].*]: (?P<model>.*) .*"
                               r"[\[](?P<vendor_id>[0-9a-fA-F]"
                               r"{4}):(?P<product_id>[0-9a-fA-F]{4})].*")
 
@@ -92,6 +93,8 @@ def discover_gpus(vendor_id=None):
         m = GPU_INFO_PATTERN.match(gpu)
         if m:
             gpu_dict = m.groupdict()
+            # generate hostname for deployable_name usage
+            gpu_dict['hostname'] = CONF.host
             # generate traits info
             # TODO(yumeng) support and test VGPU rc generation soon.
             traits = get_traits(gpu_dict["vendor_id"], gpu_dict["product_id"])
@@ -133,9 +136,11 @@ def _generate_dep_list(gpu):
     driver_dep.attach_handle_list = []
     # NOTE(wangzhh): The name of deployable should be unique, its format is
     # under disscussion, may looks like
-    # <ComputeNodeName>_<NumaNodeName>_<CyborgName>_<NumInHost>, now simply
-    # named <Device_name>_<Device_address>
-    driver_dep.name = gpu.get('name', '') + '_' + gpu["devices"]
+    # <ComputeNodeName>_<NumaNodeName>_<CyborgName>_<NumInHost>
+    # NOTE(yumeng) Now simply named as <Compute_hostname>_<Device_address>
+    # once cyborg needs to support GPU devices discovered from a baremetal
+    # node, we might need to support more formats.
+    driver_dep.name = gpu.get('hostname', '') + '_' + gpu["devices"]
     driver_dep.driver_name = VENDOR_MAPS.get(gpu["vendor_id"]).upper()
     # driver_dep.num_accelerators for PGPU is 1, for VGPU should be the
     # sriov_numvfs of the vGPU device.

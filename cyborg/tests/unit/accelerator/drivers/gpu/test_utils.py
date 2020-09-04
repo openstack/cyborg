@@ -51,6 +51,7 @@ class TestGPUDriverUtils(base.TestCase):
     @mock.patch('cyborg.accelerator.drivers.gpu.utils.lspci_privileged')
     def test_discover_gpus(self, mock_devices_for_vendor):
         mock_devices_for_vendor.return_value = self.p.stdout.readlines()
+        self.set_defaults(host='host-192-168-32-195', debug=True)
         vendor_id = '10de'
         gpu_list = utils.discover_gpus(vendor_id)
         self.assertEqual(1, len(gpu_list))
@@ -70,6 +71,7 @@ class TestGPUDriverUtils(base.TestCase):
         expected = {
             'vendor': '10de',
             'type': 'GPU',
+            'model': 'NVIDIA Corporation GP100GL [Tesla P100 PCIe 12GB]',
             'std_board_info':
                 {"controller": "3D controller", "product_id": "15f7"},
             'vendor_board_info': {"vendor_info": "gpu_vb_info"},
@@ -78,8 +80,7 @@ class TestGPUDriverUtils(base.TestCase):
                     {
                         'num_accelerators': 1,
                         'driver_name': 'NVIDIA',
-                        'name': 'NVIDIA Corporation GP100GL '
-                                '[Tesla P100 PCIe 12GB]_0000:00:06.0',
+                        'name': 'host-192-168-32-195_0000:00:06.0',
                         'attach_handle_list': attach_handle_list,
                         'attribute_list': attribute_list
                     },
@@ -101,6 +102,7 @@ class TestGPUDriverUtils(base.TestCase):
         [attri_obj_data.append(attr.as_dict()) for attr in gpu_attribute_list]
         attribute_actual_data = sorted(attri_obj_data, key=lambda i: i['key'])
         self.assertEqual(expected['vendor'], gpu_dict['vendor'])
+        self.assertEqual(expected['model'], gpu_dict['model'])
         self.assertEqual(expected['controlpath_id'],
                          gpu_dict['controlpath_id'])
         self.assertEqual(expected['std_board_info'],
