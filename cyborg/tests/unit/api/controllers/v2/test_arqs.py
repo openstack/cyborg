@@ -19,6 +19,7 @@ from unittest import mock
 
 from oslo_serialization import jsonutils
 
+from cyborg.api.controllers import base
 from cyborg.api.controllers.v2 import arqs
 from cyborg.common import exception
 from cyborg.tests.unit.api.controllers.v2 import base as v2_test
@@ -255,13 +256,14 @@ class TestARQsController(v2_test.APITestV2):
     @mock.patch('cyborg.objects.ExtARQ.apply_patch')
     def test_apply_patch(self, mock_apply_patch, mock_check_if_bound):
         """Test the happy path."""
-        patch_list = fake_extarq.get_patch_list()
+        patch_list, device_rp_uuid = fake_extarq.get_patch_list()
         arq_uuids = list(patch_list.keys())
+        obj_extarq = self.fake_extarqs[0]
         valid_fields = {
             arq_uuid: {
-                'hostname': 'myhost',
-                'device_rp_uuid': 'fb16c293-5739-4c84-8590-926f9ab16669',
-                'instance_uuid': '5922a70f-1e06-4cfd-88dd-a332120d7144'}
+                'hostname': obj_extarq.arq.hostname,
+                'device_rp_uuid': device_rp_uuid,
+                'instance_uuid': obj_extarq.arq.instance_uuid}
             for arq_uuid in arq_uuids}
 
         self.patch_json(self.ARQ_URL, params=patch_list,
@@ -270,6 +272,41 @@ class TestARQsController(v2_test.APITestV2):
         mock_apply_patch.assert_called_once_with(mock.ANY, patch_list,
                                                  valid_fields)
         mock_check_if_bound.assert_called_once_with(mock.ANY, valid_fields)
+
+    @mock.patch.object(arqs.ARQsController, '_check_if_already_bound')
+    @mock.patch('cyborg.objects.ExtARQ.apply_patch')
+    def test_apply_patch_allow_project_id(
+            self, mock_apply_patch, mock_check_if_bound):
+        patch_list, _ = fake_extarq.get_patch_list()
+        for arq_uuid, patch in patch_list.items():
+            patch.append({'path': '/project_id', 'op': 'add',
+                          'value': 'b1c76756ac2e482789a8e1c5f4bf065e'})
+        arq_uuids = list(patch_list.keys())
+        valid_fields = {
+            arq_uuid: {
+                'hostname': 'myhost',
+                'device_rp_uuid': 'fb16c293-5739-4c84-8590-926f9ab16669',
+                'instance_uuid': '5922a70f-1e06-4cfd-88dd-a332120d7144',
+                'project_id': 'b1c76756ac2e482789a8e1c5f4bf065e'}
+            for arq_uuid in arq_uuids}
+
+        self.patch_json(self.ARQ_URL, params=patch_list,
+                        headers={base.Version.current_api_version:
+                                 'accelerator 2.1'})
+        mock_apply_patch.assert_called_once_with(mock.ANY, patch_list,
+                                                 valid_fields)
+        mock_check_if_bound.assert_called_once_with(mock.ANY, valid_fields)
+
+    def test_apply_patch_not_allow_project_id(self):
+        patch_list, _ = fake_extarq.get_patch_list()
+        for arq_uuid, patch in patch_list.items():
+            patch.append({'path': '/project_id', 'op': 'add',
+                          'value': 'b1c76756ac2e482789a8e1c5f4bf065e'})
+        response = self.patch_json(self.ARQ_URL, params=patch_list,
+                                   headers=self.headers,
+                                   expect_errors=True)
+        self.assertEqual(http_client.NOT_ACCEPTABLE, response.status_code)
+        self.assertTrue(response.json['error_message'])
 
     # TODO(all): Add exception test cases for apply_patch.
 

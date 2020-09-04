@@ -12,6 +12,11 @@ user documentation.
 This is the initial version of the v2 API which supports
 microversions.
 
+2.1
+---
+
+Add ``project_id`` for arq.
+
 A user can specify a header in the API request::
 
   OpenStack-API-Version: accelerator <microversion>

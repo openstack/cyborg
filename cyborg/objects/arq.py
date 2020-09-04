@@ -44,6 +44,7 @@ class ARQ(base.CyborgObject, object_base.VersionedObjectDictCompat):
         'hostname': object_fields.StringField(nullable=True),
         'device_rp_uuid': object_fields.StringField(nullable=True),
         'instance_uuid': object_fields.StringField(nullable=True),
+        'project_id': object_fields.StringField(nullable=True),
 
         # Fields populated by Cyborg after binding
         'attach_handle_type': object_fields.StringField(nullable=True),
@@ -66,6 +67,6 @@ class ARQ(base.CyborgObject, object_base.VersionedObjectDictCompat):
             db_extarq['attach_handle_info'] = {}
 
         for field in arq.fields:
-            arq[field] = db_extarq[field]
+            arq[field] = db_extarq.get(field)
         arq.obj_reset_changes()
         return arq

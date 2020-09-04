@@ -411,3 +411,8 @@ class InvalidType(Invalid):
 
 class ResourceNotFound(NotFound):
     _msg_fmt = _("%(resource)s not found %(msg)s")
+
+
+class NotAcceptable(CyborgException):
+    _msg_fmt = _("Request not acceptable.")
+    code = http_client.NOT_ACCEPTABLE

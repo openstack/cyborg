@@ -23,7 +23,9 @@ BASE_VERSION = 2
 # explanation of what each version contains.
 #
 # v2.0: Initial minor version.
+# v2.1: Add project_id for arq patch
 MINOR_0_INITIAL_VERSION = 0
+MINOR_1_PROJECT_ID = 1
 
 
 # When adding another version, update:
@@ -32,7 +34,7 @@ MINOR_0_INITIAL_VERSION = 0
 #   explanation of what changed in the new version
 
 
-MINOR_MAX_VERSION = MINOR_0_INITIAL_VERSION
+MINOR_MAX_VERSION = MINOR_1_PROJECT_ID
 
 # String representations of the minor and maximum versions
 _MIN_VERSION_STRING = '{}.{}'.format(BASE_VERSION, MINOR_0_INITIAL_VERSION)
