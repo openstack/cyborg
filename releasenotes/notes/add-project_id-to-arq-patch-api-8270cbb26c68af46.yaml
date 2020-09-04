@@ -1,0 +1,8 @@
+---
+features:
+  - |
+    Add ``project_id`` for Accelerator Requests (arq) `PATCH API`_ from
+    microversion 2.1 in order to control operations of accelerator requests
+    with different roles.
+
+    .. _`PATCH API`: https://docs.openstack.org/api-ref/accelerator/v2/index.html#update-accelerator-requests
