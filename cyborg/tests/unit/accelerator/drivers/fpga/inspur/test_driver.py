@@ -46,6 +46,7 @@ class TestInspurFPGADriver(base.TestCase):
                 'inspur.sysinfo.lspci_privileged')
     def test_discover(self, mock_devices_for_vendor):
         mock_devices_for_vendor.return_value = self.p.stdout.readlines()
+        self.set_defaults(host='host-192-168-32-195', debug=True)
         fpga_list = InspurFPGADriver().discover()
         self.assertEqual(1, len(fpga_list))
         attach_handle_list = [
@@ -72,9 +73,7 @@ class TestInspurFPGADriver(base.TestCase):
                     {
                         'num_accelerators': 1,
                         'driver_name': 'INSPUR',
-                        'name':
-                            'Inspur Electronic Information Industry Co., Ltd.'
-                            ' Device_0000:86:00.0',
+                        'name': 'host-192-168-32-195_0000:86:00.0',
                         'attach_handle_list': attach_handle_list,
                         'attribute_list': attribute_list
                     },

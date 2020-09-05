@@ -24,6 +24,7 @@ from oslo_serialization import jsonutils
 
 from cyborg.accelerator.common import utils
 from cyborg.common import constants
+from cyborg.conf import CONF
 from cyborg.objects.driver_objects import driver_attach_handle
 from cyborg.objects.driver_objects import driver_attribute
 from cyborg.objects.driver_objects import driver_controlpath_id
@@ -122,7 +123,10 @@ def _generate_dep_list(fpga):
     driver_dep = driver_deployable.DriverDeployable()
     driver_dep.attribute_list = _generate_attribute_list(fpga)
     driver_dep.attach_handle_list = []
-    driver_dep.name = fpga.get('name', '') + '_' + fpga["devices"]
+    # NOTE(wenping) Now simply named as <Compute_hostname>_<Device_address>
+    # once cyborg needs to support Inspur FPGA devices discovered from a
+    # baremetal node, we might need to support more formats.
+    driver_dep.name = CONF.host + '_' + fpga["devices"]
     driver_dep.driver_name = VENDOR_MAPS.get(fpga["vendor_id"]).upper()
     driver_dep.num_accelerators = 1
     driver_dep.attach_handle_list = [_generate_attach_handle(fpga)]
