@@ -135,6 +135,8 @@ def authorize_wsgi(api_name, act=None, need_target=True):
             context = pecan.request.context
             credentials = context.to_policy_values()
             credentials['is_admin'] = context.is_admin
+            if context.system_scope == 'all':
+                credentials['system'] = True
             target = {}
             # maybe we can pass "_get_resource" to authorize_wsgi
             if need_target and hasattr(self, "_get_resource"):
