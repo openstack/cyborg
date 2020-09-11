@@ -1,0 +1,87 @@
+---
+features:
+  - |
+    In the Victoria release, cyborg introduced the new scoped RBAC policy
+    authorization for API access, and partially implemented the blueprints.
+    What implemented are new default rules in base policy and device_profile
+    policy.
+
+    During the development period(victoria and wallaby releases), the new and
+    old policy will both work because a deployment sets
+    ``cyborg.conf [oslo_policy] enforce_scope = False`` as the default set.
+    Although users can set ``cyborg.conf [oslo_policy] enforce_scope = True``
+    by default in their deployment, if they want to ignore old rules and
+    support new rules only. After we implement all the features, we'll give
+    two cycles transition period for operators. For specification of
+    new policy, please refer to `policy default refresh`_.
+
+    - Scope
+
+      Cyborg introduced ``scope_type`` to protect each policy. Cyborg support
+      two types of ``sope_type`` with their combination. ``['system']``,
+      ``['project']`` and ``['system', 'project']``.
+
+      To know each policy ``scope_type``, please refer the `Policy Reference`_
+
+      This feature is disabled by default can be enabled via config option
+      ``[oslo_policy]enforce_scope`` in ``cyborg.conf``
+
+      - New Defaults Configuration
+
+      Policies are default to Admin, Member and Reader roles. Old roles
+      are also supproted. You can switch to new defaults via config option
+      ``[oslo_policy]enforce_new_defaults`` in ``cyborg.conf`` file.
+
+    - New Base policy roles
+
+      Cyborg introduced seven basic roles based on the new defaults combined
+      with different scope_types.
+
+      - project_reader
+      - project_member
+      - project_admin
+      - system_admin
+      - system_reader
+      - system_admin_or_owner
+      - system_or_project_reader
+
+    - New Defaults for device_profile APIs
+
+      Rewrite check string(authorization rules) using new personas for
+      device profile APIs.
+
+      Add ``checkstr=base.PROJECT_READER_OR_SYSTEM_READER`` and
+      deprecated ``checkstr=base.deprecated_default`` for
+
+      - ``cyborg:device_profile:get_one``
+      - ``cyborg:device_profile:get_all``
+
+      Add ``check_str=base.SYSTEM_ADMIN`` and
+      deprecated ``check_str=base.deprecated_is_admin`` for
+
+      - ``cyborg:device_profile:create``
+
+      Add ``check_str=base.SYSTEM_ADMIN`` and
+      deprecated ``base.deprecated_default`` for
+
+      - ``cyborg:device_profile:delete``
+
+    - Added policy configuration guide on cyborg doc page
+
+      Please refer to `policy configuration guide`_
+
+    .. _policy default refresh: https://specs.openstack.org/openstack/cyborg-specs/specs/ussuri/approved/policy-defaults-refresh.html
+    .. _Policy Reference: https://docs.openstack.org/cyborg/latest/configuration/policy.html
+    .. _policy configuration guide: https://docs.openstack.org/cyborg/latest/configuration/policy-guide.html
+
+deprecations:
+  - |
+    The old basic personas below are marked as deprecated rules in base policy.
+
+    - public_api
+    - allow
+    - deny
+    - admin_api
+    - is_admin
+    - admin_or_owner
+    - admin_or_user
