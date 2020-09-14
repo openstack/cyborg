@@ -65,6 +65,18 @@ class ConductorManager(object):
         """
         obj_devprof.destroy(context)
 
+    def arq_create(self, context, obj_extarq, devprof_id):
+        """Signal to conductor service to create an accelerator requests.
+
+        :param context: request context.
+        :param obj_extarq: a created (but not saved) accelerator_requests
+        object
+        :param devprof_id: a device profile id
+        :returns: saved accelerator_requests object.
+        """
+        obj_extarq.create(context, devprof_id)
+        return obj_extarq
+
     def report_data(self, context, hostname, driver_device_list):
         """Update the Cyborg DB in one hostname according to the
         discovered device list.

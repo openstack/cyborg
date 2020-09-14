@@ -74,3 +74,16 @@ class ConductorAPI(object):
         cctxt = self.client.prepare(topic=self.topic)
         cctxt.call(context, 'device_profile_delete',
                    obj_devprof=obj_devprof)
+
+    def arq_create(self, context, obj_extarq, devprof_id):
+        """Signal to conductor service to create an accelerator requests.
+
+        :param context: request context.
+        :param obj_extarq: a created (but not saved) accelerator_requests
+        object
+        :param devprof_id: a device profile id
+        :returns: saved accelerator_requests object.
+        """
+        cctxt = self.client.prepare(topic=self.topic)
+        return cctxt.call(context, 'arq_create', obj_extarq=obj_extarq,
+                          devprof_id=devprof_id)

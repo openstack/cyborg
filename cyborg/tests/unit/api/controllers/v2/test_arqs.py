@@ -185,7 +185,7 @@ class TestARQsController(v2_test.APITestV2):
         self.assertEqual(http_client.LOCKED, response.status_int)
 
     @mock.patch('cyborg.objects.DeviceProfile.get_by_name')
-    @mock.patch('cyborg.objects.ExtARQ.create')
+    @mock.patch('cyborg.conductor.rpcapi.ConductorAPI.arq_create')
     def test_create(self, mock_obj_extarq, mock_obj_dp):
         dp_list = fake_device_profile.get_obj_devprofs()
         mock_obj_dp.return_value = dp = dp_list[0]

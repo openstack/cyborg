@@ -160,8 +160,8 @@ class ARQsController(base.CyborgController):
                 obj_arq = objects.ARQ(context, **arq_fields)
                 extarq_fields = {'arq': obj_arq}
                 obj_extarq = objects.ExtARQ(context, **extarq_fields)
-                # TODO(Sundar) The conductor must do all db writes
-                new_extarq = obj_extarq.create(context, devprof.id)
+                new_extarq = pecan.request.conductor_api.arq_create(
+                    context, obj_extarq, devprof.id)
                 extarq_list.append(new_extarq)
 
         ret = ARQCollection.convert_with_links(
