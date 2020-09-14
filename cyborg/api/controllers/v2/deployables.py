@@ -23,7 +23,7 @@ from cyborg.api.controllers import base
 from cyborg.api.controllers import link
 from cyborg.api.controllers import types
 from cyborg.api import expose
-from cyborg.common import policy
+from cyborg.common import authorize_wsgi
 from cyborg import objects
 
 
@@ -110,7 +110,7 @@ class DeployablesController(base.CyborgController,
                             DeployableCollection):
     """REST controller for Deployables."""
 
-    @policy.authorize_wsgi("cyborg:deployable", "get_one")
+    @authorize_wsgi.authorize_wsgi("cyborg:deployable", "get_one")
     @expose.expose(Deployable, types.uuid)
     def get_one(self, uuid):
         """Retrieve information about the given deployable.
@@ -120,7 +120,7 @@ class DeployablesController(base.CyborgController,
         obj_dep = objects.Deployable.get(pecan.request.context, uuid)
         return self.convert_with_link(obj_dep)
 
-    @policy.authorize_wsgi("cyborg:deployable", "get_all")
+    @authorize_wsgi.authorize_wsgi("cyborg:deployable", "get_all")
     @expose.expose(DeployableCollection, wtypes.ArrayType(types.FilterType))
     def get_all(self, filters=None):
         """Retrieve a list of deployables.

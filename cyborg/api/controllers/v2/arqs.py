@@ -26,10 +26,10 @@ from cyborg.api.controllers import types
 from cyborg.api.controllers.v2 import utils
 from cyborg.api.controllers.v2 import versions
 from cyborg.api import expose
+from cyborg.common import authorize_wsgi
 from cyborg.common import constants
 from cyborg.common import exception
 from cyborg.common.i18n import _
-from cyborg.common import policy
 from cyborg import objects
 
 LOG = log.getLogger(__name__)
@@ -115,7 +115,7 @@ class ARQsController(base.CyborgController):
         except Exception:
             return None
 
-    @policy.authorize_wsgi("cyborg:arq", "create", False)
+    @authorize_wsgi.authorize_wsgi("cyborg:arq", "create", False)
     @expose.expose(ARQCollection, body=types.jsontype,
                    status_code=http_client.CREATED)
     def post(self, req):
@@ -169,7 +169,7 @@ class ARQsController(base.CyborgController):
         LOG.info('[arqs] post returned: %s', ret)
         return ret
 
-    @policy.authorize_wsgi("cyborg:arq", "get_one")
+    @authorize_wsgi.authorize_wsgi("cyborg:arq", "get_one")
     @expose.expose(ARQ, wtypes.text)
     def get_one(self, uuid):
         """Get a single ARQ by UUID."""
@@ -177,7 +177,7 @@ class ARQsController(base.CyborgController):
         extarq = objects.ExtARQ.get(context, uuid)
         return ARQ.convert_with_links(extarq.arq)
 
-    @policy.authorize_wsgi("cyborg:arq", "get_all", False)
+    @authorize_wsgi.authorize_wsgi("cyborg:arq", "get_all", False)
     @expose.expose(ARQCollection, wtypes.text, types.uuid)
     def get_all(self, bind_state=None, instance=None):
         """Retrieve a list of arqs."""
@@ -216,7 +216,7 @@ class ARQsController(base.CyborgController):
         LOG.info('[arqs:get_all] Returned: %s', ret)
         return ret
 
-    @policy.authorize_wsgi("cyborg:arq", "delete", False)
+    @authorize_wsgi.authorize_wsgi("cyborg:arq", "delete", False)
     @expose.expose(None, wtypes.text, wtypes.text,
                    status_code=http_client.NO_CONTENT)
     def delete(self, arqs=None, instance=None):
@@ -304,7 +304,7 @@ class ARQsController(base.CyborgController):
             reason = msg.format(instance_uuid)
             raise exception.PatchError(reason=reason)
 
-    @policy.authorize_wsgi("cyborg:arq", "update", False)
+    @authorize_wsgi.authorize_wsgi("cyborg:arq", "update", False)
     @expose.expose(None, body=types.jsontype,
                    status_code=http_client.ACCEPTED)
     def patch(self, patch_list):
