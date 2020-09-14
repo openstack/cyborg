@@ -42,4 +42,8 @@ class PolicyFixture(fixtures.Fixture):
         policy_opts.set_defaults(CONF)
         CONF.set_override('policy_file', self.policy_file_name, 'oslo_policy')
         cyborg_policy._ENFORCER = None
+        # NOTE(yumeng): Logging all the deprecation warning for every unit
+        # test will overflow the log files and leads to error. Suppress
+        # the deprecation warning for tests only.
+        cyborg_policy.init_enforcer(suppress_deprecation_warnings=True)
         self.addCleanup(cyborg_policy.get_enforcer().clear)
