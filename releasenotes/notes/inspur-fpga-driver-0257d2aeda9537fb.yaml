@@ -1,0 +1,6 @@
+---
+features:
+  - |
+    The inspur-fpga-driver-proposal spec provides the first proposal of an
+    inspur fpga driver. Currently only discover operation is supported, the
+    program function and virtualization will be supported in Wallaby.
