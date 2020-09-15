@@ -29,6 +29,7 @@ from cyborg.objects.deployable import Deployable
 from cyborg.objects.device import Device
 from cyborg.objects.driver_objects.driver_device import DriverDeployable
 from cyborg.objects.driver_objects.driver_device import DriverDevice
+from cyborg.objects.ext_arq import ExtARQ
 
 LOG = logging.getLogger(__name__)
 
@@ -76,6 +77,25 @@ class ConductorManager(object):
         """
         obj_extarq.create(context, devprof_id)
         return obj_extarq
+
+    def arq_delete_by_uuid(self, context, arqs):
+        """Signal to conductor service to delete accelerator requests by
+        ARQ UUIDs.
+
+        :param context: request context.
+        :param arqs: ARQ UUIDs joined with ','
+        """
+        arqlist = arqs.split(',')
+        ExtARQ.delete_by_uuid(context, arqlist)
+
+    def arq_delete_by_instance_uuid(self, context, instance):
+        """Signal to conductor service to delete accelerator requests by
+        instance UUID.
+
+        :param context: request context.
+        :param instance: UUID of instance whose ARQs need to be deleted
+        """
+        ExtARQ.delete_by_instance(context, instance)
 
     def report_data(self, context, hostname, driver_device_list):
         """Update the Cyborg DB in one hostname according to the
