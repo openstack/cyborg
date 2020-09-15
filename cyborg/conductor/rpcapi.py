@@ -107,3 +107,14 @@ class ConductorAPI(object):
         """
         cctxt = self.client.prepare(topic=self.topic)
         cctxt.call(context, 'arq_delete_by_instance_uuid', instance=instance)
+
+    def arq_apply_patch(self, context, patch_list, valid_fields):
+        """Signal to conductor service to apply patch accelerator requests.
+
+        :param context: request context.
+        :param patch_list: A map from ARQ UUIDs to their JSON patches
+        :param valid_fields: Dict of valid fields
+        """
+        cctxt = self.client.prepare(topic=self.topic)
+        return cctxt.call(context, 'arq_apply_patch', patch_list=patch_list,
+                          valid_fields=valid_fields)
