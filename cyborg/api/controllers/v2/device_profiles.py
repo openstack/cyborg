@@ -57,26 +57,54 @@ class DeviceProfile(base.APIBase):
     a device profile. See module notes above.
     """
 
-    def get_device_profile(self, obj_devprof):
-        api_obj = {}
-        for field in ['name', 'description', 'uuid', 'groups']:
-            api_obj[field] = obj_devprof[field]
-        for field in ['created_at', 'updated_at']:
-            api_obj[field] = str(obj_devprof[field])
-        api_obj['links'] = [
-            link.Link.make_link_dict('device_profiles', api_obj['uuid'])
+    """The UUID of the device profile"""
+    uuid = types.uuid
+
+    """The name of the device profile"""
+    name = wtypes.text
+
+    """The description of the device profile"""
+    description = wtypes.text
+
+    """The groups of the device profile"""
+    groups = [types.jsontype]
+
+    created_at = wtypes.datetime.datetime
+    updated_at = wtypes.datetime.datetime
+
+    """A list containing a self link"""
+    links = wsme.wsattr([link.Link], readonly=True)
+
+    def __init__(self, **kwargs):
+        super(DeviceProfile, self).__init__(**kwargs)
+        self.fields = []
+        for field in objects.DeviceProfile.fields:
+            self.fields.append(field)
+            setattr(self, field, kwargs.get(field, wtypes.Unset))
+
+    @classmethod
+    def convert_with_links(cls, obj_devprof):
+        api_devprof = cls(**obj_devprof.as_dict())
+        api_devprof.links = [
+            link.Link.make_link('self', pecan.request.public_url,
+                                'device_profiles', api_devprof.uuid)
             ]
-        return api_obj
+        return api_devprof
 
 
-class DeviceProfileCollection(DeviceProfile):
+class DeviceProfileCollection(base.APIBase):
     """API representation of a collection of device profiles."""
 
-    def get_device_profiles(self, obj_devprofs):
-        api_obj_devprofs = [
-            self.get_device_profile(obj_devprof)
+    """A list containing device profile objects"""
+    device_profiles = [DeviceProfile]
+
+    @classmethod
+    def convert_with_links(cls, obj_devprofs):
+        collection = cls()
+        collection.device_profiles = [
+            DeviceProfile.convert_with_links(obj_devprof)
             for obj_devprof in obj_devprofs]
-        return api_obj_devprofs
+        return collection
 
 
 class DeviceProfilesController(base.CyborgController,
@@ -84,7 +112,7 @@ class DeviceProfilesController(base.CyborgController,
     """REST controller for Device Profiles."""
 
     @authorize_wsgi.authorize_wsgi("cyborg:device_profile", "create", False)
-    @expose.expose('json', body=types.jsontype,
+    @expose.expose(DeviceProfile, body=types.jsontype,
                    status_code=http_client.CREATED)
     def post(self, req_devprof_list):
         """Create one or more device_profiles.
@@ -113,9 +141,7 @@ class DeviceProfilesController(base.CyborgController,
 
         new_devprof = pecan.request.conductor_api.device_profile_create(
             context, obj_devprof)
-        ret = self.get_device_profile(new_devprof)
-        return wsme.api.Response(ret, status_code=http_client.CREATED,
-                                 return_type=wsme.types.DictType)
+        return DeviceProfile.convert_with_links(new_devprof)
 
     def _validate_post_request(self, req_devprof):
         NAME = "^[a-zA-Z0-9-_]+$"
@@ -159,12 +185,10 @@ class DeviceProfilesController(base.CyborgController,
                                 if devprof['uuid'] == uuid]
             obj_devprofs = new_obj_devprofs
 
-        api_obj_devprofs = self.get_device_profiles(obj_devprofs)
-
-        return api_obj_devprofs
+        return obj_devprofs
 
     @authorize_wsgi.authorize_wsgi("cyborg:device_profile", "get_all", False)
-    @expose.expose('json', wtypes.text)
+    @expose.expose(DeviceProfileCollection, wtypes.text)
     def get_all(self, name=None):
         """Retrieve a list of device profiles."""
         if name is not None:
@@ -174,14 +198,12 @@ class DeviceProfilesController(base.CyborgController,
         LOG.info('[device_profiles] get_all. names=%s', names)
         api_obj_devprofs = self._get_device_profile_list(names)
 
-        ret = {"device_profiles": api_obj_devprofs}
+        ret = DeviceProfileCollection.convert_with_links(api_obj_devprofs)
         LOG.info('[device_profiles] get_all returned: %s', ret)
-        # TODO(Sundar) Replace this with convert_with_links()
-        return wsme.api.Response(ret, status_code=http_client.OK,
-                                 return_type=wsme.types.DictType)
+        return ret
 
     @authorize_wsgi.authorize_wsgi("cyborg:device_profile", "get_one")
-    @expose.expose('json', wtypes.text)
+    @expose.expose(DeviceProfile, wtypes.text)
     def get_one(self, uuid):
         """Retrieve a single device profile by uuid."""
         LOG.info('[device_profiles] get_one. uuid=%s', uuid)
@@ -195,11 +217,9 @@ class DeviceProfilesController(base.CyborgController,
         if count != 1:  # Should never happen because names are unique
             raise exception.ExpectedOneObject(obj='device profile',
                                               count=count)
-        ret = {"device_profile": api_obj_devprofs[0]}
+        ret = api_obj_devprofs[0]
         LOG.info('[device_profiles] get_one returned: %s', ret)
-        # TODO(Sundar) Replace this with convert_with_links()
-        return wsme.api.Response(ret, status_code=http_client.OK,
-                                 return_type=wsme.types.DictType)
+        return DeviceProfile.convert_with_links(ret)
 
     @authorize_wsgi.authorize_wsgi("cyborg:device_profile", "delete")
     @expose.expose(None, wtypes.text, status_code=http_client.NO_CONTENT)
