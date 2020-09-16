@@ -15,6 +15,7 @@
 
 from six.moves import http_client
 from unittest import mock
+import webtest
 
 from oslo_serialization import jsonutils
 
@@ -81,6 +82,47 @@ class TestDeviceProfileController(v2_test.APITestV2):
 
         self.assertEqual(http_client.CREATED, response.status_int)
         self._validate_dp(dp[0], out_dp)
+
+    def test_create_with_unsupported_trait(self):
+        test_unsupport_dp = self.fake_dps[0]
+
+        # generate special trait for test
+        del test_unsupport_dp['groups'][0][
+            'trait:CUSTOM_FPGA_INTEL_PAC_ARRIA10']
+        test_unsupport_dp['groups'][0]['trait:FAKE_TRAIT'] = 'required'
+        dp = [test_unsupport_dp]
+        dp[0]['created_at'] = str(dp[0]['created_at'])
+        self.assertRaisesRegex(
+            webtest.app.AppError,
+            ".*Unsupported trait name format FAKE_TRAIT.*",
+            self.post_json,
+            self.DP_URL,
+            dp,
+            headers=self.headers)
+
+    @mock.patch('cyborg.conductor.rpcapi.ConductorAPI.device_profile_create')
+    def test_create_with_extra_space_in_trait(self, mock_cond_dp):
+        test_unsupport_dp = self.fake_dps[0]
+
+        # generate a requested dp which has extra space in trait
+        del test_unsupport_dp['groups'][0][
+            'trait:CUSTOM_FPGA_INTEL_PAC_ARRIA10']
+        test_unsupport_dp['groups'][0][
+            'trait:  CUSTOM_FPGA_INTEL_PAC_ARRIA10'] = 'required'
+
+        dp = [test_unsupport_dp]
+        mock_cond_dp.return_value = self.fake_dp_objs[0]
+        dp[0]['created_at'] = str(dp[0]['created_at'])
+
+        response = self.post_json(self.DP_URL, dp, headers=self.headers)
+        out_dp = jsonutils.loads(response.controller_output)
+
+        # check that the extra space in trait:
+        # {'trait:  CUSTOM_FPGA_INTEL_PAC_ARRIA10': 'required'} is
+        # successful stripped by the _validate_post_request function, and
+        # the created device_profile has no extra space in trait
+        # {'trait:CUSTOM_FPGA_INTEL_PAC_ARRIA10': 'required}
+        self.assertTrue(out_dp['groups'] == self.fake_dp_objs[0]['groups'])
 
     @mock.patch('cyborg.conductor.rpcapi.ConductorAPI.device_profile_delete')
     @mock.patch('cyborg.objects.DeviceProfile.get_by_name')
