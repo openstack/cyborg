@@ -54,6 +54,7 @@ device_profile_policies = [
                 'path': '/v2/device_profiles',
                 'method': 'GET'
             }],
+        scope_types=['system', 'project'],
         deprecated_rule=deprecated_get_all,
         deprecated_reason=('request admin_or_owmer rule is too strict for '
                            'listing device_profile'),
@@ -67,6 +68,7 @@ device_profile_policies = [
                 'path': '/v2/device_profiles/{device_profiles_uuid}',
                 'method': 'GET'
             }],
+        scope_types=['system', 'project'],
         deprecated_rule=deprecated_get_one,
         deprecated_reason=('request admin_or_owmer rule is too strict for '
                            'retrieving a device_profile'),
@@ -80,6 +82,7 @@ device_profile_policies = [
                 'path': '/v2/device_profiles',
                 'method': 'POST'
             }],
+        scope_types=['system'],
         deprecated_rule=deprecated_create,
         deprecated_reason=('project_admin_or_owner is too permissive, '
                            'introduce system_scoped admin for creation'),
@@ -96,6 +99,7 @@ device_profile_policies = [
                 'path': '/v2/device_profiles?value={device_profile_name1}',
                 'method': 'DELETE'},
             ],
+        scope_types=['system'],
         deprecated_rule=deprecated_delete,
         deprecated_reason=('project_admin_or_owner is too permissive, '
                            'introduce system_scoped admin for deletion'),

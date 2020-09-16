@@ -22,7 +22,6 @@ import pecan.testing
 
 from cyborg.tests.unit.db import base
 
-
 cfg.CONF.import_group('keystone_authtoken', 'keystonemiddleware.auth_token')
 
 
@@ -48,6 +47,12 @@ class BaseApiTest(base.DbTestCase):
             pecan.set_config({}, overwrite=True)
 
         self.addCleanup(reset_pecan)
+
+    def flags(self, **kw):
+        """Override flag variables for a test."""
+        group = kw.pop('group', None)
+        for k, v in kw.items():
+            cfg.CONF.set_override(k, v, group)
 
     def _make_app(self):
         # Determine where we are so we can set up paths in the config
@@ -132,7 +137,7 @@ class BaseApiTest(base.DbTestCase):
             'X-User-Name': ct.get("user_name") or "user",
             'X-User-Id':
                 ct.get("user") or "1d6d686bc2c949ddb685ffb4682e0047",
-            'X-Project-Name': ct.get("project_name") or "project",
+            'X-Project-Name': ct.get("project_name") or "no_project_name",
             'X-Project-Id':
                 ct.get("tenant") or "86f64f561b6d4f479655384572727f70",
             'X-User-Domain-Id':
@@ -140,8 +145,10 @@ class BaseApiTest(base.DbTestCase):
             'X-User-Domain-Name': ct.get("domain_name") or "no_domain",
             'X-Auth-Token':
                 ct.get("auth_token") or "b9764005b8c145bf972634fb16a826e8",
-            'X-Roles': ct.get("roles") or role
+            'X-Roles': ct.get("roles") or role,
         }
+        if ct.get('system_scope') == 'all':
+            headers.update({'Openstack-System-Scope': 'all'})
         return headers
 
     def get_json(self, path, expect_errors=False, headers=None,
