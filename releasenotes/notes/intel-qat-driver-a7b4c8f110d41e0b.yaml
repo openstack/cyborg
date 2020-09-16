@@ -1,0 +1,8 @@
+---
+features:
+  - |
+    The cyborg-intel-qat-driver-proposal spec defines the Intel QAT accelerator
+    driver managed by Cyborg. Intel QAT card is an accelerator that can
+    accelerate encrytion and compression/decompression operation in data center.
+    It also support SR-IOV technology, each physical card can be virtualized
+    into mulitiple VFs.
