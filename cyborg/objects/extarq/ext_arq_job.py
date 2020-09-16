@@ -49,7 +49,7 @@ class ExtARQJobMixin(object):
     def get_suitable_ext_arq(cls, context, uuid):
         """From the inherit subclass find the suitable ExtARQ."""
         extarq = cls.get(context, uuid)
-        typ, _ = extarq.get_resources_from_device_profile_group()
+        typ = extarq.get_resources_from_device_profile_group()
         factory = cls.factory(typ)
         if factory != cls:
             return factory.get(context, uuid)
@@ -222,19 +222,8 @@ class ExtARQJobMixin(object):
         if not resources:
             raise exception.InvalidParameterValue(
                 'No resources in device_profile_group: %s' % group)
-        res_type, res_num = resources[0]
-        # TODO(Sundar): this should be caught in ARQ create, not bind.
-        if res_type not in constants.SUPPORT_RESOURCES:
-            raise exception.InvalidParameterValue(
-                'Unsupport resources %s from device_profile_group: %s' %
-                (res_type, group))
-        try:
-            res_num = int(res_num)
-        except ValueError:
-            raise exception.InvalidParameterValue(
-                'Resources nummber is a invalid in'
-                ' device_profile_group: %s' % group)
-        return res_type, res_num
+        res_type = resources[0][0]
+        return res_type
 
     @classmethod
     def apply_patch(cls, context, patch_list, valid_fields):

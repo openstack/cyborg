@@ -41,7 +41,7 @@ def _get_device_profiles_as_dict():
         "created_at": date1,
         "updated_at": None,
         "groups": [
-            {"resources:ACCELERATOR_FPGA": "1",
+            {"resources:FPGA": "1",
              "trait:CUSTOM_FPGA_INTEL_PAC_ARRIA10": "required",
              "trait:CUSTOM_FUNCTION_ID_3AFB": "required",
              },
@@ -58,7 +58,7 @@ def _get_device_profiles_as_dict():
         "updated_at": None,
         "description": "fake-daas_example_2-desc",
         "groups": [
-            {"resources:ACCELERATOR_FPGA": "1",
+            {"resources:FPGA": "1",
              "trait:CUSTOM_REGION_ID_3ACD": "required",
              "accel:bitstream_id": "ea0d149c-8555-495b-bc79-608d7bab1260"
              }

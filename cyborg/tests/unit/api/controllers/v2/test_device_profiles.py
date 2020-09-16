@@ -124,6 +124,57 @@ class TestDeviceProfileController(v2_test.APITestV2):
         # {'trait:CUSTOM_FPGA_INTEL_PAC_ARRIA10': 'required}
         self.assertTrue(out_dp['groups'] == self.fake_dp_objs[0]['groups'])
 
+    @mock.patch('cyborg.conductor.rpcapi.ConductorAPI.device_profile_create')
+    def test_create_with_extra_space_in_rc(self, mock_cond_dp):
+        test_unsupport_dp = self.fake_dps[0]
+
+        # generate a requested dp which has extra space in rc
+        del test_unsupport_dp['groups'][0]['resources:FPGA']
+        test_unsupport_dp['groups'][0]['resources: FPGA '] = '1'
+        dp = [test_unsupport_dp]
+
+        mock_cond_dp.return_value = self.fake_dp_objs[0]
+        dp[0]['created_at'] = str(dp[0]['created_at'])
+
+        response = self.post_json(self.DP_URL, dp, headers=self.headers)
+        out_dp = jsonutils.loads(response.controller_output)
+
+        # check that the extra space in rc:{'resources: FPGA ': '1'} is
+        # successful stripped by the _validate_post_request function, and
+        # the created device_profile has no extra space in
+        # rc:{'resources:FPGA': '1'}
+        self.assertTrue(out_dp['groups'] == self.fake_dp_objs[0]['groups'])
+
+    def test_create_with_unsupported_rc(self):
+        test_unsupport_dp = self.fake_dps[0]
+        # generate a special rc for test
+        del test_unsupport_dp['groups'][0]['resources:FPGA']
+        test_unsupport_dp['groups'][0]["resources:FAKE_RC"] = '1'
+
+        dp = [test_unsupport_dp]
+        dp[0]['created_at'] = str(dp[0]['created_at'])
+        self.assertRaisesRegex(
+            webtest.app.AppError,
+            ".*Unsupported resource class FAKE_RC.*",
+            self.post_json,
+            self.DP_URL,
+            dp,
+            headers=self.headers)
+
+    def test_create_with_invalid_resource_value(self):
+        test_unsupport_dp = self.fake_dps[0]
+        del test_unsupport_dp['groups'][0]['resources:FPGA']
+        test_unsupport_dp['groups'][0]["resources:CUSTOM_FAKE_RC"] = 'fake'
+        dp = [test_unsupport_dp]
+        dp[0]['created_at'] = str(dp[0]['created_at'])
+        self.assertRaisesRegex(
+            webtest.app.AppError,
+            ".*Resources nummber fake is invalid.*",
+            self.post_json,
+            self.DP_URL,
+            dp,
+            headers=self.headers)
+
     @mock.patch('cyborg.conductor.rpcapi.ConductorAPI.device_profile_delete')
     @mock.patch('cyborg.objects.DeviceProfile.get_by_name')
     @mock.patch('cyborg.objects.DeviceProfile.get_by_uuid')

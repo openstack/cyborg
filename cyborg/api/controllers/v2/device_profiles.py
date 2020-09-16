@@ -28,6 +28,7 @@ from cyborg.api.controllers import link
 from cyborg.api.controllers import types
 from cyborg.api import expose
 from cyborg.common import authorize_wsgi
+from cyborg.common import constants
 from cyborg.common import exception
 from cyborg import objects
 LOG = log.getLogger(__name__)
@@ -159,6 +160,24 @@ class DeviceProfilesController(base.CyborgController,
                     if inner_origin_trait != inner_trait:
                         del group[key]
                         standard_key = "trait:" + inner_trait
+                        group[standard_key] = value
+                # check rc name and it's value
+                if key.startswith("resources:"):
+                    inner_origin_rc = ":".join(key.split(":")[1:])
+                    inner_rc = inner_origin_rc.strip(" ")
+                    if inner_rc not in constants.SUPPORT_RESOURCES and \
+                        not inner_rc.startswith('CUSTOM_'):
+                        raise exception.InvalidParameterValue(
+                            err="Unsupported resource class %s" % inner_rc)
+                    try:
+                        int(value)
+                    except ValueError:
+                        raise exception.InvalidParameterValue(
+                            err="Resources nummber %s is invalid" % value)
+                    # strip " " and update old group key.
+                    if inner_origin_rc != inner_rc:
+                        del group[key]
+                        standard_key = "resources:" + inner_rc
                         group[standard_key] = value
 
     def _get_device_profile_list(self, names=None, uuid=None):
