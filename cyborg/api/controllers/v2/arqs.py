@@ -234,21 +234,21 @@ class ARQsController(base.CyborgController):
         an error. Nova uses the second form: so repeated calls do not cause
         issues.
 
-        :param arq: List of ARQ UUIDs
+        :param arqs: List of ARQ UUIDs
         :param instance: UUID of instance whose ARQs need to be deleted
         """
         context = pecan.request.context
-        if (arqs and instance) or ((not arqs) and (not instance)):
+        if (arqs and instance) or (not arqs and not instance):
             raise exception.ObjectActionError(
                 action='delete',
                 reason='Provide either an ARQ uuid list or an instance UUID')
         elif arqs:
             LOG.info("[arqs] delete. arqs=(%s)", arqs)
-            arqlist = arqs.split(',')
-            objects.ExtARQ.delete_by_uuid(context, arqlist)
+            pecan.request.conductor_api.arq_delete_by_uuid(context, arqs)
         else:  # instance is not None
             LOG.info("[arqs] delete. instance=(%s)", instance)
-            objects.ExtARQ.delete_by_instance(context, instance)
+            pecan.request.conductor_api.arq_delete_by_instance_uuid(
+                context, instance)
 
     def _validate_arq_patch(self, patch):
         """Validate a single patch for an ARQ.

@@ -87,3 +87,23 @@ class ConductorAPI(object):
         cctxt = self.client.prepare(topic=self.topic)
         return cctxt.call(context, 'arq_create', obj_extarq=obj_extarq,
                           devprof_id=devprof_id)
+
+    def arq_delete_by_uuid(self, context, arqs):
+        """Signal to conductor service to delete accelerator requests by
+        ARQ UUIDs.
+
+        :param context: request context.
+        :param arqs: ARQ UUIDs joined with ','
+        """
+        cctxt = self.client.prepare(topic=self.topic)
+        cctxt.call(context, 'arq_delete_by_uuid', arqs=arqs)
+
+    def arq_delete_by_instance_uuid(self, context, instance):
+        """Signal to conductor service to delete accelerator requests by
+        instance UUID.
+
+        :param context: request context.
+        :param instance: UUID of instance whose ARQs need to be deleted
+        """
+        cctxt = self.client.prepare(topic=self.topic)
+        cctxt.call(context, 'arq_delete_by_instance_uuid', instance=instance)

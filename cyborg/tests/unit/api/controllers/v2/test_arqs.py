@@ -218,8 +218,9 @@ class TestARQsController(v2_test.APITestV2):
             "Device Profile not found with "
             "name=wrong_device_profile_name", exc.args[0])
 
-    @mock.patch('cyborg.objects.ExtARQ.delete_by_uuid')
-    @mock.patch('cyborg.objects.ExtARQ.delete_by_instance')
+    @mock.patch('cyborg.conductor.rpcapi.ConductorAPI.arq_delete_by_uuid')
+    @mock.patch('cyborg.conductor.rpcapi.ConductorAPI.'
+                'arq_delete_by_instance_uuid')
     def test_delete(self, mock_by_inst, mock_by_arq):
         url = self.ARQ_URL
         arq = self.fake_extarqs[0].arq
