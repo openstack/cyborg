@@ -41,21 +41,6 @@ accelerator_request_policies = [
                        description='Update accelerator request records.'),
 ]
 
-device_profile_policies = [
-    policy.RuleDefault('cyborg:device_profile:get_all',
-                       'rule:default',
-                       description='Retrieve device_profile records.'),
-    policy.RuleDefault('cyborg:device_profile:get_one',
-                       'rule:default',
-                       description='Get a device_profile record.'),
-    policy.RuleDefault('cyborg:device_profile:create',
-                       'rule:is_admin',
-                       description='Create device_profile records.'),
-    policy.RuleDefault('cyborg:device_profile:delete',
-                       'rule:default',
-                       description='Delete device_profile records.'),
-]
-
 device_policies = [
     policy.RuleDefault('cyborg:device:get_one',
                        'rule:allow',
