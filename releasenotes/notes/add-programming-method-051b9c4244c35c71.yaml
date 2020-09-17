@@ -1,0 +1,6 @@
+---
+features:
+  - |
+    Add programming method to Deployable API.
+    This method supports dynamic programming of Intel FPGAs.
+    And it requires Intel OPAE(Open Programmable Acceleration Engine).
