@@ -16,6 +16,7 @@ import sys
 from oslo_concurrency import lockutils
 from oslo_config import cfg
 from oslo_log import log
+from oslo_policy import opts
 from oslo_policy import policy
 from oslo_versionedobjects import base as object_base
 import pecan
@@ -28,6 +29,36 @@ from cyborg import policies
 _ENFORCER = None
 CONF = cfg.CONF
 LOG = log.getLogger(__name__)
+
+
+# TODO(gmann): Remove setting the default value of config policy_file
+# once oslo_policy change the default value to 'policy.yaml'.
+# https://github.com/openstack/oslo.policy/blob/a626ad12fe5a3abd49d70e3e5b95589d279ab578/oslo_policy/opts.py#L49
+DEFAULT_POLICY_FILE = 'policy.yaml'
+opts.set_defaults(CONF, DEFAULT_POLICY_FILE)
+
+
+def pick_policy_file(policy_file):
+    # TODO(gmann): We have changed the default value of
+    # CONF.oslo_policy.policy_file option to 'policy.yaml' in Victoria
+    # release. To avoid breaking any deployment relying on default
+    # value, we need to add this is fallback logic to pick the old default
+    # policy file (policy.yaml) if exist. We can to remove this fallback
+    # logic sometime in future.
+    if policy_file:
+        return policy_file
+
+    if CONF.oslo_policy.policy_file == DEFAULT_POLICY_FILE:
+        location = CONF.get_location('policy_file', 'oslo_policy').location
+        if CONF.find_file(CONF.oslo_policy.policy_file):
+            return CONF.oslo_policy.policy_file
+        elif location in [cfg.Locations.opt_default,
+                          cfg.Locations.set_default]:
+            old_default = 'policy.json'
+            if CONF.find_file(old_default):
+                return old_default
+    # Return overridden value
+    return CONF.oslo_policy.policy_file
 
 
 @lockutils.synchronized('policy_enforcer', 'cyborg-')
@@ -55,10 +86,12 @@ def init_enforcer(policy_file=None, rules=None,
     # loaded exactly once - when this module-global is initialized.
     # Defining these in the relevant API modules won't work
     # because API classes lack singletons and don't use globals.
-    _ENFORCER = policy.Enforcer(CONF, policy_file=policy_file,
-                                rules=rules,
-                                default_rule=default_rule,
-                                use_conf=use_conf)
+    _ENFORCER = policy.Enforcer(
+        CONF,
+        policy_file=pick_policy_file(policy_file),
+        rules=rules,
+        default_rule=default_rule,
+        use_conf=use_conf)
     if suppress_deprecation_warnings:
         _ENFORCER.suppress_deprecation_warnings = True
     _ENFORCER.register_defaults(policies.list_policies())

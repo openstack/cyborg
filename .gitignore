@@ -16,6 +16,7 @@ doc/source/_static/cyborg.conf.sample
 doc/source/_static/cyborg.policy.yaml.sample
 # Sample profile
 etc/cyborg/policy.json.sample
+etc/cyborg/policy.yaml.sample
 etc/cyborg/cyborg.conf.sample
 .idea/*
 .vscode/*
