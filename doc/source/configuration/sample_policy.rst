@@ -2,6 +2,15 @@
 Cyborg Sample Policy
 ====================
 
+.. warning::
+
+   JSON formatted policy file is deprecated since Cyborg 5.0.0(Victoria).
+   Use YAML formatted file. Use `oslopolicy-convert-json-to-yaml`__ tool
+   to convert the existing JSON to YAML formatted policy file in backward
+   compatible way.
+
+.. __: https://docs.openstack.org/oslo.policy/latest/cli/oslopolicy-convert-json-to-yaml.html
+
 The following is a sample cyborg policy file that has been auto-generated
 from default policy values in code. If you're using the default policies, then
 the maintenance of this file is not necessary, and it should not be copied into
