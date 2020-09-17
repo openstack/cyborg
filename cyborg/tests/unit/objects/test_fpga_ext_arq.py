@@ -286,7 +286,7 @@ class TestFPGAExtARQObject(base.DbTestCase):
         need = obj_extarq._need_extra_bind_job(self.context, fake_dep)
         self.assertFalse(need)
 
-    @mock.patch('cyborg.agent.rpcapi.AgentAPI.fpga_program_v2')
+    @mock.patch('cyborg.agent.rpcapi.AgentAPI.fpga_program')
     @mock.patch('openstack.connection.Connection')
     @mock.patch('cyborg.objects.ExtARQ.update_check_state')
     @mock.patch('cyborg.objects.Deployable.get_cpid_list')
@@ -337,7 +337,7 @@ class TestFPGAExtARQObject(base.DbTestCase):
         mock_delete_traits.assert_called_once_with(
             rp_uuid, [constants.FPGA_FUNCTION_ID])
 
-    @mock.patch('cyborg.agent.rpcapi.AgentAPI.fpga_program_v2')
+    @mock.patch('cyborg.agent.rpcapi.AgentAPI.fpga_program')
     @mock.patch('cyborg.objects.Deployable.get_cpid_list')
     @mock.patch('cyborg.objects.Deployable.update')
     @mock.patch('cyborg.common.placement_client.PlacementClient.'

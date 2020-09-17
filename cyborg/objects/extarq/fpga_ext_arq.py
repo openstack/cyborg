@@ -234,9 +234,9 @@ class FPGAExtARQ(ExtARQ):
         # TODO(Shaohe) do this asynchronously, do this in conductor or agent?
         try:
             agent = AgentAPI()
-            agent.fpga_program_v2(context, hostname,
-                                  controlpath_id, bitstream_id,
-                                  driver_name)
+            agent.fpga_program(context, hostname,
+                               controlpath_id, bitstream_id,
+                               driver_name)
         except Exception as e:
             self.update_check_state(
                 context, constants.ARQ_BIND_FAILED)

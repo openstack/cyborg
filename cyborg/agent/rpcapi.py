@@ -51,13 +51,13 @@ class AgentAPI(object):
                                      version_cap=self.RPC_API_VERSION,
                                      serializer=serializer)
 
-    def fpga_program_v2(self, context, hostname, controlpath_id,
-                        bitstream_uuid, driver_name):
-        LOG.info('Agent fpga_program_v2: hostname: (%s) ' +
+    def fpga_program(self, context, hostname, controlpath_id,
+                     bitstream_uuid, driver_name):
+        LOG.info('Agent fpga_program: hostname: (%s) ' +
                  'bitstream_id: (%s)', hostname, bitstream_uuid)
         version = '1.0'
         cctxt = self.client.prepare(server=hostname, version=version)
-        return cctxt.call(context, 'fpga_program_v2',
+        return cctxt.call(context, 'fpga_program',
                           controlpath_id=controlpath_id,
                           bitstream_uuid=bitstream_uuid,
                           driver_name=driver_name)

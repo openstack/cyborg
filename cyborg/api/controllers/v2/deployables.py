@@ -19,11 +19,13 @@ from wsme import types as wtypes
 
 from oslo_serialization import jsonutils
 
+from cyborg.agent.rpcapi import AgentAPI
 from cyborg.api.controllers import base
 from cyborg.api.controllers import link
 from cyborg.api.controllers import types
 from cyborg.api import expose
 from cyborg.common import authorize_wsgi
+from cyborg.common import exception as exc
 from cyborg import objects
 
 
@@ -106,9 +108,67 @@ class DeployableCollection(Deployable):
         return collection
 
 
+class DeployablePatchType(types.JsonPatchType):
+
+    _api_base = Deployable
+
+    @staticmethod
+    def internal_attrs():
+        defaults = types.JsonPatchType.internal_attrs()
+        return defaults + ['/name', '/num_accelerators']
+
+
 class DeployablesController(base.CyborgController,
                             DeployableCollection):
     """REST controller for Deployables."""
+
+    _custom_actions = {'program': ['PATCH']}
+
+    # TODO(s_shogo): We will update the policy of deployable APIs,
+    # and using the new default policy rules in the W or later.
+    @authorize_wsgi.authorize_wsgi("cyborg:deployable", "program", False)
+    @expose.expose(Deployable, types.uuid, body=[DeployablePatchType])
+    def program(self, uuid, program_info):
+        """Program a new deployable(FPGA).
+
+        :param uuid: The uuid of the target deployable.
+        :param program_info: JSON string containing what to program.
+        :raise: FPGAProgramError: If fpga program failed raise exception.
+        :return: If fpga program success return deployable object.
+        """
+
+        image_uuid = program_info[0]['value'][0]['image_uuid']
+        # TODO(s_shogo): In W or later version we plan to add schema check,
+        # which will help checking input parameters' format.
+        # So we can remove this validation in the future.
+        try:
+            types.UUIDType().validate(image_uuid)
+        except Exception:
+            raise
+
+        obj_dep = objects.Deployable.get(pecan.request.context, uuid)
+        obj_dev = objects.Device.get_by_device_id(
+            pecan.request.context,
+            obj_dep.device_id
+        )
+        hostname = obj_dev.hostname
+        driver_name = obj_dep.driver_name
+        cpid_list = obj_dep.get_cpid_list(pecan.request.context)
+        controlpath_id = cpid_list[0]
+        controlpath_id['cpid_info'] = jsonutils.loads(
+            cpid_list[0]['cpid_info'])
+        self.agent_rpcapi = AgentAPI()
+        ret = self.agent_rpcapi.fpga_program(
+            pecan.request.context,
+            hostname,
+            controlpath_id,
+            image_uuid,
+            driver_name,
+            )
+        if ret:
+            return self.convert_with_link(obj_dep)
+        else:
+            raise exc.FPGAProgramError(ret=ret)
 
     @authorize_wsgi.authorize_wsgi("cyborg:deployable", "get_one")
     @expose.expose(Deployable, types.uuid)

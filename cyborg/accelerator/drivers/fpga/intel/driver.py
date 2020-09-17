@@ -16,7 +16,6 @@
 """
 Cyborg Intel FPGA driver implementation.
 """
-import subprocess
 
 from oslo_concurrency import processutils
 from oslo_log import log as logging
@@ -36,6 +35,8 @@ def _fpga_program_privileged(cmd_args):
     # only cmd_args are passed in.
     # TODO(Sundar) Do not hardcode fpgaconf.
     # Use right tool based on bitstream type.
+    # TODO(s_shogo): For now, we cannot choose the proper command.
+    # Needs more discussion.
     cmd = ["/usr/bin/fpgaconf"]
     cmd.extend(cmd_args)
     # processutils will log the command line.
@@ -56,24 +57,7 @@ class IntelFPGADriver(FPGADriver):
     def discover(self):
         return sysinfo.fpga_tree()
 
-    def program(self, device_path, image):
-        bdf = ""
-        path = sysinfo.find_pf_by_vf(device_path) if sysinfo.is_vf(
-            device_path) else device_path
-        if sysinfo.is_bdf(device_path):
-            bdf = sysinfo.get_pf_bdf(device_path)
-        else:
-            bdf = sysinfo.get_bdf_by_path(path)
-        bdfs = sysinfo.split_bdf(bdf)
-        cmd = ["sudo", "/usr/bin/fpgaconf"]
-        for i in zip(["--bus", "--device", "--function"], bdfs):
-            cmd.extend(i)
-        cmd.append(image)
-        p = subprocess.Popen(cmd, stdout=subprocess.PIPE)
-        p.wait()
-        return p.returncode
-
-    def program_v2(self, controlpath_id, image_file_path):
+    def program(self, controlpath_id, image_file_path):
         """Program the FPGA with the provided bitstream image.
 
            TODO(Sundar): Need to handle retries.
@@ -90,13 +74,17 @@ class IntelFPGADriver(FPGADriver):
                                         expected='PCI')
         cmd_args = []
         bdf_dict = controlpath_id['cpid_info']
-        bdf = map(lambda x: bdf_dict[x], ["bus", "device", "function"])
+        # fitting format to the OPAE command.
+        bdf = ['0x' + s for s in map(lambda x: bdf_dict[x],
+               ["bus", "device", "function"])]
         for i in zip(["--bus", "--device", "--function"], bdf):
             cmd_args.extend(i)
         cmd_args.append(image_file_path)
 
         try:
-            # TODO(Sundar) Check return code if it is retryable
+            # TODO(s_shogo): We should consider returning
+            # a meaningful error message from the driver rather than
+            # a boolean success/failure.
             _fpga_program_privileged(cmd_args)
             return True
         except Exception:

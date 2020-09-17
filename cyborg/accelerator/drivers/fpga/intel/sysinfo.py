@@ -199,11 +199,11 @@ def get_traits(device_name, product_id, vf=True):
         traits.append("CUSTOM_FPGA_INTEL")
         traits.append("CUSTOM_FPGA_INTEL_" + PRODUCT_MAP.get(product_id))
     for i in get_afu_ids(device_name):
-        la = "CUSTOM_FPGA_FUNCTION_ID_INTEL_" + i.upper()
-        traits.append(la)
+        trait = "CUSTOM_FPGA_FUNCTION_ID_INTEL_" + i.upper()
+        traits.append(trait)
     for i in get_region_ids(device_name):
-        la = "CUSTOM_FPGA_REGION_INTEL_" + i.upper()
-        traits.append(la)
+        trait = "CUSTOM_FPGA_REGION_INTEL_" + i.upper()
+        traits.append(trait)
     return {"traits": traits}
 
 

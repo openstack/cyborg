@@ -416,3 +416,7 @@ class ResourceNotFound(NotFound):
 class NotAcceptable(CyborgException):
     _msg_fmt = _("Request not acceptable.")
     code = http_client.NOT_ACCEPTABLE
+
+
+class FPGAProgramError(CyborgException):
+    _msg_fmt = _("FPGA programming failed with return %(ret)s.")

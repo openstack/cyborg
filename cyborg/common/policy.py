@@ -57,8 +57,10 @@ deployable_policies = [
     policy.RuleDefault('cyborg:deployable:get_all',
                        'rule:allow',
                        description='Retrieve all deployable records'),
+    policy.RuleDefault('cyborg:deployable:program',
+                       'rule:allow',
+                       description='FPGA programming.'),
 ]
-
 
 fpga_policies = [
     policy.RuleDefault('cyborg:fpga:get_one',

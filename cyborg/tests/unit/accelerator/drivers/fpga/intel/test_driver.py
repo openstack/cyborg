@@ -130,11 +130,11 @@ class TestIntelFPGADriver(base.TestCase):
                       '/path/image']
 
         intel = IntelFPGADriver()
-        cpid_info = {"domain": "0000", "bus": b,
-                     "device": d, "function": f}
+        cpid_info = {"domain": "0000", "bus": "5e",
+                     "device": "00", "function": "0"}
         cpid = {'cpid_type': 'PCI', 'cpid_info': cpid_info}
 
         # program PF
         mock_prog.return_value = bytes([0])
-        intel.program_v2(cpid, "/path/image")
+        intel.program(cpid, "/path/image")
         mock_prog.assert_called_with(expect_cmd)

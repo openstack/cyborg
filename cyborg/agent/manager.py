@@ -33,7 +33,13 @@ LOG = logging.getLogger(__name__)
 
 
 class AgentManager(periodic_task.PeriodicTasks):
-    """Cyborg Agent manager main class."""
+    """Cyborg Agent manager main class.
+
+    API version history:
+
+    | 1.0 - Initial version.
+
+    """
 
     RPC_API_VERSION = '1.0'
     target = messaging.Target(version=RPC_API_VERSION)
@@ -51,8 +57,8 @@ class AgentManager(periodic_task.PeriodicTasks):
     def periodic_tasks(self, context, raise_on_error=False):
         return self.run_periodic_tasks(context, raise_on_error=raise_on_error)
 
-    def fpga_program_v2(self, context, controlpath_id,
-                        bitstream_uuid, driver_name):
+    def fpga_program(self, context, controlpath_id,
+                     bitstream_uuid, driver_name):
         bitstream_uuid = str(bitstream_uuid)
         if not uuidutils.is_uuid_like(bitstream_uuid):
             raise exception.InvalidUUID(uuid=bitstream_uuid)
@@ -62,9 +68,10 @@ class AgentManager(periodic_task.PeriodicTasks):
                                 bitstream_uuid,
                                 dest_path=download_path.name)
         driver = self.fpga_driver.create(driver_name)
-        ret = driver.program_v2(controlpath_id, download_path.name)
-        LOG.info('Driver program() API returned code %s', ret)
+        ret = driver.program(controlpath_id, download_path.name)
+        LOG.info('Driver program() API returned %s', ret)
         os.remove(download_path.name)
+        return ret
 
     @periodic_task.periodic_task(run_immediately=True)
     def update_available_resource(self, context, startup=True):
