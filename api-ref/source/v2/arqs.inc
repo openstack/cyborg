@@ -84,7 +84,7 @@ Request
 
   - accelerator_request_uuid: accelerator_request_uuid
   - hostname: hostname_bind_unbind_req
-  - device_rp_uuid: device_rp_uuid_bind_unbind_req 
+  - device_rp_uuid: device_rp_uuid_bind_unbind_req
   - instance_uuid: instance_uuid_bind_unbind_req
 
 **Example patch curl**
@@ -93,7 +93,7 @@ Request
 
 **Example response: update an accelerator request**
 
-.. literalinclude:: ../../../doc/api_samples/accelerator_requests/accelerator_requests-update-resp.json
+.. literalinclude:: ../../../doc/api_samples/accelerator_requests/accelerator_requests-after-update-resp.json
 
 Delete Accelerator Requests by ARQ uuid
 ---------------------------------------
