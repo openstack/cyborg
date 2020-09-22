@@ -254,7 +254,7 @@ class TestARQsController(v2_test.APITestV2):
         self.assertIn("Bad response: 403 Forbidden", exc.args[0])
 
     @mock.patch.object(arqs.ARQsController, '_check_if_already_bound')
-    @mock.patch('cyborg.objects.ExtARQ.apply_patch')
+    @mock.patch('cyborg.conductor.rpcapi.ConductorAPI.arq_apply_patch')
     def test_apply_patch(self, mock_apply_patch, mock_check_if_bound):
         """Test the happy path."""
         patch_list, device_rp_uuid = fake_extarq.get_patch_list()
@@ -275,7 +275,7 @@ class TestARQsController(v2_test.APITestV2):
         mock_check_if_bound.assert_called_once_with(mock.ANY, valid_fields)
 
     @mock.patch.object(arqs.ARQsController, '_check_if_already_bound')
-    @mock.patch('cyborg.objects.ExtARQ.apply_patch')
+    @mock.patch('cyborg.conductor.rpcapi.ConductorAPI.arq_apply_patch')
     def test_apply_patch_allow_project_id(
             self, mock_apply_patch, mock_check_if_bound):
         patch_list, _ = fake_extarq.get_patch_list()

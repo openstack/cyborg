@@ -344,5 +344,5 @@ class ARQsController(base.CyborgController):
         if patch[0]['op'] == 'add':
             self._check_if_already_bound(context, valid_fields)
 
-        # TODO(Sundar) Defer to conductor and do all concurently.
-        objects.ExtARQ.apply_patch(context, patch_list, valid_fields)
+        pecan.request.conductor_api.arq_apply_patch(
+            context, patch_list, valid_fields)

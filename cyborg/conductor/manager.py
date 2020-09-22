@@ -97,6 +97,15 @@ class ConductorManager(object):
         """
         ExtARQ.delete_by_instance(context, instance)
 
+    def arq_apply_patch(self, context, patch_list, valid_fields):
+        """Signal to conductor service to apply patch accelerator requests.
+
+        :param context: request context.
+        :param patch_list: A map from ARQ UUIDs to their JSON patches
+        :param valid_fields: Dict of valid fields
+        """
+        ExtARQ.apply_patch(context, patch_list, valid_fields)
+
     def report_data(self, context, hostname, driver_device_list):
         """Update the Cyborg DB in one hostname according to the
         discovered device list.
