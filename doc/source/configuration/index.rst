@@ -6,5 +6,6 @@ Configuration Guide
    :maxdepth: 2
 
    config-options
-   sample_config
-   sample_policy
+   sample-config
+   sample-policy
+   policy-guide
