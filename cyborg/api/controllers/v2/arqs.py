@@ -42,7 +42,7 @@ class ARQ(base.APIBase):
     between the internal object model and the API representation.
     """
     uuid = types.uuid
-    """The UUID of the device profile"""
+    """The UUID of the ARQ"""
 
     state = wtypes.text  # obvious meanings
     device_profile_name = wtypes.text
@@ -99,7 +99,7 @@ class ARQCollection(base.APIBase):
 class ARQsController(base.CyborgController):
     """REST controller for ARQs.
 
-       For the relationship betweens ARQs and device profiles, see
+       For the relationship between ARQs and device profiles, see
        nova/nova/accelerator/cyborg.py.
     """
 
@@ -119,7 +119,6 @@ class ARQsController(base.CyborgController):
         """
         LOG.info("[arq] post req = (%s)", req)
         context = pecan.request.context
-        devprof = None
         dp_name = req.get('device_profile_name')
         if dp_name is not None:
             try:
@@ -313,7 +312,7 @@ class ARQsController(base.CyborgController):
                ],
              "$arq_uuid": [...]
             }
-            In particular, all and only these 3 fields must be present,
+            In particular, all and only these 4 fields must be present,
             and only 'add' or 'remove' ops are allowed.
         """
         LOG.info('[arqs] patch. list=(%s)', patch_list)
