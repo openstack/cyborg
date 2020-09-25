@@ -206,9 +206,11 @@ class TestARQsController(v2_test.APITestV2):
     @mock.patch('cyborg.objects.DeviceProfile.get_by_name')
     @mock.patch('cyborg.objects.ExtARQ.create')
     def test_create_with_wrong_dp(self, mock_obj_extarq, mock_obj_dp):
-        mock_obj_dp.side_effect = Exception
-        mock_obj_extarq.side_effect = self.fake_extarqs
         params = {'device_profile_name': 'wrong_device_profile_name'}
+        mock_obj_dp.side_effect = exception.ResourceNotFound(
+            resource='Device Profile',
+            msg='with name=%s' % params.get('device_profile_name'))
+        mock_obj_extarq.side_effect = self.fake_extarqs
         exc = None
         try:
             self.post_json(self.ARQ_URL, params, headers=self.headers)
