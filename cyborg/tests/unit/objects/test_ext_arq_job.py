@@ -53,7 +53,7 @@ class TestExtARQJobMixin(base.DbTestCase):
             "device_profile_group"][constants.ACCEL_FUNCTION_ID]
 
     def test_get_resources_from_device_profile_group(self):
-        expect = [("GPU", 1)] + [("FPGA", 1)] * 4
+        expect = [("GPU")] + [("FPGA")] * 4
         actual = [v.get_resources_from_device_profile_group()
                   for v in self.class_objects.values()]
         self.assertEqual(expect, actual)
