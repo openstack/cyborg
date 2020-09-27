@@ -13,6 +13,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import copy
 import pecan
 import re
 from six.moves import http_client
@@ -159,17 +160,32 @@ class DeviceProfilesController(base.CyborgController,
         groups = req_devprof.get("groups")
         if not groups:
             raise exception.DeviceProfileGroupsExpected()
-        else:
-            for group in groups:
-                for key, value in group.items():
-                    if not re.match(GROUP_KEYS, key):
+
+        for group in groups:
+            tmp_group = copy.deepcopy(group)
+            for key, value in tmp_group.items():
+                # check resource and trait prefix format
+                if not re.match(GROUP_KEYS, key):
+                    raise exception.InvalidParameterValue(
+                        err="Device profile group keys must be of "
+                            " the form %s" % GROUP_KEYS)
+                # check trait name and it's value
+                if key.startswith("trait:"):
+                    inner_origin_trait = ":".join(key.split(":")[1:])
+                    inner_trait = inner_origin_trait.strip(" ")
+                    if not inner_trait.startswith('CUSTOM_'):
                         raise exception.InvalidParameterValue(
-                            err="Device profile group keys must be of "
-                                " the form %s" % GROUP_KEYS)
-                    if key.startswith("trait:") and value not in TRAIT_VALUES:
+                            err="Unsupported trait name format %s, should "
+                                "start with CUSTOM_" % inner_trait)
+                    if value not in TRAIT_VALUES:
                         raise exception.InvalidParameterValue(
-                            err="Device profile trait values must be one "
-                                "among %s" % TRAIT_VALUES)
+                            err="Unsupported trait value %s, the value must"
+                                " be one among %s" % TRAIT_VALUES)
+                    # strip " " and update old group key.
+                    if inner_origin_trait != inner_trait:
+                        del group[key]
+                        standard_key = "trait:" + inner_trait
+                        group[standard_key] = value
 
     def _get_device_profile_list(self, names=None, uuid=None):
         """Get a list of API objects representing device profiles."""
