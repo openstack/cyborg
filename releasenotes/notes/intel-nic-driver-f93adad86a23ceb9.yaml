@@ -1,0 +1,10 @@
+---
+features:
+  - |
+    The Intel nic driver defines the Intel x710 NIC's data model in
+    Cyborg. It also proposes a standard configuration format to manage
+    networking related devices. The Intel X710 NIC supports DDP(Dynamic
+    Device Personalization) which provides the ability to reconfigure the
+    packet processing pipeline to support a broader range of traffic types.
+    It also supports SR-IOV technology, each physical card can be virtualized
+    into mulitiple VFs.

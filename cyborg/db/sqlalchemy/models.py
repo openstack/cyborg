@@ -81,7 +81,7 @@ class Device(Base):
 
     id = Column(Integer, primary_key=True)
     uuid = Column(String(36), nullable=False, unique=True)
-    type = Column(Enum('GPU', 'FPGA', 'AICHIP', 'QAT',
+    type = Column(Enum('GPU', 'FPGA', 'AICHIP', 'QAT', 'NIC',
                        name='device_type'), nullable=False)
     vendor = Column(String(255), nullable=False)
     model = Column(String(255), nullable=False)

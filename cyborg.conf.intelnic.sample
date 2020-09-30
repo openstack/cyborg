@@ -1,0 +1,69 @@
+
+[DEFAULT]
+auth_strategy =
+transport_url = rabbit://stackrabbit:123456@192.168.0.186:5672/
+use_syslog = False
+state_path = /var/lib/cyborg
+debug = True
+
+[database]
+connection = mysql+pymysql://root:123456@127.0.0.1/cyborg?charset=utf8
+
+[keystone]
+region_name = RegionOne
+
+[service_catalog]
+cafile = /opt/stack/data/ca-bundle.pem
+project_domain_id = default
+user_domain_id = default
+project_name = service
+password = 123456
+username = cyborg
+auth_url = http://192.168.0.186/identity
+auth_type = password
+
+[nova]
+project_domain_name = Default
+project_name = service
+user_domain_name = Default
+password = 123456
+username = nova
+auth_url = http://192.168.0.186/identity
+auth_type = password
+
+[placement]
+project_domain_name = Default
+project_name = service
+user_domain_name = Default
+password = 123456
+username = placement
+auth_url = http://192.168.0.186/identity
+auth_type = password
+
+[keystone_authtoken]
+memcached_servers = localhost:11211
+cafile = /opt/stack/data/ca-bundle.pem
+project_domain_name = Default
+project_name = service
+user_domain_name = Default
+password = 123456
+username = cyborg
+auth_url = http://192.168.0.186/identity
+interface = public
+auth_type = password
+
+[oslo_policy]
+policy_file = /etc/cyborg/policy.yaml
+
+[conductor]
+automated_clean =
+
+[agent]
+enabled_drivers = fake_driver,intel_nic_driver
+
+[nic_devices]
+enabled_nic_types = x710_static
+
+[x710_static]
+physical_device_mappings = physnet1:eth2|eth3
+function_device_mappings = GTPv1:eth3|eth2

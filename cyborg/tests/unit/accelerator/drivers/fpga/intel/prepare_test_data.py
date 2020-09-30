@@ -13,7 +13,6 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import argparse
 import copy
 import glob
 import os
@@ -282,22 +281,3 @@ def create_fake_sysfs(prefix=""):
     os.makedirs(sys_class_fpga)
     create_devices_path_and_files(FPGA_TREE, sys_device, sys_class_fpga)
     create_devices_soft_link(sys_class_fpga)
-
-
-def main():
-    create_fake_sysfs()
-
-
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(
-        description="Generate a fake sysfs for intel FPGA.")
-    group = parser.add_mutually_exclusive_group()
-    group.add_argument("-v", "--verbose", action="store_true")
-    group.add_argument("-q", "--quiet", action="store_true")
-    parser.add_argument("-p", "--prefix", type=str,
-                        default="/tmp", dest="p",
-                        help='Set the prefix path of the fake sysfs. '
-                        'default "/tmp"')
-    args = parser.parse_args()
-
-    create_fake_sysfs(args.p)

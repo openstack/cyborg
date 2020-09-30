@@ -19,6 +19,7 @@ from cyborg.conf import agent
 from cyborg.conf import api
 from cyborg.conf import database
 from cyborg.conf import default
+from cyborg.conf import devices
 from cyborg.conf import glance
 from cyborg.conf import keystone
 from cyborg.conf import nova
@@ -31,6 +32,7 @@ api.register_opts(CONF)
 agent.register_opts(CONF)
 database.register_opts(CONF)
 default.register_opts(CONF)
+devices.register_opts(CONF)
 service_token.register_opts(CONF)
 glance.register_opts(CONF)
 keystone.register_opts(CONF)
