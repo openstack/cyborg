@@ -13,10 +13,9 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-
+from http import client as http_client
 from oslo_log import log as logging
 from oslo_serialization import jsonutils
-from six.moves import http_client
 from unittest import mock
 
 from cyborg.api.controllers.v2 import device_profiles

@@ -18,7 +18,6 @@
 from oslo_db import options as db_options
 from oslo_db.sqlalchemy import models
 from oslo_utils import timeutils
-import six.moves.urllib.parse as urlparse
 from sqlalchemy import Boolean
 from sqlalchemy import Column
 from sqlalchemy import DateTime
@@ -31,6 +30,7 @@ from sqlalchemy import orm
 from sqlalchemy import schema
 from sqlalchemy import String
 from sqlalchemy import Text
+import urllib.parse as urlparse
 
 from cyborg.common import constants
 from cyborg.common import paths

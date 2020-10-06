@@ -13,7 +13,6 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import six
 from unittest import mock
 
 from testtools.matchers import HasLength
@@ -334,7 +333,7 @@ class TestExtARQObject(base.DbTestCase):
             exception.ResourceNotFound,
             obj_extarq._allocate_attach_handle, self.context, fake_dep)
         mock_log.assert_called_once_with(
-            msg, obj_extarq.arq.uuid, fake_dep.uuid, six.text_type(e))
+            msg, obj_extarq.arq.uuid, fake_dep.uuid, str(e))
 
     @mock.patch('cyborg.objects.ExtARQ.get')
     @mock.patch('cyborg.objects.ExtARQ._from_db_object')

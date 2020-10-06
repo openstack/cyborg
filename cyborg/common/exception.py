@@ -19,9 +19,8 @@ SHOULD include dedicated exception logging.
 
 """
 
+from http import client as http_client
 from oslo_log import log
-import six
-from six.moves import http_client
 
 from cyborg.common.i18n import _
 from cyborg.conf import CONF
@@ -38,8 +37,7 @@ class CyborgException(Exception):
     with the keyword arguments provided to the constructor.
 
     If you need to access the message from an exception you should use
-    six.text_type(exc)
-
+    str(exc).
     """
     _msg_fmt = _("An unknown exception occurred.")
     code = http_client.INTERNAL_SERVER_ERROR
@@ -77,14 +75,11 @@ class CyborgException(Exception):
 
     def __str__(self):
         """Encode to utf-8 then wsme api can consume it as well."""
-        if not six.PY3:
-            return six.text_type(self.args[0]).encode('utf-8')
-
         return self.args[0]
 
     def __unicode__(self):
         """Return a unicode representation of the exception message."""
-        return six.text_type(self.args[0])
+        return str(self.args[0])
 
 
 class Forbidden(CyborgException):
