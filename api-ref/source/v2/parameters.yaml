@@ -65,6 +65,13 @@ hostname_bind_unbind_req:
   in: body
   required: true
   type: string
+instance_project_id_bind_unbind_req:
+  description: |
+    Project id of the target instance for bind or unbind of one accelerator request.
+  in: body
+  required: false
+  type: string
+  min_version: 2.1
 instance_uuid_bind_unbind_req:
   description: |
     UUID of the target instance for bind or unbind of one accelerator request.
