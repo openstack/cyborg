@@ -19,7 +19,7 @@
 """
 from oslo_policy import policy
 # NOTE: to follow policy-in-code spec, we define defaults for
-#       the granular policies in code, rather than in policy.json.
+#       the granular policies in code, rather than in policy.yaml.
 #       All of these may be overridden by configuration, but we can
 #       depend on their existence throughout the code.
 
