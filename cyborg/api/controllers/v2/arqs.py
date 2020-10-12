@@ -103,18 +103,6 @@ class ARQsController(base.CyborgController):
        nova/nova/accelerator/cyborg.py.
     """
 
-    def _get_devprof(self, context, devprof_name):
-        """Get the contents of a device profile.
-           Since this is just a read, it is ok for the API layer
-           to do this, instead of the conductor.
-        """
-        try:
-            obj_devprof = objects.DeviceProfile.get_by_name(context,
-                                                            devprof_name)
-            return obj_devprof
-        except Exception:
-            return None
-
     @authorize_wsgi.authorize_wsgi("cyborg:arq", "create", False)
     @expose.expose(ARQCollection, body=types.jsontype,
                    status_code=http_client.CREATED)
@@ -134,11 +122,14 @@ class ARQsController(base.CyborgController):
         devprof = None
         dp_name = req.get('device_profile_name')
         if dp_name is not None:
-            devprof = self._get_devprof(context, dp_name)
-            if devprof is None:
+            try:
+                devprof = objects.DeviceProfile.get_by_name(context, dp_name)
+            except exception.ResourceNotFound:
                 raise exception.ResourceNotFound(
                     resource='Device Profile',
                     msg='with name=%s' % dp_name)
+            except Exception as e:
+                raise e
         else:
             raise exception.DeviceProfileNameNeeded()
         LOG.info('[arqs] post. device profile name=%s', dp_name)
