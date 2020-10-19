@@ -34,8 +34,6 @@ from oslo_log import log as logging
 from oslo_serialization import jsonutils
 from oslo_utils import excutils
 from oslo_utils import timeutils
-import six
-from six.moves import range
 
 from cyborg.common import exception
 from cyborg.common import utils
@@ -176,7 +174,7 @@ class GlanceClientWrapper(object):
                                'method': method, 'extra': extra})
                 if attempt == num_attempts:
                     raise exception.GlanceConnectionFailed(
-                        server=str(self.api_server), reason=six.text_type(e))
+                        server=str(self.api_server), reason=str(e))
                 time.sleep(1)
 
 
@@ -418,7 +416,7 @@ def _convert_to_v2(image_meta):
                 # v1 client accepts any values and converts them to string,
                 # v2 doesn't - so we have to take care of it.
                 elif prop_value is None or isinstance(
-                        prop_value, six.string_types):
+                        prop_value, str):
                     output[prop_name] = prop_value
                 else:
                     output[prop_name] = str(prop_value)
@@ -454,13 +452,13 @@ def _convert_timestamps_to_datetimes(image_meta):
 # NOTE(bcwaldon): used to store non-string data in glance metadata
 def _json_loads(properties, attr):
     prop = properties[attr]
-    if isinstance(prop, six.string_types):
+    if isinstance(prop, str):
         properties[attr] = jsonutils.loads(prop)
 
 
 def _json_dumps(properties, attr):
     prop = properties[attr]
-    if not isinstance(prop, six.string_types):
+    if not isinstance(prop, str):
         properties[attr] = jsonutils.dumps(prop)
 
 
@@ -576,14 +574,14 @@ def _reraise_translated_image_exception(image_id):
     """Transform the exception for the image but keep its traceback intact."""
     exc_type, exc_value, exc_trace = sys.exc_info()
     new_exc = _translate_image_exception(image_id, exc_value)
-    six.reraise(type(new_exc), new_exc, exc_trace)
+    raise new_exc.with_traceback(exc_trace)
 
 
 def _reraise_translated_exception():
     """Transform the exception but keep its traceback intact."""
     exc_type, exc_value, exc_trace = sys.exc_info()
     new_exc = _translate_plain_exception(exc_value)
-    six.reraise(type(new_exc), new_exc, exc_trace)
+    raise new_exc.with_traceback(exc_trace)
 
 
 def _translate_image_exception(image_id, exc_value):
@@ -596,18 +594,18 @@ def _translate_image_exception(image_id, exc_value):
             msg='with uuid=%s' % image_id)
     if isinstance(exc_value, glanceclient.exc.BadRequest):
         return exception.ImageBadRequest(image_id=image_id,
-                                         response=six.text_type(exc_value))
+                                         response=str(exc_value))
     return exc_value
 
 
 def _translate_plain_exception(exc_value):
     if isinstance(exc_value, (glanceclient.exc.Forbidden,
                   glanceclient.exc.Unauthorized)):
-        return exception.Forbidden(six.text_type(exc_value))
+        return exception.Forbidden(str(exc_value))
     if isinstance(exc_value, glanceclient.exc.NotFound):
-        return exception.NotFound(six.text_type(exc_value))
+        return exception.NotFound(str(exc_value))
     if isinstance(exc_value, glanceclient.exc.BadRequest):
-        return exception.Invalid(six.text_type(exc_value))
+        return exception.Invalid(str(exc_value))
     return exc_value
 
 

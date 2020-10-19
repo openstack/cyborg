@@ -18,7 +18,6 @@
 from concurrent.futures import ThreadPoolExecutor as CFThreadPoolExecutor
 from functools import wraps
 import queue
-import six
 import time
 import traceback
 
@@ -50,7 +49,7 @@ def safe_rstrip(value, chars=None):
     :return: Stripped value.
 
     """
-    if not isinstance(value, six.string_types):
+    if not isinstance(value, str):
         LOG.warning("Failed to remove trailing character. Returning "
                     "original object. Supplied object is not a string: "
                     "%s,", value)
@@ -155,7 +154,7 @@ def get_sdk_adapter(service_type, check_service=False):
     except sdk_exc.ServiceDiscoveryException as e:
         raise exception.ServiceUnavailable(
             _("The %(service_type)s service is unavailable: %(error)s") %
-            {'service_type': service_type, 'error': six.text_type(e)})
+            {'service_type': service_type, 'error': str(e)})
     return getattr(conn, service_type)
 
 
@@ -356,7 +355,7 @@ class ThreadWorks(Singleton):
                     LOG.error("Error during check the worker status. "
                               "Exception info: %s, result: %s, state: %s. "
                               "Reason %s", f.exception(), f._result,
-                              f._state, six.text_type(e))
+                              f._state, str(e))
                     yield f._result, f.exception(), f._state, err
             finally:
                 # Do best to cancel remain jobs.
@@ -401,7 +400,7 @@ def wrap_job_tb(msg="Reason: %s"):
             try:
                 output = method(self, *args, **kwargs)
             except Exception as e:
-                LOG.error(msg, six.text_type(e))
+                LOG.error(msg, str(e))
                 LOG.error(traceback.format_exc())
                 raise
             return output

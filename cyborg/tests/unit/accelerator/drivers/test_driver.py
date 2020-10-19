@@ -11,8 +11,6 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import six
-
 from cyborg.accelerator.drivers.driver import GenericDriver
 from cyborg.tests import base
 
@@ -40,4 +38,4 @@ class TestGenericDriver(base.TestCase):
         # abstract methods get_stats, update
         result = self.assertRaises(TypeError, NotCompleteDriver)
         self.assertIn("Can't instantiate abstract class",
-                      six.text_type(result))
+                      str(result))

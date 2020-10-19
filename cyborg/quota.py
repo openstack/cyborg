@@ -16,7 +16,6 @@ import datetime
 from oslo_config import cfg
 from oslo_log import log as logging
 from oslo_utils import timeutils
-import six
 
 from cyborg.common import exception
 from cyborg import db as db_api
@@ -147,7 +146,7 @@ class DbQuotaDriver(object):
         # Set up the reservation expiration
         if expire is None:
             expire = CONF.reservation_expire
-        if isinstance(expire, six.integer_types):
+        if isinstance(expire, int):
             expire = datetime.timedelta(seconds=expire)
         if isinstance(expire, datetime.timedelta):
             expire = timeutils.utcnow() + expire

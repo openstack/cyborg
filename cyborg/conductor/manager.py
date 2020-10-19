@@ -13,8 +13,6 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import six
-
 from oslo_log import log as logging
 import oslo_messaging as messaging
 import uuid
@@ -365,7 +363,7 @@ class ConductorManager(object):
 
     def _get_sub_provider(self, context, parent, name):
         old_sub_pr_uuid = str(uuid.uuid3(uuid.NAMESPACE_DNS,
-                                         six.ensure_str(name)))
+                                         str(name)))
         new_sub_pr_uuid = self.placement_client.ensure_resource_provider(
             context, old_sub_pr_uuid,
             name=name, parent_provider_uuid=parent)
@@ -396,7 +394,7 @@ class ConductorManager(object):
         attrs = obj.attribute_list
         resource_class = [i.value for i in attrs if i.key == 'rc'][0]
         traits = [i.value for i in attrs
-                  if six.ensure_str(i.key).startswith("trait")]
+                  if str(i.key).startswith("trait")]
         total = obj.num_accelerators
         rp_uuid = self.provider_report(context, pr_name, resource_class,
                                        traits, total, parent_uuid)
@@ -405,7 +403,7 @@ class ConductorManager(object):
         dep_obj.save(context)
 
     def get_rp_uuid_from_obj(self, obj):
-        return str(uuid.uuid3(uuid.NAMESPACE_DNS, six.ensure_str(obj.name)))
+        return str(uuid.uuid3(uuid.NAMESPACE_DNS, str(obj.name)))
 
     def _delete_provider_and_sub_providers(self, context, rp_uuid):
         rp_in_tree = self.placement_client.get_providers_in_tree(context,

@@ -14,9 +14,9 @@
 #    under the License.
 
 import copy
+from http import client as http_client
 import pecan
 import re
-from six.moves import http_client
 import wsme
 from wsme import types as wtypes
 

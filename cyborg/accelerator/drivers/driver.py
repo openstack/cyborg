@@ -12,11 +12,9 @@
 #    under the License.
 
 import abc
-import six
 
 
-@six.add_metaclass(abc.ABCMeta)
-class GenericDriver(object):
+class GenericDriver(object, metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     def discover(self):
