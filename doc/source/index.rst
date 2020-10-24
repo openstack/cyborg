@@ -87,9 +87,7 @@ Documentation for Developers
 .. toctree::
    :maxdepth: 1
 
-   contributor/contributing
-   contributor/devstack_setup
-   contributor/driver-development-guide
+   contributor/index
 
 Indices and tables
 ==================
