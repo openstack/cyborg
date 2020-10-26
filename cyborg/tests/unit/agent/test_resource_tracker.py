@@ -57,6 +57,6 @@ class TestResourceTracker(base.TestCase):
             m.side_effect = exception.PlacementResourceProviderNotFound(
                 resource_provider='foo')
             self.rt.update_usage(None)
-            m.assert_called_once_with(None, 'fake-mini', [])
+            m.assert_called_once_with(None, 'fake-mini', mock.ANY)
         mock_log.error.assert_called_once_with('Unable to report usage: %s',
                                                m.side_effect)

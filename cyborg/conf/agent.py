@@ -19,10 +19,10 @@ from cyborg.common.i18n import _
 
 opts = [
     cfg.ListOpt('enabled_drivers',
-                default=[],
+                default=['fake_driver'],
                 help=_('The accelerator drivers enabled on this agent. Such '
                        'as intel_fpga_driver, inspur_fpga_driver,'
-                       'nvidia_gpu_driver, etc.')),
+                       'nvidia_gpu_driver, intel_qat_driver, etc.')),
 ]
 
 opt_group = cfg.OptGroup(name='agent',
