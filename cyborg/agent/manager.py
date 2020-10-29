@@ -67,10 +67,13 @@ class AgentManager(periodic_task.PeriodicTasks):
         self.image_api.download(context,
                                 bitstream_uuid,
                                 dest_path=download_path.name)
-        driver = self.fpga_driver.create(driver_name)
-        ret = driver.program(controlpath_id, download_path.name)
-        LOG.info('Driver program() API returned %s', ret)
-        os.remove(download_path.name)
+        try:
+            driver = self.fpga_driver.create(driver_name)
+            ret = driver.program(controlpath_id, download_path.name)
+            LOG.info('Driver program() API returned %s', ret)
+        finally:
+            LOG.debug('Remove tmp bitstream file: %s', download_path.name)
+            os.remove(download_path.name)
         return ret
 
     @periodic_task.periodic_task(run_immediately=True)
