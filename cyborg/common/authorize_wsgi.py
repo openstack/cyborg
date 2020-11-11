@@ -141,7 +141,7 @@ def authorize_wsgi(api_name, act=None, need_target=True):
             @authorize_wsgi.authorize_wsgi("cyborg:accelerator",
                                            "create", False)
             @wsme_pecan.wsexpose(Accelerator, body=types.jsontype,
-                                 status_code=http_client.CREATED)
+                                 status_code=HTTPStatus.CREATED)
             def post(self, values):
                 ...
     """

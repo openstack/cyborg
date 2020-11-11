@@ -14,7 +14,7 @@
 #    under the License.
 
 import copy
-from http import client as http_client
+from http import HTTPStatus
 import pecan
 import re
 import wsme
@@ -115,7 +115,7 @@ class DeviceProfilesController(base.CyborgController,
 
     @authorize_wsgi.authorize_wsgi("cyborg:device_profile", "create", False)
     @expose.expose(DeviceProfile, body=types.jsontype,
-                   status_code=http_client.CREATED)
+                   status_code=HTTPStatus.CREATED)
     def post(self, req_devprof_list):
         """Create one or more device_profiles.
 
@@ -257,7 +257,7 @@ class DeviceProfilesController(base.CyborgController,
         return DeviceProfile.convert_with_links(ret)
 
     @authorize_wsgi.authorize_wsgi("cyborg:device_profile", "delete")
-    @expose.expose(None, wtypes.text, status_code=http_client.NO_CONTENT)
+    @expose.expose(None, wtypes.text, status_code=HTTPStatus.NO_CONTENT)
     def delete(self, value):
         """Delete one or more device_profiles.
 

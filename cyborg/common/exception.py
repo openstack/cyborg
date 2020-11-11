@@ -19,7 +19,7 @@ SHOULD include dedicated exception logging.
 
 """
 
-from http import client as http_client
+from http import HTTPStatus
 from oslo_log import log
 
 from cyborg.common.i18n import _
@@ -40,7 +40,7 @@ class CyborgException(Exception):
     str(exc).
     """
     _msg_fmt = _("An unknown exception occurred.")
-    code = http_client.INTERNAL_SERVER_ERROR
+    code = HTTPStatus.INTERNAL_SERVER_ERROR
     headers = {}
     safe = False
 
@@ -84,7 +84,7 @@ class CyborgException(Exception):
 
 class Forbidden(CyborgException):
     _msg_fmt = _("Forbidden")
-    code = http_client.FORBIDDEN
+    code = HTTPStatus.FORBIDDEN
 
 
 # TODO(Sundar): Eliminate this after ARQBadState is merged.
@@ -145,7 +145,7 @@ class InUse(CyborgException):
 
 class Invalid(CyborgException):
     _msg_fmt = _("Invalid parameters.")
-    code = http_client.BAD_REQUEST
+    code = HTTPStatus.BAD_REQUEST
 
 
 class InvalidIdentity(Invalid):
@@ -187,7 +187,7 @@ class PatchError(Invalid):
 
 class NotAuthorized(CyborgException):
     _msg_fmt = _("Not authorized.")
-    code = http_client.UNAUTHORIZED
+    code = HTTPStatus.UNAUTHORIZED
 
 
 class HTTPForbidden(Forbidden):
@@ -196,12 +196,12 @@ class HTTPForbidden(Forbidden):
 
 class NotFound(CyborgException):
     _msg_fmt = _("Resource could not be found.")
-    code = http_client.NOT_FOUND
+    code = HTTPStatus.NOT_FOUND
 
 
 class ServiceUnavailable(CyborgException):
     _msg_fmt = _("Service is unavailable at this time.")
-    code = http_client.SERVICE_UNAVAILABLE
+    code = HTTPStatus.SERVICE_UNAVAILABLE
 
 
 class ServiceNotFound(NotFound):
@@ -219,7 +219,7 @@ class InvalidDeployType(CyborgException):
 
 class Conflict(CyborgException):
     _msg_fmt = _('Conflict.')
-    code = http_client.CONFLICT
+    code = HTTPStatus.CONFLICT
 
 
 class DuplicateDeviceName(Conflict):
@@ -410,7 +410,7 @@ class ResourceNotFound(NotFound):
 
 class NotAcceptable(CyborgException):
     _msg_fmt = _("Request not acceptable.")
-    code = http_client.NOT_ACCEPTABLE
+    code = HTTPStatus.NOT_ACCEPTABLE
 
 
 class FPGAProgramError(CyborgException):

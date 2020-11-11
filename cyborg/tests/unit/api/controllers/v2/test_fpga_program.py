@@ -10,7 +10,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from http import client as http_client
+from http import HTTPStatus
 from oslo_serialization import jsonutils
 from unittest import mock
 
@@ -59,7 +59,7 @@ class TestFPGAProgramController(v2_test.APITestV2):
         response = self.patch_json('/deployables/%s/program' % dep_uuid,
                                    [{'path': '/bitstream_id', 'value': body,
                                      'op': 'replace'}], headers=self.headers)
-        self.assertEqual(http_client.OK, response.status_code)
+        self.assertEqual(HTTPStatus.OK, response.status_code)
         data = response.json_body
         self.assertEqual(dep_uuid, data['uuid'])
 

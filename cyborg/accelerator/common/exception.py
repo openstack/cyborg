@@ -15,7 +15,7 @@
 """Accelerator base exception handling. """
 
 import collections
-from http import client as http_client
+from http import HTTPStatus
 from oslo_log import log as logging
 from oslo_serialization import jsonutils
 
@@ -82,7 +82,7 @@ class AcceleratorException(Exception):
     str(exc).
     """
     _msg_fmt = _("An unknown exception occurred.")
-    code = http_client.INTERNAL_SERVER_ERROR
+    code = HTTPStatus.INTERNAL_SERVER_ERROR
     headers = {}
     safe = False
 
