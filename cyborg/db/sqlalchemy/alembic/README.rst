@@ -9,6 +9,5 @@ Stamp db with most recent migration version, without actually running migrations
 $ cyborg-dbsync stamp --revision head
 
 Upgrade can be performed by:
-$ cyborg-dbsync - for backward compatibility
 $ cyborg-dbsync upgrade
 # cyborg-dbsync upgrade --revision head
