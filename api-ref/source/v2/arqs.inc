@@ -84,8 +84,9 @@ Request
 
   - accelerator_request_uuid: accelerator_request_uuid
   - hostname: hostname_bind_unbind_req
-  - device_rp_uuid: device_rp_uuid_bind_unbind_req 
+  - device_rp_uuid: device_rp_uuid_bind_unbind_req
   - instance_uuid: instance_uuid_bind_unbind_req
+  - instance_project_id: instance_project_id_bind_unbind_req
 
 **Example patch curl**
 
