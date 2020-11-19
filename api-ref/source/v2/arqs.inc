@@ -94,7 +94,7 @@ Request
 
 **Example response: update an accelerator request**
 
-.. literalinclude:: ../../../doc/api_samples/accelerator_requests/accelerator_requests-update-resp.json
+.. literalinclude:: ../../../doc/api_samples/accelerator_requests/accelerator_requests-after-update-resp.json
 
 Delete Accelerator Requests by ARQ uuid
 ---------------------------------------
