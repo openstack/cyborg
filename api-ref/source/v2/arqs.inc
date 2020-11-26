@@ -9,7 +9,7 @@ Lists, creates, shows details for, updates and deletes accelerator requests.
 An accelerator request (ARQ) represents a request for a single accelerator
 to be assigned to an instance. ARQs are created in accordance with the
 resource_groups defined in a `device_profile 
-<http://specs.openstack.org/openstack/cyborg-specs/specs/train/approved/device-profiles.html>`_
+<http://specs.openstack.org/openstack/cyborg-specs/specs/train/implemented/device-profiles.html>`_
 by the operator. The accelerator request in the user request may have N
 request groups, each asking for M accelerators; then N * M ARQs will be
 created for that accelerator request.
