@@ -1,0 +1,8 @@
+---
+features:
+  - |
+    The cyborg Nvidia GPU driver now supports defining different virtual GPU
+    types for each physical GPU. See the ``[gpu_devices]/enabled_vgpu_types``
+    configuration option for knowing how to do it. Please refer to
+    https://specs.openstack.org/openstack/cyborg-specs/specs/wallaby/approved/vgpu-driver-proposal.html
+    for further documentation.
