@@ -1,6 +1,9 @@
 # This file contains runtime (non-python) dependencies
 # More info at: http://docs.openstack.org/infra/bindep/readme.html
 
+# fonts-freefont-otf is needed for pdf docs builds with the 'xelatex' engine
+fonts-freefont-otf [pdf-docs]
+
 # Required for running the 'lspci' command
 pciutils
 
@@ -8,5 +11,6 @@ pciutils
 librsvg2-tools [doc platform:rpm]
 librsvg2-bin [doc platform:dpkg]
 latexmk [pdf-docs]
-fonts-freefont-otf [pdf-docs]
+texlive [pdf-docs]
+texlive-latex-recommended [pdf-docs]
 texlive-xetex [pdf-docs]
