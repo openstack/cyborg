@@ -7,7 +7,7 @@ Device Profiles
 Lists, creates, shows details for, updates and deletes device profiles.
 
 A `device_profile 
-<http://specs.openstack.org/openstack/cyborg-specs/specs/train/approved/device-profiles.html>`_
+<http://specs.openstack.org/openstack/cyborg-specs/specs/train/implemented/device-profiles.html>`_
 is a named set of the user requirements for one or more
 accelerators. It can be viewed as a flavor for devices. Broadly it includes
 two things: the desired amounts of specific resource classes and the
