@@ -77,11 +77,11 @@ A database, service credentials, and API endpoints must be created.
    .. code-block:: console
 
       $ openstack endpoint create --region RegionOne \
-        accelerator public http://<cyborg-ip>/accelerator/v1
+        accelerator public http://<cyborg-ip>/accelerator/v2
       $ openstack endpoint create --region RegionOne \
-        accelerator internal http://<cyborg-ip>/accelerator/v1
+        accelerator internal http://<cyborg-ip>/accelerator/v2
       $ openstack endpoint create --region RegionOne \
-        accelerator admin http://<cyborg-ip>/accelerator/v1
+        accelerator admin http://<cyborg-ip>/accelerator/v2
    ..
 
    * Otherwise, if cyborg-api service is running as a python process, create
@@ -90,11 +90,11 @@ A database, service credentials, and API endpoints must be created.
    .. code-block:: console
 
       $ openstack endpoint create --region RegionOne \
-        accelerator public http://<cyborg-ip>:6666/v1
+        accelerator public http://<cyborg-ip>:6666/v2
       $ openstack endpoint create --region RegionOne \
-        accelerator internal http://<cyborg-ip>:6666/v1
+        accelerator internal http://<cyborg-ip>:6666/v2
       $ openstack endpoint create --region RegionOne \
-        accelerator admin http://<cyborg-ip>:6666/v1
+        accelerator admin http://<cyborg-ip>:6666/v2
    ..
 
    .. note::
@@ -117,6 +117,11 @@ Configure Cyborg
         use_syslog = False
         state_path = /var/lib/cyborg
         debug = True
+
+        ...
+
+        [api]
+        host_ip = 0.0.0.0
 
         ...
 
@@ -143,6 +148,18 @@ Configure Cyborg
         user_domain_name = Default
         password = password
         username = placement
+        auth_url = http://%OPENSTACK_HOST_IP%/identity
+        auth_type = password
+        auth_section = keystone_authtoken
+
+        ...
+
+        [nova]
+        project_domain_name = Default
+        project_name = service
+        user_domain_name = Default
+        password = password
+        username = nova
         auth_url = http://%OPENSTACK_HOST_IP%/identity
         auth_type = password
         auth_section = keystone_authtoken
