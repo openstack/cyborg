@@ -77,7 +77,7 @@ guide.
   request / response parameters and their meaning.
 
 .. # TODO(brinzhang): After completing the
-   `Cyborg API v2 <https://specs.openstack.org/openstack/cyborg-specs/specs/ussuri/approved/cyborg-api.html>`_
+   `Cyborg API v2 <https://specs.openstack.org/openstack/cyborg-specs/specs/ussuri/implemented/cyborg-api.html>`_
    API, the "Cyborg API Microversion History <https://xxx>"" management
    document will be added, and it will also be added here.
 
