@@ -35,8 +35,8 @@ def _get_device_profiles_as_dict():
         tzinfo=datetime.timezone.utc)
     dp1 = {
         "id": 1,
-        "uuid": u"a95e10ae-b3e3-4eab-a513-1afae6f17c51",
-        "name": u'afaas_example_1',
+        "uuid": "a95e10ae-b3e3-4eab-a513-1afae6f17c51",
+        "name": 'afaas_example_1',
         "description": "fake-afaas_example_1-desc",
         "created_at": date1,
         "updated_at": None,
@@ -53,7 +53,7 @@ def _get_device_profiles_as_dict():
     dp2 = {
         "id": 2,
         "uuid": u"199c46b7-63a7-431b-aa40-35da4b9420b1",
-        "name": u'daas_example_2',
+        "name": 'daas_example_2',
         "created_at": date2,
         "updated_at": None,
         "description": "fake-daas_example_2-desc",

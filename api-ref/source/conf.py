@@ -39,7 +39,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-copyright = u'2016-present, OpenStack Foundation'
+copyright = '2016-present, OpenStack Foundation'
 
 # openstackdocstheme options
 openstackdocs_repo_name = 'openstack/cyborg'
@@ -68,6 +68,6 @@ html_theme_options = {
 # (source start file, target name, title, author, documentclass
 # [howto/manual]).
 latex_documents = [
-    ('index', 'Cyborg.tex', u'OpenStack Acceleration API Documentation',
-     u'OpenStack Foundation', 'manual'),
+    ('index', 'Cyborg.tex', 'OpenStack Acceleration API Documentation',
+     'OpenStack Foundation', 'manual'),
 ]
