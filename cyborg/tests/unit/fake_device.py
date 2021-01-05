@@ -21,7 +21,7 @@ def get_fake_devices_as_dict():
     device1 = {
         "id": 1,
         "vendor": "0xABCD",
-        "uuid": u"1c6c9033-560d-4a7a-bb8e-94455d1e7825",
+        "uuid": "1c6c9033-560d-4a7a-bb8e-94455d1e7825",
         "hostname": "test-node-1",
         "vendor_board_info": "fake_vendor_info",
         "model": "miss model info",
@@ -31,7 +31,7 @@ def get_fake_devices_as_dict():
     device2 = {
         "id": 2,
         "vendor": "0xDCBA",
-        "uuid": u"1c6c9033-560d-4a7a-bb8e-94455d1e7826",
+        "uuid": "1c6c9033-560d-4a7a-bb8e-94455d1e7826",
         "hostname": "test-node-2",
         "vendor_board_info": "fake_vendor_info",
         "model": "miss model info",
