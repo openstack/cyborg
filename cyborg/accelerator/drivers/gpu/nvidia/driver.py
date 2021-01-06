@@ -1,3 +1,4 @@
+# Modifications Copyright (C) 2020 ZTE Corporation
 # Copyright 2018 Beijing Lenovo Software Ltd.
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -26,6 +27,7 @@ class NVIDIAGPUDriver(GPUDriver):
        Vendor should implement their specific drivers in this class.
     """
     VENDOR = "nvidia"
+    VENDOR_ID = "10de"
 
     def discover(self):
-        return sysinfo.gpu_tree()
+        return sysinfo.discover(self.VENDOR_ID)

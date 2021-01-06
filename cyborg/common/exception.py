@@ -389,6 +389,18 @@ class InvalidDriver(Invalid):
     _msg_fmt = _("Found an invalid driver: %(name)s")
 
 
+class InvalidVGPUType(Invalid):
+    _msg_fmt = _("Invalid requested vGPU type: %(name)s")
+
+
+class InvalidvGPUConfig(Invalid):
+    _msg_fmt = _("Invalid vGPU config: %(reason)s")
+
+
+class PciDeviceWrongAddressFormat(Invalid):
+    _msg_fmt = _("The PCI address %(address)s has an incorrect format.")
+
+
 class InvalidType(Invalid):
     _msg_fmt = _("Invalid type for %(obj)s: %(type)s."
                  "Expected: %(expected)s")

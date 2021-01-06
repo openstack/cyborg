@@ -14,10 +14,17 @@
 
 import collections
 import os
+import re
 
 from oslo_serialization import jsonutils
 
 from cyborg.common import exception
+
+
+_PCI_ADDRESS_PATTERN = ("^(hex{4}):(hex{2}):(hex{2}).(oct{1})$".
+                        replace("hex", r"[\da-fA-F]").
+                        replace("oct", "[0-7]"))
+_PCI_ADDRESS_REGEX = re.compile(_PCI_ADDRESS_PATTERN)
 
 
 def pci_str_to_json(pci_address, physnet=None):
@@ -106,3 +113,24 @@ def get_vendor_maps():
             "1099": "samsung",
             "1cf2": "zte"
             }
+
+
+def mdev_str_to_json(pci_address, asked_type, vgpu_mark):
+    dbs, func = pci_address.split('.')
+    domain, bus, slot = dbs.split(':')
+    keys = ["domain", "bus", "device", "function", "asked_type", "vgpu_mark"]
+    values = [domain, bus, slot, func, asked_type, vgpu_mark]
+    bdf_dict = dict(zip(keys, values))
+    ordered_dict = collections.OrderedDict(sorted(bdf_dict.items()))
+    bdf_json = jsonutils.dumps(ordered_dict)
+    return bdf_json
+
+
+def parse_address(address):
+    """Returns (domain, bus, slot, function) from PCI address that is set
+    in configuration
+    """
+    m = _PCI_ADDRESS_REGEX.match(address)
+    if not m:
+        raise exception.PciDeviceWrongAddressFormat(address=address)
+    return m.groups()
