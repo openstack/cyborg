@@ -66,8 +66,9 @@ class ExtARQJobMixin(object):
         devrp_uuid = valid_fields[self.arq.uuid]['device_rp_uuid']
         instance_uuid = valid_fields[self.arq.uuid]['instance_uuid']
         project_id = valid_fields[self.arq.uuid].get('project_id')
-        LOG.info('[arqs:objs] bind. hostname: %(hostname)s,'
-                 ' devrp_uuid: %(devrp_uuid)s, instance: %(instance)s, '
+        LOG.info('[arqs:objs] bind. hostname: %(hostname)s, '
+                 'devrp_uuid: %(devrp_uuid)s, '
+                 'instance_uuid: %(instance_uuid)s, '
                  'project_id: %(project_id)s',
                  {'hostname': hostname, 'devrp_uuid': devrp_uuid,
                   'instance_uuid': instance_uuid, 'project_id': project_id})
