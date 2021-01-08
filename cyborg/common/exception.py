@@ -77,10 +77,6 @@ class CyborgException(Exception):
         """Encode to utf-8 then wsme api can consume it as well."""
         return self.args[0]
 
-    def __unicode__(self):
-        """Return a unicode representation of the exception message."""
-        return str(self.args[0])
-
 
 class Forbidden(CyborgException):
     _msg_fmt = _("Forbidden")
