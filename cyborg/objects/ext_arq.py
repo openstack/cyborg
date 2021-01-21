@@ -13,11 +13,14 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import json
+
 from openstack import connection
 from oslo_log import log as logging
 from oslo_utils import versionutils
 from oslo_versionedobjects import base as object_base
 
+from cyborg.agent.rpcapi import AgentAPI
 from cyborg.common import constants
 from cyborg.common.constants import ARQ_STATES_TRANSFORM_MATRIX
 from cyborg.common import exception
@@ -77,6 +80,10 @@ class ExtARQ(base.CyborgObject, object_base.VersionedObjectDictCompat,
         # TODO(eric): need to handle v1.1 changes
         if target_version < (1, 2) and 'deployable_id' in primitive:
             del primitive['deployable_id']
+
+    def __init__(self, *args, **kwargs):
+        super(ExtARQ, self).__init__(*args, **kwargs)
+        self.agent = AgentAPI()
 
     def create(self, context, device_profile_id=None):
         """Create an ExtARQ record in the DB."""
@@ -213,6 +220,16 @@ class ExtARQ(base.CyborgObject, object_base.VersionedObjectDictCompat,
         try:
             ah = AttachHandle.allocate(context, deployable.id)
             self.attach_handle_id = ah.id
+            # if attach_handle is a vgpu, create the mdev in the sys path
+            if ah.attach_type == 'MDEV':
+                attach_info = json.loads(ah.attach_info)
+                pci_addr = "{}:{}:{}.{}".format(
+                    attach_info['domain'], attach_info['bus'],
+                    attach_info['device'], attach_info['function'])
+                hostname = self.arq.hostname
+                asked_type = attach_info['asked_type']
+                self.agent.create_vgpu_mdev(
+                    context, hostname, pci_addr, asked_type, ah.uuid)
         except Exception as e:
             LOG.error("Failed to allocate attach handle for ARQ %s"
                       "from deployable %s. Reason: %s",
@@ -237,9 +254,17 @@ class ExtARQ(base.CyborgObject, object_base.VersionedObjectDictCompat,
         # if (self.arq.state == constants.ARQ_DELETING
         #         or self.arq.state == ARQ_UNBOUND):
 
-    def _deallocate_attach_handle(self, context, ah_id):
+    def _deallocate_attach_handle(self, context, ah_id, hostname):
         try:
             attach_handle = AttachHandle.get_by_id(context, ah_id)
+            if attach_handle.attach_type == 'MDEV':
+                attach_info = json.loads(attach_handle.attach_info)
+                pci_addr = "{}:{}:{}.{}".format(
+                    attach_info['domain'], attach_info['bus'],
+                    attach_info['device'], attach_info['function'])
+                self.agent.remove_vgpu_mdev(
+                    context, hostname, pci_addr,
+                    attach_info['asked_type'], attach_handle.uuid)
             attach_handle.deallocate(context)
         except Exception as e:
             LOG.error("Failed to deallocate attach handle %s for ARQ %s."
@@ -252,6 +277,7 @@ class ExtARQ(base.CyborgObject, object_base.VersionedObjectDictCompat,
 
     def unbind(self, context):
         arq = self.arq
+        hostname = arq.hostname
         arq.hostname = None
         arq.device_rp_uuid = None
         arq.instance_uuid = None
@@ -260,7 +286,7 @@ class ExtARQ(base.CyborgObject, object_base.VersionedObjectDictCompat,
         # Unbind: mark attach handles as freed
         ah_id = self.attach_handle_id
         if ah_id:
-            self._deallocate_attach_handle(context, ah_id)
+            self._deallocate_attach_handle(context, ah_id, hostname)
         self.attach_handle_id = None
         self.deployable_id = None
         self.save(context)
@@ -285,6 +311,7 @@ class ExtARQ(base.CyborgObject, object_base.VersionedObjectDictCompat,
             if db_ah is not None:
                 db_extarq['attach_handle_type'] = db_ah['attach_type']
                 db_extarq['attach_handle_info'] = db_ah['attach_info']
+                db_extarq['attach_handle_uuid'] = db_ah['uuid']
             else:
                 raise exception.ResourceNotFound(
                     resource='Attach Handle',

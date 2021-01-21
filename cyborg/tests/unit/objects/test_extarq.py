@@ -352,7 +352,8 @@ class TestExtARQObject(base.DbTestCase):
         self, mock_deallocate, mock_ah, mock_check_state):
         obj_extarq = self.fake_obj_extarqs[0]
         mock_ah.return_value = self.fake_obj_ahs[0]
-        obj_extarq._deallocate_attach_handle(self.context, mock_ah.id)
+        obj_extarq._deallocate_attach_handle(
+            self.context, mock_ah.id, obj_extarq.arq.hostname)
         mock_check_state.assert_not_called()
 
     @mock.patch('logging.LoggerAdapter.error')
@@ -370,7 +371,8 @@ class TestExtARQObject(base.DbTestCase):
         mock_deallocate.side_effect = e
         self.assertRaises(
             exception.ResourceNotFound,
-            obj_extarq._deallocate_attach_handle, self.context, mock_ah.id)
+            obj_extarq._deallocate_attach_handle, self.context, mock_ah.id,
+            obj_extarq.arq.hostname)
         mock_log.assert_called_once_with(
             msg, mock_ah.id, obj_extarq.arq.uuid, str(e))
         mock_check_state.assert_called_once_with(

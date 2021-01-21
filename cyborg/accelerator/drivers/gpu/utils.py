@@ -19,6 +19,7 @@ from oslo_log import log as logging
 
 import re
 
+import cyborg.common.exception as exception
 import cyborg.conf
 import cyborg.privsep
 
@@ -39,6 +40,27 @@ PRODUCT_ID_MAPS = {"1eb8": "T4", "15f7": "P100_PCIE_12GB"}
 def lspci_privileged():
     cmd = ['lspci', '-nnn', '-D']
     return processutils.execute(*cmd)
+
+
+@cyborg.privsep.sys_admin_pctxt.entrypoint
+def create_mdev_privileged(pci_addr, mdev_type, ah_uuid):
+    """Instantiate a mediated device."""
+    if ah_uuid is None:
+        raise exception.AttachHandleUUIDNeeded()
+    fpath = '/sys/class/mdev_bus/{0}/mdev_supported_types/{1}/create'
+    fpath = fpath.format(pci_addr, mdev_type)
+    with open(fpath, 'w') as f:
+        f.write(ah_uuid)
+    return ah_uuid
+
+
+@cyborg.privsep.sys_admin_pctxt.entrypoint
+def remove_mdev_privileged(physical_device, mdev_type, medv_uuid):
+    fpath = ('/sys/class/mdev_bus/{0}/mdev_supported_types/'
+             '{1}/devices/{2}/remove')
+    fpath = fpath.format(physical_device, mdev_type, medv_uuid)
+    with open(fpath, 'w') as f:
+        f.write("1")
 
 
 def get_pci_devices(pci_flags, vendor_id=None):

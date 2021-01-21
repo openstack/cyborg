@@ -370,7 +370,7 @@ class ConductorManager(object):
                 "resource_providers?name=" + hostname).json()
             pr_uuid = provider["resource_providers"][0]["uuid"]
             return pr_uuid
-        except IndexError:
+        except (IndexError, KeyError):
             raise exception.PlacementResourceProviderNotFound(
                 resource_provider=hostname)
 

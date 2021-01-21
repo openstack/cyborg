@@ -92,6 +92,10 @@ class AttachHandleAlreadyExists(CyborgException):
     _msg_fmt = _("AttachHandle with uuid %(uuid)s already exists.")
 
 
+class AttachHandleUUIDNeeded(CyborgException):
+    _msg_fmt = _("Need to provide AttachHandle uuid.")
+
+
 class ControlpathIDAlreadyExists(CyborgException):
     _msg_fmt = _("ControlpathID with uuid %(uuid)s already exists.")
 

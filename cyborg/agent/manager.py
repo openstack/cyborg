@@ -21,6 +21,7 @@ from oslo_service import periodic_task
 from oslo_utils import uuidutils
 
 from cyborg.accelerator.drivers.fpga.base import FPGADriver
+from cyborg.accelerator.drivers.gpu import utils as gpu_utils
 from cyborg.agent.resource_tracker import ResourceTracker
 from cyborg.agent.rpcapi import AgentAPI
 from cyborg.common import exception
@@ -80,3 +81,11 @@ class AgentManager(periodic_task.PeriodicTasks):
     def update_available_resource(self, context, startup=True):
         """Update all kinds of accelerator resources from their drivers."""
         self._rt.update_usage(context)
+
+    def create_vgpu_mdev(self, context, pci_addr, asked_type, ah_uuid):
+        LOG.debug('Instantiate a mediated device')
+        gpu_utils.create_mdev_privileged(pci_addr, asked_type, ah_uuid)
+
+    def remove_vgpu_mdev(self, context, pci_addr, asked_type, ah_uuid):
+        LOG.debug('Remove a vgpu mdev')
+        gpu_utils.remove_mdev_privileged(pci_addr, asked_type, ah_uuid)

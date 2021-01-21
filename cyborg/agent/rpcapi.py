@@ -61,3 +61,25 @@ class AgentAPI(object):
                           controlpath_id=controlpath_id,
                           bitstream_uuid=bitstream_uuid,
                           driver_name=driver_name)
+
+    def create_vgpu_mdev(self, context, hostname, pci_addr,
+                         asked_type, ah_uuid):
+        LOG.debug('Agent create_vgpu_mdev: hostname: (%s) , pci_address: (%s)'
+                  'gpu_id: (%s)', hostname, pci_addr, ah_uuid)
+        version = '1.0'
+        cctxt = self.client.prepare(server=hostname, version=version)
+        return cctxt.call(context, 'create_vgpu_mdev',
+                          pci_addr=pci_addr,
+                          asked_type=asked_type,
+                          ah_uuid=ah_uuid)
+
+    def remove_vgpu_mdev(self, context, hostname, pci_addr,
+                         asked_type, ah_uuid):
+        LOG.debug('Agent remove_vgpu_mdev: hostname: (%s) '
+                  'gpu_id: (%s)', hostname, ah_uuid)
+        version = '1.0'
+        cctxt = self.client.prepare(server=hostname, version=version)
+        return cctxt.call(context, 'remove_vgpu_mdev',
+                          pci_addr=pci_addr,
+                          asked_type=asked_type,
+                          ah_uuid=ah_uuid)

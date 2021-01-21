@@ -60,6 +60,7 @@ class ARQ(base.APIBase):
     """The UUID of the instance project_id associated with this ARQ, if any"""
 
     attach_handle_type = wtypes.text
+    attach_handle_uuid = wtypes.text
     attach_handle_info = {wtypes.text: wtypes.text}
 
     links = wsme.wsattr([link.Link], readonly=True)

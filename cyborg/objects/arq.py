@@ -48,6 +48,7 @@ class ARQ(base.CyborgObject, object_base.VersionedObjectDictCompat):
 
         # Fields populated by Cyborg after binding
         'attach_handle_type': object_fields.StringField(nullable=True),
+        'attach_handle_uuid': object_fields.StringField(nullable=True),
         'attach_handle_info': object_fields.DictOfStringsField(nullable=True),
     }
 
