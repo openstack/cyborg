@@ -13,7 +13,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from http import client as http_client
+from http import HTTPStatus
 import unittest
 from unittest import mock
 
@@ -182,7 +182,7 @@ class TestARQsController(v2_test.APITestV2):
         url = '%s?instance=%s&bind_state=resolved' % (
             self.ARQ_URL, instance_uuid)
         response = self.get_json(url, headers=self.headers, expect_errors=True)
-        self.assertEqual(http_client.LOCKED, response.status_int)
+        self.assertEqual(HTTPStatus.LOCKED, response.status_int)
 
     @mock.patch('cyborg.objects.DeviceProfile.get_by_name')
     @mock.patch('cyborg.conductor.rpcapi.ConductorAPI.arq_create')
@@ -195,7 +195,7 @@ class TestARQsController(v2_test.APITestV2):
         data = jsonutils.loads(response.__dict__['controller_output'])
         out_arqs = data['arqs']
 
-        self.assertEqual(http_client.CREATED, response.status_int)
+        self.assertEqual(HTTPStatus.CREATED, response.status_int)
         self.assertEqual(len(out_arqs), 3)
         for in_extarq, out_arq in zip(self.fake_extarqs, out_arqs):
             self._validate_arq(in_extarq.arq, out_arq)
@@ -231,12 +231,12 @@ class TestARQsController(v2_test.APITestV2):
         mock_by_arq.return_value = None
         args = '?' + "arqs=" + str(arq['uuid'])
         response = self.delete(url + args, headers=self.headers)
-        self.assertEqual(http_client.NO_CONTENT, response.status_int)
+        self.assertEqual(HTTPStatus.NO_CONTENT, response.status_int)
 
         mock_by_inst.return_value = None
         args = '?' + "instance=" + instance
         response = self.delete(url + args, headers=self.headers)
-        self.assertEqual(http_client.NO_CONTENT, response.status_int)
+        self.assertEqual(HTTPStatus.NO_CONTENT, response.status_int)
 
     @unittest.skip("Need more code to implement _get_resource in rbac")
     def test_delete_with_non_default(self):
@@ -308,7 +308,7 @@ class TestARQsController(v2_test.APITestV2):
         response = self.patch_json(self.ARQ_URL, params=patch_list,
                                    headers=self.headers,
                                    expect_errors=True)
-        self.assertEqual(http_client.NOT_ACCEPTABLE, response.status_code)
+        self.assertEqual(HTTPStatus.NOT_ACCEPTABLE, response.status_code)
         self.assertTrue(response.json['error_message'])
 
     # TODO(all): Add exception test cases for apply_patch.

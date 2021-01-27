@@ -13,7 +13,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from http import client as http_client
+from http import HTTPStatus
 from unittest import mock
 import webtest
 
@@ -79,7 +79,7 @@ class TestDeviceProfileController(v2_test.APITestV2):
         response = self.post_json(self.DP_URL, dp, headers=self.headers)
         out_dp = jsonutils.loads(response.controller_output)
 
-        self.assertEqual(http_client.CREATED, response.status_int)
+        self.assertEqual(HTTPStatus.CREATED, response.status_int)
         self._validate_dp(dp[0], out_dp)
 
     def test_create_with_unsupported_trait(self):
@@ -181,8 +181,8 @@ class TestDeviceProfileController(v2_test.APITestV2):
         # Delete by UUID
         url = self.DP_URL + "/5d2c0797-c3cd-4f4b-b0d0-2cc5e99ef66e"
         response = self.delete(url, headers=self.headers)
-        self.assertEqual(http_client.NO_CONTENT, response.status_int)
+        self.assertEqual(HTTPStatus.NO_CONTENT, response.status_int)
         # Delete by name
         url = self.DP_URL + "/mydp"
         response = self.delete(url, headers=self.headers)
-        self.assertEqual(http_client.NO_CONTENT, response.status_int)
+        self.assertEqual(HTTPStatus.NO_CONTENT, response.status_int)

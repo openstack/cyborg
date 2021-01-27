@@ -13,7 +13,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from http import client as http_client
+from http import HTTPStatus
 from oslo_log import log as logging
 from oslo_serialization import jsonutils
 from unittest import mock
@@ -97,7 +97,7 @@ class DeviceProfilePolicyTest(base.BasePolicyTest):
             response = self.post_json(DP_URL, dp, headers=headers)
             out_dp = jsonutils.loads(response.controller_output)
 
-            self.assertEqual(http_client.CREATED, response.status_int)
+            self.assertEqual(HTTPStatus.CREATED, response.status_int)
             self._validate_dp(dp[0], out_dp)
 
     def test_create_device_profile_forbidden(self):
@@ -121,11 +121,11 @@ class DeviceProfilePolicyTest(base.BasePolicyTest):
             # Delete by UUID
             url = DP_URL + "/5d2c0797-c3cd-4f4b-b0d0-2cc5e99ef66e"
             response = self.delete(url, headers=headers)
-            self.assertEqual(http_client.NO_CONTENT, response.status_int)
+            self.assertEqual(HTTPStatus.NO_CONTENT, response.status_int)
             # Delete by name
             url = DP_URL + "/mydp"
             response = self.delete(url, headers=headers)
-            self.assertEqual(http_client.NO_CONTENT, response.status_int)
+            self.assertEqual(HTTPStatus.NO_CONTENT, response.status_int)
 
     def test_delete_device_profile_forbidden(self):
         dp = self.fake_dp_objs[0]
