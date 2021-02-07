@@ -37,6 +37,11 @@
      - The driver for Inspur FPGA Cards.
      - None
      - Test results reported at Aug 2020. Please reference: `Inspur FPGA Driver Test Report <https://wiki.openstack.org/wiki/Cyborg/TestReport/InspurFPGA>`_
+   * - Intel NIC Driver
+     - None
+     - The driver for Intel NIC Cards.
+     - None
+     - Test results reported at Feb 2021. Please reference: `Intel NIC Driver Test Report <https://wiki.openstack.org/wiki/Cyborg/TestReport/IntelNic>`_
 
 .. note:: Temporary Test Report: This is a temporary test report, it is only
      valid for a short time, if you encounter problems, please contact the
