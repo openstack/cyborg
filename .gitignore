@@ -8,6 +8,7 @@
 
 openstack_cyborg.egg-info
 dist
+tags
 build/*
 *.DS_Store
 ChangeLog
