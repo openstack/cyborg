@@ -36,5 +36,6 @@ Definition Breakdown
 
 
 **Accelerators:**
+
 * Software: dpdk/spdk, pmem, ...
 * Hardware: FPGA, GPU, ARM SoC, NVMe SSD, CCIX based Caches, ...
