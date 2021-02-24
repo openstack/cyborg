@@ -21,6 +21,7 @@ from cyborg.common import constants
 from cyborg.common import exception
 from cyborg import objects
 from cyborg.tests.unit.db import base
+from cyborg.tests.unit import fake_attach_handle
 from cyborg.tests.unit import fake_deployable
 from cyborg.tests.unit import fake_device_profile
 from cyborg.tests.unit import fake_extarq
@@ -33,6 +34,7 @@ class TestExtARQObject(base.DbTestCase):
         self.fake_db_extarqs = fake_extarq.get_fake_db_extarqs()
         self.fake_obj_extarqs = fake_extarq.get_fake_extarq_objs()
         self.fake_obj_fpga_extarqs = fake_extarq.get_fake_fpga_extarq_objs()
+        self.fake_obj_ahs = fake_attach_handle.get_fake_attach_handle_objs()
         self.deployable_uuids = ['0acbf8d6-e02a-4394-aae3-57557d209498']
 
     @mock.patch('cyborg.objects.ExtARQ._from_db_object')
@@ -334,6 +336,39 @@ class TestExtARQObject(base.DbTestCase):
             obj_extarq._allocate_attach_handle, self.context, fake_dep)
         mock_log.assert_called_once_with(
             msg, obj_extarq.arq.uuid, fake_dep.uuid, str(e))
+        mock_check_state.assert_called_once_with(
+            self.context, constants.ARQ_BIND_FAILED)
+
+    @mock.patch('cyborg.objects.ExtARQ.update_check_state')
+    @mock.patch('cyborg.objects.attach_handle.AttachHandle.get_by_id')
+    @mock.patch('cyborg.objects.attach_handle.AttachHandle.deallocate')
+    def test_deallocate_attach_handle(
+        self, mock_deallocate, mock_ah, mock_check_state):
+        obj_extarq = self.fake_obj_extarqs[0]
+        mock_ah.return_value = self.fake_obj_ahs[0]
+        obj_extarq._deallocate_attach_handle(self.context, mock_ah.id)
+        mock_check_state.assert_not_called()
+
+    @mock.patch('logging.LoggerAdapter.error')
+    @mock.patch('cyborg.objects.ExtARQ.update_check_state')
+    @mock.patch('cyborg.objects.attach_handle.AttachHandle.get_by_id')
+    @mock.patch('cyborg.objects.attach_handle.AttachHandle.deallocate')
+    def test_deallocate_attach_handle_with_error_log(
+        self, mock_ah, mock_deallocate, mock_check_state, mock_log):
+        obj_extarq = self.fake_obj_extarqs[0]
+        mock_ah.return_value = self.fake_obj_ahs[0]
+        e = exception.ResourceNotFound(
+            resource='AttachHandle', msg="Just for Test")
+        msg = ("Failed to deallocate attach handle %s for ARQ %s."
+               "Reason: %s")
+        mock_deallocate.side_effect = e
+        self.assertRaises(
+            exception.ResourceNotFound,
+            obj_extarq._deallocate_attach_handle, self.context, mock_ah.id)
+        mock_log.assert_called_once_with(
+            msg, mock_ah.id, obj_extarq.arq.uuid, str(e))
+        mock_check_state.assert_called_once_with(
+            self.context, constants.ARQ_UNBIND_FAILED)
 
     @mock.patch('cyborg.objects.ExtARQ.get')
     @mock.patch('cyborg.objects.ExtARQ._from_db_object')
