@@ -32,6 +32,10 @@ are not met.
      - ``openstack server pause``, ``openstack server unpause``
    * - Lock/Unlock
      - ``openstack server lock``, ``openstack server unlock``
+   * - Rebuild/Evacuate
+     - ``openstack server rebuild``
+   * - Shelve/Unshelve
+     - ``openstack server shelve``, ``openstack server unshelve``
 
 Operations not listed here may or may not work.
 
