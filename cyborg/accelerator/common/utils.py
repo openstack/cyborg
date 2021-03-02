@@ -92,3 +92,17 @@ def parse_mappings(mapping_list):
         mapping[physnet_or_function] = set(dev.strip() for dev in
                                            devices.split("|") if dev.strip())
     return mapping
+
+
+def get_vendor_maps():
+    """The data is based on http://pci-ids.ucw.cz/read/PC/
+
+    :return: vendor maps dict
+    """
+    return {"10de": "nvidia",
+            "102b": "matrox",
+            "1bd4": "inspur",
+            "8086": "intel",
+            "1099": "samsung",
+            "1cf2": "zte"
+            }
