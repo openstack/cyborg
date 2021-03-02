@@ -22,10 +22,8 @@ from cyborg.accelerator.drivers.gpu.nvidia import sysinfo
 
 
 class NVIDIAGPUDriver(GPUDriver):
-    """Base class for GPU drivers.
-
-       This is just a virtual GPU drivers interface.
-       Vendor should implement their specific drivers.
+    """Class for Nvidia GPU drivers.
+       Vendor should implement their specific drivers in this class.
     """
     VENDOR = "nvidia"
 

@@ -22,10 +22,8 @@ from cyborg.accelerator.drivers.qat.intel import sysinfo
 
 
 class IntelQATDriver(QATDriver):
-    """Base class for QAT drivers.
-
-       This is just a virtual QAT drivers interface.
-       Vendor should implement their specific drivers.
+    """Class for Intel QAT drivers.
+       Vendor should implement their specific drivers in this class.
     """
     VENDOR = "intel"
 
