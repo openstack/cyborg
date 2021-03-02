@@ -244,9 +244,9 @@ def _generate_attribute_list(nic):
             attr_list.append(driver_attr)
         if k == "traits":
             values = nic.get(k, [])
-            for idx, val in enumerate(values):
+            for index, val in enumerate(values):
                 driver_attr = driver_attribute.DriverAttribute()
-                driver_attr.key = "trait" + str(idx)
+                driver_attr.key = "trait" + str(index)
                 driver_attr.value = val
                 attr_list.append(driver_attr)
 
