@@ -26,10 +26,8 @@ LOG = logging.getLogger(__name__)
 
 
 class InspurFPGADriver(FPGADriver):
-    """Base class for FPGA drivers.
-
-       This is just a virtual FPGA drivers interface.
-       Vendor should implement their specific drivers.
+    """Class for Inspur FPGA drivers.
+       Vendor should implement their specific drivers in this class.
     """
     VENDOR = "inspur"
 

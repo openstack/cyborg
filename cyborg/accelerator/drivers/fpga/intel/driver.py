@@ -44,10 +44,8 @@ def _fpga_program_privileged(cmd_args):
 
 
 class IntelFPGADriver(FPGADriver):
-    """Base class for FPGA drivers.
-
-       This is just a virtual FPGA drivers interface.
-       Vendor should implement their specific drivers.
+    """Class for Intel FPGA drivers.
+       Vendor should implement their specific drivers in this class.
     """
     VENDOR = "intel"
 
