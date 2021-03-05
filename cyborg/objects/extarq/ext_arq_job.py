@@ -57,8 +57,8 @@ class ExtARQJobMixin(object):
 
     def start_bind_job(self, context, valid_fields):
         """Check and start bind jobs for ARQ."""
-        # Check can ARC be bound.
         expected = ARQ_STATES_TRANSFORM_MATRIX[constants.ARQ_BIND_STARTED]
+        # Check whether ARQ can be bound.
         if self.arq.state not in expected:
             raise exception.ARQBadState(
                 state=self.arq.state, uuid=self.arq.uuid, expected=expected)

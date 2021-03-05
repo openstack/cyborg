@@ -84,7 +84,7 @@ class NovaAPI(object):
         """Notify Nova that ARQ bindings are resolved for a given instance.
 
         :param instance_uuid: UUID of the instance whose ARQs are resolved
-        :param arq_bind_statuses: List of (arq_state, arq_bind_status) tuples
+        :param arq_bind_statuses: List of (arq_uuid, arq_bind_status) tuples
         :returns: None
         """
         events = self._get_acc_changed_events(instance_uuid, arq_bind_statuses)
