@@ -195,10 +195,10 @@ def _generate_attach_handle(qat):
 
 def _generate_attribute_list(qat):
     attr_list = []
-    for k, _ in qat.items():
+    for k, v in qat.items():
         if k == "rc":
             driver_attr = driver_attribute.DriverAttribute()
             driver_attr.key = k
-            driver_attr.value = qat.get(k, None)
+            driver_attr.value = v
             attr_list.append(driver_attr)
     return attr_list
