@@ -181,9 +181,9 @@ class ARQsController(base.CyborgController):
         arqs = [extarq.arq for extarq in extarqs]
         # TODO(Sundar): Optimize by doing the filtering in the db layer
         # Apply instance filter before state filter.
-        if bind_state:
-            if bind_state != 'resolved':
-                raise exception.ARQInvalidState(state=bind_state)
+        if bind_state and bind_state != 'resolved':
+            raise exception.ARQBadState(
+                state=bind_state, uuid=None, expected=['resolved'])
         if instance:
             new_arqs = [arq for arq in arqs
                         if arq['instance_uuid'] == instance]

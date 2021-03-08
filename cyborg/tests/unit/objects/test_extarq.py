@@ -104,7 +104,7 @@ class TestExtARQObject(base.DbTestCase):
             obj_extarq.arq.state = state
             mock_get.return_value = obj_extarq
             self.assertRaises(
-                exception.ARQInvalidState, objects.ExtARQ.apply_patch,
+                exception.ARQBadState, objects.ExtARQ.apply_patch,
                 self.context, patch_list, valid_fields)
 
         mock_notify_bind.assert_not_called()

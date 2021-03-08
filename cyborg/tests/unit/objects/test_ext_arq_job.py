@@ -108,7 +108,7 @@ class TestExtARQJobMixin(base.DbTestCase):
             }
 
         self.assertRaises(
-            exception.ARQInvalidState, obj_extarq.start_bind_job,
+            exception.ARQBadState, obj_extarq.start_bind_job,
             self.context, valid_fields)
 
     @mock.patch('cyborg.objects.extarq.ext_arq_job.ExtARQJobMixin._bind_job')
