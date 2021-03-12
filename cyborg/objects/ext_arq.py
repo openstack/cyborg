@@ -137,7 +137,8 @@ class ExtARQ(base.CyborgObject, object_base.VersionedObjectDictCompat,
             msg = ("Failed to change ARQ state from %s to %s, the current "
                    "state is %s" % (old, state, current))
             LOG.error(msg)
-            raise exception.ARQInvalidState(msg)
+            raise exception.ARQBadState(
+                state=current, uuid=self.arq.uuid, expected=list(state))
         return True
 
     def destroy(self, context):

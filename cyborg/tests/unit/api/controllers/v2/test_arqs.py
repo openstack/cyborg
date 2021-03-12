@@ -157,8 +157,8 @@ class TestARQsController(v2_test.APITestV2):
         # TODO(all) Cyborg does not have fake HTTPRequest Object now, so just
         # use assertIn here, improve this case with assertRaises later.
         self.assertIn(
-            "Accelerator Requests cannot be requested with "
-            "state started.", exc.args[0])
+            "Bad state: started for ARQ: None. Expected state(s): "
+            "[\\\'resolved\\\']", exc.args[0])
 
         url = '%s?bind_state=started' % (self.ARQ_URL)
         exc = None
@@ -169,8 +169,8 @@ class TestARQsController(v2_test.APITestV2):
         # TODO(all) Cyborg does not have fake HTTPRequest Object now, so just
         # use assertIn here, improve this case with assertRaises later.
         self.assertIn(
-            "Accelerator Requests cannot be requested with "
-            "state started.", exc.args[0])
+            "Bad state: started for ARQ: None. Expected state(s): "
+            "[\\\'resolved\\\']", exc.args[0])
 
     @mock.patch('cyborg.objects.ExtARQ.list')
     def test_get_all_with_invalid_arq_state(self, mock_extarqs):

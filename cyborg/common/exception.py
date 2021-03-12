@@ -83,14 +83,8 @@ class Forbidden(CyborgException):
     code = HTTPStatus.FORBIDDEN
 
 
-# TODO(Sundar): Eliminate this after ARQBadState is merged.
-class ARQInvalidState(CyborgException):
-    _msg_fmt = _("Accelerator Requests cannot be requested with "
-                 "state %(state)s.")
-
-
 class ARQBadState(CyborgException):
-    _msg_fmt = _('Bad state \"%(state)s\" for ARQ %(uuid)s. '
+    _msg_fmt = _('Bad state: %(state)s for ARQ: %(uuid)s. '
                  'Expected state(s): %(expected)s')
 
 
