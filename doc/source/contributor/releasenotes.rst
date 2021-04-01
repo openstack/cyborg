@@ -53,7 +53,7 @@ need to provide a release note :-)
       :doc:`DriversSupportMatrix </reference/support-matrix>`
 
 * ``critical``
-    * Bugfixes categorized as Critical in storyboard *impacting users*
+    * Bugfixes categorized as Critical in launchpad *impacting users*
 
 * ``fixes``
     * No clear definition of such bugfixes. Hairy long-standing bugs with high
