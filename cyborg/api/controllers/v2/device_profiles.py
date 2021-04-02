@@ -93,8 +93,19 @@ class DeviceProfile(base.APIBase):
             ]
         return api_devprof
 
+    def get_device_profile(self, obj_devprof):
+        api_obj = {}
+        for field in ['name', 'description', 'uuid', 'groups']:
+            api_obj[field] = obj_devprof[field]
+        for field in ['created_at', 'updated_at']:
+            api_obj[field] = str(obj_devprof[field])
+        api_obj['links'] = [
+            link.Link.make_link_dict('device_profiles', api_obj['uuid'])
+            ]
+        return api_obj
 
-class DeviceProfileCollection(base.APIBase):
+
+class DeviceProfileCollection(DeviceProfile):
     """API representation of a collection of device profiles."""
 
     """A list containing device profile objects"""
@@ -107,6 +118,12 @@ class DeviceProfileCollection(base.APIBase):
             DeviceProfile.convert_with_links(obj_devprof)
             for obj_devprof in obj_devprofs]
         return collection
+
+    def get_device_profiles(self, obj_devprofs):
+        api_obj_devprofs = [
+            self.get_device_profile(obj_devprof)
+            for obj_devprof in obj_devprofs]
+        return api_obj_devprofs
 
 
 class DeviceProfilesController(base.CyborgController,
@@ -238,11 +255,12 @@ class DeviceProfilesController(base.CyborgController,
         return ret
 
     @authorize_wsgi.authorize_wsgi("cyborg:device_profile", "get_one")
-    @expose.expose(DeviceProfile, wtypes.text)
+    @expose.expose('json', wtypes.text)
     def get_one(self, uuid):
         """Retrieve a single device profile by uuid."""
         LOG.info('[device_profiles] get_one. uuid=%s', uuid)
-        api_obj_devprofs = self._get_device_profile_list(uuid=uuid)
+        obj_devprofs = self._get_device_profile_list(uuid=uuid)
+        api_obj_devprofs = self.get_device_profiles(obj_devprofs)
         if len(api_obj_devprofs) == 0:
             raise exception.ResourceNotFound(
                 resource='Device profile',
@@ -252,9 +270,11 @@ class DeviceProfilesController(base.CyborgController,
         if count != 1:  # Should never happen because names are unique
             raise exception.ExpectedOneObject(obj='device profile',
                                               count=count)
-        ret = api_obj_devprofs[0]
+        ret = {"device_profile": api_obj_devprofs[0]}
         LOG.info('[device_profiles] get_one returned: %s', ret)
-        return DeviceProfile.convert_with_links(ret)
+        # TODO(Sundar) Replace this with convert_with_links()
+        return wsme.api.Response(ret, status_code=HTTPStatus.OK,
+                                 return_type=wsme.types.DictType)
 
     @authorize_wsgi.authorize_wsgi("cyborg:device_profile", "delete")
     @expose.expose(None, wtypes.text, status_code=HTTPStatus.NO_CONTENT)

@@ -57,7 +57,8 @@ class TestDeviceProfileController(v2_test.APITestV2):
         url = self.DP_URL + '/%s'
         data = self.get_json(url % dp['uuid'], headers=self.headers)
         mock_dp.assert_called_once()
-        self._validate_dp(dp, data)
+        out_dp = data['device_profile']
+        self._validate_dp(dp, out_dp)
 
     @mock.patch('cyborg.objects.DeviceProfile.list')
     def test_get_all(self, mock_dp):
