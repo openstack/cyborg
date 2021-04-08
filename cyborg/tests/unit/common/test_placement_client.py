@@ -1,0 +1,41 @@
+# Copyright 2022 Inspur, Inc.
+# All Rights Reserved.
+#
+#    Licensed under the Apache License, Version 2.0 (the "License"); you may
+#    not use this file except in compliance with the License. You may obtain
+#    a copy of the License at
+#
+#         http://www.apache.org/licenses/LICENSE-2.0
+#
+#    Unless required by applicable law or agreed to in writing, software
+#    distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+#    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+#    License for the specific language governing permissions and limitations
+#    under the License.
+import fixtures
+from unittest import mock
+
+from cyborg.common import placement_client
+from cyborg.tests import base
+
+
+class PlacementAPITest(base.TestCase):
+
+    def setUp(self):
+        super(PlacementAPITest, self).setUp()
+        self.instance_uuid = '00000000-0000-0000-0000-000000000001'
+
+        self.mock_sdk = self.useFixture(fixtures.MockPatch(
+            'cyborg.common.utils.get_sdk_adapter')).mock.return_value
+        self.mock_log_info = self.useFixture(fixtures.MockPatch(
+            'cyborg.common.placement_client.LOG.info')).mock
+        self.mock_log_debug = self.useFixture(fixtures.MockPatch(
+            'cyborg.common.placement_client.LOG.debug')).mock
+
+    def test_get(self):
+        self.mock_sdk.get.return_value = mock.Mock(status_code=200)
+
+        placement = placement_client.PlacementClient()
+        placement.get(mock.Mock())
+        msg = 'Successfully get resources from placement: %s'
+        self.mock_log_debug.assert_called_once_with(msg, mock.ANY)
