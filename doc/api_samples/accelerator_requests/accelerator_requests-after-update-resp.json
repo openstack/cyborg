@@ -14,7 +14,7 @@
    "updated_at":"2019-10-25T12:49:49+00:00",
    "state":"Bound",
    "device_rp_uuid":"03631f82-20a9-3f67-a29d-dc1abe4042bf",
-   "device_profile_name":"chenke-dp1",
+   "device_profile_name":"device-profile-name1",
    "attach_handle_info":{
       "device":"00",
       "bus":"0c",
