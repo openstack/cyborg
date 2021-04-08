@@ -31,16 +31,15 @@ New Feature Planning
 ~~~~~~~~~~~~~~~~~~~~
 
 To propose or plan new features, we add a new story in the
-`Cyborg Storyboard
-<https://storyboard.openstack.org/#!/project/openstack/cyborg>`_
+`Cyborg Launchpad
+<https://blueprints.launchpad.net/openstack-cyborg>`_
 and/or propose a specification in the
 `cyborg-specs <https://opendev.org/openstack/cyborg-specs>`_ repository.
 
 Task Tracking
 ~~~~~~~~~~~~~
 
-We track our tasks in the `Cyborg Storyboard
-<https://storyboard.openstack.org/#!/project/openstack/cyborg>`_.
+We track our tasks in the `Launchpad <https://bugs.launchpad.net/openstack-cyborg>`_.
 
 If you're looking for some smaller, easier work item to pick up and get started
 on, ask in the IRC meeting.
@@ -48,10 +47,10 @@ on, ask in the IRC meeting.
 Reporting a Bug
 ~~~~~~~~~~~~~~~
 
-You found an issue and want to make sure we are aware of it? You can do so
-by adding an entry in the `Cyborg Storyboard
-<https://storyboard.openstack.org/#!/project/openstack/cyborg>`_ or raising
-it in the IRC meeting.
+You found an issue and want to make sure we are aware of it? You can do so on
+`Launchpad <https://bugs.launchpad.net/openstack-cyborg/+filebug>`__.
+More info about Launchpad usage can be found on `OpenStack docs page
+<https://docs.openstack.org/contributors/common/task-tracking.html#launchpad>`_.
 
 Getting Your Patch Merged
 ~~~~~~~~~~~~~~~~~~~~~~~~~

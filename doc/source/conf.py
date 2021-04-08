@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -11,6 +10,12 @@
 # implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+#
+#  cyborg documentation build configuration file
+#
+# Refer to the Sphinx documentation for advice on configuring this file:
+#
+#   http://www.sphinx-doc.org/en/stable/config.html
 
 import os
 import sys
@@ -46,10 +51,12 @@ copyright = '2013, OpenStack Foundation'
 
 # openstackdocstheme options
 openstackdocs_repo_name = 'openstack/cyborg'
+openstackdocs_bug_project = 'cyborg'
+openstackdocs_bug_tag = 'doc'
 openstackdocs_pdf_link = True
-openstackdocs_use_storyboard = True
 
-config_generator_config_file = '../../tools/config/cyborg-config-generator.conf'
+config_generator_config_file = \
+    '../../tools/config/cyborg-config-generator.conf'
 sample_config_basename = '_static/cyborg'
 
 policy_generator_config_file = [
@@ -76,7 +83,7 @@ pygments_style = 'native'
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-#html_static_path = ['_static']
+# html_static_path = ['_static']
 
 # Output file base name for HTML help builder.
 htmlhelp_basename = 'cyborgdoc'
@@ -119,4 +126,4 @@ latex_documents = [
 ]
 
 # Example configuration for intersphinx: refer to the Python standard library.
-#intersphinx_mapping = {'https://docs.python.org/': None}
+# intersphinx_mapping = {'https://docs.python.org/': None}
