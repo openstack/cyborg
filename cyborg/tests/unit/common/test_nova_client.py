@@ -68,7 +68,7 @@ class NovaAPITest(base.TestCase):
                'yet associated with a host.')
         self.mock_log_info.assert_called_once_with(msg, self.instance_uuid)
 
-    def test_send_events_422_exception(self):
+    def test_send_events_with_event_code_422_exception(self):
         # If Nova returns HTTP 207 with event code 422 for some events,
         # but not all, raise an exception. This is not expected to
         # happen with current code.
@@ -83,11 +83,26 @@ class NovaAPITest(base.TestCase):
         self.assertRaises(exception.InvalidAPIResponse,
                           nova._send_events, self.events)
 
-    def test_send_events_non_422_exception(self):
-        # If Nova returns HTTP 207 with event code other than 422,
+    def test_send_events_with_event_code_400_exception(self):
+        # If Nova returns HTTP 207 with event code 400 for some events,
         # raise an exception.
         resp_events = copy.deepcopy(self.events)
         resp_events[0].update({'status': 'failed', 'code': 400})
+        nova_resp = {'events': resp_events}
+        mock_ret = mock.Mock(status_code=207)
+        mock_ret.json.return_value = nova_resp
+        self.mock_sdk.post.return_value = mock_ret
+
+        nova = nova_client.NovaAPI()
+        self.assertRaises(exception.InvalidAPIResponse,
+                          nova._send_events, self.events)
+
+    def test_send_events_with_all_event_code_400_exception(self):
+        # If Nova returns HTTP 207 with event code 400 for all events,
+        # raise an exception.
+        resp_events = copy.deepcopy(self.events)
+        for ev in resp_events:
+            ev.update({'status': 'failed', 'code': 400})
         nova_resp = {'events': resp_events}
         mock_ret = mock.Mock(status_code=207)
         mock_ret.json.return_value = nova_resp
