@@ -30,6 +30,10 @@ are not met.
      - ``openstack server reboot --soft``
    * - Pause/Unpause
      - ``openstack server pause``, ``openstack server unpause``
+   * - Backup
+     - ``openstack server backup create``
+   * - Take a snapshot
+     - ``openstack server image create``
    * - Lock/Unlock
      - ``openstack server lock``, ``openstack server unlock``
    * - Rebuild/Evacuate
