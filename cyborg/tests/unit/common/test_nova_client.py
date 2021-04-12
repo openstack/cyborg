@@ -22,7 +22,7 @@ from cyborg.tests import base
 
 
 class NovaAPITest(base.TestCase):
-    wsgi_api_version = '2.81'  # TODO(Sundar): Make this 2.82
+    wsgi_api_version = '2.82'
 
     def setUp(self):
         super(NovaAPITest, self).setUp()
