@@ -238,6 +238,6 @@ class ExtARQJobMixin(object):
                 job = extarq.start_bind_job(context, valid_fields)
                 arq_binds[extarq] = job
             else:
-                extarq.unbind(context, extarq)
+                extarq.unbind(context)
         if arq_binds:
             cls.master(context, arq_binds)

@@ -347,3 +347,25 @@ class TestExtARQJobMixin(base.DbTestCase):
         mock_notify.assert_called_once_with(
             '5922a70f-1e06-4cfd-88dd-a332120d7144',
             [('a097fefa-da62-4630-8e8b-424c0e3426dc', 'completed')])
+
+    @mock.patch('cyborg.objects.ExtARQ.unbind')
+    @mock.patch('cyborg.objects.ext_arq.ExtARQJobMixin.get_suitable_ext_arq')
+    def test_apply_patch_with_op_remove(self, mock_get, mock_unbind):
+        patch_list = {}
+        host_binding = {'path': '/hostname', 'op': 'remove',
+                        'value': 'myhost'}
+        inst_binding = {'path': '/instance_uuid', 'op': 'remove',
+                        'value': '5922a70f-1e06-4cfd-88dd-a332120d7144'}
+        device_rp_uuid = 'fb16c293-5739-4c84-8590-926f9ab16669'
+        arp_uuid = 'a097fefa-da62-4630-8e8b-424c0e3426dc'
+        patch_list[arp_uuid] = [host_binding, inst_binding, device_rp_uuid]
+        mock_get.return_value = self.fake_obj_extarqs[0]
+        valid_fields = {
+            arp_uuid: {'hostname': 'myhost',
+                       'device_rp_uuid': device_rp_uuid,
+                       'instance_uuid': '5922a70f-1e06-4cfd-88dd-a332120d7144'}
+        }
+        objects.extarq.ext_arq_job.ExtARQJobMixin.apply_patch(self.context,
+                                                              patch_list,
+                                                              valid_fields)
+        mock_unbind.assert_called_with(self.context)
