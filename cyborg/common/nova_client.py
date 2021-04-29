@@ -61,7 +61,7 @@ class NovaAPI(object):
                 else:
                     msg = _('Unexpected event code %(code)s '
                             'for instance %(inst)s')
-                    msg = msg % {'code': event_codes[0],
+                    msg = msg % {'code': event_codes.pop(),
                                  'inst': events[0]["server_uuid"]}
                     raise exception.InvalidAPIResponse(
                         service='Nova', api=url[1:], msg=msg)
