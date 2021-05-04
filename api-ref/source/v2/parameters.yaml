@@ -32,10 +32,39 @@ device_uuid:
   in: path
   required: true
   type: string
+
 # variables in body
+created:
+  description: |
+    The date and time when the resource was created. The date and time
+    stamp format is `ISO 8601 <https://en.wikipedia.org/wiki/ISO_8601>`_
+
+    ::
+
+      CCYY-MM-DDThh:mm:ss±hh:mm
+
+    For example, ``2015-08-27T09:49:58-05:00``. The ``±hh:mm``
+    value, if included, is the time zone as an offset from UTC.  In
+    the previous example, the offset value is ``-05:00``.
+  in: body
+  required: true
+  type: string
 device_prof_groups_req:
   description: |
     This is a list of dictionaries to describe requested accelerator resource
+    by users, where users use keys to describe the resource_classes or traits
+    and values to indicate its quantity or property. This is intentionally
+    similar to extra_specs in nova flavor, and uses the same keywords for
+    resources and traits. The key-value pair can either be a resource/trait
+    or a Cyborg property. Cyborg property is of the form
+    "accel:<key>": "<value>". The valid key-value pairs can be found
+    `below <https://opendev.org/openstack/cyborg-specs/src/branch/master/specs/train/approved/device-profiles.rst#valid-accel-keys>`_.
+  in: body
+  required: true
+  type: a list of dictionaries
+device_prof_groups_resp:
+  description: |
+    This is a list of dictionaries to describe returned accelerator resource
     by users, where users use keys to describe the resource_classes or traits
     and values to indicate its quantity or property. This is intentionally
     similar to extra_specs in nova flavor, and uses the same keywords for
@@ -52,6 +81,31 @@ device_prof_name_req:
   in: body
   required: true
   type: string
+device_prof_name_resp:
+  description: |
+    The display name of a device profile.
+  in: body
+  required: true
+  type: string
+device_profile:
+  description: |
+    A list of ``device profile`` objects.
+  in: body
+  required: true
+  type: array
+device_profile_description:
+  description: |
+    A free form description of the device profile. Limited to 255 characters
+    in length.
+  type: string
+  in: body
+  required: false
+device_profiles:
+  description: |
+    A list of ``device profiles`` objects.
+  in: body
+  required: true
+  type: array
 device_rp_uuid_bind_unbind_req:
   description: |
     UUID of the target accelerator (resource provider) for bind or unbind of
@@ -75,6 +129,27 @@ instance_project_id_bind_unbind_req:
 instance_uuid_bind_unbind_req:
   description: |
     UUID of the target instance for bind or unbind of one accelerator request.
+  in: body
+  required: true
+  type: string
+links:
+  description: |
+    Links to the resources in question.
+  in: body
+  required: true
+  type: array
+updated:
+  description: |
+    The date and time when the resource was updated. The date and time
+    stamp format is `ISO 8601 <https://en.wikipedia.org/wiki/ISO_8601>`_
+
+    ::
+
+      CCYY-MM-DDThh:mm:ss±hh:mm
+
+    For example, ``2015-08-27T09:49:58-05:00``. The ``±hh:mm``
+    value, if included, is the time zone as an offset from UTC.  In
+    the previous example, the offset value is ``-05:00``.
   in: body
   required: true
   type: string
