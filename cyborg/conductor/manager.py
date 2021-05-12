@@ -149,7 +149,14 @@ class ConductorManager(object):
         # device is added
         for a in added:
             new_driver_dev_obj = new_driver_device_list[new_cpid_list.index(a)]
-            new_driver_dev_obj.create(context, host)
+            try:
+                new_driver_dev_obj.create(context, host)
+            except Exception as exc:
+                LOG.exception("Failed to add device %(device)s. "
+                              "Reason: %(reason)s",
+                              {'device': new_driver_dev_obj,
+                               'reason': exc})
+                new_driver_dev_obj.destroy(context, host)
             # TODO(All): If report data to Placement raise exception, we
             # should revert driver device created in Cyborg and rp created
             # in Placement to reduce the risk of data inconsistency here
