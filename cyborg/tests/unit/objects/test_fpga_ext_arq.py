@@ -335,7 +335,7 @@ class TestFPGAExtARQObject(base.DbTestCase):
             constants.FPGA_FUNCTION_ID, vendor, function_id))]
         mock_add_traits.assert_called_once_with(rp_uuid, trait_names)
         mock_delete_traits.assert_called_once_with(
-            rp_uuid, [constants.FPGA_FUNCTION_ID])
+            self.context, rp_uuid, [constants.FPGA_FUNCTION_ID])
 
     @mock.patch('cyborg.agent.rpcapi.AgentAPI.fpga_program')
     @mock.patch('cyborg.objects.Deployable.get_cpid_list')

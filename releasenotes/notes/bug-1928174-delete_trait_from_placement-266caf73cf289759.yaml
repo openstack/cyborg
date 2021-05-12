@@ -1,0 +1,8 @@
+---
+features:
+  - |
+    `Bug 1928174`_ is cleaned the old device trait on reporting data. the
+    trait will be removing succesfully if no rp uses, otherwise placement will
+    raise 409 exception.
+
+    .. _Bug 1928174: https://bugs.launchpad.net/openstack-cyborg/+bug/1928174

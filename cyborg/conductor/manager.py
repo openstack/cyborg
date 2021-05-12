@@ -294,7 +294,7 @@ class ConductorManager(object):
         for d in deleted:
             old_driver_attr_obj = old_driver_attr_list[old_key_list.index(d)]
             self.placement_client.delete_trait_by_name(
-                rp_uuid, old_driver_attr_obj.value)
+                context, rp_uuid, old_driver_attr_obj.value)
             old_driver_attr_obj.delete_by_key(context, dep_id, d)
         # key is added.
         added = set(new_key_list) - same
@@ -315,7 +315,7 @@ class ConductorManager(object):
                 # Update traits here.
                 if new_driver_attr_obj.key.startswith("trait"):
                     self.placement_client.delete_trait_by_name(
-                        rp_uuid, old_driver_attr_obj.value)
+                        context, rp_uuid, old_driver_attr_obj.value)
                     self.placement_client.add_traits_to_rp(
                         rp_uuid, [new_driver_attr_obj.value])
                 # Update resource classes here.

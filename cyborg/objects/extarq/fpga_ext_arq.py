@@ -179,7 +179,8 @@ class FPGAExtARQ(ExtARQ):
         placement = placement_client.PlacementClient()
         try:
             placement.delete_traits_with_prefixes(
-                self.arq.device_rp_uuid, [constants.FPGA_FUNCTION_ID])
+                context, self.arq.device_rp_uuid,
+                [constants.FPGA_FUNCTION_ID])
         except Exception as e:
             LOG.error("Failed to delete traits(%s) from resources provider %s."
                       "Reason: %s", constants.FPGA_FUNCTION_ID,
