@@ -313,6 +313,15 @@ class ConductorManager(object):
                         rp_uuid, old_driver_attr_obj.value)
                     self.placement_client.add_traits_to_rp(
                         rp_uuid, [new_driver_attr_obj.value])
+                # Update resource classes here.
+                if new_driver_attr_obj.key.startswith("rc"):
+                    self.placement_client.ensure_resource_classes(
+                        context, [new_driver_attr_obj.value])
+                    inv_data = _gen_resource_inventory(
+                        new_driver_attr_obj.value, dep_obj.num_accelerators)
+                    self.placement_client.update_inventory(rp_uuid, inv_data)
+                    self.placement_client.delete_rc_by_name(
+                        context, old_driver_attr_obj.value)
 
     @classmethod
     def drv_ah_make_diff(cls, context, dep_id, cpid_id, old_driver_ah_list,

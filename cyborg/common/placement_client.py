@@ -310,3 +310,21 @@ class PlacementClient(object):
         if resp.status_code == 409:
             raise exception.ResourceProviderInUse()
         raise exception.ResourceProviderDeletionFailed(uuid=rp_uuid)
+
+    def delete_rc_by_name(self, context, name):
+        """Delete resource class from placement by name."""
+        resp = self.delete(
+            "/resouce_classes/%s" % name, global_request_id=context.global_id)
+        if not resp:
+            msg = ("Failed to delete resource class record with placement "
+                   "API for resource class %(rc_name)s. Got "
+                   "%(status_code)d: %(err_text)s.")
+            args = {
+                'rc_name': name,
+                'status_code': resp.status_code,
+                'err_text': resp.text,
+            }
+            LOG.error(msg, args)
+        elif resp.status_code == 204:
+            LOG.info("Successfully delete resource class %(rc_name).", {
+                     "rc_name", name})
