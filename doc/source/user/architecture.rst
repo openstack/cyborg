@@ -21,5 +21,6 @@ implementation in play is the Cyborg generic Driver. It will also handle the
 communication with the Nova placement service. Cyborg-Agent will also write to
 a local cache for local accelerator events.
 
-**cyborg-generic-driver** - cyborg-generic-driver is a general multipurpose
-driver with the common set of capabilities that any accelerators will have.
+**Vendor drivers** - Cyborg can be integrated with drivers for various
+accelerator device types, such as FPGA, GPU, NIC, and so forth. You are
+welcome to extend your own driver for a new type of accelerator device.
