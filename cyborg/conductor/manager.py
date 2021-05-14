@@ -274,7 +274,7 @@ class ConductorManager(object):
 
     def drv_attr_make_diff(self, context, dep_id, old_driver_attr_list,
                            new_driver_attr_list):
-        """Diff new dirver-side Attribute Object lists with the old one."""
+        """Diff new driver-side Attribute Object lists with the old one."""
         LOG.info("Start differing attributes.")
         dep_obj = Deployable.get_by_id(context, dep_id)
         driver_dep = DriverDeployable.get_by_name(context, dep_obj.name)
@@ -284,7 +284,6 @@ class ConductorManager(object):
         old_key_list = [driver_attr_obj.key for driver_attr_obj in
                         old_driver_attr_list]
         same = set(new_key_list) & set(old_key_list)
-        # key is same, diff the value.
         # key is deleted.
         deleted = set(old_key_list) - same
         for d in deleted:
@@ -299,6 +298,7 @@ class ConductorManager(object):
             new_driver_attr_obj.create(context, dep_id)
             self.placement_client.add_traits_to_rp(
                 rp_uuid, [new_driver_attr_obj.value])
+        # key is same, diff the value.
         for s in same:
             # value is not same, update
             new_driver_attr_obj = new_driver_attr_list[new_key_list.index(s)]
