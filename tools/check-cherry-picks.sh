@@ -4,6 +4,11 @@
 # to verify that they're all on either master or stable/ branches
 #
 
+# Allow this script to be disabled by a simple env var
+if [ ${DISABLE_CHERRY_PICK_CHECK:-0} -eq 1 ]; then
+    exit 0
+fi
+
 commit_hash=""
 
 # Check if the patch is a merge patch by counting the number of parents.
@@ -32,7 +37,7 @@ if [ $checked -eq 0 ]; then
         echo "Checked $checked cherry-pick hashes: OK"
         exit 0
     else
-        if ! git show --format='%B' --quiet | grep -qi 'stable.*only'; then
+        if ! git show --format='%B' --quiet $commit_hash | grep -qi 'stable.*only'; then
             echo 'Stable branch requires either cherry-pick -x headers or [stable-only] tag!'
             exit 1
         fi
