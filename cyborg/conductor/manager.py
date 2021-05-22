@@ -157,11 +157,10 @@ class ConductorManager(object):
                               {'device': new_driver_dev_obj,
                                'reason': exc})
                 new_driver_dev_obj.destroy(context, host)
-            # TODO(All): If report data to Placement raise exception, we
-            # should revert driver device created in Cyborg and rp created
-            # in Placement to reduce the risk of data inconsistency here
-            # between Cyborg and Placement, we will consider to fix in V
-            # release.
+            # TODO(All): If report device data to Placement raise exception,
+            # we should revert driver device created in Cyborg and resources
+            # created in Placement to reduce the risk of data inconsistency
+            # here between Cyborg and Placement.
             cleanup_inconsistency_resources = False
             for driver_dep_obj in new_driver_dev_obj.deployable_list:
                 try:
@@ -245,11 +244,10 @@ class ConductorManager(object):
                           'reason': exc})
                 new_driver_dep_obj.destroy(context, device_id)
                 rp_uuid = self.get_rp_uuid_from_obj(new_driver_dep_obj)
-                # TODO(All): If report data to Placement raise exception, we
-                # should revert driver deployable created in Cyborg and
-                # rp created in Placement to reduce the risk of data
-                # inconsistency here between Cyborg and Placement,
-                # we will consider to fix in V release.
+                # TODO(All): If report deployable data to Placement raise
+                # exception, we should revert driver deployable created in
+                # Cyborg and resources created in Placement to reduce the risk
+                # of data inconsistency here between Cyborg and Placement.
                 self._delete_provider_and_sub_providers(context, rp_uuid)
         for s in same:
             # get the driver_dep_obj, diff the driver_dep layer
@@ -324,7 +322,7 @@ class ConductorManager(object):
     @classmethod
     def drv_ah_make_diff(cls, context, dep_id, cpid_id, old_driver_ah_list,
                          new_driver_ah_list):
-        """Diff new dirver-side AttachHandle Object lists with the old one."""
+        """Diff new driver-side AttachHandle Object lists with the old one."""
         LOG.info("Start differing attach_handles.")
         new_info_list = [driver_ah_obj.attach_info for driver_ah_obj in
                          new_driver_ah_list]
