@@ -33,7 +33,6 @@ IPNetworkField = object_fields.IPNetworkField
 UnspecifiedDefault = object_fields.UnspecifiedDefault
 ListOfDictOfNullableStringsField = (
     object_fields.ListOfDictOfNullableStringsField)
-EnumField = object_fields.EnumField
 
 
 class ARQState(object_fields.Enum):
