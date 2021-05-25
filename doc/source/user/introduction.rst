@@ -31,7 +31,8 @@ Definition Breakdown
 --------------------
 
 **General Management Framework:**
-* Resource Discovery
+
+* Acceleration Resource Discovery
 * Life Cycle Management
 
 
