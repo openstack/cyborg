@@ -769,10 +769,11 @@ class Connection(api.Connection):
         """Return attributes that matches the filters
         """
         query_prefix = model_query(context, models.Attribute)
+        exact_match_filter_names = ['deployable_id', 'key']
 
         # Filter the query
         query_prefix = self._exact_filter(models.Attribute, query_prefix,
-                                          filters)
+                                          filters, exact_match_filter_names)
         if query_prefix is None:
             return []
 
