@@ -28,6 +28,19 @@ Normal response codes: 200
 
 Error response codes: unauthorized(401), forbidden(403)
 
+Response
+========
+.. rest_parameters:: parameters.yaml
+
+  - device_profiles: device_profiles
+  - name: device_prof_name_resp
+  - uuid: device_profile_uuid
+  - description: device_profile_description
+  - groups: device_prof_groups_resp
+  - created_at: created
+  - updated_at: updated
+  - links: links
+
 **Example response: list all device profiles**
 
 .. literalinclude:: ../../../doc/api_samples/device_profiles/device_profiles-list-resp.json
@@ -49,6 +62,19 @@ Request
 .. rest_parameters:: parameters.yaml
 
   - device_profile_uuid: device_profile_uuid
+
+Response
+========
+.. rest_parameters:: parameters.yaml
+
+  - device_profile: device_profile
+  - name: device_prof_name_resp
+  - uuid: device_profile_uuid
+  - description: device_profile_description
+  - groups: device_prof_groups_resp
+  - created_at: created
+  - updated_at: updated
+  - links: links
 
 **Example response: get details of a specific device profile**
 
@@ -73,6 +99,18 @@ Request
 
   - name: device_prof_name_req
   - groups: device_prof_groups_req
+
+Response
+========
+.. rest_parameters:: parameters.yaml
+
+  - name: device_prof_name_resp
+  - uuid: device_profile_uuid
+  - description: device_profile_description
+  - groups: device_prof_groups_resp
+  - created_at: created
+  - updated_at: updated
+  - links: links
 
 **Example post curl with resource/trait**
 
