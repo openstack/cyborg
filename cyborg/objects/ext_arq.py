@@ -152,14 +152,25 @@ class ExtARQ(base.CyborgObject, object_base.VersionedObjectDictCompat,
 
         This is not idempotent, i.e., if the first call to delete an
         ARQ has succeeded, second and later calls to delete the same ARQ
-        will get errored out.
+        will get errored out, but it will raise the exception only after
+        all input arq being operated.
         """
+        unexisted = []
         for uuid in arq_uuid_list:
-            obj_extarq = objects.ExtARQ.get(context, uuid)
-            # TODO() Defer deletion to conductor
-            if obj_extarq.arq.state != constants.ARQ_INITIAL:
-                obj_extarq.unbind(context)
-            obj_extarq.destroy(context)
+            try:
+                obj_extarq = objects.ExtARQ.get(context, uuid)
+                # TODO() Defer deletion to conductor
+                if obj_extarq.arq.state != constants.ARQ_INITIAL:
+                    obj_extarq.unbind(context)
+                obj_extarq.destroy(context)
+            except exception.ResourceNotFound:
+                unexisted.append(uuid)
+                continue
+        if unexisted:
+            LOG.warning('There are unexisted arqs: %s', unexisted)
+            raise exception.ResourceNotFound(
+                resource='ARQ',
+                msg='with uuids %s' % unexisted)
 
     @classmethod
     def delete_by_instance(cls, context, instance_uuid):
