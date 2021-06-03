@@ -29,6 +29,7 @@ Installation
    install/install-from-pip
    install/install-from-source
    admin/config-wsgi
+   admin/index
 
 Configuration Reference
 ~~~~~~~~~~~~~~~~~~~~~~~
@@ -38,6 +39,14 @@ Configuration Reference
 
    configuration/index
    reference/support-matrix
+
+Maintenance
+~~~~~~~~~~~
+
+Once you are running cyborg, the following information is extremely useful.
+
+* :doc:`Admin Guide </admin/index>`: A collection of guides for administrating
+  cyborg.
 
 For End Users
 -------------
