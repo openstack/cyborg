@@ -250,8 +250,8 @@ class ExtARQ(base.CyborgObject, object_base.VersionedObjectDictCompat,
                 db_extarq['attach_handle_info'] = db_ah['attach_info']
             else:
                 raise exception.ResourceNotFound(
-                    resource='attach handle',
-                    msg='')
+                    resource='Attach Handle',
+                    msg='with uuid=%s' % db_extarq['attach_handle_id'])
 
         if db_extarq['deployable_id']:
             dep = objects.Deployable.get_by_id(db_extarq['deployable_id'])
