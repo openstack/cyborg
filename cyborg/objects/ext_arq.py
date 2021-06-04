@@ -131,7 +131,8 @@ class ExtARQ(base.CyborgObject, object_base.VersionedObjectDictCompat,
         ea = ExtARQ.get(context, self.arq.uuid, lock=True)
         if not ea:
             raise exception.ResourceNotFound(
-                "Can not find ExtARQ(%s)" % self.arq.uuid)
+                resources='ExtARQ',
+                msg="Can not find ExtARQ(%s)" % self.arq.uuid)
         current = ea.arq.state
         if state != current:
             msg = ("Failed to change ARQ state from %s to %s, the current "
