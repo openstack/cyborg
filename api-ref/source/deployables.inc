@@ -20,6 +20,31 @@ Normal response codes: 200
 
 Error response codes: unauthorized(401), forbidden(403)
 
+Request
+=======
+.. rest_parameters:: parameters.yaml
+
+   - filters: filters
+
+Response
+========
+.. rest_parameters:: parameters.yaml
+
+  - deployables: deployables
+  - uuid: deployable_uuid_resp
+  - parent_id: deployable_parent_id
+  - root_id: deployable_root_id
+  - name: deployable_name
+  - num_accelerators: deployable_num_accelerators
+  - device_id: deployable_device_id
+  - attributes_list: deployable_attributes_list
+  - rp_uuid: deployable_rp_uuid
+  - driver_name: deployable_driver_name
+  - bitstream_id: deployable_bitstream_id
+  - created_at: created
+  - updated_at: updated
+  - links: links
+
 **Example response: list all deployables**
 
 .. literalinclude:: ../../doc/api_samples/deployables/deployables-list-resp.json
@@ -41,6 +66,24 @@ Request
 .. rest_parameters:: parameters.yaml
 
   - deployable_uuid: deployable_uuid
+
+Response
+========
+.. rest_parameters:: parameters.yaml
+
+  - uuid: deployable_uuid_resp
+  - parent_id: deployable_parent_id
+  - root_id: deployable_root_id
+  - name: deployable_name
+  - num_accelerators: deployable_num_accelerators
+  - device_id: deployable_device_id
+  - attributes_list: deployable_attributes_list
+  - rp_uuid: deployable_rp_uuid
+  - driver_name: deployable_driver_name
+  - bitstream_id: deployable_bitstream_id
+  - created_at: created
+  - updated_at: updated
+  - links: links
 
 **Example response: show details of a specific deployable**
 

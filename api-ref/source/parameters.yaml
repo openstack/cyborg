@@ -57,6 +57,7 @@ hostname:
   in: query
   required: false
   type: string
+
 # variables in body
 created:
   description: |
@@ -73,6 +74,75 @@ created:
   in: body
   required: true
   type: string
+deployable_attributes_list:
+  description: |
+    A list of dictionaries (in json string format) representing attributes of
+    the deployable.
+  in: body
+  required: true
+  type: string
+deployable_bitstream_id:
+  description: |
+    The UUID of the bitstream corresponding to the deployable.
+  in: body
+  required: true
+  type: string
+deployable_device_id:
+  description: |
+    ID of device associated with the deployable.
+  in: body
+  required: true
+  type: integer
+deployable_driver_name:
+  description: |
+    Name of the driver reported.
+  in: body
+  required: true
+  type: string
+deployable_name:
+  description: |
+    Name of the deployable.
+  in: body
+  required: true
+  type: string
+deployable_num_accelerators:
+  description: |
+    Number of accelerators spawned by this deployable.
+  in: body
+  requied: true
+  type: integer
+deployable_parent_id:
+  description: |
+    The parent_id refers to the id of the deployable's parent node.
+  in: body
+  required: true
+  type: string
+deployable_root_id:
+  description: |
+    The root_id refers to the id of the deployable's root to
+    for nested tree.
+  in: body
+  required: true
+  type: string
+deployable_rp_uuid:
+  description: |
+    UUID of the resource provider corresponding to this deployable.
+  in: body
+  required: true
+  type: string
+deployable_uuid_resp:
+  description: |
+    The UUID of the deployable.
+  in: body
+  required: true
+  type: string
+deployables:
+  description: |
+    This is a list of dictionaries, with each dictionary representing
+    a deployable object.
+  in: body
+  required: true
+  type: array
 device_model_resp:
   description: |
     The model of the device.
