@@ -14,7 +14,7 @@ with {{cookiecutter.service}}.
 Communication
 ~~~~~~~~~~~~~
 
-We use the #openstack-cyborg IRC channel.
+We use the #openstack-cyborg channel on the OFTC IRC network.
 
 The weekly meetings happen in this channel. You can find the meeting times,
 previous meeting logs and proposed meeting agendas at
