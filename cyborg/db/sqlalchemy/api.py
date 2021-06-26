@@ -254,7 +254,7 @@ class Connection(api.Connection):
             query = model_query(context, models.AttachHandle)
             query = add_identity_filter(query, uuid)
             try:
-                ref = query.with_lockmode('update').one()
+                ref = query.with_for_update().one()
             except NoResultFound:
                 raise exception.ResourceNotFound(
                     resource='AttachHandle',
@@ -272,7 +272,7 @@ class Connection(api.Connection):
                 filter_by(deployable_id=deployable_id,
                           in_use=False)
             values = {"in_use": True}
-            ref = query.with_lockmode('update').first()
+            ref = query.with_for_update().first()
             if not ref:
                 msg = 'Matching deployable_id {0}'.format(deployable_id)
                 raise exception.ResourceNotFound(
@@ -376,7 +376,7 @@ class Connection(api.Connection):
             query = model_query(context, models.ControlpathID)
             query = add_identity_filter(query, uuid)
             try:
-                ref = query.with_lockmode('update').one()
+                ref = query.with_for_update().one()
             except NoResultFound:
                 raise exception.ResourceNotFound(
                     resource='ControlpathID',
@@ -476,7 +476,7 @@ class Connection(api.Connection):
             query = model_query(context, models.Device)
             query = add_identity_filter(query, uuid)
             try:
-                ref = query.with_lockmode('update').one()
+                ref = query.with_for_update().one()
             except NoResultFound:
                 raise exception.ResourceNotFound(
                     resource='Device',
@@ -588,7 +588,7 @@ class Connection(api.Connection):
             query = model_query(context, models.DeviceProfile)
             query = add_identity_filter(query, uuid)
             try:
-                ref = query.with_lockmode('update').one()
+                ref = query.with_for_update().one()
             except NoResultFound:
                 raise exception.ResourceNotFound(
                     resource='Device Profile',
@@ -669,7 +669,7 @@ class Connection(api.Connection):
             # query = add_identity_filter(query, uuid)
             query = query.filter_by(uuid=uuid)
             try:
-                ref = query.with_lockmode('update').one()
+                ref = query.with_for_update().one()
             except NoResultFound:
                 raise exception.ResourceNotFound(
                     resource='Deployable',
@@ -803,7 +803,7 @@ class Connection(api.Connection):
             query = model_query(context, models.Attribute)
             query = add_identity_filter(query, uuid)
             try:
-                ref = query.with_lockmode('update').one()
+                ref = query.with_for_update().one()
             except NoResultFound:
                 raise exception.ResourceNotFound(
                     resource='Attribute',
@@ -870,7 +870,7 @@ class Connection(api.Connection):
         with _session_for_write():
             query = model_query(context, models.ExtArq)
             query = query_update = query.filter_by(
-                uuid=uuid).with_lockmode('update')
+                uuid=uuid).with_for_update()
             if type(state_scope) is list:
                 query_update = query_update.filter(
                     models.ExtArq.state.in_(state_scope))
@@ -958,7 +958,7 @@ class Connection(api.Connection):
         # Get the listed reservations
         return model_query(context, models.Reservation). \
             filter(models.Reservation.uuid.in_(reservations)). \
-            with_lockmode('update'). \
+            with_for_update(). \
             all()
 
     def quota_reserve(self, context, resources, deltas, expire,
