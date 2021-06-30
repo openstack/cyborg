@@ -15,6 +15,7 @@
 
 """Tests for manipulating DeviceProfile via the DB API"""
 
+import json
 import sys
 
 from oslo_utils import uuidutils
@@ -25,6 +26,28 @@ from cyborg.tests.unit.db import utils
 
 
 class TestDbDeviceProfile(base.DbTestCase):
+
+    def test_create_dp(self):
+        created_dp = utils.create_test_device_profile(self.context)
+        expected_dp = utils.get_test_device_profile()
+        self.assertEqual(json.loads(created_dp.profile_json)['groups'],
+                         json.loads(expected_dp['profile_json'])['groups'])
+
+    def test_create_dp_with_duplicate_name(self):
+        utils.create_test_device_profile(self.context)
+        duplicate_dp = utils.get_test_device_profile()
+        duplicate_dp['id'] = 2
+        duplicate_dp['uuid'] = uuidutils.generate_uuid()
+        self.assertRaises(exception.DuplicateDeviceProfileName,
+                          self.dbapi.device_profile_create,
+                          self.context, duplicate_dp)
+
+    def test_create_dp_with_duplicate_uuid(self):
+        utils.create_test_device_profile(self.context)
+        duplicate_dp = utils.get_test_device_profile()
+        self.assertRaises(exception.DeviceProfileAlreadyExists,
+                          self.dbapi.device_profile_create,
+                          self.context, duplicate_dp)
 
     def test_get_by_uuid(self):
         created_dp = utils.create_test_device_profile(self.context)
