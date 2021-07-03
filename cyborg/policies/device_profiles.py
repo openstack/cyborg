@@ -32,16 +32,28 @@ from cyborg.policies import base
 # we can totally remove these deprecated device_profile policies from code.
 deprecated_get_all = policy.DeprecatedRule(
     name='cyborg:device_profile:get_all',
-    check_str=base.deprecated_default)
+    check_str=base.deprecated_default,
+    deprecated_reason=('request admin_or_owmer rule is too strict for '
+                       'listing device_profile'),
+    deprecated_since=versionutils.deprecated.WALLABY)
 deprecated_get_one = policy.DeprecatedRule(
     name='cyborg:device_profile:get_one',
-    check_str=base.deprecated_default)
+    check_str=base.deprecated_default,
+    deprecated_reason=('request admin_or_owmer rule is too strict for '
+                       'retrieving a device_profile'),
+    deprecated_since=versionutils.deprecated.WALLABY)
 deprecated_create = policy.DeprecatedRule(
     name='cyborg:device_profile:create',
-    check_str=base.deprecated_is_admin)
+    check_str=base.deprecated_is_admin,
+    deprecated_reason=('project_admin_or_owner is too permissive, '
+                       'introduce system_scoped admin for creation'),
+    deprecated_since=versionutils.deprecated.WALLABY)
 deprecated_delete = policy.DeprecatedRule(
     name='cyborg:device_profile:delete',
-    check_str=base.deprecated_default)
+    check_str=base.deprecated_default,
+    deprecated_reason=('project_admin_or_owner is too permissive, '
+                       'introduce system_scoped admin for deletion'),
+    deprecated_since=versionutils.deprecated.WALLABY)
 
 # new device_profile policies
 device_profile_policies = [
@@ -55,10 +67,7 @@ device_profile_policies = [
                 'method': 'GET'
             }],
         scope_types=['system', 'project'],
-        deprecated_rule=deprecated_get_all,
-        deprecated_reason=('request admin_or_owmer rule is too strict for '
-                           'listing device_profile'),
-        deprecated_since=versionutils.deprecated.WALLABY),
+        deprecated_rule=deprecated_get_all),
     policy.DocumentedRuleDefault(
         name='cyborg:device_profile:get_one',
         check_str=base.PROJECT_READER_OR_SYSTEM_READER,
@@ -69,10 +78,7 @@ device_profile_policies = [
                 'method': 'GET'
             }],
         scope_types=['system', 'project'],
-        deprecated_rule=deprecated_get_one,
-        deprecated_reason=('request admin_or_owmer rule is too strict for '
-                           'retrieving a device_profile'),
-        deprecated_since=versionutils.deprecated.WALLABY),
+        deprecated_rule=deprecated_get_one),
     policy.DocumentedRuleDefault(
         name='cyborg:device_profile:create',
         check_str=base.SYSTEM_ADMIN,
@@ -83,10 +89,7 @@ device_profile_policies = [
                 'method': 'POST'
             }],
         scope_types=['system'],
-        deprecated_rule=deprecated_create,
-        deprecated_reason=('project_admin_or_owner is too permissive, '
-                           'introduce system_scoped admin for creation'),
-        deprecated_since=versionutils.deprecated.WALLABY),
+        deprecated_rule=deprecated_create),
     policy.DocumentedRuleDefault(
         name='cyborg:device_profile:delete',
         check_str=base.SYSTEM_ADMIN,
@@ -100,10 +103,7 @@ device_profile_policies = [
                 'method': 'DELETE'},
             ],
         scope_types=['system'],
-        deprecated_rule=deprecated_delete,
-        deprecated_reason=('project_admin_or_owner is too permissive, '
-                           'introduce system_scoped admin for deletion'),
-        deprecated_since=versionutils.deprecated.WALLABY),
+        deprecated_rule=deprecated_delete),
 ]
 
 
