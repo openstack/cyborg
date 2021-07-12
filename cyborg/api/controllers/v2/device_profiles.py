@@ -185,7 +185,7 @@ class DeviceProfilesController(base.CyborgController,
                 # check resource and trait prefix format
                 if not re.match(GROUP_KEYS, key):
                     raise exception.InvalidParameterValue(
-                        err="Device profile group keys must be of "
+                        err="Device profile group keys must be of"
                             " the form %s" % GROUP_KEYS)
                 # check trait name and it's value
                 if key.startswith("trait:"):
@@ -198,7 +198,7 @@ class DeviceProfilesController(base.CyborgController,
                     if value not in TRAIT_VALUES:
                         raise exception.InvalidParameterValue(
                             err="Unsupported trait value %s, the value must"
-                                " be one among %s" % TRAIT_VALUES)
+                                " be one among %s" % (value, TRAIT_VALUES))
                     # strip " " and update old group key.
                     if inner_origin_trait != inner_trait:
                         del group[key]
@@ -216,7 +216,7 @@ class DeviceProfilesController(base.CyborgController,
                         int(value)
                     except ValueError:
                         raise exception.InvalidParameterValue(
-                            err="Resources nummber %s is invalid" % value)
+                            err="Resources number %s is invalid" % value)
                     # strip " " and update old group key.
                     if inner_origin_rc != inner_rc:
                         del group[key]

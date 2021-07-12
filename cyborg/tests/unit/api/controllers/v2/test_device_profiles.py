@@ -83,38 +83,116 @@ class TestDeviceProfileController(v2_test.APITestV2):
         self.assertEqual(HTTPStatus.CREATED, response.status_int)
         self._validate_dp(dp[0], out_dp)
 
-    def test_create_with_unsupported_trait(self):
-        test_unsupport_dp = self.fake_dps[0]
+    def test_create_with_no_name(self):
+        test_unsupported_dp = self.fake_dps[0]
+
+        # delete dp name for test
+        del test_unsupported_dp['name']
+        test_unsupported_dp['created_at'] = str(
+            test_unsupported_dp['created_at'])
+        self.assertRaisesRegex(
+            webtest.app.AppError,
+            "DeviceProfile name needed.",
+            self.post_json,
+            self.DP_URL,
+            [test_unsupported_dp],
+            headers=self.headers)
+
+    def test_create_with_unsupported_name(self):
+        test_unsupported_dp = self.fake_dps[0]
+
+        # generate special dp name for test
+        test_unsupported_dp['name'] = '!'
+        test_unsupported_dp['created_at'] = str(
+            test_unsupported_dp['created_at'])
+        self.assertRaisesRegex(
+            webtest.app.AppError,
+            ".*Device profile name must be of the form *",
+            self.post_json,
+            self.DP_URL,
+            [test_unsupported_dp],
+            headers=self.headers)
+
+    def test_create_with_no_groups(self):
+        test_unsupported_dp = self.fake_dps[0]
+
+        # delete dp groups for test
+        del test_unsupported_dp['groups']
+        test_unsupported_dp['created_at'] = str(
+            test_unsupported_dp['created_at'])
+        self.assertRaisesRegex(
+            webtest.app.AppError,
+            "DeviceProfile needs groups field.",
+            self.post_json,
+            self.DP_URL,
+            [test_unsupported_dp],
+            headers=self.headers)
+
+    def test_create_with_unsupported_group_key(self):
+        test_unsupported_dp = self.fake_dps[0]
+
+        # generate special dp group key for test
+        del test_unsupported_dp['groups'][0]['resources:FPGA']
+        test_unsupported_dp['groups'][0]['fake:FPGA'] = 'required'
+        test_unsupported_dp['created_at'] = str(
+            test_unsupported_dp['created_at'])
+        self.assertRaisesRegex(
+            webtest.app.AppError,
+            ".*Device profile group keys must be of the form *",
+            self.post_json,
+            self.DP_URL,
+            [test_unsupported_dp],
+            headers=self.headers)
+
+    def test_create_with_unsupported_trait_value(self):
+        test_unsupported_dp = self.fake_dps[0]
+
+        # generate special dp trait value for test
+        test_unsupported_dp['groups'][0][
+            'trait:CUSTOM_FPGA_INTEL_PAC_ARRIA10'] = 'fake'
+        test_unsupported_dp['created_at'] = str(
+            test_unsupported_dp['created_at'])
+        self.assertRaisesRegex(
+            webtest.app.AppError,
+            ".*Unsupported trait value fake *",
+            self.post_json,
+            self.DP_URL,
+            [test_unsupported_dp],
+            headers=self.headers)
+
+    def test_create_with_unsupported_trait_name(self):
+        test_unsupported_dp = self.fake_dps[0]
 
         # generate special trait for test
-        del test_unsupport_dp['groups'][0][
+        del test_unsupported_dp['groups'][0][
             'trait:CUSTOM_FPGA_INTEL_PAC_ARRIA10']
-        test_unsupport_dp['groups'][0]['trait:FAKE_TRAIT'] = 'required'
-        dp = [test_unsupport_dp]
-        dp[0]['created_at'] = str(dp[0]['created_at'])
+        test_unsupported_dp['groups'][0]['trait:FAKE_TRAIT'] = 'required'
+        test_unsupported_dp['created_at'] = str(
+            test_unsupported_dp['created_at'])
         self.assertRaisesRegex(
             webtest.app.AppError,
             ".*Unsupported trait name format FAKE_TRAIT.*",
             self.post_json,
             self.DP_URL,
-            dp,
+            [test_unsupported_dp],
             headers=self.headers)
 
     @mock.patch('cyborg.conductor.rpcapi.ConductorAPI.device_profile_create')
     def test_create_with_extra_space_in_trait(self, mock_cond_dp):
-        test_unsupport_dp = self.fake_dps[0]
+        test_unsupported_dp = self.fake_dps[0]
 
         # generate a requested dp which has extra space in trait
-        del test_unsupport_dp['groups'][0][
+        del test_unsupported_dp['groups'][0][
             'trait:CUSTOM_FPGA_INTEL_PAC_ARRIA10']
-        test_unsupport_dp['groups'][0][
+        test_unsupported_dp['groups'][0][
             'trait:  CUSTOM_FPGA_INTEL_PAC_ARRIA10'] = 'required'
 
-        dp = [test_unsupport_dp]
         mock_cond_dp.return_value = self.fake_dp_objs[0]
-        dp[0]['created_at'] = str(dp[0]['created_at'])
+        test_unsupported_dp['created_at'] = str(
+            test_unsupported_dp['created_at'])
 
-        response = self.post_json(self.DP_URL, dp, headers=self.headers)
+        response = self.post_json(
+            self.DP_URL, [test_unsupported_dp], headers=self.headers)
         out_dp = jsonutils.loads(response.controller_output)
 
         # check that the extra space in trait:
@@ -126,17 +204,18 @@ class TestDeviceProfileController(v2_test.APITestV2):
 
     @mock.patch('cyborg.conductor.rpcapi.ConductorAPI.device_profile_create')
     def test_create_with_extra_space_in_rc(self, mock_cond_dp):
-        test_unsupport_dp = self.fake_dps[0]
+        test_unsupported_dp = self.fake_dps[0]
 
         # generate a requested dp which has extra space in rc
-        del test_unsupport_dp['groups'][0]['resources:FPGA']
-        test_unsupport_dp['groups'][0]['resources: FPGA '] = '1'
-        dp = [test_unsupport_dp]
+        del test_unsupported_dp['groups'][0]['resources:FPGA']
+        test_unsupported_dp['groups'][0]['resources: FPGA '] = '1'
 
         mock_cond_dp.return_value = self.fake_dp_objs[0]
-        dp[0]['created_at'] = str(dp[0]['created_at'])
+        test_unsupported_dp['created_at'] = str(
+            test_unsupported_dp['created_at'])
 
-        response = self.post_json(self.DP_URL, dp, headers=self.headers)
+        response = self.post_json(
+            self.DP_URL, [test_unsupported_dp], headers=self.headers)
         out_dp = jsonutils.loads(response.controller_output)
 
         # check that the extra space in rc:{'resources: FPGA ': '1'} is
@@ -146,33 +225,33 @@ class TestDeviceProfileController(v2_test.APITestV2):
         self.assertTrue(out_dp['groups'] == self.fake_dp_objs[0]['groups'])
 
     def test_create_with_unsupported_rc(self):
-        test_unsupport_dp = self.fake_dps[0]
+        test_unsupported_dp = self.fake_dps[0]
         # generate a special rc for test
-        del test_unsupport_dp['groups'][0]['resources:FPGA']
-        test_unsupport_dp['groups'][0]["resources:FAKE_RC"] = '1'
+        del test_unsupported_dp['groups'][0]['resources:FPGA']
+        test_unsupported_dp['groups'][0]["resources:FAKE_RC"] = '1'
 
-        dp = [test_unsupport_dp]
-        dp[0]['created_at'] = str(dp[0]['created_at'])
+        test_unsupported_dp['created_at'] = str(
+            test_unsupported_dp['created_at'])
         self.assertRaisesRegex(
             webtest.app.AppError,
             ".*Unsupported resource class FAKE_RC.*",
             self.post_json,
             self.DP_URL,
-            dp,
+            [test_unsupported_dp],
             headers=self.headers)
 
     def test_create_with_invalid_resource_value(self):
-        test_unsupport_dp = self.fake_dps[0]
-        del test_unsupport_dp['groups'][0]['resources:FPGA']
-        test_unsupport_dp['groups'][0]["resources:CUSTOM_FAKE_RC"] = 'fake'
-        dp = [test_unsupport_dp]
-        dp[0]['created_at'] = str(dp[0]['created_at'])
+        test_unsupported_dp = self.fake_dps[0]
+        del test_unsupported_dp['groups'][0]['resources:FPGA']
+        test_unsupported_dp['groups'][0]["resources:CUSTOM_FAKE_RC"] = 'fake'
+        test_unsupported_dp['created_at'] = str(
+            test_unsupported_dp['created_at'])
         self.assertRaisesRegex(
             webtest.app.AppError,
-            ".*Resources nummber fake is invalid.*",
+            ".*Resources number fake is invalid.*",
             self.post_json,
             self.DP_URL,
-            dp,
+            [test_unsupported_dp],
             headers=self.headers)
 
     @mock.patch('cyborg.conductor.rpcapi.ConductorAPI.device_profile_delete')
