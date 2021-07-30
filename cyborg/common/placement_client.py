@@ -113,7 +113,7 @@ class PlacementClient(object):
         traits_json['traits'] = traits
         self._put_rp_traits(rp_uuid, traits_json)
 
-    def delete_trait_by_name(self, rp_uuid, trait_name):
+    def delete_trait_by_name(self, context, rp_uuid, trait_name):
         traits_json = self._get_rp_traits(rp_uuid)
         traits = [
             trait for trait in traits_json['traits']
@@ -121,15 +121,19 @@ class PlacementClient(object):
             ]
         traits_json['traits'] = traits
         self._put_rp_traits(rp_uuid, traits_json)
+        self._delete_trait(context, trait_name)
 
-    def delete_traits_with_prefixes(self, rp_uuid, trait_prefixes):
+    def delete_traits_with_prefixes(self, context, rp_uuid, trait_prefixes):
         traits_json = self._get_rp_traits(rp_uuid)
         traits = [
             trait for trait in traits_json['traits']
             if not any(trait.startswith(prefix)
                        for prefix in trait_prefixes)]
+        delete_traits = set(traits_json['traits']) - set(traits)
         traits_json['traits'] = traits
         self._put_rp_traits(rp_uuid, traits_json)
+        for trait in delete_traits:
+            self._delete_trait(context, trait)
 
     def get_placement_request_id(self, response):
         if response is not None:
@@ -328,3 +332,22 @@ class PlacementClient(object):
         elif resp.status_code == 204:
             LOG.info("Successfully delete resource class %(rc_name).", {
                      "rc_name", name})
+
+    def _delete_trait(self, context, name):
+        """Delete trait from placement by name."""
+        version = '1.6'
+        resp = self.delete("/traits/%s" % name, version=version,
+                           global_request_id=context.global_id)
+        if not resp:
+            msg = ("Failed to delete trait record with placement "
+                   "API for trait %(trait_name)s. Got "
+                   "%(status_code)d: %(err_text)s.")
+            args = {
+                'trait_name': name,
+                'status_code': resp.status_code,
+                'err_text': resp.text,
+            }
+            LOG.error(msg, args)
+        elif resp.status_code == 204:
+            LOG.info("Successfully delete trait %(trait_name).", {
+                     "trait_name", name})
