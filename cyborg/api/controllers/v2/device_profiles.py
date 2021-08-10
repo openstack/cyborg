@@ -142,6 +142,7 @@ class DeviceProfilesController(base.CyborgController,
          [{ "name": <string>,
            "groups": [ {"key1: "value1", "key2": "value2"} ]
            "uuid": <uuid> # optional
+           "description": <description> # optional
          }]
          :returns: The list of created device profiles
         """
