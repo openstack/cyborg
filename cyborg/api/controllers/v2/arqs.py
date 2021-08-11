@@ -135,9 +135,18 @@ class ARQsController(base.CyborgController):
 
         extarq_list = []
         for group_id, group in enumerate(devprof.groups):
-            accel_resources = [
-                int(val) for key, val in group.items()
-                if key.startswith('resources')]
+            accel_resources = []
+            # If the device profile requires the Xilinx fpga, the number of
+            # resources should multiply by 2 cause that end user can program
+            # the device only when both MGMT and USER PF are bound to
+            # instance.
+            if group.get("trait:CUSTOM_FPGA_XILINX") == "required":
+                accel_resources = [int(group.get("resources:FPGA"))] * 2
+            else:
+                accel_resources = [
+                    int(val) for key, val in group.items()
+                    if key.startswith('resources')]
+
             # If/when we introduce non-accelerator resources, like
             # device-local memory, the key search above needs to be
             # made specific to accelerator resources only.

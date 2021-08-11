@@ -204,6 +204,26 @@ class TestARQsController(v2_test.APITestV2):
             self.assertEqual(dp_group_id, out_arq['device_profile_group_id'])
 
     @mock.patch('cyborg.objects.DeviceProfile.get_by_name')
+    @mock.patch('cyborg.conductor.rpcapi.ConductorAPI.arq_create')
+    def test_create_with_xilinx_fpga(self, mock_obj_extarq, mock_obj_dp):
+        xilinx_fpga_dp = fake_device_profile.get_xilinx_fpga_devprof()
+        mock_obj_dp.return_value = dp = xilinx_fpga_dp
+        fake_xilinx_fpga_objs = fake_extarq.get_fake_xilinx_fpga_extarq_objs()
+        mock_obj_extarq.side_effect = fake_xilinx_fpga_objs
+        params = {'device_profile_name': dp['name']}
+        response = self.post_json(self.ARQ_URL, params, headers=self.headers)
+        data = jsonutils.loads(response.__dict__['controller_output'])
+        out_arqs = data['arqs']
+
+        self.assertEqual(HTTPStatus.CREATED, response.status_int)
+        self.assertEqual(len(out_arqs), 2)
+        for in_extarq, out_arq in zip(fake_xilinx_fpga_objs, out_arqs):
+            self._validate_arq(in_extarq.arq, out_arq)
+        for idx, out_arq in enumerate(out_arqs):
+            dp_group_id = idx
+            self.assertEqual(dp_group_id, out_arq['device_profile_group_id'])
+
+    @mock.patch('cyborg.objects.DeviceProfile.get_by_name')
     @mock.patch('cyborg.objects.ExtARQ.create')
     def test_create_with_wrong_dp(self, mock_obj_extarq, mock_obj_dp):
         params = {'device_profile_name': 'wrong_device_profile_name'}
