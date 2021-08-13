@@ -508,7 +508,12 @@ class Connection(api.Connection):
                 session.add(device_profile)
                 session.flush()
             except db_exc.DBDuplicateEntry as e:
-                if 'name' in e.columns:
+                # mysql duplicate key error changed as reference link below:
+                # https://review.opendev.org/c/openstack/oslo.db/+/792124
+                LOG.info('Duplicate columns are: ', e.columns)
+                columns = [column.split('0')[1] if 'uniq_' in column else
+                           column for column in e.columns]
+                if 'name' in columns:
                     raise exception.DuplicateDeviceProfileName(
                         name=values['name'])
                 else:
