@@ -21,7 +21,7 @@ Error response codes: unauthorized(401), forbidden(403)
 
 **Example response: list all devices**
 
-.. literalinclude:: ../../../doc/api_samples/devices/devices-list-resp.json
+.. literalinclude:: ../../doc/api_samples/devices/devices-list-resp.json
    :language: javascript
 
 Get One Device
@@ -43,5 +43,5 @@ Request
 
 **Example response: show details of a specific device**
 
-.. literalinclude:: ../../../doc/api_samples/devices/devices-getone-resp.json
+.. literalinclude:: ../../doc/api_samples/devices/devices-getone-resp.json
    :language: javascript

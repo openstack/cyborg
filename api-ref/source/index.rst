@@ -2,10 +2,17 @@
 OpenStack Acceleration APIs
 ===========================
 
-This is a reference for the OpenStack Acceleration API which is provided by
-the Cyborg project.
+This is a reference for the OpenStack Acceleration v2 API which is provided
+by the Cyborg project. Starting from Ussuri, Cyborg supports only Version 2
+REST APIs. The Version 1 APIs were deprecated in Train and shall be removed
+in Ussuri.
 
-.. toctree::
-   :maxdepth: 1
+.. rest_expand_all::
 
-   v2/index
+.. include:: device_profile.inc
+
+.. include:: arqs.inc
+
+.. include:: devices.inc
+
+.. include:: deployables.inc

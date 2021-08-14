@@ -24,7 +24,7 @@ for all accelerator_requests.
 
 **Example response: list all accelerator requests**
 
-.. literalinclude:: ../../../doc/api_samples/accelerator_requests/accelerator_requests-list-resp.json
+.. literalinclude:: ../../doc/api_samples/accelerator_requests/accelerator_requests-list-resp.json
    :language: javascript
 
 Get One Accelerator Request
@@ -43,7 +43,7 @@ Request
 
 **Example response: get details of a specific accelerator request**
 
-.. literalinclude:: ../../../doc/api_samples/accelerator_requests/accelerator_requests-getone-resp.json
+.. literalinclude:: ../../doc/api_samples/accelerator_requests/accelerator_requests-getone-resp.json
 
 Create Accelerator Requests
 ---------------------------
@@ -60,11 +60,11 @@ Request
 
 **Example post curl**
 
-.. literalinclude:: ../../../doc/api_samples/accelerator_requests/accelerator_requests-post-curl.json
+.. literalinclude:: ../../doc/api_samples/accelerator_requests/accelerator_requests-post-curl.json
 
 **Example response: create an accelerator request**
 
-.. literalinclude:: ../../../doc/api_samples/accelerator_requests/accelerator_requests-create-resp.json
+.. literalinclude:: ../../doc/api_samples/accelerator_requests/accelerator_requests-create-resp.json
 
 Update Accelerator Requests
 ---------------------------
@@ -90,11 +90,11 @@ Request
 
 **Example patch curl**
 
-.. literalinclude:: ../../../doc/api_samples/accelerator_requests/accelerator_requests-patch-curl.json
+.. literalinclude:: ../../doc/api_samples/accelerator_requests/accelerator_requests-patch-curl.json
 
 **Example response: update an accelerator request**
 
-.. literalinclude:: ../../../doc/api_samples/accelerator_requests/accelerator_requests-after-update-resp.json
+.. literalinclude:: ../../doc/api_samples/accelerator_requests/accelerator_requests-after-update-resp.json
 
 Delete Accelerator Requests by ARQ uuid
 ---------------------------------------
