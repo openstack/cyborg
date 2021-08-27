@@ -43,7 +43,7 @@ Response
 
 **Example response: list all device profiles**
 
-.. literalinclude:: ../../../doc/api_samples/device_profiles/device_profiles-list-resp.json
+.. literalinclude:: ../../doc/api_samples/device_profiles/device_profiles-list-resp.json
    :language: javascript
 
 Get One Device Profile
@@ -78,7 +78,7 @@ Response
 
 **Example response: get details of a specific device profile**
 
-.. literalinclude:: ../../../doc/api_samples/device_profiles/device_profiles-getone-resp.json
+.. literalinclude:: ../../doc/api_samples/device_profiles/device_profiles-getone-resp.json
    :language: javascript
 
 Create Device Profile
@@ -114,17 +114,17 @@ Response
 
 **Example post curl with resource/trait**
 
-.. literalinclude:: ../../../doc/api_samples/device_profiles/device_profiles-post-curl.json
+.. literalinclude:: ../../doc/api_samples/device_profiles/device_profiles-post-curl.json
    :language: javascript
 
 **Example post curl with a cyborg property when bitstream is required**
 
-.. literalinclude:: ../../../doc/api_samples/device_profiles/device_profiles-post-curl-with-bitstream.json
+.. literalinclude:: ../../doc/api_samples/device_profiles/device_profiles-post-curl-with-bitstream.json
    :language: javascript
 
 **Example response: create a device profile**
 
-.. literalinclude:: ../../../doc/api_samples/device_profiles/device_profiles-create-resp.json
+.. literalinclude:: ../../doc/api_samples/device_profiles/device_profiles-create-resp.json
    :language: javascript
 
 Delete One Device Profile by uuid

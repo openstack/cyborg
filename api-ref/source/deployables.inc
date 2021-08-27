@@ -22,7 +22,7 @@ Error response codes: unauthorized(401), forbidden(403)
 
 **Example response: list all deployables**
 
-.. literalinclude:: ../../../doc/api_samples/deployables/deployables-list-resp.json
+.. literalinclude:: ../../doc/api_samples/deployables/deployables-list-resp.json
    :language: javascript
 
 Get One Deployable
@@ -44,5 +44,5 @@ Request
 
 **Example response: show details of a specific deployable**
 
-.. literalinclude:: ../../../doc/api_samples/deployables/deployables-getone-resp.json
+.. literalinclude:: ../../doc/api_samples/deployables/deployables-getone-resp.json
    :language: javascript
