@@ -46,6 +46,7 @@ class TestDeviceProfileController(v2_test.APITestV2):
         self.assertEqual(in_dp['name'], out_dp['name'])
         self.assertEqual(in_dp['uuid'], out_dp['uuid'])
         self.assertEqual(in_dp['groups'], out_dp['groups'])
+        self.assertEqual(in_dp['description'], out_dp['description'])
 
         # Check that the link is properly set up
         self._validate_links(out_dp['links'], in_dp['uuid'])
