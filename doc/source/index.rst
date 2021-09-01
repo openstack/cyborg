@@ -76,10 +76,9 @@ guide.
   The complete reference for the accelerator API, including all methods and
   request / response parameters and their meaning.
 
-.. # TODO(brinzhang): After completing the
-   `Cyborg API v2 <https://specs.openstack.org/openstack/cyborg-specs/specs/ussuri/implemented/cyborg-api.html>`_
-   API, the "Cyborg API Microversion History <https://xxx>"" management
-   document will be added, and it will also be added here.
+* :doc:`/contributor/rest_api_version_history`: The Cyborg API evolves over
+  time through Microversions. This provides the history of all those changes.
+  Consider it a "what's new" in the Cyborg API.
 
 Documentation for Developers
 ----------------------------
@@ -88,6 +87,7 @@ Documentation for Developers
    :maxdepth: 1
 
    contributor/index
+   contributor/rest_api_version_history
 
 Indices and tables
 ==================
