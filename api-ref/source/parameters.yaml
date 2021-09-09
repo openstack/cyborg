@@ -12,12 +12,6 @@ deployable_uuid:
   in: path
   required: true
   type: string
-device_profile_name:
-  description: |
-    The display name of a device profile.
-  in: path
-  required: true
-  type: string
 device_profile_uuid:
   description: |
     The UUID of the device_profile for your accelerator request.
@@ -100,6 +94,12 @@ device_profile_description:
   type: string
   in: body
   required: false
+device_profile_name:
+  description: |
+    The display name of a device profile.
+  in: body
+  required: true
+  type: string
 device_profiles:
   description: |
     A list of ``device profiles`` objects.
