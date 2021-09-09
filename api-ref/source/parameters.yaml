@@ -58,7 +58,7 @@ device_prof_groups_req:
     resources and traits. The key-value pair can either be a resource/trait
     or a Cyborg property. Cyborg property is of the form
     "accel:<key>": "<value>". The valid key-value pairs can be found
-    `below <https://opendev.org/openstack/cyborg-specs/src/branch/master/specs/train/approved/device-profiles.rst#valid-accel-keys>`_.
+    `below <https://opendev.org/openstack/cyborg-specs/src/branch/master/specs/train/implemented/device-profiles.rst#valid-accel-keys>`_.
   in: body
   required: true
   type: a list of dictionaries
@@ -71,7 +71,7 @@ device_prof_groups_resp:
     resources and traits. The key-value pair can either be a resource/trait
     or a Cyborg property. Cyborg property is of the form
     "accel:<key>": "<value>". The valid key-value pairs can be found
-    `below <https://opendev.org/openstack/cyborg-specs/src/branch/master/specs/train/approved/device-profiles.rst#valid-accel-keys>`_.
+    `below <https://opendev.org/openstack/cyborg-specs/src/branch/master/specs/train/implemented/device-profiles.rst#valid-accel-keys>`_.
   in: body
   required: true
   type: a list of dictionaries
