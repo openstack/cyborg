@@ -54,11 +54,11 @@ def get_pci_devices(pci_flags, vendor_id=None):
     device_for_vendor_out = []
     all_device_out = []
     lspci_out = lspci_privileged()[0].split('\n')
-    for i in range(len(lspci_out)):
-        if any(x in lspci_out[i] for x in pci_flags):
-            all_device_out.append(lspci_out[i])
-            if vendor_id and vendor_id in lspci_out[i]:
-                device_for_vendor_out.append(lspci_out[i])
+    for pci in lspci_out:
+        if any(x in pci for x in pci_flags):
+            all_device_out.append(pci)
+            if vendor_id and vendor_id in pci:
+                device_for_vendor_out.append(pci)
     return device_for_vendor_out if vendor_id else all_device_out
 
 
