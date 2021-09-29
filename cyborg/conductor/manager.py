@@ -373,7 +373,6 @@ class ConductorManager(object):
         except IndexError:
             raise exception.PlacementResourceProviderNotFound(
                 resource_provider=hostname)
-        return
 
     def _get_sub_provider(self, context, parent, name):
         old_sub_pr_uuid = str(uuid.uuid3(uuid.NAMESPACE_DNS,
