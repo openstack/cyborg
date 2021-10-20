@@ -50,6 +50,7 @@ master_doc = 'index'
 copyright = '2013, OpenStack Foundation'
 
 # openstackdocstheme options
+openstackdocs_auto_name = False
 openstackdocs_repo_name = 'openstack/cyborg'
 openstackdocs_bug_project = 'cyborg'
 openstackdocs_bug_tag = 'doc'
