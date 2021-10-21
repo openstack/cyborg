@@ -26,7 +26,37 @@ device_uuid:
   in: path
   required: true
   type: string
-
+# variables in query
+device_filters:
+  description: |
+    A list of filter of ``FilterType`` to get device list by filter.
+  in: query
+  required: false
+  type: array
+device_type:
+  description: |
+    The type of the device.
+  in: query
+  required: false
+  type: string
+device_vendor:
+  description: |
+    The vendor ID of the device.
+  in: query
+  required: false
+  type: string
+filters:
+  description: |
+    A list of FilterType(in json string format).
+  in: query
+  required: false
+  type: string
+hostname:
+  description: |
+    The hostname of a compute node where the device locates.
+  in: query
+  required: false
+  type: string
 # variables in body
 created:
   description: |
@@ -40,6 +70,12 @@ created:
     For example, ``2015-08-27T09:49:58-05:00``. The ``±hh:mm``
     value, if included, is the time zone as an offset from UTC.  In
     the previous example, the offset value is ``-05:00``.
+  in: body
+  required: true
+  type: string
+device_model_resp:
+  description: |
+    The model of the device.
   in: body
   required: true
   type: string
@@ -113,9 +149,45 @@ device_rp_uuid_bind_unbind_req:
   in: body
   required: true
   type: string
+device_std_board_info_resp:
+  description: |
+    The standard board information of the device.
+  in: body
+  required: true
+  type: string
+device_type_resp:
+  in: body
+  required: true
+  type: string
+device_uuid_resp:
+  description: |
+    The UUID of the device.
+  in: body
+  required: true
+  type: string
+device_vendor_board_info_resp:
+  description: |
+    The vendor board information of the device.
+  in: body
+  required: true
+  type: string
+device_vendor_resp:
+  in: body
+  required: true
+  type: string
+devices:
+  description: |
+    A list of ``devices`` objects.
+  in: body
+  required: true
+  type: array
 hostname_bind_unbind_req:
   description: |
     The name of the target host for bind or unbind of one accelerator request.
+  in: body
+  required: true
+  type: string
+hostname_resp:
   in: body
   required: true
   type: string
