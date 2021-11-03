@@ -41,6 +41,7 @@ INSPUR_FPGA_INFO_PATTERN = re.compile(
     r"[\[](?P<vendor_id>[0-9a-fA-F]"
     r"{4}):(?P<product_id>[0-9a-fA-F]{4})].*")
 
+VENDOR_ID = "1bd4"
 VENDOR_MAPS = {"1bd4": "inspur"}
 
 
@@ -80,7 +81,7 @@ def get_traits(vendor_id, product_id):
 
 def fpga_tree():
     fpga_list = []
-    fpgas = get_pci_devices(INSPUR_FPGA_FLAGS)
+    fpgas = get_pci_devices(INSPUR_FPGA_FLAGS, vendor_id=VENDOR_ID)
     for fpga in fpgas:
         m = INSPUR_FPGA_INFO_PATTERN.match(fpga)
         if m:
