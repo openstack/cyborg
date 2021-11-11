@@ -6,7 +6,7 @@ Device Profiles
 
 Lists, creates, shows details for, updates and deletes device profiles.
 
-A `device_profile 
+A `device_profile
 <http://specs.openstack.org/openstack/cyborg-specs/specs/train/implemented/device-profiles.html>`_
 is a named set of the user requirements for one or more
 accelerators. It can be viewed as a flavor for devices. Broadly it includes
@@ -49,9 +49,9 @@ Response
 Get One Device Profile
 ----------------------
 
-.. rest_method:: GET /v2/device_profiles/{device_profile_uuid}
+.. rest_method:: GET /v2/device_profiles/{device_profile_name_or_uuid}
 
-Gets the UUID, name, groups for one device_profile with the specified UUID.
+Gets the UUID, name, groups for one device_profile with the specified name or UUID.
 
 Normal response codes: 200
 
@@ -61,7 +61,8 @@ Request
 =======
 .. rest_parameters:: parameters.yaml
 
-  - device_profile_uuid: device_profile_uuid
+  - device_profile_uuid: device_profile_uuid_v_21
+  - device_profile_name_or_uuid: device_profile_name_or_uuid
 
 Response
 ========
@@ -76,9 +77,9 @@ Response
   - updated_at: updated
   - links: links
 
-**Example response: get details of a specific device profile**
+**Example response: get details of a specific device profile(v2.2)**
 
-.. literalinclude:: ../../doc/api_samples/device_profiles/device_profiles-getone-resp.json
+.. literalinclude:: ../../doc/api_samples/device_profiles/v22/device_profiles-getone-resp.json
    :language: javascript
 
 Create Device Profile

@@ -1,0 +1,8 @@
+---
+features:
+  - |
+    Changed ``device_profile_uuid`` to ``device_profile_name_or_uuid`` in
+    `Get One Device Profile` API path, so it can support getting one device
+    profile by its `name` since microversion 2.2, not just uuid.
+
+    - GET /v2/device_profiles/{device_profile_name_or_uuid}

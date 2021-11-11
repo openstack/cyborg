@@ -23,13 +23,16 @@ from wsme import types as wtypes
 from oslo_log import log
 from oslo_utils import uuidutils
 
+from cyborg import api
 from cyborg.api.controllers import base
 from cyborg.api.controllers import link
 from cyborg.api.controllers import types
+from cyborg.api.controllers.v2 import versions
 from cyborg.api import expose
 from cyborg.common import authorize_wsgi
 from cyborg.common import constants
 from cyborg.common import exception
+from cyborg.common.i18n import _
 from cyborg import objects
 LOG = log.getLogger(__name__)
 
@@ -257,21 +260,33 @@ class DeviceProfilesController(base.CyborgController,
 
     @authorize_wsgi.authorize_wsgi("cyborg:device_profile", "get_one")
     @expose.expose('json', wtypes.text)
-    def get_one(self, uuid):
-        """Retrieve a single device profile by uuid."""
-        LOG.info('[device_profiles] get_one. uuid=%s', uuid)
-        obj_devprofs = self._get_device_profile_list(uuid=uuid)
-        api_obj_devprofs = self.get_device_profiles(obj_devprofs)
-        if len(api_obj_devprofs) == 0:
+    def get_one(self, dp_uuid_or_name):
+        """Retrieve a single device profile by uuid or name."""
+        context = pecan.request.context
+        if uuidutils.is_uuid_like(dp_uuid_or_name):
+            LOG.info('[device_profiles] get_one. uuid=%s', dp_uuid_or_name)
+            obj_devprof = objects.DeviceProfile.get_by_uuid(context,
+                                                            dp_uuid_or_name)
+        else:
+            if api.request.version.minor >= versions.MINOR_2_DP_BY_NAME:
+                LOG.info('[device_profiles] get_one. name=%s', dp_uuid_or_name)
+                obj_devprof = \
+                    objects.DeviceProfile.get_by_name(context,
+                                                      dp_uuid_or_name)
+            else:
+                raise exception.NotAcceptable(_(
+                    "Request not acceptable. The minimal required API "
+                    "version should be %(base)s.%(opr)s") %
+                    {'base': versions.BASE_VERSION,
+                     'opr': versions.MINOR_2_DP_BY_NAME})
+        if not obj_devprof:
+            LOG.warning("Device profile with %s not found!", dp_uuid_or_name)
             raise exception.ResourceNotFound(
                 resource='Device profile',
-                msg='with uuid %s' % uuid)
+                msg='with %s' % dp_uuid_or_name)
+        api_obj_devprof = self.get_device_profile(obj_devprof)
 
-        count = len(api_obj_devprofs)
-        if count != 1:  # Should never happen because names are unique
-            raise exception.ExpectedOneObject(obj='device profile',
-                                              count=count)
-        ret = {"device_profile": api_obj_devprofs[0]}
+        ret = {"device_profile": api_obj_devprof}
         LOG.info('[device_profiles] get_one returned: %s', ret)
         # TODO(Sundar) Replace this with convert_with_links()
         return wsme.api.Response(ret, status_code=HTTPStatus.OK,
