@@ -16,6 +16,7 @@ from oslo_serialization import jsonutils
 from unittest import mock
 
 from cyborg.accelerator.drivers.fpga.inspur.driver import InspurFPGADriver
+from cyborg.accelerator.drivers.fpga.inspur import sysinfo
 from cyborg.tests import base
 
 INSPUR_FPGA_INFO = ("0000:86:00.0 Processing accelerators [1200]: "
@@ -109,3 +110,21 @@ class TestInspurFPGADriver(base.TestCase):
         self.assertEqual(attach_handle_list[0],
                          fpga_attach_handle_list[0].as_dict())
         self.assertEqual(attribute_list, attribute_actual_data)
+
+    @mock.patch('cyborg.accelerator.drivers.fpga.'
+                'inspur.sysinfo.lspci_privileged')
+    def test_get_pci_devices_by_inspur_vendor(self, mock_devices_for_vendor):
+
+        fake_pci_output = [("0000:86:00.0 Processing accelerators [1200]: "
+                            "Inspur Electronic Information Industry Co., Ltd. "
+                            "Device [1bd4:a115] (rev 04)\n"
+                            "0000:86:00.0 Processing accelerators [1200]: "
+                            "Xilinx Corporation Device [10ee:5000]")]
+        mock_devices_for_vendor.return_value = fake_pci_output
+        pci_devices = sysinfo.get_pci_devices(sysinfo.INSPUR_FPGA_FLAGS,
+                                              vendor_id=sysinfo.VENDOR_ID)
+        expected = [("0000:86:00.0 Processing accelerators [1200]: "
+                     "Inspur Electronic Information Industry Co., Ltd. "
+                     "Device [1bd4:a115] (rev 04)")]
+        self.assertEqual(len(pci_devices), 1)
+        self.assertEqual(pci_devices, expected)
