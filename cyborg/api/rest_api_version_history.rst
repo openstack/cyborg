@@ -21,8 +21,10 @@ request of v2.0 was requested.
 This is the initial version of the v2 API which supports
 microversions.
 
-2.1
----
+.. _microversion 2.1:
+
+2.1 (Maximum in Victoria)
+-------------------------
 
 Add ``project_id`` for Accelerator Requests PATCH API. ``project_id`` is
 used to control the operation of arq with different roles.
