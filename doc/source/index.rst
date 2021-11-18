@@ -23,13 +23,13 @@ Operators needing to install or configure Cyborg.
 Installation
 ~~~~~~~~~~~~
 
+The detailed install guide for Cyborg.
+
 .. toctree::
    :maxdepth: 1
 
-   install/install-from-pip
-   install/install-from-source
+   install/index
    admin/config-wsgi
-   admin/index
 
 Configuration Reference
 ~~~~~~~~~~~~~~~~~~~~~~~
@@ -47,6 +47,13 @@ Once you are running cyborg, the following information is extremely useful.
 
 * :doc:`Admin Guide </admin/index>`: A collection of guides for administrating
   cyborg.
+
+.. # NOTE(amotoki): toctree needs to be placed at the end of the secion to
+   # keep the document structure in the PDF doc.
+.. toctree::
+   :hidden:
+
+   admin/index
 
 For End Users
 -------------
