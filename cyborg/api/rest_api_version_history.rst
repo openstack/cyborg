@@ -29,3 +29,11 @@ microversions.
 Add ``project_id`` for Accelerator Requests PATCH API. ``project_id`` is
 used to control the operation of arq with different roles.
 
+2.2
+---
+
+Changed ``device_profile_uuid`` to ``device_profile_name_or_uuid`` in
+`Get One Device Profile` API path, so support getting device profile by
+name (newly introduced) and uuid.
+
+ - GET /v2/device_profiles/{device_profile_name_or_uuid}

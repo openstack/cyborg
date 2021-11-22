@@ -19,6 +19,7 @@ import webtest
 
 from oslo_serialization import jsonutils
 
+from cyborg.api.controllers import base
 from cyborg.tests.unit.api.controllers.v2 import base as v2_test
 from cyborg.tests.unit import fake_device_profile
 
@@ -51,13 +52,40 @@ class TestDeviceProfileController(v2_test.APITestV2):
         # Check that the link is properly set up
         self._validate_links(out_dp['links'], in_dp['uuid'])
 
-    @mock.patch('cyborg.objects.DeviceProfile.list')
-    def test_get_one_by_uuid(self, mock_dp):
+    @mock.patch('cyborg.objects.DeviceProfile.get_by_uuid')
+    def test_get_one_by_uuid(self, mock_dp_uuid):
         dp = self.fake_dp_objs[0]
-        mock_dp.return_value = [dp]
+        mock_dp_uuid.return_value = dp
         url = self.DP_URL + '/%s'
         data = self.get_json(url % dp['uuid'], headers=self.headers)
-        mock_dp.assert_called_once()
+        mock_dp_uuid.assert_called_once()
+        out_dp = data['device_profile']
+        self._validate_dp(dp, out_dp)
+
+    @mock.patch('cyborg.objects.DeviceProfile.get_by_name')
+    def test_get_one_by_name_before_v22(self, mock_dp_name):
+        dp = self.fake_dp_objs[0]
+        mock_dp_name.return_value = dp
+        url = self.DP_URL + '/%s'
+        headers = self.headers
+        headers[base.Version.current_api_version] = 'accelerator 2.1'
+        self.assertRaisesRegex(
+            webtest.app.AppError,
+            "Request not acceptable.*",
+            self.get_json,
+            url % dp['name'],
+            headers=headers)
+
+    @mock.patch('cyborg.objects.DeviceProfile.get_by_name')
+    def test_get_one_by_name(self, mock_dp_name):
+        dp = self.fake_dp_objs[0]
+        mock_dp_name.return_value = dp
+        url = self.DP_URL + '/%s'
+        headers = self.headers
+        headers[base.Version.current_api_version] = 'accelerator 2.2'
+        data = self.get_json(url % dp['name'],
+                             headers=headers)
+        mock_dp_name.assert_called_once()
         out_dp = data['device_profile']
         self._validate_dp(dp, out_dp)
 
