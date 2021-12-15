@@ -9,7 +9,7 @@ accounts you need, the basics of interacting with our Gerrit review system,
 how we communicate as a community, etc.
 
 Below will cover the more project specific information you need to get started
-with {{cookiecutter.service}}.
+with Cyborg.
 
 Communication
 ~~~~~~~~~~~~~
@@ -20,6 +20,11 @@ The weekly meetings happen in this channel. You can find the meeting times,
 previous meeting logs and proposed meeting agendas at
 `Cyborg Team Meeting Page
 <https://wiki.openstack.org/wiki/Meetings/CyborgTeamMeeting>`_.
+
+The openstack-discuss mailing list is another way we make announcement and
+discuss some topics in public. Cyborg related discussions usually start with
+tag:[cyborg].
+`<The openstack-discuss Archives http://lists.openstack.org/pipermail/openstack-discuss/>`_
 
 Contacting the Core Team
 ~~~~~~~~~~~~~~~~~~~~~~~~
@@ -41,6 +46,11 @@ Task Tracking
 
 We track our tasks in the `Launchpad <https://bugs.launchpad.net/openstack-cyborg>`_.
 
+We also have our planed goals and schedule for each OpenStack official release.
+If you are a new contributor who are looking for tasks, please take a look.
+we have tasks from low-hanging-fruit to middle, and advanced levels.
+`Development_Release_Schedule
+<https://wiki.openstack.org/wiki/Cyborg#Development_Release_Schedule>`_
 If you're looking for some smaller, easier work item to pick up and get started
 on, ask in the IRC meeting.
 
@@ -51,6 +61,11 @@ You found an issue and want to make sure we are aware of it? You can do so on
 `Launchpad <https://bugs.launchpad.net/openstack-cyborg/+filebug>`__.
 More info about Launchpad usage can be found on `OpenStack docs page
 <https://docs.openstack.org/contributors/common/task-tracking.html#launchpad>`_.
+But before you report a bug or register a new feature, we recommend you to
+check if it is already registered there. Otherwise, it might be a duplicated
+patch and will be abandoned. If you're still confused, as a more efficient
+way, we encourage you to go and ask PTL and cores in the IRC channel directly.
+Or mail PTL if IRC is not convenient for you.
 
 Getting Your Patch Merged
 ~~~~~~~~~~~~~~~~~~~~~~~~~
