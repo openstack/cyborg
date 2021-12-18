@@ -104,7 +104,7 @@ class TestDeviceProfileController(v2_test.APITestV2):
     @mock.patch('cyborg.objects.DeviceProfile.list')
     def test_get_all_by_name(self, mock_dp):
         mock_dp.return_value = self.fake_dp_objs
-        name = 'afaas_example_1'
+        name = 'dp_example_1'
         data = self.get_json(self.DP_URL + '?name=' + name,
                              headers=self.headers)
         out_dps = data['device_profiles']

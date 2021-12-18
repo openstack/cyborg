@@ -36,8 +36,8 @@ def _get_device_profiles_as_dict():
     dp1 = {
         "id": 1,
         "uuid": "a95e10ae-b3e3-4eab-a513-1afae6f17c51",
-        "name": 'afaas_example_1',
-        "description": "fake-afaas_example_1-desc",
+        "name": 'dp_example_1',
+        "description": "fake-dp_example_1-desc",
         "created_at": date1,
         "updated_at": None,
         "groups": [
@@ -53,10 +53,10 @@ def _get_device_profiles_as_dict():
     dp2 = {
         "id": 2,
         "uuid": u"199c46b7-63a7-431b-aa40-35da4b9420b1",
-        "name": 'daas_example_2',
+        "name": 'dp_example_2',
         "created_at": date2,
         "updated_at": None,
-        "description": "fake-daas_example_2-desc",
+        "description": "fake-dp_example_2-desc",
         "groups": [
             {"resources:FPGA": "1",
              "trait:CUSTOM_REGION_ID_3ACD": "required",

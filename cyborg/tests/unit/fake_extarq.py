@@ -20,7 +20,7 @@ from cyborg.objects.extarq import fpga_ext_arq
 def _get_arqs_as_dict():
     common = {
         "state": "Bound",
-        "device_profile_name": "afaas_example_1",
+        "device_profile_name": "dp_example_1",
         "hostname": "myhost",
         "instance_uuid": "5922a70f-1e06-4cfd-88dd-a332120d7144",
         "attach_handle_type": "PCI",
@@ -91,7 +91,7 @@ def _get_arqs_resloved_as_dict():
         {"uuid": 'a097fefa-da62-4630-8e8b-424c0e3426dd',
          "device_profile_group_id": 0,
          "state": "Initial",
-         "device_profile_name": "afaas_example_1",
+         "device_profile_name": "dp_example_1",
          "device_rp_uuid": None,
          "hostname": None,
          "instance_uuid": None,
@@ -104,7 +104,7 @@ def _get_arqs_resloved_as_dict():
          "device_profile_group_id": 1,
          "device_rp_uuid": "fbd485e1-40b1-4a7e-84b9-f6b6959114a5",
          "state": "Bound",
-         "device_profile_name": "afaas_example_1",
+         "device_profile_name": "dp_example_1",
          "hostname": "myhost",
          "instance_uuid": "5922a70f-1e06-4cfd-88dd-a332120d7144",
          "attach_handle_type": "PCI",
@@ -132,7 +132,7 @@ def _get_arqs_bind_as_dict():
     common = [
         {
             "state": "Bound",
-            "device_profile_name": "afaas_example_1",
+            "device_profile_name": "dp_example_1",
             "hostname": "myhost1",
             "instance_uuid": "5922a70f-1e06-4cfd-88dd-a332120d7144",
             "attach_handle_type": "PCI",
@@ -147,7 +147,7 @@ def _get_arqs_bind_as_dict():
             "device_profile_group": {"resources:GPU": "1"}
         }, {
             "state": "Deleting",
-            "device_profile_name": "afaas_example_2",
+            "device_profile_name": "dp_example_2",
             "hostname": "myhost1",
             "instance_uuid": "5922a70f-1e06-4cfd-88dd-a332120d7144",
             "attach_handle_type": "PCI",
@@ -164,7 +164,7 @@ def _get_arqs_bind_as_dict():
                 "resources:FPGA": "1"}
         }, {
             "state": "Deleting",
-            "device_profile_name": "afaas_example_3",
+            "device_profile_name": "dp_example_3",
             "hostname": "myhost3",
             "instance_uuid": "5922a70f-1e06-4cfd-88dd-a332120d7146",
             "attach_handle_type": "PCI",
@@ -182,7 +182,7 @@ def _get_arqs_bind_as_dict():
                 "accel:bitstream_id": "b069d97a-010a-4057-b70d-eca2b337fc9e"}
         }, {
             "state": "Unbound",
-            "device_profile_name": "afaas_example_2",
+            "device_profile_name": "dp_example_2",
             "hostname": "myhost1",
             "instance_uuid": "5922a70f-1e06-4cfd-88dd-a332120d7144",
             "attach_handle_type": "PCI",
