@@ -14,6 +14,7 @@
 
 from unittest import mock
 
+from cyborg.common import exception
 from cyborg import objects
 from cyborg.tests.unit.db import base
 from cyborg.tests.unit import fake_device
@@ -44,7 +45,16 @@ class TestDeviceObject(base.DbTestCase):
                 self.context, device_id)
             self.assertEqual(self.context, device._context)
 
-            # TODO(chenke) add testcase dbapi.device_get_by_id raise exception.
+    def test_get_by_non_existed_id(self):
+        device_id = self.fake_device['id']
+        with mock.patch.object(self.dbapi, 'device_get_by_id',
+                               autospec=True) as mock_device_get_by_id:
+            mock_device_get_by_id.side_effect = exception.ResourceNotFound(
+                resource='Device', msg='with uuid=%s' % device_id)
+            self.assertRaises(exception.ResourceNotFound,
+                              objects.Device.get_by_device_id,
+                              self.context,
+                              device_id)
 
     @mock.patch.object(objects.Device, 'list')
     def test_get_by_hostname(self, mock_list):
