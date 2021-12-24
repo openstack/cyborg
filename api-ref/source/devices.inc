@@ -58,13 +58,28 @@ Gets the UUID, name, type and more informations for one device with the specifie
 
 Normal response codes: 200
 
-Error response codes: badRequest(400), unauthorized(401), forbidden(403)
+Error response codes: badRequest(400), unauthorized(401), forbidden(403), notfound(404)
 
 Request
 =======
 .. rest_parameters:: parameters.yaml
 
   - device_uuid: device_uuid
+
+Response
+========
+.. rest_parameters:: parameters.yaml
+
+  - uuid: device_uuid_resp
+  - type: device_type_resp
+  - vendor: device_vendor_resp
+  - model: device_model_resp
+  - std_board_info: device_std_board_info_resp
+  - vendor_board_info: device_vendor_board_info_resp
+  - hostname: hostname_resp
+  - created_at: created
+  - updated_at: updated
+  - links: links
 
 **Example response: show details of a specific device**
 
