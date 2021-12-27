@@ -403,3 +403,36 @@ class TestExtARQObject(base.DbTestCase):
         devprof_group_id = out_db_extarq['device_profile_group_id']
         self.assertEqual(out_db_extarq['device_profile_group'],
                          obj_devprof['groups'][devprof_group_id])
+
+    @mock.patch('cyborg.objects.device_profile.DeviceProfile.get_by_name')
+    @mock.patch('cyborg.objects.deployable.Deployable.get_by_id')
+    @mock.patch('cyborg.db.sqlalchemy.api.Connection.'
+                'attach_handle_get_by_id')
+    @mock.patch('cyborg.db.sqlalchemy.api.Connection.'
+                'device_profile_get_by_id')
+    def test_fill_obj_extarq_fields_with_dep_id(
+            self, mock_get_devprof, mock_get_ah, mock_get_obj_dep,
+            mock_obj_devprof):
+        in_db_extarq = self.fake_db_extarqs[0]
+        # Since state is not 'Bound', attach_handle_get_by_id is not called.
+        in_db_extarq['state'] = 'Initial'
+        in_db_extarq['deployable_id'] = '1'
+        db_devprof = fake_device_profile.get_db_devprofs()[0]
+        obj_devprof = fake_device_profile.get_obj_devprofs()[0]
+
+        mock_get_devprof.return_value = db_devprof
+        mock_obj_devprof.return_value = obj_devprof
+        mock_get_obj_dep.return_value = \
+            fake_deployable.fake_deployable_obj(self.context,
+                                                uuid=self.deployable_uuids[0])
+
+        out_db_extarq = objects.ExtARQ._fill_obj_extarq_fields(
+            self.context, in_db_extarq)
+
+        self.assertEqual(out_db_extarq['device_profile_name'],
+                         db_devprof['name'])
+        self.assertEqual(out_db_extarq['attach_handle_type'], '')
+        self.assertEqual(out_db_extarq['attach_handle_info'], '')
+        devprof_group_id = out_db_extarq['device_profile_group_id']
+        self.assertEqual(out_db_extarq['device_profile_group'],
+                         obj_devprof['groups'][devprof_group_id])

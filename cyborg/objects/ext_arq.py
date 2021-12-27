@@ -265,7 +265,8 @@ class ExtARQ(base.CyborgObject, object_base.VersionedObjectDictCompat,
                     msg='with uuid=%s' % db_extarq['attach_handle_id'])
 
         if db_extarq['deployable_id']:
-            dep = objects.Deployable.get_by_id(db_extarq['deployable_id'])
+            dep = objects.Deployable.get_by_id(context,
+                                               db_extarq['deployable_id'])
             db_extarq['deployable_uuid'] = dep.uuid
         else:
             LOG.debug('Setting deployable UUID to zeroes for db_extarq %s',
