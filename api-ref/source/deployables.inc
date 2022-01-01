@@ -18,7 +18,7 @@ Lists UUIDs, names, attribute list and more informations for all deployables.
 
 Normal response codes: 200
 
-Error response codes: unauthorized(401), forbidden(403)
+Error response codes: badRequest(400), unauthorized(401), forbidden(403), internalServerError(500)
 
 Request
 =======
@@ -59,7 +59,7 @@ Gets the UUID, name, attribute list and more informations for one deployable wit
 
 Normal response codes: 200
 
-Error response codes: badRequest(400), unauthorized(401), forbidden(403)
+Error response codes: badRequest(400), unauthorized(401), forbidden(403), notfound(404)
 
 Request
 =======
