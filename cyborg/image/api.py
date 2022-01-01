@@ -11,7 +11,7 @@
 #    under the License.
 
 """
-Main abstraction layer for retrieving and storing information about acclerator
+Main abstraction layer for retrieving and storing information about accelerator
 images used by the cyborg agent layer.
 """
 
@@ -24,7 +24,7 @@ LOG = log.getLogger(__name__)
 class API(object):
 
     """Responsible for exposing a relatively stable internal API for other
-    modules in Cyborg to retrieve information about acclerator images.
+    modules in Cyborg to retrieve information about accelerator images.
     """
 
     def _get_session_and_image_id(self, context, id_or_uri):

@@ -31,7 +31,7 @@ LOG = logging.getLogger(__name__)
 @cyborg.privsep.sys_admin_pctxt.entrypoint
 def _fpga_program_privileged(cmd_args):
     # NOTE(Sundar): If we take cmd as parameter, this function can
-    # be abused to run abritrary commands in privileged mode. So
+    # be abused to run arbitrary commands in privileged mode. So
     # only cmd_args are passed in.
     # TODO(Sundar) Do not hardcode fpgaconf.
     # Use right tool based on bitstream type.

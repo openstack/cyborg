@@ -31,7 +31,7 @@ class ExtARQJobMixin(object):
     """Mixin Class for ExtARQ async job management."""
 
     def _bind_job(self, context, deployable):
-        """The bind process of an acclerator."""
+        """The bind process of an accelerator."""
         check_extra_job = getattr(self, "_need_extra_bind_job", None)
         need_job = False
         if check_extra_job:

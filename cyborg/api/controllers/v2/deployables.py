@@ -59,7 +59,7 @@ class Deployable(base.APIBase):
     """The json list of attributes of the deployable"""
 
     rp_uuid = types.uuid
-    """The uuid of resouce provider which represents this deployable"""
+    """The uuid of resource provider which represents this deployable"""
 
     driver_name = wtypes.text
     """The driver name of this deployables"""
