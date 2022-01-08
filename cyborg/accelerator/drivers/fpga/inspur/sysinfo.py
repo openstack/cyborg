@@ -37,7 +37,7 @@ INSPUR_FPGA_FLAGS = ["Inspur Electronic Information Industry Co., Ltd.",
 INSPUR_FPGA_INFO_PATTERN = re.compile(
     r"(?P<devices>[0-9a-fA-F]{4}:[0-9a-fA-F]{2}:"
     r"[0-9a-fA-F]{2}\.[0-9a-fA-F]) "
-    r"(?P<controller>.*) [\[].*]: (?P<name>.*) .*"
+    r"(?P<controller>.*) [\[].*]: (?P<model>.*) .*"
     r"[\[](?P<vendor_id>[0-9a-fA-F]"
     r"{4}):(?P<product_id>[0-9a-fA-F]{4})].*")
 
