@@ -15,6 +15,7 @@
 
 from openstack import connection
 from oslo_log import log as logging
+from oslo_utils import versionutils
 from oslo_versionedobjects import base as object_base
 
 from cyborg.common import constants
@@ -46,7 +47,8 @@ class ExtARQ(base.CyborgObject, object_base.VersionedObjectDictCompat,
     """
     # Version 1.0: Initial version
     # 1.1: v2 API and Nova integration
-    VERSION = '1.1'
+    # 1.2: Fill the value of deployable_id
+    VERSION = '1.2'
 
     dbapi = dbapi.get_instance()
 
@@ -62,10 +64,19 @@ class ExtARQ(base.CyborgObject, object_base.VersionedObjectDictCompat,
         # deletions to the device profile do not affect running VMs.
         'device_profile_group': object_fields.DictOfStringsField(
             nullable=True),
-        # For bound ARQs, we keep the attach handle ID here so that
-        # it is easy to deallocate on unbind or delete.
+        # For bound ARQs, we keep the attach handle ID and deployable ID here
+        # so that it is easy to deallocate on unbind or delete.
         'attach_handle_id': object_fields.IntegerField(nullable=True),
+        'deployable_id': object_fields.IntegerField(nullable=True),
     }
+
+    def obj_make_compatible(self, primitive, target_version):
+        super(ExtARQ, self).obj_make_compatible(
+            primitive, target_version)
+        target_version = versionutils.convert_version_to_tuple(target_version)
+        # TODO(eric): need to handle v1.1 changes
+        if target_version < (1, 2) and 'deployable_id' in primitive:
+            del primitive['deployable_id']
 
     def create(self, context, device_profile_id=None):
         """Create an ExtARQ record in the DB."""
@@ -216,6 +227,8 @@ class ExtARQ(base.CyborgObject, object_base.VersionedObjectDictCompat,
 
     def bind(self, context, deployable):
         self._allocate_attach_handle(context, deployable)
+        self.deployable_id = deployable.id
+        self.save(context)
         # ARQ state changes get committed here
         self.update_check_state(context, constants.ARQ_BOUND)
         LOG.info('Update ARQ %s state to "Bound" successfully.',
@@ -237,6 +250,7 @@ class ExtARQ(base.CyborgObject, object_base.VersionedObjectDictCompat,
             attach_handle = AttachHandle.get_by_id(context, ah_id)
             attach_handle.deallocate(context)
         self.attach_handle_id = None
+        self.deployable_id = None
         self.save(context)
 
     @classmethod
