@@ -241,6 +241,8 @@ device_std_board_info_resp:
   required: true
   type: string
 device_type_resp:
+  description: |
+    Type of the device.
   in: body
   required: true
   type: string
@@ -257,6 +259,8 @@ device_vendor_board_info_resp:
   required: true
   type: string
 device_vendor_resp:
+  description: |
+    The vendor of the device.
   in: body
   required: true
   type: string
@@ -273,6 +277,8 @@ hostname_bind_unbind_req:
   required: true
   type: string
 hostname_resp:
+  description: |
+    The host name of the device.
   in: body
   required: true
   type: string
