@@ -109,6 +109,7 @@ class TestExtARQObject(base.DbTestCase):
 
         mock_notify_bind.assert_not_called()
 
+    @mock.patch('cyborg.objects.ExtARQ.save')
     @mock.patch('cyborg.objects.extarq.ext_arq_job.ExtARQJobMixin.'
                 'get_arq_bind_statuses')
     @mock.patch('openstack.connection.Connection')
@@ -120,7 +121,8 @@ class TestExtARQObject(base.DbTestCase):
     @mock.patch('cyborg.objects.deployable.Deployable.get_by_device_rp_uuid')
     def test_apply_patch_for_common_extarq(
         self, mock_get_dep, mock_check_state, mock_list, mock_get,
-        mock_attach_handle, mock_notify_bind, mock_conn, mock_get_bind_st):
+        mock_attach_handle, mock_notify_bind, mock_conn, mock_get_bind_st,
+        mock_save):
 
         good_states = constants.ARQ_STATES_TRANSFORM_MATRIX[
             constants.ARQ_BIND_STARTED]
@@ -138,6 +140,7 @@ class TestExtARQObject(base.DbTestCase):
         # bound_extarq = copy.deepcopy(obj_extarq)
         # bound_extarq.arq.state = constants.ARQ_BOUND
         # mock_get.side_effect = [obj_extarq, bound_extarq]
+
         mock_get.side_effect = [obj_extarq] * 2
         mock_list.return_value = [obj_extarq]
         uuid = obj_extarq.arq.uuid
@@ -170,6 +173,9 @@ class TestExtARQObject(base.DbTestCase):
         mock_notify_bind.assert_called_once_with(
             instance_uuid,
             [(obj_extarq.arq.uuid, constants.ARQ_BIND_STATUS_FINISH)])
+
+        self.assertEqual(obj_extarq.deployable_id, fake_dep.id)
+        mock_save.assert_called_once()
 
     @mock.patch('cyborg.objects.extarq.ext_arq_job.ExtARQJobMixin.'
                 'get_arq_bind_statuses')
@@ -436,3 +442,12 @@ class TestExtARQObject(base.DbTestCase):
         devprof_group_id = out_db_extarq['device_profile_group_id']
         self.assertEqual(out_db_extarq['device_profile_group'],
                          obj_devprof['groups'][devprof_group_id])
+
+    def test_obj_make_compatible(self):
+        arq_obj = objects.ExtARQ(deployable_id=1)
+        primitive = arq_obj.obj_to_primitive()
+        arq_obj.obj_make_compatible(primitive['cyborg_object.data'], '1.1')
+        self.assertNotIn('deployable_id', primitive['cyborg_object.data'])
+        primitive = arq_obj.obj_to_primitive()
+        arq_obj.obj_make_compatible(primitive['cyborg_object.data'], '1.2')
+        self.assertIn('deployable_id', primitive['cyborg_object.data'])
