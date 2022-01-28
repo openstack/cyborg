@@ -110,3 +110,12 @@ class TestDeviceProfileObject(base.DbTestCase):
                 obj_devprof.save(self.context)
                 mock_dp_get.assert_called_once_with(self.context, uuid)
                 mock_dp_update.assert_called_once()
+
+    def test_obj_make_compatible(self):
+        dp_obj = objects.DeviceProfile(description="fake description")
+        primitive = dp_obj.obj_to_primitive()
+        dp_obj.obj_make_compatible(primitive['cyborg_object.data'], '1.0')
+        self.assertNotIn('description', primitive['cyborg_object.data'])
+        primitive = dp_obj.obj_to_primitive()
+        dp_obj.obj_make_compatible(primitive['cyborg_object.data'], '1.1')
+        self.assertIn('description', primitive['cyborg_object.data'])
