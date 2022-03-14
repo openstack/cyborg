@@ -57,10 +57,10 @@ class ContextHook(hooks.PecanHook):
     The following HTTP request headers are used:
 
     X-User-Id or X-User:
-        Used for context.user.
+        Used for context.user_id.
 
     X-Tenant-Id or X-Tenant:
-        Used for context.tenant.
+        Used for context.project_id.
 
     X-Auth-Token:
         Used for context.auth_token.
