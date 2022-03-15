@@ -222,7 +222,7 @@ class ExtARQ(base.CyborgObject, object_base.VersionedObjectDictCompat,
             self.update_check_state(
                 context, constants.ARQ_BIND_FAILED)
             raise
-        LOG.info('Attach handle(%s) for ARQ(%s) successfully.',
+        LOG.info('Attach handle(%s) allocate for ARQ(%s) successfully.',
                  ah.uuid, self.arq.uuid)
 
     def bind(self, context, deployable):
@@ -237,6 +237,19 @@ class ExtARQ(base.CyborgObject, object_base.VersionedObjectDictCompat,
         # if (self.arq.state == constants.ARQ_DELETING
         #         or self.arq.state == ARQ_UNBOUND):
 
+    def _deallocate_attach_handle(self, context, ah_id):
+        try:
+            attach_handle = AttachHandle.get_by_id(context, ah_id)
+            attach_handle.deallocate(context)
+        except Exception as e:
+            LOG.error("Failed to deallocate attach handle %s for ARQ %s."
+                      "Reason: %s", ah_id, self.arq.uuid, str(e))
+            self.update_check_state(
+                context, constants.ARQ_UNBIND_FAILED)
+            raise
+        LOG.info('Attach handle(%s) deallocate for ARQ(%s) successfully.',
+                 ah_id, self.arq.uuid)
+
     def unbind(self, context):
         arq = self.arq
         arq.hostname = None
@@ -247,8 +260,7 @@ class ExtARQ(base.CyborgObject, object_base.VersionedObjectDictCompat,
         # Unbind: mark attach handles as freed
         ah_id = self.attach_handle_id
         if ah_id:
-            attach_handle = AttachHandle.get_by_id(context, ah_id)
-            attach_handle.deallocate(context)
+            self._deallocate_attach_handle(context, ah_id)
         self.attach_handle_id = None
         self.deployable_id = None
         self.save(context)

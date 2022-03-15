@@ -25,13 +25,15 @@ DEVICE_SSD = 'SSD'
 
 
 ARQ_STATES = (ARQ_INITIAL, ARQ_BIND_STARTED, ARQ_BOUND, ARQ_UNBOUND,
-              ARQ_BIND_FAILED, ARQ_DELETING) = (
-    'Initial', 'BindStarted', 'Bound', 'Unbound', 'BindFailed', 'Deleting')
+              ARQ_BIND_FAILED, ARQ_UNBIND_FAILED, ARQ_DELETING) = (
+    'Initial', 'BindStarted', 'Bound', 'Unbound', 'BindFailed', 'UnbindFailed',
+    'Deleting')
 
 
 ARQ_BIND_STAGE = (ARQ_PRE_BIND, ARQ_FINISH_BIND,
                   ARQ_OUFOF_BIND_FLOW) = (
-    [ARQ_INITIAL, ARQ_BIND_STARTED], [ARQ_BOUND, ARQ_BIND_FAILED],
+    [ARQ_INITIAL, ARQ_BIND_STARTED],
+    [ARQ_BOUND, ARQ_BIND_FAILED],
     [ARQ_UNBOUND, ARQ_DELETING])
 
 
