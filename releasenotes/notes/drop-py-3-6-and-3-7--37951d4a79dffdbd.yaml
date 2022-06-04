@@ -1,0 +1,9 @@
+---
+upgrade:
+  - |
+    In zed cycle, OpenStack projects and oslo lib has dropped the py3.6
+    and py3.7 support `[1]`_, Cyborg also not supporting the py3.6 and py3.7,
+    Cyborg master is failing and cannot be run on py3.6|7 env.
+    So from Zed release, we will remove py3.6 and py3.7 env.
+
+    .. _[1]: https://governance.openstack.org/tc/reference/runtimes/zed.html
