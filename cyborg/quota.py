@@ -97,7 +97,7 @@ class QuotaEngine(object):
                        value will be treated as a number of seconds).
         :param project_id: Specify the project_id if current context
                            is admin and admin wants to impact on
-                           common user's tenant.
+                           common user's project.
         """
         if not project_id:
             project_id = context.project_id
@@ -117,7 +117,7 @@ class QuotaEngine(object):
                              returned by the reserve() method.
         :param project_id: Specify the project_id if current context
                            is admin and admin wants to impact on
-                           common user's tenant.
+                           common user's project.
         """
         project_id = context.project_id
         try:
@@ -173,7 +173,7 @@ class DbQuotaDriver(object):
                              returned by the reserve() method.
         :param project_id: Specify the project_id if current context
                            is admin and admin wants to impact on
-                           common user's tenant.
+                           common user's project.
         """
 
         try:

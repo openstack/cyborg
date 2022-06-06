@@ -76,7 +76,7 @@ def model_query(context, model, *args, **kwargs):
     """
 
     if kwargs.pop("project_only", False):
-        kwargs["project_id"] = context.tenant
+        kwargs["project_id"] = context.project_id
 
     with _session_for_read() as session:
         query = sqlalchemyutils.model_query(
