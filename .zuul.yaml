@@ -4,18 +4,15 @@
       - check-requirements
       - release-notes-jobs-python3
       - publish-openstack-docs-pti
+      - openstack-python3-zed-jobs
     check:
       jobs:
-        - openstack-tox-pep8
         - cyborg-tempest
         - cyborg-tempest-ipv6-only
         - cyborg-tox-bandit
-        - openstack-tox-py38
     gate:
       jobs:
-        - openstack-tox-pep8
         - cyborg-tempest
-        - openstack-tox-py38
 
 - job:
     name: cyborg-tox-bandit
