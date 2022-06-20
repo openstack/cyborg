@@ -19,7 +19,7 @@ from oslo_config import cfg
 from oslo_utils import uuidutils
 
 from cyborg.common import exception as c_exc
-from cyborg.services import report as placement_client
+from cyborg.common import placement_client
 from cyborg.tests import base
 
 
@@ -34,13 +34,13 @@ class PlacementAPIClientTestCase(base.DietTestCase):
         self.mock_request_p = mock.patch(
             'keystoneauth1.session.Session.request')
         self.mock_request = self.mock_request_p.start()
-        self.client = placement_client.SchedulerReportClient()
+        self.client = placement_client.PlacementClient()
 
     @mock.patch('keystoneauth1.session.Session')
     @mock.patch('keystoneauth1.loading.load_auth_from_conf_options')
     def test_constructor(self, load_auth_mock, ks_sess_mock):
-        placement_client.SchedulerReportClient()
 
+        placement_client.PlacementClient()
         load_auth_mock.assert_called_once_with(cfg.CONF, 'placement')
         ks_sess_mock.assert_called_once_with(auth=load_auth_mock.return_value,
                                              cert=None,
