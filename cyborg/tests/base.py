@@ -100,6 +100,7 @@ class DietTestCase(base.BaseTestCase):
 
     def setUp(self):
         super(DietTestCase, self).setUp()
+        self.context = context.get_admin_context()
 
         options.set_defaults(cfg.CONF, connection='sqlite://')
 
