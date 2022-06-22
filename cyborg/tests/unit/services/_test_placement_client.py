@@ -58,13 +58,13 @@ class PlacementAPIClientTestCase(base.DietTestCase):
             expected_url, {'uuid': rp_uuid, 'name': 'test'},
             version='1.20', global_request_id=mock.ANY)
 
-    def test_delete_resource_provider(self):
+    @mock.patch('cyborg.common.placement_client.PlacementClient.delete')
+    def test_delete_resource_provider(self, mock_delete):
         rp_uuid = uuidutils.generate_uuid()
-        self.client.delete_resource_provider(rp_uuid)
-        e_filter = {'region_name': mock.ANY, 'service_type': 'placement'}
-        expected_url = '/resource_providers/%s' % rp_uuid
-        self.mock_request.assert_called_once_with(expected_url, 'DELETE',
-                                                  endpoint_filter=e_filter)
+        self.client.delete_provider(rp_uuid)
+        expected_url = '/resource_providers/' + rp_uuid
+        mock_delete.assert_called_once_with(
+            expected_url, global_request_id=mock.ANY)
 
     def test_create_inventory(self):
         expected_payload = 'fake_inventory'
