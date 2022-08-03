@@ -318,7 +318,7 @@ class PlacementClient(object):
     def delete_rc_by_name(self, context, name):
         """Delete resource class from placement by name."""
         resp = self.delete(
-            "/resouce_classes/%s" % name, global_request_id=context.global_id)
+            "/resource_classes/%s" % name, global_request_id=context.global_id)
         if not resp:
             msg = ("Failed to delete resource class record with placement "
                    "API for resource class %(rc_name)s. Got "
