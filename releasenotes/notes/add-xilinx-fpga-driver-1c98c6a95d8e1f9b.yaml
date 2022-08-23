@@ -1,0 +1,6 @@
+---
+features:
+  - |
+    Add the Xilinx FPGA driver. Through this driver Cyborg can manage Xilinx
+    FPGA devices, including discovering devices' info and programming
+    ``xclbin``.

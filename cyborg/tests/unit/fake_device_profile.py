@@ -106,3 +106,23 @@ def get_db_devprofs():
     dp_list = _get_device_profiles_as_dict()
     db_devprofs = list(map(_convert_to_db_devprof, dp_list))
     return db_devprofs
+
+
+def get_xilinx_fpga_devprof():
+    xilinx_fpga_dp = {
+        "id": 3,
+        "uuid": "638828d7-7145-4060-904c-894aa726b133",
+        "name": 'fake_xilinx_fpga_dp',
+        "description": "fake_xilinx_fpga_dp-desc",
+        "created_at": datetime.datetime(
+            2022, 1, 22, 10, 40, 56,
+            tzinfo=datetime.timezone.utc),
+        "updated_at": None,
+        "groups": [
+            {"resources:FPGA": "1",
+             "trait:CUSTOM_FPGA_XILINX": "required",
+             "trait:CUSTOM_FPGA_PRODUCT_ID_5000": "required",
+             },
+        ]
+    }
+    return _convert_to_obj(xilinx_fpga_dp)

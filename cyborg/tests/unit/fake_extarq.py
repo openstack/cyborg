@@ -300,3 +300,47 @@ def get_patch_list(same_device=True):
                        'value': dev_uuid}
         patch_list[newarq['uuid']] = [host_binding, inst_binding, dev_binding]
     return patch_list, device_rp_uuid
+
+
+def get_fake_xilinx_fpga_extarq_objs():
+    arqs = [
+        {"uuid": 'b8c19eb2-e03c-47b4-b7cf-ced6086b2d11',
+         "device_profile_group_id": 0,
+         "state": "Initial",
+         "device_profile_name": "fake_xilinx_fpga_dp",
+         "hostname": "myhost",
+         "instance_uuid": "5922a70f-1e06-4cfd-88dd-a332120d7144",
+         "attach_handle_type": "PCI",
+         # attach_handle info should vary across ARQs but ignored for testing
+         "attach_handle_info": {
+             "bus": "3b",
+             "device": "00",
+             "domain": "0000",
+             "function": "0"
+         },
+         "device_profile_group": {
+             "trait:CUSTOM_FPGA_XILINX": "required",
+             "resources:FPGA": "1",
+             "trait:CUSTOM_FPGA_PRODUCT_ID_5000": "required"}
+         },
+        {"uuid": '012955c7-90f9-45a9-bb7d-7c2907d8997f',
+         "device_profile_group_id": 1,
+         "state": "Initial",
+         "device_profile_name": "fake_xilinx_fpga_dp",
+         "hostname": "myhost",
+         "instance_uuid": "5922a70f-1e06-4cfd-88dd-a332120d7144",
+         "attach_handle_type": "PCI",
+         # attach_handle info should vary across ARQs but ignored for testing
+         "attach_handle_info": {
+             "bus": "3b",
+             "device": "00",
+             "domain": "0000",
+             "function": "1"
+         },
+         "device_profile_group": {
+             "trait:CUSTOM_FPGA_XILINX": "required",
+             "resources:FPGA": "1",
+             "trait:CUSTOM_FPGA_PRODUCT_ID_5000": "required"}
+         },
+    ]
+    return list(map(_convert_from_dict_to_obj, arqs))
