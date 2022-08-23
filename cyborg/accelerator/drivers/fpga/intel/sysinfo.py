@@ -292,7 +292,7 @@ def _generate_dep_list(fpga, pf_has_vf):
         driver_dep.name = fpga["name"]
         driver_dep.driver_name = DRIVER_NAME
     # pf with sriov enabled, may have several regions and several vfs.
-    # For now, there is only region, this maybe improve in next release.
+    # For now, there is only one region, this maybe improve in next release.
     else:
         driver_dep.num_accelerators = len(fpga["regions"])
         for vf in fpga["regions"]:
