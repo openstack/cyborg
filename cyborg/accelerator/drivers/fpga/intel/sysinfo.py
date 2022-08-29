@@ -93,7 +93,7 @@ def get_link_targets(links):
 
 
 def all_fpgas():
-    # glob.glob1("/sys/class/fpga", "*")
+    # glob.glob("/sys/class/fpga", "*")
     return set(get_link_targets(find_fpgas_by_know_list())) | set(
         map(lambda p: p.rsplit("/", 2)[0],
             get_link_targets(glob.glob(os.path.join(SYS_FPGA, "*")))))
@@ -130,17 +130,6 @@ def all_pf_fpgas():
                   all_fpgas())
 
 
-def is_vf(path):
-    return True if (
-        glob.glob(os.path.join(path, "device/physfn")) or
-        glob.glob(os.path.join(path, "physfn"))) else False
-
-
-def find_pf_by_vf(path):
-    if glob.glob(os.path.join(path, "physfn")):
-        return link_real_path(os.path.join(path, "physfn"))
-
-
 def is_bdf(bdf):
     return True if BDF_PATTERN.match(bdf) else False
 
@@ -150,19 +139,6 @@ def get_bdf_by_path(path):
     if is_bdf(bdf):
         return bdf
     return os.path.basename(os.readlink(os.path.join(path, "device")))
-
-
-def split_bdf(bdf):
-    return ["0x" + v for v in bdf.replace(".", ":").rsplit(":")[1:]]
-
-
-def get_pf_bdf(bdf):
-    paths = glob.glob0(PCI_DEVICES_PATH, bdf)
-    if paths:
-        p0 = paths[0]
-        path = find_pf_by_vf(p0) if is_vf(p0) else p0
-        return get_bdf_by_path(path)
-    return bdf
 
 
 def get_afu_ids(device_name):
@@ -228,7 +204,6 @@ def fpga_tree():
     def gen_fpga_infos(path, vf=True):
         bdf = get_bdf_by_path(path)
         names = glob.glob1(os.path.join(path, "fpga"), "*")
-        # name = os.path.basename(path)
         fpga = {"type": constants.DEVICE_FPGA,
                 "devices": bdf, "stub": True,
                 "name": "_".join((socket.gethostname(), bdf))}
