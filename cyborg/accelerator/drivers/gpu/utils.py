@@ -108,8 +108,8 @@ def _generate_driver_device(gpu):
     driver_device_obj = driver_device.DriverDevice()
     driver_device_obj.vendor = gpu["vendor_id"]
     driver_device_obj.model = gpu.get('model', 'miss model info')
-    std_board_info = {'product_id': gpu.get('product_id', None),
-                      'controller': gpu.get('controller', None)}
+    std_board_info = {'product_id': gpu.get('product_id'),
+                      'controller': gpu.get('controller')}
     vendor_board_info = {'vendor_info': gpu.get('vendor_info', 'gpu_vb_info')}
     driver_device_obj.std_board_info = jsonutils.dumps(std_board_info)
     driver_device_obj.vendor_board_info = jsonutils.dumps(vendor_board_info)
@@ -134,16 +134,13 @@ def _generate_dep_list(gpu):
     driver_dep = driver_deployable.DriverDeployable()
     driver_dep.attribute_list = _generate_attribute_list(gpu)
     driver_dep.attach_handle_list = []
-    # NOTE(wangzhh): The name of deployable should be unique, its format is
-    # under disscussion, may looks like
-    # <ComputeNodeName>_<NumaNodeName>_<CyborgName>_<NumInHost>
     # NOTE(yumeng) Now simply named as <Compute_hostname>_<Device_address>
     # once cyborg needs to support GPU devices discovered from a baremetal
     # node, we might need to support more formats.
     driver_dep.name = gpu.get('hostname', '') + '_' + gpu["devices"]
     driver_dep.driver_name = VENDOR_MAPS.get(gpu["vendor_id"]).upper()
     # driver_dep.num_accelerators for PGPU is 1, for VGPU should be the
-    # sriov_numvfs of the vGPU device.
+    # available_instances of the vGPU device.
     # TODO(yumeng) support VGPU num report soon
     driver_dep.num_accelerators = 1
     driver_dep.attach_handle_list = \
