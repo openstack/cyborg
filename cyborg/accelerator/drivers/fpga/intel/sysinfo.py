@@ -314,6 +314,7 @@ def _generate_attach_handle(fpga):
 
 def _generate_attribute_list(fpga):
     attr_list = []
+    count_pf_traits = 0
     for k, v in fpga.items():
         if k == "rc":
             driver_attr = driver_attribute.DriverAttribute()
@@ -326,12 +327,14 @@ def _generate_attribute_list(fpga):
                 driver_attr.key = "trait" + str(index_pf)
                 driver_attr.value = val
                 attr_list.append(driver_attr)
-    if fpga.get("regions"):
-        for vf in fpga["regions"]:
-            for k, values in vf.items():
-                if k == "traits":
-                    for index_vf, val in enumerate(values):
-                        driver_attr = driver_attribute.DriverAttribute(
-                            key="trait" + str(index_vf + index_pf), value=val)
-                        attr_list.append(driver_attr)
+                count_pf_traits = index_pf
+    vfs = fpga.get('regions', [])
+    for vf in vfs:
+        for k, values in vf.items():
+            if k == "traits":
+                for index_vf, val in enumerate(values):
+                    driver_attr = driver_attribute.DriverAttribute()
+                    driver_attr.key = "trait" + str(index_vf + count_pf_traits)
+                    driver_attr.value = val
+                    attr_list.append(driver_attr)
     return attr_list
