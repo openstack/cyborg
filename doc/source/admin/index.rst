@@ -217,7 +217,7 @@ calls are routed through that.
     {
         "events": [
             { "name": "accelerator-request-bound",
-                "tag": $device_profile_name,
+                "tag": $arq_uuid,
                 "server_uuid": $instance_uuid,
                 "status": "completed" # or "failed"
             },
@@ -227,9 +227,10 @@ calls are routed through that.
 
 8. The Nova compute manager waits for the notification, subject to the timeout
    mentioned in Section Other deployer impact. It then calls the Cyborg REST
-   API `GET /v2/accelerator_requests?instance=<uuid>&bind_state=resolved`.
+   API `GET /v2/accelerator_requests?instance=<uuid>&bind_state=resolved` to
+   get the arqs in status ['Bound', 'BindFailed', 'Deleting'].
 
-9. The Nova virt driver uses the attach handles returned from the Cyborg call
+9. The Nova virt driver uses the bound arqs returned from the Cyborg call
    to compose PCI passthrough devices into the VM’s definition.
 
 10. If there is any error after binding has been initiated, Nova must unbind
