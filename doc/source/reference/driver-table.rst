@@ -47,7 +47,11 @@
      - The driver for Inspur NVMe SSD DISK.
      - None
      - Test results reported at Feb 2021. Please reference: `Inspur NVMe SSD Driver Test Report <https://wiki.openstack.org/wiki/Cyborg/TestReport/InspurNVMeSSD>`_
-
+   * - Xilinx FPGA Driver
+     - None
+     - The driver for Xilinx FPGA Cards.
+     - None
+     - None
 
 .. note:: Temporary Test Report: This is a temporary test report, it is only
      valid for a short time, if you encounter problems, please contact the
