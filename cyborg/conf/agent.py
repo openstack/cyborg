@@ -22,7 +22,8 @@ opts = [
                 default=['fake_driver'],
                 help=_('The accelerator drivers enabled on this agent. Such '
                        'as intel_fpga_driver, inspur_fpga_driver,'
-                       'nvidia_gpu_driver, intel_qat_driver, etc.')),
+                       'nvidia_gpu_driver, intel_qat_driver,'
+                       'inspur_nvme_ssd_driver, xilinx_fpga_driver, etc.')),
 ]
 
 opt_group = cfg.OptGroup(name='agent',
