@@ -104,8 +104,8 @@ class FakeDriver(GenericDriver):
         device = driver_device.DriverDevice()
         device.vendor = pci_dict["vendor_id"]
         device.model = pci_dict.get('model', 'miss model info')
-        std_board_info = {'device_id': pci_dict.get('device_id', None),
-                          'class': pci_dict.get('class', None)}
+        std_board_info = {'device_id': pci_dict.get('device_id'),
+                          'class': pci_dict.get('class')}
         device.std_board_info = jsonutils.dumps(std_board_info)
         device.vendor_board_info = 'fake_vendor_info'
         device.type = constants.DEVICE_FPGA

@@ -240,7 +240,7 @@ def _generate_driver_device(fpga, pf_has_vf):
     driver_device_obj.model = fpga.get('model', "miss_model_info")
     driver_device_obj.vendor_board_info = fpga.get('vendor_board_info',
                                                    "miss_vb_info")
-    std_board_info = {'product_id': fpga.get('product_id', None)}
+    std_board_info = {'product_id': fpga.get('product_id')}
     driver_device_obj.std_board_info = jsonutils.dumps(std_board_info)
     driver_device_obj.type = fpga["type"]
     driver_device_obj.controlpath_id = _generate_controlpath_id(fpga)

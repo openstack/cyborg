@@ -173,8 +173,8 @@ def fpga_tree():
         driver_device_obj = driver_device.DriverDevice()
         driver_device_obj.vendor = fpga["vendor_id"]
         driver_device_obj.model = fpga.get('model', 'miss model info')
-        std_board_info = {'product_id': fpga.get('product_id', None),
-                          'controller': fpga.get('controller', None)}
+        std_board_info = {'product_id': fpga.get('product_id'),
+                          'controller': fpga.get('controller')}
         vendor_board_info = {
             'vendor_info': fpga.get('vendor_info', 'fpga_vb_info')}
         driver_device_obj.std_board_info = jsonutils.dumps(std_board_info)

@@ -144,7 +144,7 @@ def _generate_driver_device(qat):
     driver_device_obj.vendor_board_info = qat.get(
         "vendor_board_info",
         "miss_vb_info")
-    std_board_info = {"product_id": qat.get("product_id", None)}
+    std_board_info = {"product_id": qat.get("product_id")}
     driver_device_obj.std_board_info = jsonutils.dumps(std_board_info)
     driver_device_obj.type = qat["type"]
     driver_device_obj.controlpath_id = _generate_controlpath_id(qat)

@@ -107,8 +107,8 @@ def _generate_driver_device(ssd):
     driver_device_obj = driver_device.DriverDevice()
     driver_device_obj.vendor = ssd["vendor_id"]
     driver_device_obj.model = ssd.get('model', 'miss model info')
-    std_board_info = {'product_id': ssd.get('product_id', None),
-                      'controller': ssd.get('controller', None)}
+    std_board_info = {'product_id': ssd.get('product_id'),
+                      'controller': ssd.get('controller')}
     vendor_board_info = {'vendor_info': ssd.get('vendor_info', 'ssd_vb_info')}
     driver_device_obj.std_board_info = jsonutils.dumps(std_board_info)
     driver_device_obj.vendor_board_info = jsonutils.dumps(vendor_board_info)

@@ -185,7 +185,7 @@ def _generate_driver_device(nic):
     driver_device_obj.vendor_board_info = nic.get(
         "vendor_board_info",
         "miss_vb_info")
-    std_board_info = {"product_id": nic.get("product_id", None)}
+    std_board_info = {"product_id": nic.get("product_id")}
     driver_device_obj.std_board_info = jsonutils.dumps(std_board_info)
     driver_device_obj.type = nic["type"]
     driver_device_obj.controlpath_id = _generate_controlpath_id(nic)
