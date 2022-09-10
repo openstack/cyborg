@@ -128,7 +128,7 @@ def _generate_dep_list(fpga):
     driver_dep.attribute_list = _generate_attribute_list(fpga)
     driver_dep.attach_handle_list = []
     driver_dep.name = CONF.host + '_' + fpga["pci_addr"][0]
-    driver_dep.driver_name = VENDOR_MAPS.get(fpga["vendor_id"]).upper()
+    driver_dep.driver_name = VENDOR_MAPS.get(fpga["vendor_id"], '').upper()
     driver_dep.num_accelerators = 1
     driver_dep.attach_handle_list = _generate_attach_handle(fpga)
     dep_list.append(driver_dep)

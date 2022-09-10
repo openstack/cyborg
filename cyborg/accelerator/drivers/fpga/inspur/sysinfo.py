@@ -128,7 +128,7 @@ def _generate_dep_list(fpga):
     # once cyborg needs to support Inspur FPGA devices discovered from a
     # baremetal node, we might need to support more formats.
     driver_dep.name = CONF.host + '_' + fpga["devices"]
-    driver_dep.driver_name = VENDOR_MAPS.get(fpga["vendor_id"]).upper()
+    driver_dep.driver_name = VENDOR_MAPS.get(fpga["vendor_id"], '').upper()
     driver_dep.num_accelerators = 1
     driver_dep.attach_handle_list = [_generate_attach_handle(fpga)]
     dep_list.append(driver_dep)

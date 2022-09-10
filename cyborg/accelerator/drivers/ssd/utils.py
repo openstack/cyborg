@@ -137,7 +137,7 @@ def _generate_dep_list(ssd):
     # once cyborg needs to support SSD devices discovered from a baremetal
     # node, we might need to support more formats.
     driver_dep.name = ssd.get('hostname', '') + '_' + ssd["devices"]
-    driver_dep.driver_name = VENDOR_MAPS.get(ssd["vendor_id"]).upper()
+    driver_dep.driver_name = VENDOR_MAPS.get(ssd["vendor_id"], '').upper()
     # driver_dep.num_accelerators for SSD is 1
     driver_dep.num_accelerators = 1
     driver_dep.attach_handle_list = [_generate_attach_handle(ssd)]

@@ -138,7 +138,7 @@ def _generate_dep_list(gpu):
     # once cyborg needs to support GPU devices discovered from a baremetal
     # node, we might need to support more formats.
     driver_dep.name = gpu.get('hostname', '') + '_' + gpu["devices"]
-    driver_dep.driver_name = VENDOR_MAPS.get(gpu["vendor_id"]).upper()
+    driver_dep.driver_name = VENDOR_MAPS.get(gpu["vendor_id"], '').upper()
     # driver_dep.num_accelerators for PGPU is 1, for VGPU should be the
     # available_instances of the vGPU device.
     # TODO(yumeng) support VGPU num report soon
