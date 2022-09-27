@@ -9,4 +9,6 @@ curl -g -i -X PATCH http://192.168.23.138/accelerator/v2/accelerator_requests \
         "value": "506220bc-18f2-4294-9b29-80267a021dc0"},
      {"op": "add", "path": "/hostname", "value": "centos-80"},
      {"op": "add", "path": "/device_rp_uuid",
-        "value": "03631f82-20a9-3f67-a29d-dc1abe4042bf"}]}'
+        "value": "03631f82-20a9-3f67-a29d-dc1abe4042bf"},
+     {"op": "add", "path": "/project_id",
+        "value": "8934fbea7b3f4685bd8ee7cf166a4c09"}]}'
