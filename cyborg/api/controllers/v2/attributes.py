@@ -13,6 +13,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from http import HTTPStatus
 import pecan
 import wsme
 from wsme import types as wtypes
@@ -130,3 +131,13 @@ class AttributesController(base.CyborgController,
         ret = AttributeCollection.convert_with_links(api_obj_attributes)
         LOG.info('[attributes] get_one returned: %s', ret)
         return ret
+
+    @authorize_wsgi.authorize_wsgi("cyborg:attribute", "delete")
+    @expose.expose(None, wtypes.text, status_code=HTTPStatus.NO_CONTENT)
+    def delete(self, uuid):
+        """Delete one attribute.
+            - UUID of a attribute.
+        """
+        LOG.info('[attributes] delete.')
+        context = pecan.request.context
+        objects.Attribute.destory(context, uuid)
