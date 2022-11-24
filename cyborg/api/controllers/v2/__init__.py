@@ -25,6 +25,7 @@ from cyborg.api import expose
 from cyborg.api.controllers import base
 from cyborg.api.controllers import link
 from cyborg.api.controllers.v2 import arqs
+from cyborg.api.controllers.v2 import attributes
 from cyborg.api.controllers.v2 import deployables
 from cyborg.api.controllers.v2 import device_profiles
 from cyborg.api.controllers.v2 import devices
@@ -85,6 +86,7 @@ class Controller(rest.RestController):
     accelerator_requests = arqs.ARQsController()
     devices = devices.DevicesController()
     deployables = deployables.DeployablesController()
+    attributes = attributes.AttributesController()
 
     @expose.expose(V2)
     def get(self):

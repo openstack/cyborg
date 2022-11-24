@@ -62,6 +62,18 @@ deployable_policies = [
                        description='FPGA programming.'),
 ]
 
+attribute_policies = [
+    policy.RuleDefault('cyborg:attribute:get_one',
+                       'rule:allow',
+                       description='Show attribute detail'),
+    policy.RuleDefault('cyborg:attribute:get_all',
+                       'rule:allow',
+                       description='Retrieve all attribute records'),
+    policy.RuleDefault('cyborg:attribute:delete',
+                       'rule:allow',
+                       description='Delete attribute records.'),
+]
+
 fpga_policies = [
     policy.RuleDefault('cyborg:fpga:get_one',
                        'rule:allow',
