@@ -132,6 +132,21 @@ class AttributesController(base.CyborgController,
         LOG.info('[attributes] get_one returned: %s', ret)
         return ret
 
+    @authorize_wsgi.authorize_wsgi("cyborg:attribute",
+                                   "get_attribute_by_deployable_id", False)
+    @expose.expose('json', wtypes.IntegerType())
+    def get_attribute_by_deployable_id(self, deployable_id):
+        """Retrieve a single attribute by deployable_id."""
+        LOG.info('[attributes] get_attribute_by_deployable_id: %s.',
+                 deployable_id)
+        context = pecan.request.context
+        api_obj_attributes = objects.Attribute.get_by_deployable_id(
+            context, deployable_id)
+        ret = AttributeCollection.convert_with_links(api_obj_attributes)
+        LOG.info('[attributes] get_attribute_by_deployable_id returned:'
+                 ' %s', ret)
+        return ret
+
     @authorize_wsgi.authorize_wsgi("cyborg:attribute", "delete")
     @expose.expose(None, wtypes.text, status_code=HTTPStatus.NO_CONTENT)
     def delete(self, uuid):
