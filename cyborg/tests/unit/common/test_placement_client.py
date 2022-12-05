@@ -15,6 +15,7 @@
 import fixtures
 from unittest import mock
 
+from cyborg.common import exception
 from cyborg.common import placement_client
 from cyborg.tests import base
 
@@ -39,3 +40,10 @@ class PlacementAPITest(base.TestCase):
         placement.get(mock.Mock())
         msg = 'Successfully get resources from placement: %s'
         self.mock_log_debug.assert_called_once_with(msg, mock.ANY)
+
+    def test_get_exception(self):
+        placement = placement_client.PlacementClient()
+        mock_ret = mock.Mock(status_code=500)
+        self.mock_sdk.get.return_value = mock_ret
+        self.assertRaises(exception.PlacementServerError,
+                          placement.get, mock.Mock())
