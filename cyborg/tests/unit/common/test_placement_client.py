@@ -53,3 +53,10 @@ class PlacementAPITest(base.TestCase):
         placement.post(mock.Mock(), mock.ANY)
         msg = 'Successfully create resources from placement: %s'
         self.mock_log_debug.assert_called_once_with(msg, mock.ANY)
+
+    def test_post_exception(self):
+        placement = placement_client.PlacementClient()
+        mock_ret = mock.Mock(status_code=500)
+        self.mock_sdk.post.return_value = mock_ret
+        self.assertRaises(exception.PlacementServerError,
+                          placement.post, mock.Mock(), mock.ANY)
