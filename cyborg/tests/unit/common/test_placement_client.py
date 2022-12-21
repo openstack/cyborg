@@ -35,7 +35,6 @@ class PlacementAPITest(base.TestCase):
 
     def test_get(self):
         self.mock_sdk.get.return_value = mock.Mock(status_code=200)
-
         placement = placement_client.PlacementClient()
         placement.get(mock.Mock())
         msg = 'Successfully get resources from placement: %s'
@@ -47,3 +46,10 @@ class PlacementAPITest(base.TestCase):
         self.mock_sdk.get.return_value = mock_ret
         self.assertRaises(exception.PlacementServerError,
                           placement.get, mock.Mock())
+
+    def test_post(self):
+        self.mock_sdk.post.return_value = mock.Mock(status_code=200)
+        placement = placement_client.PlacementClient()
+        placement.post(mock.Mock(), mock.ANY)
+        msg = 'Successfully create resources from placement: %s'
+        self.mock_log_debug.assert_called_once_with(msg, mock.ANY)
