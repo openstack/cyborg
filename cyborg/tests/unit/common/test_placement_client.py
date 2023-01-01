@@ -102,3 +102,10 @@ class PlacementAPITest(base.TestCase):
         self.mock_sdk.get.return_value = mock_ret
         self.assertRaises(exception.PlacementServerError,
                           placement._get_rp_traits, mock.ANY)
+
+    def test_ensure_traits(self):
+        self.mock_sdk.put.return_value = mock.Mock(status_code=201)
+        placement = placement_client.PlacementClient()
+        placement._ensure_traits([mock.ANY])
+        msg = 'Successfully update resources from placement: %s'
+        self.mock_log_debug.assert_called_once_with(msg, mock.ANY)
