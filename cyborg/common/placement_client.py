@@ -70,6 +70,7 @@ class PlacementClient(object):
         if res.status_code >= 500:
             raise exception.PlacementServerError(
                 "Placement Server has some error at this time.")
+        LOG.debug('Successfully delete resources from placement: %s', url)
         return res
 
     def _get_rp_traits(self, rp_uuid):
