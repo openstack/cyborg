@@ -61,6 +61,7 @@ class PlacementClient(object):
         if res.status_code >= 500:
             raise exception.PlacementServerError(
                 "Placement Server has some error at this time.")
+        LOG.debug('Successfully update resources from placement: %s', url)
         return res
 
     def delete(self, url, version=None, global_request_id=None):
