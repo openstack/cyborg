@@ -88,3 +88,10 @@ class PlacementAPITest(base.TestCase):
         self.mock_sdk.delete.return_value = mock_ret
         self.assertRaises(exception.PlacementServerError,
                           placement.delete, mock.Mock(), mock.ANY)
+
+    def test_get_rp_traits(self):
+        self.mock_sdk.get.return_value = mock.Mock(status_code=200)
+        placement = placement_client.PlacementClient()
+        placement._get_rp_traits(mock.ANY)
+        msg = 'Successfully get resources from placement: %s'
+        self.mock_log_debug.assert_called_once_with(msg, mock.ANY)
