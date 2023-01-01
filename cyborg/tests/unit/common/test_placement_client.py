@@ -81,3 +81,10 @@ class PlacementAPITest(base.TestCase):
         placement.delete(mock.Mock(), mock.ANY)
         msg = 'Successfully delete resources from placement: %s'
         self.mock_log_debug.assert_called_once_with(msg, mock.ANY)
+
+    def test_delete_exception(self):
+        placement = placement_client.PlacementClient()
+        mock_ret = mock.Mock(status_code=500)
+        self.mock_sdk.delete.return_value = mock_ret
+        self.assertRaises(exception.PlacementServerError,
+                          placement.delete, mock.Mock(), mock.ANY)
