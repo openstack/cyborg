@@ -51,12 +51,12 @@ class ARQ(base.APIBase):
     hostname = wtypes.text
     """The host name to which the ARQ is bound, if any"""
 
-    device_rp_uuid = wtypes.text
+    device_rp_uuid = types.uuid
     """The UUID of the bound device RP, if any"""
 
-    instance_uuid = wtypes.text
+    instance_uuid = types.uuid
     """The UUID of the instance associated with this ARQ, if any"""
-    project_id = wtypes.text
+    project_id = types.uuid
     """The UUID of the instance project_id associated with this ARQ, if any"""
 
     attach_handle_type = wtypes.text
@@ -169,7 +169,7 @@ class ARQsController(base.CyborgController):
         return ret
 
     @authorize_wsgi.authorize_wsgi("cyborg:arq", "get_one")
-    @expose.expose(ARQ, wtypes.text)
+    @expose.expose(ARQ, types.uuid)
     def get_one(self, uuid):
         """Get a single ARQ by UUID."""
         context = pecan.request.context
@@ -216,7 +216,7 @@ class ARQsController(base.CyborgController):
         return ret
 
     @authorize_wsgi.authorize_wsgi("cyborg:arq", "delete", False)
-    @expose.expose(None, wtypes.text, wtypes.text,
+    @expose.expose(None, wtypes.text, types.uuid,
                    status_code=HTTPStatus.NO_CONTENT)
     def delete(self, arqs=None, instance=None):
         """Delete one or more ARQS.
