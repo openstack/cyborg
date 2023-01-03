@@ -116,3 +116,13 @@ class PlacementAPITest(base.TestCase):
         self.mock_sdk.put.return_value = mock_ret
         self.assertRaises(exception.PlacementServerError,
                           placement._ensure_traits, [mock.ANY])
+
+    @mock.patch('cyborg.common.placement_client.'
+                'PlacementClient.get_resource_provider')
+    def test_put_rp_traits(self, rp):
+        self.mock_sdk.put.return_value = mock.Mock(status_code=200)
+        placement = placement_client.PlacementClient()
+        rp.return_value = {'status_code': 200, 'generation': 0}
+        placement._put_rp_traits(mock.ANY, {'traits': 'fake_trait'})
+        msg = 'Successfully update resources from placement: %s'
+        self.mock_log_debug.assert_called_once_with(msg, mock.ANY)
