@@ -58,3 +58,13 @@ class TestAttributes(v2_test.APITestV2):
                                       headers=self.headers)
         mock_attributes_uuid.assert_called_once()
         self._validate_attributes(attribute, out_attribute)
+
+    @mock.patch('cyborg.objects.Attribute.get_by_filter')
+    def test_get_attribute_by_deployable_id(self, mock_deployable_id):
+        attributes = self.fake_attribute_objs
+        mock_deployable_id.return_value = attributes
+        deployable_id = attributes[0]['deployable_id']
+        url = self.ATTRIBUTE_URL + "?deployable_id=" + str(deployable_id)
+        out_attributes = self.get_json(url, headers=self.headers)
+        mock_deployable_id.assert_called_once()
+        self.assertTrue(len(out_attributes), len(attributes))
