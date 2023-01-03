@@ -13,13 +13,21 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from unittest import mock
+
 from cyborg.tests.unit.api.controllers.v2 import base as v2_test
+from cyborg.tests.unit import fake_attribute
 
 
 class TestAttributes(v2_test.APITestV2):
+    ATTRIBUTE_URL = '/attributes'
 
     def setUp(self):
         super(TestAttributes, self).setUp()
+        self.headers = self.gen_headers(self.context)
+        self.fake_attributes = fake_attribute.fake_db_attribute()
+        self.fake_attribute_objs = \
+            [fake_attribute.fake_attribute_obj(self.context)]
 
     def _validate_links(self, links, attribute_uuid):
         has_self_link = False
@@ -40,3 +48,13 @@ class TestAttributes(v2_test.APITestV2):
 
         # Check that the link is properly set up
         self._validate_links(out_attributes['links'], in_attributes['uuid'])
+
+    @mock.patch('cyborg.objects.Attribute.get')
+    def test_get_one_by_uuid(self, mock_attributes_uuid):
+        attribute = self.fake_attribute_objs[0]
+        mock_attributes_uuid.return_value = attribute
+        url = self.ATTRIBUTE_URL + '/%s'
+        out_attribute = self.get_json(url % attribute['uuid'],
+                                      headers=self.headers)
+        mock_attributes_uuid.assert_called_once()
+        self._validate_attributes(attribute, out_attribute)
