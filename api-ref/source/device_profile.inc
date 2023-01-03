@@ -34,7 +34,7 @@ Response
 
   - device_profiles: device_profiles
   - name: device_prof_name_resp
-  - uuid: device_profile_uuid
+  - uuid: device_profile_uuid_resp
   - description: device_profile_description
   - groups: device_prof_groups_resp
   - created_at: created
@@ -70,7 +70,7 @@ Response
 
   - device_profile: device_profile
   - name: device_prof_name_resp
-  - uuid: device_profile_uuid
+  - uuid: device_profile_uuid_resp
   - description: device_profile_description
   - groups: device_prof_groups_resp
   - created_at: created
@@ -106,7 +106,7 @@ Response
 .. rest_parameters:: parameters.yaml
 
   - name: device_prof_name_resp
-  - uuid: device_profile_uuid
+  - uuid: device_profile_uuid_resp
   - description: device_profile_description
   - groups: device_prof_groups_resp
   - created_at: created
