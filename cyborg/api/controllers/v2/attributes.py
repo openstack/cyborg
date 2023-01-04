@@ -67,7 +67,7 @@ class Attribute(base.APIBase):
         api_attribute = cls(**obj_attribute.as_dict())
         api_attribute.links = [
             link.Link.make_link('self', pecan.request.public_url,
-                                'attribute', api_attribute.uuid)
+                                'attributes', api_attribute.uuid)
             ]
         return api_attribute
 
@@ -122,13 +122,13 @@ class AttributesController(base.CyborgController,
         return ret
 
     @authorize_wsgi.authorize_wsgi("cyborg:attribute", "get_one")
-    @expose.expose('json', wtypes.text)
+    @expose.expose(Attribute, types.uuid)
     def get_one(self, uuid):
         """Retrieve a single attribute by uuid."""
-        LOG.info('[attributes] get_one.')
+        LOG.info('[attributes] get by uuid: %s.', uuid)
         context = pecan.request.context
-        api_obj_attributes = objects.Attribute.get(context, uuid)
-        ret = AttributeCollection.convert_with_links(api_obj_attributes)
+        api_obj_attribute = objects.Attribute.get(context, uuid)
+        ret = Attribute.convert_with_links(api_obj_attribute)
         LOG.info('[attributes] get_one returned: %s', ret)
         return ret
 
