@@ -109,15 +109,19 @@ class AttributesController(base.CyborgController,
     """REST controller for Attributes."""
 
     @authorize_wsgi.authorize_wsgi("cyborg:attribute", "get_all", False)
-    @expose.expose(AttributeCollection, wtypes.text)
-    def get_all(self):
+    @expose.expose(AttributeCollection, wtypes.IntegerType(), wtypes.text)
+    def get_all(self, deployable_id=None, key=None):
         """Retrieve a list of attributes."""
-
-        LOG.info('[attributes] get_all.')
+        LOG.info('[attributes] get_all by deployable_id:(%s) and key:(%s).',
+                 deployable_id, key)
+        search_opts = {}
+        if deployable_id:
+            search_opts['deployable_id'] = deployable_id
+        if key:
+            search_opts['key'] = key
         context = pecan.request.context
-        api_obj_attributes = objects.Attribute.get_by_filter(context, {})
-
-        ret = AttributeCollection.convert_with_links(api_obj_attributes)
+        attributes = objects.Attribute.get_by_filter(context, search_opts)
+        ret = AttributeCollection.convert_with_links(attributes)
         LOG.info('[Attributes] get_all returned: %s', ret)
         return ret
 
@@ -130,21 +134,6 @@ class AttributesController(base.CyborgController,
         api_obj_attribute = objects.Attribute.get(context, uuid)
         ret = Attribute.convert_with_links(api_obj_attribute)
         LOG.info('[attributes] get_one returned: %s', ret)
-        return ret
-
-    @authorize_wsgi.authorize_wsgi("cyborg:attribute",
-                                   "get_attribute_by_deployable_id", False)
-    @expose.expose('json', wtypes.IntegerType())
-    def get_attribute_by_deployable_id(self, deployable_id):
-        """Retrieve a single attribute by deployable_id."""
-        LOG.info('[attributes] get_attribute_by_deployable_id: %s.',
-                 deployable_id)
-        context = pecan.request.context
-        api_obj_attributes = objects.Attribute.get_by_deployable_id(
-            context, deployable_id)
-        ret = AttributeCollection.convert_with_links(api_obj_attributes)
-        LOG.info('[attributes] get_attribute_by_deployable_id returned:'
-                 ' %s', ret)
         return ret
 
     @authorize_wsgi.authorize_wsgi("cyborg:attribute", "delete")
