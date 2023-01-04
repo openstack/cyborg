@@ -48,7 +48,7 @@ class Attribute(base.CyborgObject, object_base.VersionedObjectDictCompat):
         values = self.obj_get_changes()
         db_attr = self.dbapi.attribute_create(context,
                                               values)
-        self._from_db_object(self, db_attr)
+        return self._from_db_object(self, db_attr)
 
     @classmethod
     def get(cls, context, uuid):

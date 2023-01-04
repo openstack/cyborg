@@ -136,6 +136,25 @@ class AttributesController(base.CyborgController,
         LOG.info('[attributes] get_one returned: %s', ret)
         return ret
 
+    @authorize_wsgi.authorize_wsgi("cyborg:attribute", "create", False)
+    @expose.expose(Attribute, body=types.jsontype,
+                   status_code=HTTPStatus.CREATED)
+    def post(self, req_attr):
+        """Create one attribute.
+        :param req_attr: attribute value.
+         { "deployable_id": <integer>,
+           "key": <string>,
+           "value": <string>
+         }
+         :returns: The object of created attribute
+        """
+        LOG.info("[attributes] POST request = (%s)", req_attr)
+        context = pecan.request.context
+        attribute = objects.Attribute(context, **req_attr).create(context)
+        ret = Attribute.convert_with_links(attribute)
+        LOG.info('[attributes] post returned: %s', ret)
+        return ret
+
     @authorize_wsgi.authorize_wsgi("cyborg:attribute", "delete")
     @expose.expose(None, wtypes.text, status_code=HTTPStatus.NO_CONTENT)
     def delete(self, uuid):
