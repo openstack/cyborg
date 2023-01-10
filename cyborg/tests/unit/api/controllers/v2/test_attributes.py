@@ -100,3 +100,16 @@ class TestAttributes(v2_test.APITestV2):
         out_attribute = jsonutils.loads(response.controller_output)
         self.assertEqual(HTTPStatus.CREATED, response.status_int)
         self._validate_attributes(self.fake_attribute_objs[0], out_attribute)
+
+    @mock.patch('cyborg.objects.Attribute.get_by_filter')
+    def test_get_all_by_deployable_id_and_key(self, mock_attribute):
+        attributes = self.fake_attribute_objs
+        mock_attribute.return_value = attributes
+        dp_url = "?deployable_id=" + str(attributes[0]['deployable_id'])
+        url = self.ATTRIBUTE_URL + dp_url + "&key=" + attributes[0]['key']
+        data = self.get_json(url, headers=self.headers)
+        out_attributes = data['attributes']
+        mock_attribute.assert_called_once()
+        self.assertTrue(len(out_attributes), len(attributes))
+        for in_attribute, out_attribute in zip(attributes, out_attributes):
+            self._validate_attributes(in_attribute, out_attribute)
