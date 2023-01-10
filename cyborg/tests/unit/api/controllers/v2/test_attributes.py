@@ -113,3 +113,11 @@ class TestAttributes(v2_test.APITestV2):
         self.assertTrue(len(out_attributes), len(attributes))
         for in_attribute, out_attribute in zip(attributes, out_attributes):
             self._validate_attributes(in_attribute, out_attribute)
+
+    @mock.patch('cyborg.objects.Attribute.destroy')
+    def test_delete(self, mock_attribute_uuid):
+        uuid = self.fake_attribute_objs[0]['uuid']
+        # Delete by UUID
+        url = self.ATTRIBUTE_URL + '/%s' % uuid
+        response = self.delete(url, headers=self.headers)
+        self.assertEqual(HTTPStatus.NO_CONTENT, response.status_int)
