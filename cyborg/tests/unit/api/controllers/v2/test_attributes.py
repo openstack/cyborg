@@ -79,3 +79,12 @@ class TestAttributes(v2_test.APITestV2):
         for in_attribute, out_attribute in zip(self.fake_attribute_objs,
                                                out_attributes):
             self._validate_attributes(in_attribute, out_attribute)
+
+    @mock.patch('cyborg.objects.Attribute.get_by_filter')
+    def test_get_attribute_by_key(self, mock_key):
+        attributes = self.fake_attribute_objs
+        mock_key.return_value = attributes
+        url = self.ATTRIBUTE_URL + "?key=" + attributes[0]['key']
+        out_attributes = self.get_json(url, headers=self.headers)
+        mock_key.assert_called_once()
+        self.assertTrue(len(out_attributes), len(attributes))
