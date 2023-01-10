@@ -161,6 +161,6 @@ class AttributesController(base.CyborgController,
         """Delete one attribute.
             - UUID of a attribute.
         """
-        LOG.info('[attributes] delete.')
+        LOG.info('[attributes] delete by uuid: %s.', uuid)
         context = pecan.request.context
-        objects.Attribute.destory(context, uuid)
+        objects.Attribute.destroy(context, uuid)
