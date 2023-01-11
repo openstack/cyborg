@@ -79,7 +79,7 @@ class TestARQsController(v2_test.APITestV2):
 
         result = isinstance(out_arqs, list)
         self.assertTrue(result)
-        self.assertTrue(len(out_arqs), len(self.fake_extarqs))
+        self.assertEqual(len(out_arqs), len(self.fake_extarqs))
         for in_extarq, out_arq in zip(self.fake_extarqs, out_arqs):
             self._validate_arq(in_extarq.arq, out_arq)
 
@@ -94,7 +94,7 @@ class TestARQsController(v2_test.APITestV2):
 
         result = isinstance(out_arqs, list)
         self.assertTrue(result)
-        self.assertTrue(len(out_arqs), len(self.fake_bind_extarqs[:2]))
+        self.assertEqual(len(out_arqs), len(self.fake_bind_extarqs[:3]))
         for in_extarq, out_arq in zip(self.fake_bind_extarqs[:2], out_arqs):
             self._validate_arq(in_extarq.arq, out_arq)
 
@@ -108,7 +108,7 @@ class TestARQsController(v2_test.APITestV2):
 
         result = isinstance(out_arqs, list)
         self.assertTrue(result)
-        self.assertTrue(len(out_arqs), len(self.fake_resolved_extarqs[1:]))
+        self.assertEqual(len(out_arqs), len(self.fake_resolved_extarqs[1:]))
         for in_extarq, out_arq in zip(self.fake_resolved_extarqs[1:],
                                       out_arqs):
             self._validate_arq(in_extarq.arq, out_arq)
@@ -125,7 +125,7 @@ class TestARQsController(v2_test.APITestV2):
 
         result = isinstance(out_arqs, list)
         self.assertTrue(result)
-        self.assertTrue(len(out_arqs), len(self.fake_bind_extarqs[:2]))
+        self.assertEqual(len(out_arqs), len(self.fake_bind_extarqs[:2]))
         for in_extarq, out_arq in zip(self.fake_bind_extarqs[:2], out_arqs):
             self._validate_arq(in_extarq.arq, out_arq)
 
