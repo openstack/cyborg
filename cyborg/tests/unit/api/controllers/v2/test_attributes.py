@@ -70,7 +70,7 @@ class TestAttributes(v2_test.APITestV2):
         url = self.ATTRIBUTE_URL + "?deployable_id=" + str(deployable_id)
         out_attributes = self.get_json(url, headers=self.headers)
         mock_deployable_id.assert_called_once()
-        self.assertTrue(len(out_attributes), len(attributes))
+        self.assertEqual(len(out_attributes), len(attributes))
 
     @mock.patch('cyborg.objects.Attribute.get_by_filter')
     def test_get_all(self, mock_attributes):
@@ -78,7 +78,7 @@ class TestAttributes(v2_test.APITestV2):
         data = self.get_json(self.ATTRIBUTE_URL, headers=self.headers)
         out_attributes = data['attributes']
         self.assertIsInstance(out_attributes, list)
-        self.assertTrue(len(out_attributes), len(self.fake_attribute_objs))
+        self.assertEqual(len(out_attributes), len(self.fake_attribute_objs))
         for in_attribute, out_attribute in zip(self.fake_attribute_objs,
                                                out_attributes):
             self._validate_attributes(in_attribute, out_attribute)
@@ -90,7 +90,7 @@ class TestAttributes(v2_test.APITestV2):
         url = self.ATTRIBUTE_URL + "?key=" + attributes[0]['key']
         out_attributes = self.get_json(url, headers=self.headers)
         mock_key.assert_called_once()
-        self.assertTrue(len(out_attributes), len(attributes))
+        self.assertEqual(len(out_attributes), len(attributes))
 
     @mock.patch('cyborg.objects.Attribute.create')
     def test_create(self, mock_cond_attribute):
@@ -110,7 +110,7 @@ class TestAttributes(v2_test.APITestV2):
         data = self.get_json(url, headers=self.headers)
         out_attributes = data['attributes']
         mock_attribute.assert_called_once()
-        self.assertTrue(len(out_attributes), len(attributes))
+        self.assertEqual(len(out_attributes), len(attributes))
         for in_attribute, out_attribute in zip(attributes, out_attributes):
             self._validate_attributes(in_attribute, out_attribute)
 
