@@ -13,7 +13,10 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from http import HTTPStatus
 from unittest import mock
+
+from oslo_serialization import jsonutils
 
 from cyborg.tests.unit.api.controllers.v2 import base as v2_test
 from cyborg.tests.unit import fake_attribute
@@ -88,3 +91,12 @@ class TestAttributes(v2_test.APITestV2):
         out_attributes = self.get_json(url, headers=self.headers)
         mock_key.assert_called_once()
         self.assertTrue(len(out_attributes), len(attributes))
+
+    @mock.patch('cyborg.objects.Attribute.create')
+    def test_create(self, mock_cond_attribute):
+        mock_cond_attribute.return_value = self.fake_attribute_objs[0]
+        response = self.post_json(self.ATTRIBUTE_URL, self.fake_attributes,
+                                  headers=self.headers)
+        out_attribute = jsonutils.loads(response.controller_output)
+        self.assertEqual(HTTPStatus.CREATED, response.status_int)
+        self._validate_attributes(self.fake_attribute_objs[0], out_attribute)
