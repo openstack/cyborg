@@ -65,7 +65,7 @@ class TestDeployablesController(v2_test.APITestV2):
         self.assertIsInstance(out_deployable, list)
         for out_dev in out_deployable:
             self.assertIsInstance(out_dev, dict)
-        self.assertTrue(len(out_deployable), 1)
+        self.assertEqual(len(out_deployable), 1)
         self._validate_deployable(self.fake_deployable, out_deployable[0])
 
     @mock.patch('cyborg.objects.Deployable.list')
