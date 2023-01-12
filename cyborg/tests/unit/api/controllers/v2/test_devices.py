@@ -64,7 +64,7 @@ class TestDevicesController(v2_test.APITestV2):
         self.assertIsInstance(out_devices, list)
         for out_dev in out_devices:
             self.assertIsInstance(out_dev, dict)
-        self.assertTrue(len(out_devices), len(self.fake_devices))
+        self.assertEqual(len(out_devices), len(self.fake_devices))
         for in_device, out_device in zip(self.fake_devices, out_devices):
             self._validate_device(in_device, out_device)
 

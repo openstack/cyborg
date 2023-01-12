@@ -97,7 +97,7 @@ class TestDeviceProfileController(v2_test.APITestV2):
 
         result = isinstance(out_dps, list)
         self.assertTrue(result)
-        self.assertTrue(len(out_dps), len(self.fake_dp_objs))
+        self.assertEqual(len(out_dps), len(self.fake_dp_objs))
         for in_dp, out_dp in zip(self.fake_dp_objs, out_dps):
             self._validate_dp(in_dp, out_dp)
 
@@ -112,7 +112,7 @@ class TestDeviceProfileController(v2_test.APITestV2):
 
         result = isinstance(out_dps, list)
         self.assertTrue(result)
-        self.assertTrue(len(out_dps), len(expected_dps))
+        self.assertEqual(len(out_dps), len(expected_dps))
         for in_dp, out_dp in zip(expected_dps, out_dps):
             self._validate_dp(in_dp, out_dp)
 
