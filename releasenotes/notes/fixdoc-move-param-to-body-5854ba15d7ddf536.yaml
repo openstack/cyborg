@@ -1,0 +1,5 @@
+---
+fixes:
+  - |
+    Fix the api-ref docs of moving device_profile_uuid parameter from path
+    to body in create and get device_profile api.
