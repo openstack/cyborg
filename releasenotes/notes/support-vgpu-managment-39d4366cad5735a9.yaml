@@ -1,0 +1,7 @@
+---
+features:
+  - |
+    Complete VGPU management feature. VGPU driver is nvidia_gpu_driver same as
+    PGPU driver. The GPU devices configration is same as Nova side, the
+    difference is we delete mdev when the vm is destroy and assign VGPU trait
+    to create vm.
