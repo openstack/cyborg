@@ -1,0 +1,20 @@
+{
+   "attributes":[
+      {
+          "uuid": "359c0990-0258-44fd-8b05-fc510ac3d024",
+          "id": 0,
+          "deployable_id": 1,
+          "key": "rc",
+          "value": "FPGA",
+          "created_at": "2023-03-13T02:26:31+00:00",
+          "updated_at": null,
+          "links":
+          [
+              {
+                  "href": "http://localhost/accelerator/v2/attributes/359c0990-0258-44fd-8b05-fc510ac3d024",
+                  "rel": "self"
+              }
+          ]
+      }
+   ]
+}
