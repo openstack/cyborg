@@ -5,6 +5,12 @@ accelerator_request_uuid:
   in: path
   required: true
   type: string
+attribute_request_uuid:
+  description: |
+    The UUID of the attribute.
+  in: path
+  required: true
+  type: string
 deployable_uuid:
   description: |
     The UUID of the deployable.
@@ -35,6 +41,12 @@ device_uuid:
   required: true
   type: string
 # variables in query
+attribute_request_depid:
+  description: |
+    ID of deployable associated with the attribute.
+  in: query
+  required: true
+  type: integer
 device_filters:
   description: |
     A list of filter of ``FilterType`` to get device list by filter.
@@ -67,6 +79,42 @@ hostname:
   type: string
 
 # variables in body
+attribute_deployable_id_resp:
+  description: |
+    ID of deployable associated with the attribute.
+  in: body
+  required: true
+  type: integer
+attribute_id_resp:
+  description: |
+    ID of the attribute.
+  in: body
+  required: true
+  type: integer
+attribute_key_resp:
+  description: |
+    The key of the attribute.
+  in: body
+  required: true
+  type: string
+attribute_uuid_resp:
+  description: |
+    The UUID of the attribute.
+  in: body
+  required: true
+  type: string
+attribute_value_resp:
+  description: |
+    The value of the attribute.
+  in: body
+  required: true
+  type: string
+attributes:
+  description: |
+    A list of ``attributes`` objects.
+  in: body
+  required: true
+  type: array
 created:
   description: |
     The date and time when the resource was created. The date and time
