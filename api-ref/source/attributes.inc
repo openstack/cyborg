@@ -4,7 +4,7 @@
 Attributes
 ++++++++++
 
-Lists, shows details, creates for attributes.
+Lists, shows details, creates and deletes for attributes.
 
 A `attribute` represents the trait of a physical card like FPGA or GPU.
 
@@ -102,3 +102,10 @@ Request
 **Example response: create an attribute**
 
 .. literalinclude:: ../../doc/api_samples/attributes/attributes-create-resp.json
+
+Delete One Attribute by uuid
+----------------------------
+
+.. rest_method:: DELETE /v2/attributes/{attribute_uuid}
+
+Delete an attribute. No query parameters required.
