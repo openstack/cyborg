@@ -79,6 +79,12 @@ hostname:
   type: string
 
 # variables in body
+attribute_deployable_id_req:
+  description: |
+    ID of deployable associated with the attribute.
+  in: body
+  required: true
+  type: integer
 attribute_deployable_id_resp:
   description: |
     ID of deployable associated with the attribute.
@@ -91,6 +97,12 @@ attribute_id_resp:
   in: body
   required: true
   type: integer
+attribute_key_req:
+  description: |
+    The key of the attribute.
+  in: body
+  required: true
+  type: string
 attribute_key_resp:
   description: |
     The key of the attribute.
@@ -100,6 +112,12 @@ attribute_key_resp:
 attribute_uuid_resp:
   description: |
     The UUID of the attribute.
+  in: body
+  required: true
+  type: string
+attribute_value_req:
+  description: |
+    The value of the attribute.
   in: body
   required: true
   type: string
