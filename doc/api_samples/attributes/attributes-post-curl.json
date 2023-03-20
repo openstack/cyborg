@@ -1,0 +1,8 @@
+curl -g -i -X POST $cyborg_endpoint_url/attributes \
+  -H "Accept: application/json" \
+  -H "Content-Type: application/json" \
+  -H "User-Agent:None" \
+  -H "X-Auth-Token: yourtoken" \
+  -d '{"deployable_id": "1",
+       "key": "rc",
+       "value": "FPGA"'
