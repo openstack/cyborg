@@ -46,7 +46,7 @@ Response
 
 
 Get One Attribute
---------------
+-----------------
 
 .. rest_method:: GET /v2/attributes/{attribute_uuid}
 

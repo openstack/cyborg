@@ -16,3 +16,5 @@ in Ussuri.
 .. include:: devices.inc
 
 .. include:: deployables.inc
+
+.. include:: attributes.inc
