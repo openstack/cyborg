@@ -173,15 +173,6 @@ def get_endpoint(ksa_adapter):
     :return: String endpoint URL.
     :raise EndpointNotFound: If endpoint discovery fails.
     """
-    # TODO(efried): Remove this once bug #1707995 is fixed.
-    if ksa_adapter.service_type == 'image':
-        try:
-            # LOG.warning(ksa_adapter.__dict__)
-            return ksa_adapter.get_endpoint_data().catalog_url
-        except AttributeError:
-            # ksa_adapter.auth is a _ContextAuthPlugin, which doesn't have
-            # get_endpoint_data.  Fall through to using get_endpoint().
-            pass
     # TODO(efried): The remainder of this method reduces to
     # TODO(efried):     return ksa_adapter.get_endpoint()
     # TODO(efried): once bug #1709118 is fixed.
