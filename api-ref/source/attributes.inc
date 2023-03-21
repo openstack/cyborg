@@ -4,7 +4,7 @@
 Attributes
 ++++++++++
 
-Lists, shows details for attributes.
+Lists, shows details, creates for attributes.
 
 A `attribute` represents the trait of a physical card like FPGA or GPU.
 
@@ -79,3 +79,26 @@ Response
 
 .. literalinclude:: ../../doc/api_samples/attributes/attributes-getone-resp.json
    :language: javascript
+
+Create Attributes
+-----------------
+
+.. rest_method:: POST /v2/attributes
+
+Creates an attribute. The payload should have the following field:
+
+Request
+=======
+.. rest_parameters:: parameters.yaml
+
+  - deployable_id: attribute_deployable_id_req
+  - key: attribute_key_req
+  - value: attribute_value_req
+
+**Example post curl**
+
+.. literalinclude:: ../../doc/api_samples/attributes/attributes-post-curl.json
+
+**Example response: create an attribute**
+
+.. literalinclude:: ../../doc/api_samples/attributes/attributes-create-resp.json
