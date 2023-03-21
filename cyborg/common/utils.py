@@ -173,10 +173,6 @@ def get_endpoint(ksa_adapter):
     :return: String endpoint URL.
     :raise EndpointNotFound: If endpoint discovery fails.
     """
-    # TODO(efried): This will be unnecessary once bug #1707993 is fixed.
-    # (At least for the non-image case, until 1707995 is fixed.)
-    if ksa_adapter.endpoint_override:
-        return ksa_adapter.endpoint_override
     # TODO(efried): Remove this once bug #1707995 is fixed.
     if ksa_adapter.service_type == 'image':
         try:
