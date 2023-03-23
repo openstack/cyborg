@@ -223,6 +223,13 @@ device_model_resp:
   in: body
   required: true
   type: string
+device_prof_description_req:
+  description: |
+    A free form description of the device profile. Limited to 255 characters
+    in length.
+  type: string
+  in: body
+  required: false
 device_prof_groups_req:
   description: |
     This is a list of dictionaries to describe requested accelerator resource
@@ -267,13 +274,12 @@ device_profile:
   in: body
   required: true
   type: array
-device_profile_description:
+device_profile_description_resp:
   description: |
-    A free form description of the device profile. Limited to 255 characters
-    in length.
-  type: string
+    The display description of a device profile.
   in: body
-  required: false
+  required: true
+  type: string
 device_profile_name:
   description: |
     The display name of a device profile.

@@ -22,7 +22,7 @@ List Device Profiles
 
 .. rest_method:: GET /v2/device_profiles
 
-Lists UUIDs, names, groups for all device profiles.
+Lists UUIDs, names, groups and more information for all device profiles.
 
 Normal response codes: 200
 
@@ -35,7 +35,7 @@ Response
   - device_profiles: device_profiles
   - name: device_prof_name_resp
   - uuid: device_profile_uuid_resp
-  - description: device_profile_description
+  - description: device_profile_description_resp
   - groups: device_prof_groups_resp
   - created_at: created
   - updated_at: updated
@@ -71,7 +71,7 @@ Response
   - device_profile: device_profile
   - name: device_prof_name_resp
   - uuid: device_profile_uuid_resp
-  - description: device_profile_description
+  - description: device_profile_description_resp
   - groups: device_prof_groups_resp
   - created_at: created
   - updated_at: updated
@@ -100,6 +100,7 @@ Request
 
   - name: device_prof_name_req
   - groups: device_prof_groups_req
+  - description: device_prof_description_req
 
 Response
 ========
@@ -107,7 +108,7 @@ Response
 
   - name: device_prof_name_resp
   - uuid: device_profile_uuid_resp
-  - description: device_profile_description
+  - description: device_profile_description_resp
   - groups: device_prof_groups_resp
   - created_at: created
   - updated_at: updated
