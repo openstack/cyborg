@@ -129,7 +129,6 @@ def _generate_controlpath_id(ssd):
 
 
 def _generate_dep_list(ssd):
-    dep_list = []
     driver_dep = driver_deployable.DriverDeployable()
     driver_dep.attribute_list = _generate_attribute_list(ssd)
     driver_dep.attach_handle_list = []
@@ -141,8 +140,7 @@ def _generate_dep_list(ssd):
     # driver_dep.num_accelerators for SSD is 1
     driver_dep.num_accelerators = 1
     driver_dep.attach_handle_list = [_generate_attach_handle(ssd)]
-    dep_list.append(driver_dep)
-    return dep_list
+    return [driver_dep]
 
 
 def _generate_attach_handle(ssd):

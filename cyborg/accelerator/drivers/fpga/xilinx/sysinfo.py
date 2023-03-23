@@ -123,7 +123,6 @@ def _generate_controlpath_id(fpga):
 
 
 def _generate_dep_list(fpga):
-    dep_list = []
     driver_dep = driver_deployable.DriverDeployable()
     driver_dep.attribute_list = _generate_attribute_list(fpga)
     driver_dep.attach_handle_list = []
@@ -131,8 +130,7 @@ def _generate_dep_list(fpga):
     driver_dep.driver_name = VENDOR_MAPS.get(fpga["vendor_id"], '').upper()
     driver_dep.num_accelerators = 1
     driver_dep.attach_handle_list = _generate_attach_handle(fpga)
-    dep_list.append(driver_dep)
-    return dep_list
+    return [driver_dep]
 
 
 def _generate_attribute_list(fpga):
