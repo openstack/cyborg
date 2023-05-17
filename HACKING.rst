@@ -1,5 +1,5 @@
 cyborg Style Commandments
-===============================================
+=========================
 
 If you haven't already done so read the OpenStack Style Commandments https://docs.openstack.org/hacking/latest/
 
