@@ -163,4 +163,5 @@ class AttributesController(base.CyborgController,
         """
         LOG.info('[attributes] delete by uuid: %s.', uuid)
         context = pecan.request.context
-        objects.Attribute.destroy(context, uuid)
+        api_obj_attribute = objects.Attribute.get(context, uuid)
+        api_obj_attribute.destroy(context)
