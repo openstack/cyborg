@@ -213,7 +213,7 @@ class DeviceProfilesController(base.CyborgController,
                     inner_origin_rc = ":".join(key.split(":")[1:])
                     inner_rc = inner_origin_rc.strip(" ")
                     if inner_rc not in constants.SUPPORT_RESOURCES and \
-                        not inner_rc.startswith('CUSTOM_'):
+                            not inner_rc.startswith('CUSTOM_'):
                         raise exception.InvalidParameterValue(
                             err="Unsupported resource class %s" % inner_rc)
                     try:

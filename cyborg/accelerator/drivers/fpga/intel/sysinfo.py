@@ -192,7 +192,7 @@ def fpga_device(path):
             if filename in DEVICE_EXPOSED:
                 key = DEVICE_FILE_MAP.get(filename) or filename
                 if key in DEVICE_FILE_HANDLER and callable(
-                    DEVICE_FILE_HANDLER(key)):
+                        DEVICE_FILE_HANDLER(key)):
                     infos[key] = DEVICE_FILE_HANDLER(key)(
                         os.path.join(dirpath, filename))
                 else:

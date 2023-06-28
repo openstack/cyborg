@@ -102,7 +102,7 @@ def _combine_device_by_pci_func(pci_devices):
                 existed_addr = fpga.get('pci_addr')[0]
                 # compare domain:bus:slot
                 if existed_addr and \
-                    new_addr.split('.')[0] == existed_addr.split('.')[0]:
+                        new_addr.split('.')[0] == existed_addr.split('.')[0]:
                     fpga.update({'pci_addr': [existed_addr, new_addr]})
                     is_existed = True
             if not is_existed:

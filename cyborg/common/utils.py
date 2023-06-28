@@ -206,8 +206,8 @@ class _Singleton(type):
 
     def __call__(cls, *args, **kwargs):
         ins = cls._instances.get(cls)
-        if not ins or (
-            hasattr(ins, "_reset") and isinstance(ins, cls) and ins._reset()):
+        if not ins or (hasattr(ins, "_reset")
+                       and isinstance(ins, cls) and ins._reset()):
             cls._instances[cls] = super(
                 _Singleton, cls).__call__(*args, **kwargs)
 
@@ -238,7 +238,7 @@ class ThreadPoolExecutor(CFThreadPoolExecutor):
         # cause hang the main thread with eventlet.monkey_patch. Change it
         # to queue._PySimpleQueue
         if hasattr(queue, "SimpleQueue") and not isinstance(
-            self._work_queue, queue._PySimpleQueue):
+                self._work_queue, queue._PySimpleQueue):
             self._work_queue = queue._PySimpleQueue()
 
 
