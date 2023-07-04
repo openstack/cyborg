@@ -90,7 +90,8 @@ def assert_true_isinstance(logical_line):
 
 @core.flake8ext
 def assert_equal_in(logical_line):
-    """Check for assertEqual(True|False, A in B), assertEqual(A in B, True|False)
+    """Check for assertEqual(True|False, A in B),
+     assertEqual(A in B, True|False)
 
     M338
     """
@@ -109,7 +110,7 @@ def no_xrange(logical_line):
     M339
     """
     if assert_xrange_re.match(logical_line):
-        yield(0, "M339: Do not use xrange().")
+        yield (0, "M339: Do not use xrange().")
 
 
 @core.flake8ext
@@ -169,7 +170,7 @@ def check_explicit_underscore_import(logical_line, filename):
         UNDERSCORE_IMPORT_FILES.append(filename)
     elif (translated_log.match(logical_line) or
           string_translation.match(logical_line)):
-        yield(0, "M340: Found use of _() without explicit import of _ !")
+        yield (0, "M340: Found use of _() without explicit import of _ !")
 
 
 @core.flake8ext
