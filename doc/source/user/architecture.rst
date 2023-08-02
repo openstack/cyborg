@@ -1,5 +1,5 @@
 Cyborg architecture
-====================
+===================
 
 Cyborg design can be described by following diagram:
 

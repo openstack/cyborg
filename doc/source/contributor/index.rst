@@ -1,6 +1,6 @@
-===========================
- Contributor Documentation
-===========================
+=========================
+Contributor Documentation
+=========================
 
 Contributing to Cybrog gives you the power to help add features, fix bugs,
 enhance documentation, and increase testing. Contributions of any type are
