@@ -13,7 +13,7 @@ The function ``cyborg.api.wsgi_app.init_application`` will setup a WSGI
 application to run behind uwsgi.
 
 Cyborg API behind uwsgi
-------------------------
+-----------------------
 
 Create a ``cyborg-api-uwsgi`` file with content below:
 
