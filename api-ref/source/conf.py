@@ -27,7 +27,7 @@ extensions = [
     'os_api_ref',
 ]
 
-# -- General configuration ----------------------------------------------------
+# -- General configuration ------------------------------------------------
 
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
@@ -49,7 +49,7 @@ openstackdocs_bug_tag = 'api-ref'
 # The name of the Pygments (syntax highlighting) style to use.
 pygments_style = 'native'
 
-# -- Options for HTML output --------------------------------------------------
+# -- Options for HTML output -------------------------------------------------
 
 # The theme to use for HTML and HTML Help pages.  Major themes that come with
 # Sphinx are currently 'default' and 'sphinxdoc'.
@@ -62,7 +62,7 @@ html_theme_options = {
     "sidebar_mode": "toc",
 }
 
-# -- Options for LaTeX output -------------------------------------------------
+# -- Options for LaTeX output ------------------------------------------------
 
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass
