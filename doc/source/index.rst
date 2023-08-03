@@ -15,7 +15,7 @@ Overview
     user/usage
 
 Documentation for Operators
-----------------------------
+---------------------------
 
 The documentation in this section is aimed at Cloud
 Operators needing to install or configure Cyborg.

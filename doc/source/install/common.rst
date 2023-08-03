@@ -1,5 +1,5 @@
 Common Configuration
----------------------
+--------------------
 
 Regardless of the package or code source you must do the following
 to properly setup the Accelerator Life Cycle Management service.
