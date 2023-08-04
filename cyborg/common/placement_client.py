@@ -36,7 +36,7 @@ class PlacementClient(object):
     def get(self, url, version=None, global_request_id=None):
         res = self._client.get(url, microversion=version,
                                global_request_id=global_request_id)
-        if res.status_code >= 500:
+        if res and res.status_code >= 500:
             raise exception.PlacementServerError(
                 "Placement Server has some error at this time.")
         LOG.debug('Successfully get resources from placement: %s', url)
@@ -85,16 +85,19 @@ class PlacementClient(object):
     def _ensure_traits(self, trait_names):
         # TODO(Xinran): maintain a reference count of how many RPs use
         # this trait and do the deletion only when the last RP is deleted.
-        for trait in trait_names:
-            resp = self.put("/traits/%s" % trait, None, version='1.6')
+        for trait_name in trait_names:
+            trait = self.get("/traits/%s" % trait_name, version='1.6')
+            if trait:
+                LOG.info("Trait %(trait)s already existed",
+                         {"trait": trait_name})
+                continue
+            resp = self.put("/traits/%s" % trait_name, None, version='1.6')
             if resp.status_code == 201:
-                LOG.info("Created trait %(trait)s", {"trait": trait})
-            elif resp.status_code == 204:
-                LOG.info("Trait %(trait)s already existed", {"trait": trait})
+                LOG.info("Created trait %(trait)s", {"trait": trait_name})
             else:
                 raise Exception(
                     "Failed to create trait %s: HTTP %d: %s" %
-                    (trait, resp.status_code, resp.text))
+                    (trait_name, resp.status_code, resp.text))
 
     def _put_rp_traits(self, rp_uuid, traits_json):
         generation = self.get_resource_provider(

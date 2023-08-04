@@ -106,13 +106,17 @@ class PlacementAPITest(base.TestCase):
     def test_ensure_traits(self):
         self.mock_sdk.put.return_value = mock.Mock(status_code=201)
         placement = placement_client.PlacementClient()
+        self.mock_sdk.get.return_value = None
         placement._ensure_traits([mock.ANY])
+        self.assertEqual(2, self.mock_log_debug.call_count)
         msg = 'Successfully update resources from placement: %s'
-        self.mock_log_debug.assert_called_once_with(msg, mock.ANY)
+        # first call/arg
+        self.assertIn(msg, self.mock_log_debug.call_args_list[1][0][0])
 
     def test_ensure_traits_exception(self):
         placement = placement_client.PlacementClient()
         mock_ret = mock.Mock(status_code=500)
+        self.mock_sdk.get.return_value = None
         self.mock_sdk.put.return_value = mock_ret
         self.assertRaises(exception.PlacementServerError,
                           placement._ensure_traits, [mock.ANY])
