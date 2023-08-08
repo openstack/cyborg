@@ -14,7 +14,7 @@ with Cyborg.
 Communication
 ~~~~~~~~~~~~~
 
-We use the #openstack-cyborg channel on the OFTC IRC network.
+We use the #openstack-cyborg channel on the `OFTC <http://oftc.net>`_ IRC network.
 
 The weekly meetings happen in this channel. You can find the meeting times,
 previous meeting logs and proposed meeting agendas at
