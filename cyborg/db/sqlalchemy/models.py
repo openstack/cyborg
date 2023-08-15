@@ -88,6 +88,8 @@ class Device(Base):
     std_board_info = Column(Text, nullable=True)
     vendor_board_info = Column(Text, nullable=True)
     hostname = Column(String(255), nullable=False)
+    status = Column(Enum("enabled", "maintaining", name='device_status'),
+                    default='enabled', nullable=False)
 
 
 class Deployable(Base):

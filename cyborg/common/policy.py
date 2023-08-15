@@ -48,6 +48,12 @@ device_policies = [
     policy.RuleDefault('cyborg:device:get_all',
                        'rule:allow',
                        description='Retrieve all device records'),
+    policy.RuleDefault('cyborg:device:disable',
+                       'rule:admin_api',
+                       description='Disable a device'),
+    policy.RuleDefault('cyborg:device:enable',
+                       'rule:admin_api',
+                       description='Enable a device'),
 ]
 
 deployable_policies = [

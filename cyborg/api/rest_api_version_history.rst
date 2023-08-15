@@ -37,3 +37,11 @@ Changed ``device_profile_uuid`` to ``device_profile_name_or_uuid`` in
 name (newly introduced) and uuid.
 
  - GET /v2/device_profiles/{device_profile_name_or_uuid}
+
+2.3
+---
+
+Add new status info for list Device and get device API.
+
+ - GET: /devices
+ - GET: /devices/{uuid}

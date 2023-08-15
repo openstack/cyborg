@@ -25,10 +25,11 @@ BASE_VERSION = 2
 # v2.0: Initial minor version.
 # v2.1: Add project_id for arq patch
 # v2.2: Support getting device profile by name (newly introduced) and uuid.
+# v2.3: Add status info for device API.
 MINOR_0_INITIAL_VERSION = 0
 MINOR_1_PROJECT_ID = 1
 MINOR_2_DP_BY_NAME = 2
-
+MINOR_3_DEVICE_STATUS = 3
 
 # When adding another version, update:
 # - MINOR_MAX_VERSION
@@ -36,7 +37,7 @@ MINOR_2_DP_BY_NAME = 2
 #   explanation of what changed in the new version
 
 
-MINOR_MAX_VERSION = MINOR_2_DP_BY_NAME
+MINOR_MAX_VERSION = MINOR_3_DEVICE_STATUS
 
 # String representations of the minor and maximum versions
 _MIN_VERSION_STRING = '{}.{}'.format(BASE_VERSION, MINOR_0_INITIAL_VERSION)
