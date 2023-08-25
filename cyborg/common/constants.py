@@ -66,6 +66,10 @@ DEVICE_TYPE = (DEVICE_GPU, DEVICE_FPGA, DEVICE_AICHIP, DEVICE_QAT, DEVICE_NIC,
                DEVICE_SSD)
 
 
+# Device type
+DEVICE_STATUS = ("enabled", "maintaining")
+
+
 # Attach handle type
 #  'TEST_PCI': used by fake driver, ignored by Nova virt driver.
 ATTACH_HANDLE_TYPES = (AH_TYPE_PCI, AH_TYPE_MDEV, AH_TYPE_TEST_PCI) = (

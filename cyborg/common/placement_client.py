@@ -148,7 +148,7 @@ class PlacementClient(object):
 
     def update_inventory(
             self, resource_provider_uuid, inventories,
-            resource_provider_generation=None):
+            resource_provider_generation=None, version=None):
         if resource_provider_generation is None:
             resource_provider_generation = self.get_resource_provider(
                 resource_provider_uuid=resource_provider_uuid)['generation']
@@ -158,7 +158,7 @@ class PlacementClient(object):
             'inventories': inventories
         }
         try:
-            return self.put(url, body).json()
+            return self.put(url, body, version=version).json()
         except ks_exc.NotFound:
             raise exception.PlacementResourceProviderNotFound(
                 resource_provider=resource_provider_uuid)
@@ -358,3 +358,7 @@ class PlacementClient(object):
         elif resp.status_code == 204:
             LOG.info("Successfully delete trait %(trait_name).", {
                      "trait_name", name})
+
+    def update_rp_inventory_reserved(self, rp_uuid, resource, total, reserved):
+        update_inventory = {resource: {"total": total, "reserved": reserved}}
+        self.update_inventory(rp_uuid, update_inventory, version='1.26')
