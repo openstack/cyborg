@@ -305,6 +305,12 @@ device_rp_uuid_bind_unbind_req:
   in: body
   required: true
   type: string
+device_status_resp:
+  description: |
+    The status of device.  One of maintaining or enabled.
+  in: body
+  required: true
+  type: string
 device_std_board_info_resp:
   description: |
     The standard board information of the device.

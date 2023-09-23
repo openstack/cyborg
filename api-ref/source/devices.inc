@@ -4,7 +4,7 @@
 Devices
 +++++++
 
-Lists, shows details for devices.
+Lists, shows details for devices. Enable or disable for a device.
 
 A `device` represent a physical card like FPGA card or GPU card.
 
@@ -40,6 +40,7 @@ Response
   - std_board_info: device_std_board_info_resp
   - vendor_board_info: device_vendor_board_info_resp
   - hostname: hostname_resp
+  - status: device_status_resp
   - created_at: created
   - updated_at: updated
   - links: links
@@ -77,6 +78,7 @@ Response
   - std_board_info: device_std_board_info_resp
   - vendor_board_info: device_vendor_board_info_resp
   - hostname: hostname_resp
+  - status: device_status_resp
   - created_at: created
   - updated_at: updated
   - links: links
@@ -85,3 +87,45 @@ Response
 
 .. literalinclude:: ../../doc/api_samples/devices/devices-getone-resp.json
    :language: javascript
+
+Enable a device
+---------------
+
+.. rest_method:: POST /v2/devices/{device_uuid}/enable
+
+Set the device to enabled status.
+
+Normal response codes: 200
+
+Error response codes: 404(the device is not found),403(the role is not admin)
+
+Request
+=======
+.. rest_parameters:: parameters.yaml
+
+  - device_uuid: device_uuid
+
+Response
+========
+There is no body content for the response of a successful request.
+
+Disable a device
+----------------
+
+.. rest_method:: POST /v2/devices/{device_uuid}/disable
+
+Set the device to maintaining status.
+
+Normal response codes: 200
+
+Error response codes: 404(the device is not found),403(the role is not admin)
+
+Request
+=======
+.. rest_parameters:: parameters.yaml
+
+  - device_uuid: device_uuid
+
+Response
+========
+There is no body content for the response of a successful request.
