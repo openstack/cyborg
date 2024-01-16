@@ -68,7 +68,7 @@ class TestDeviceProfileController(v2_test.APITestV2):
         mock_dp_name.return_value = dp
         url = self.DP_URL + '/%s'
         headers = self.headers
-        headers[base.Version.current_api_version] = 'accelerator 2.1'
+        headers[base.Version.current_api_version] = '2.1'
         self.assertRaisesRegex(
             webtest.app.AppError,
             "Request not acceptable.*",
@@ -82,7 +82,7 @@ class TestDeviceProfileController(v2_test.APITestV2):
         mock_dp_name.return_value = dp
         url = self.DP_URL + '/%s'
         headers = self.headers
-        headers[base.Version.current_api_version] = 'accelerator 2.2'
+        headers[base.Version.current_api_version] = '2.2'
         data = self.get_json(url % dp['name'],
                              headers=headers)
         mock_dp_name.assert_called_once()

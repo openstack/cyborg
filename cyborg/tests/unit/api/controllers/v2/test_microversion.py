@@ -33,8 +33,7 @@ class TestMicroversions(api_base.BaseApiTest):
     def test_wrong_major_version(self):
         response = self.get_json(
             '/v2',
-            headers={'OpenStack-API-Version': ' '.join([SERVICE_TYPE,
-                                                        '10'])},
+            headers={'OpenStack-API-Version': '10'},
             expect_errors=True, return_json=False)
         self.assertEqual('application/json', response.content_type)
         self.assertEqual(406, response.status_int)
@@ -57,8 +56,7 @@ class TestMicroversions(api_base.BaseApiTest):
     def test_new_client_new_api(self):
         response = self.get_json(
             '/v2',
-            headers={'OpenStack-API-Version': ' '.join([SERVICE_TYPE,
-                                                        '2.0'])},
+            headers={'OpenStack-API-Version': '2.0'},
             return_json=False)
         self.assertEqual(response.headers[H_MIN_VER], MIN_VER)
         self.assertEqual(response.headers[H_MAX_VER], MAX_VER)
@@ -69,8 +67,7 @@ class TestMicroversions(api_base.BaseApiTest):
     def test_latest_microversion(self):
         response = self.get_json(
             '/v2',
-            headers={'OpenStack-API-Version': ' '.join([SERVICE_TYPE,
-                                                        'latest'])},
+            headers={'OpenStack-API-Version': 'latest'},
             return_json=False)
         self.assertEqual(response.headers[H_MIN_VER], MIN_VER)
         self.assertEqual(response.headers[H_MAX_VER], MAX_VER)
@@ -82,8 +79,7 @@ class TestMicroversions(api_base.BaseApiTest):
         unsupported_version = str(float(MAX_VER) + 0.1)
         response = self.get_json(
             '/v2',
-            headers={'OpenStack-API-Version': ' '.join(
-                [SERVICE_TYPE, unsupported_version])},
+            headers={'OpenStack-API-Version': unsupported_version},
             expect_errors=True)
         self.assertEqual(406, response.status_int)
         self.assertEqual(response.headers[H_MIN_VER], MIN_VER)

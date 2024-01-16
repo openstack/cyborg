@@ -17,7 +17,6 @@ import datetime
 import functools
 
 import inspect
-import microversion_parse
 
 import pecan
 from pecan import rest
@@ -108,10 +107,7 @@ class Version(object):
         :raises: webob.HTTPNotAcceptable
 
         """
-        version_str = microversion_parse.get_version(
-            headers,
-            service_type='accelerator')
-
+        version_str = headers.get(Version.current_api_version, default_version)
         minimal_version = (2, 0)
 
         if version_str is None:

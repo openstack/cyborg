@@ -35,15 +35,13 @@ from cyborg.api.controllers.v2 import versions
 
 def min_version():
     return base.Version(
-        {base.Version.current_api_version: ' '.join(
-            [versions.service_type_string(), versions.min_version_string()])},
+        {base.Version.current_api_version: versions.min_version_string()},
         versions.min_version_string(), versions.max_version_string())
 
 
 def max_version():
     return base.Version(
-        {base.Version.current_api_version: ' '.join(
-            [versions.service_type_string(), versions.max_version_string()])},
+        {base.Version.current_api_version: versions.max_version_string()},
         versions.min_version_string(), versions.max_version_string())
 
 
