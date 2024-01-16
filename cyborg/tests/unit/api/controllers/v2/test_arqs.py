@@ -315,7 +315,7 @@ class TestARQsController(v2_test.APITestV2):
 
         self.patch_json(self.ARQ_URL, params=patch_list,
                         headers={base.Version.current_api_version:
-                                 'accelerator 2.1'})
+                                 '2.1'})
         mock_apply_patch.assert_called_once_with(mock.ANY, patch_list,
                                                  valid_fields)
         mock_check_if_bound.assert_called_once_with(mock.ANY, valid_fields)
