@@ -35,6 +35,14 @@ case $1 in
                 echo_summary "Starting Cyborg"
                 start_cyborg
                 ;;
+            "test-config")
+                # stack/test-config - Called at the end of devstack used to configure tempest
+                # or any other test environments
+                if is_service_enabled tempest; then
+                    echo_summary "Configuring Tempest for Cyborg needs"
+                    cyborg_configure_tempest
+                fi
+		;;
         esac
         ;;
     "unstack")
