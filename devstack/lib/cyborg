@@ -272,12 +272,18 @@ function stop_cyborg {
     stop_process cyborg-agent
 }
 
+function cyborg_configure_tempest {
+    iniset $TEMPEST_CONFIG service_available cyborg True
+
+    if [[ -n "$TEMPEST_ACCELERATOR_MIN_MICROVERSION" ]]; then
+        iniset $TEMPEST_CONFIG accelerator min_microversion $TEMPEST_ACCELERATOR_MIN_MICROVERSION
+    fi
+    if [[ -n "$TEMPEST_ACCELERATOR_MAX_MICROVERSION" ]]; then
+        iniset $TEMPEST_CONFIG accelerator max_microversion $TEMPEST_ACCELERATOR_MAX_MICROVERSION
+    fi
+}
 
 # Restore xtrace + pipefail
 $_XTRACE_CYBORG
 $_PIPEFAIL_CYBORG
 
-# Tell emacs to use shell-script-mode
-## Local variables:
-## mode: shell-script
-## End:
