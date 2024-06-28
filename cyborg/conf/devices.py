@@ -14,6 +14,15 @@
 
 from oslo_config import cfg
 
+pci_group = cfg.OptGroup(
+    name='pci',
+    title='PCI passthrough options')
+
+pci_opts = [
+    cfg.MultiStrOpt('passthrough_whitelist',
+                    default=[],
+                    help=" ")
+]
 
 nic_group = cfg.OptGroup(
     name='nic_devices',
@@ -72,6 +81,8 @@ def register_opts(conf):
     conf.register_opts(nic_opts, group=nic_group)
     conf.register_group(gpu_group)
     conf.register_opts(vgpu_opts, group=gpu_group)
+    conf.register_group(pci_group)
+    conf.register_opts(pci_opts, group=pci_group)
 
 
 def register_dynamic_opts(conf):

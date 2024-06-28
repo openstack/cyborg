@@ -88,6 +88,7 @@ RESOURCES = {
     "QAT": "CUSTOM_QAT",
     "NIC": "CUSTOM_NIC",
     "SSD": 'CUSTOM_SSD',
+    "PCI": 'CUSTOM_PCI',
 }
 
 

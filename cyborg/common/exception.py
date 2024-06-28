@@ -425,3 +425,12 @@ class FPGAProgramError(CyborgException):
 
 class PciDeviceNotFoundById(NotFound):
     _msg_fmt = _("PCI device %(id)s not found")
+
+
+class PciConfigInvalidWhitelist(Invalid):
+    _msg_fmt = _("Invalid PCI devices whitelist config: %(reason)s.")
+
+
+class PciDeviceInvalidDeviceName(CyborgException):
+    _msg_fmt = _("Invalid PCI whitelist: The PCI whitelist can specify "
+                 "devname or address, but not both.")
