@@ -46,53 +46,53 @@ deprecated_create = policy.DeprecatedRule(
     name='cyborg:device_profile:create',
     check_str=base.deprecated_is_admin,
     deprecated_reason=('project_admin_or_owner is too permissive, '
-                       'introduce system_scoped admin for creation'),
+                       'introduce admin for creation'),
     deprecated_since=versionutils.deprecated.WALLABY)
 deprecated_delete = policy.DeprecatedRule(
     name='cyborg:device_profile:delete',
     check_str=base.deprecated_default,
     deprecated_reason=('project_admin_or_owner is too permissive, '
-                       'introduce system_scoped admin for deletion'),
+                       'introduce admin for deletion'),
     deprecated_since=versionutils.deprecated.WALLABY)
 
 # new device_profile policies
 device_profile_policies = [
     policy.DocumentedRuleDefault(
         name='cyborg:device_profile:get_all',
-        check_str=base.PROJECT_READER_OR_SYSTEM_READER,
+        check_str=base.PROJECT_READER_OR_ADMIN,
         description='Retrieve all device_profiles',
         operations=[
             {
                 'path': '/v2/device_profiles',
                 'method': 'GET'
             }],
-        scope_types=['system', 'project'],
+        scope_types=['project'],
         deprecated_rule=deprecated_get_all),
     policy.DocumentedRuleDefault(
         name='cyborg:device_profile:get_one',
-        check_str=base.PROJECT_READER_OR_SYSTEM_READER,
+        check_str=base.PROJECT_READER_OR_ADMIN,
         description='Retrieve a specific device_profile',
         operations=[
             {
                 'path': '/v2/device_profiles/{device_profiles_uuid}',
                 'method': 'GET'
             }],
-        scope_types=['system', 'project'],
+        scope_types=['project'],
         deprecated_rule=deprecated_get_one),
     policy.DocumentedRuleDefault(
         name='cyborg:device_profile:create',
-        check_str=base.SYSTEM_ADMIN,
+        check_str=base.ADMIN,
         description='Create a device_profile',
         operations=[
             {
                 'path': '/v2/device_profiles',
                 'method': 'POST'
             }],
-        scope_types=['system'],
+        scope_types=['project'],
         deprecated_rule=deprecated_create),
     policy.DocumentedRuleDefault(
         name='cyborg:device_profile:delete',
-        check_str=base.SYSTEM_ADMIN,
+        check_str=base.ADMIN,
         description='Delete device_profile(s)',
         operations=[
             {
@@ -102,7 +102,7 @@ device_profile_policies = [
                 'path': '/v2/device_profiles?value={device_profile_name1}',
                 'method': 'DELETE'},
             ],
-        scope_types=['system'],
+        scope_types=['project'],
         deprecated_rule=deprecated_delete),
 ]
 

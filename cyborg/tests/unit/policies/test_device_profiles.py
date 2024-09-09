@@ -153,17 +153,17 @@ class DeviceProfileScopeTypePolicyTest(DeviceProfilePolicyTest):
     def setUp(self):
         super(DeviceProfileScopeTypePolicyTest, self).setUp()
         self.flags(enforce_scope=True, group="oslo_policy")
-
-        # check that system_admin is able to do create and delete operations.
+        # check that admin is able to do create and delete operations.
         self.create_authorized_contexts = [
-            self.system_admin_context]
+            self.legacy_admin_context,
+            self.project_admin_context]
         self.delete_authorized_contexts = self.create_authorized_contexts
-        # Check that non-system or non-admin is not able to perform the system
+        # Check that system or non-admin is not able to perform the system
         # level actions on device_profiles.
         self.create_unauthorized_contexts = [
-            self.legacy_admin_context, self.system_member_context,
+            self.system_admin_context, self.system_member_context,
             self.system_reader_context, self.system_foo_context,
-            self.project_admin_context, self.project_member_context,
+            self.project_member_context,
             self.other_project_member_context,
             self.project_foo_context, self.project_reader_context
         ]

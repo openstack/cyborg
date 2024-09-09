@@ -19,75 +19,6 @@ from oslo_policy import policy
 # All legacy policy and new policy mapping for all V2 APIs can be found
 # here:https://wiki.openstack.org/wiki/Cyborg/Policy
 
-
-# TODO(yumeng) Special string ``system_scope:all``
-# We are explicitly setting system_scope:all in these check strings because
-# they provide backwards compatibility in the event a deployment sets
-# ``cyborg.conf [oslo_policy] enforce_scope = False``, which the default.
-# Otherwise, this might open up APIs to be more permissive unintentionally if a
-# deployment isn't enforcing scope. For example, the new rule for action
-# 'cyborg:device_profile:create' will be System Scoped Admin with
-# ``role:admin`` and scope_type=['system']. However, it would be possible for
-# users with the ``admin`` role on a project to access the
-# 'cyborg:device_profile:create' until enforce_scope=True is set by default.
-# Once cyborg defaults ``cyborg.conf [oslo_policy] enforce_scope = True``,
-# the the ``system_scope:all`` bits of these check strings
-# can be removed since that will be handled automatically by scope_types in
-# oslo.policy's RuleDefault objects.
-SYSTEM_ADMIN = 'rule:system_admin_api'
-SYSTEM_READER = 'rule:system_reader_api'
-PROJECT_ADMIN = 'rule:project_admin_api'
-PROJECT_MEMBER = 'rule:project_member_api'
-PROJECT_READER = 'rule:project_reader_api'
-PROJECT_MEMBER_OR_SYSTEM_ADMIN = 'rule:system_admin_or_owner'
-PROJECT_READER_OR_SYSTEM_READER = 'rule:system_or_project_reader'
-
-# NOTE(yumeng): Keystone already support implied roles means assignment
-# of one role implies the assignment of another. New defaults roles
-# `reader`, `member` also has been added in bootstrap. If the bootstrap
-# process is re-run, and a `reader`, `member`, or `admin` role already
-# exists, a role implication chain will be created: `admin` implies
-# `member` implies `reader`.
-# For example: If we give access to 'reader' it means the 'admin' and
-# 'member' also get access.
-
-# NOTE(yumeng) the rules listed include both old rules and new rules.
-# legacy rules list: 'public_api','allow','deny','admin_api','is_admin',
-# 'admin_or_owner','admin_or_user'.
-# new rules list: system_admin_api,system_reader_api,project_admin_api,
-# project_member_api, project_reader_api, system_admin_or_owner,
-# system_or_project_reader .
-default_policies = [
-    policy.RuleDefault(
-        name="system_admin_api",
-        check_str='role:admin and system_scope:all',
-        description="Default rule for System Admin APIs."),
-    policy.RuleDefault(
-        name="system_reader_api",
-        check_str="role:reader and system_scope:all",
-        description="Default rule for System level read only APIs."),
-    policy.RuleDefault(
-        name="project_admin_api",
-        check_str="role:admin and project_id:%(project_id)s",
-        description="Default rule for Project level admin APIs."),
-    policy.RuleDefault(
-        name="project_member_api",
-        check_str="role:member and project_id:%(project_id)s",
-        description="Default rule for Project level non admin APIs."),
-    policy.RuleDefault(
-        name="project_reader_api",
-        check_str="role:reader and project_id:%(project_id)s",
-        description="Default rule for Project level read only APIs."),
-    policy.RuleDefault(
-        name="system_admin_or_owner",
-        check_str="rule:system_admin_api or rule:project_member_api",
-        description="Default rule for system_admin+owner APIs."),
-    policy.RuleDefault(
-        name="system_or_project_reader",
-        check_str="rule:system_reader_api or rule:project_reader_api",
-        description="Default rule for System+Project read only APIs.")
-]
-
 DEPRECATED_REASON = """
 Cyborg API policies are introducing new default roles with scope_type
 capabilities. We will start to deprecate old policies from WALLABY release,
@@ -98,6 +29,16 @@ relying on overrides in your deployment for the policy API.
 
 deprecated_default = 'rule:admin_or_owner'
 deprecated_is_admin = 'rule:is_admin'
+
+ADMIN_OR_OWNER = 'rule:admin_or_owner'
+
+DEPRECATED_ADMIN_OR_OWNER = policy.DeprecatedRule(
+    name=ADMIN_OR_OWNER,
+    check_str='is_admin:True or project_id:%(project_id)s',
+    deprecated_reason=DEPRECATED_REASON,
+    deprecated_since=versionutils.deprecated.WALLABY
+)
+
 deprecated_default_policies = [
     # is_public_api is set in the environment from AuthTokenMiddleware
     policy.RuleDefault(
@@ -132,13 +73,6 @@ deprecated_default_policies = [
         deprecated_reason=DEPRECATED_REASON,
         deprecated_since=versionutils.deprecated.WALLABY),
     policy.RuleDefault(
-        name='admin_api',
-        check_str='role:admin or role:administrator',
-        description='Legacy rule for cloud admin access',
-        deprecated_for_removal=True,
-        deprecated_reason=DEPRECATED_REASON,
-        deprecated_since=versionutils.deprecated.WALLABY),
-    policy.RuleDefault(
         name='is_admin',
         check_str='rule:admin_api',
         description='Full read/write API access',
@@ -159,6 +93,56 @@ deprecated_default_policies = [
         deprecated_for_removal=True,
         deprecated_reason=DEPRECATED_REASON,
         deprecated_since=versionutils.deprecated.WALLABY),
+]
+
+ADMIN = 'rule:admin_api'
+PROJECT_ADMIN = 'rule:project_admin_api'
+PROJECT_MEMBER = 'rule:project_member_api'
+PROJECT_READER = 'rule:project_reader_api'
+PROJECT_MEMBER_OR_ADMIN = 'rule:project_member_or_admin'
+PROJECT_READER_OR_ADMIN = 'rule:project_reader_or_admin'
+
+# NOTE(yumeng): Keystone already support implied roles means assignment
+# of one role implies the assignment of another. New defaults roles
+# `reader`, `member` also has been added in bootstrap. If the bootstrap
+# process is re-run, and a `reader`, `member`, or `admin` role already
+# exists, a role implication chain will be created: `admin` implies
+# `member` implies `reader`.
+# For example: If we give access to 'reader' it means the 'admin' and
+# 'member' also get access.
+
+# NOTE(yumeng) the rules listed include both old rules and new rules.
+# legacy rules list: 'public_api','allow','deny','admin_api','is_admin',
+# 'admin_or_owner','admin_or_user'.
+# new rules list: project_admin_api, project_member_api, project_reader_api,
+# project_member_or_admin, project_reader_or_admin .
+default_policies = [
+    policy.RuleDefault(
+        name='admin_api',
+        check_str='role:admin or role:administrator',
+        description='Legacy rule for cloud admin access'),
+    policy.RuleDefault(
+        name="project_admin_api",
+        check_str="role:admin and project_id:%(project_id)s",
+        description="Default rule for Project level admin APIs."),
+    policy.RuleDefault(
+        name="project_member_api",
+        check_str="role:member and project_id:%(project_id)s",
+        description="Default rule for Project level non admin APIs."),
+    policy.RuleDefault(
+        name="project_reader_api",
+        check_str="role:reader and project_id:%(project_id)s",
+        description="Default rule for Project level read only APIs."),
+    policy.RuleDefault(
+        "project_member_or_admin",
+        "rule:project_member_api or rule:admin_api",
+        "Default rule for Project Member or admin APIs.",
+        deprecated_rule=DEPRECATED_ADMIN_OR_OWNER),
+    policy.RuleDefault(
+        "project_reader_or_admin",
+        "rule:project_reader_api or rule:admin_api",
+        "Default rule for Project reader or admin APIs.",
+        deprecated_rule=DEPRECATED_ADMIN_OR_OWNER)
 ]
 
 
