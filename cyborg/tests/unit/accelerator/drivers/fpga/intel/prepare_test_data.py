@@ -277,7 +277,7 @@ def create_fake_sysfs(prefix=""):
     sys_class_fpga = os.path.join(prefix, SYS_CLASS_FPGA)
     basedir = os.path.dirname(sys_device)
     if os.path.exists(basedir):
-        shutil.rmtree(basedir, ignore_errors=False, onerror=None)
+        shutil.rmtree(basedir, ignore_errors=False)
     os.makedirs(sys_class_fpga)
     create_devices_path_and_files(FPGA_TREE, sys_device, sys_class_fpga)
     create_devices_soft_link(sys_class_fpga)

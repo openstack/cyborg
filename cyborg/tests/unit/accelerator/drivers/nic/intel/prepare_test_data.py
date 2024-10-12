@@ -241,5 +241,5 @@ def create_fake_sysfs(prefix=""):
     sys_device = os.path.join(prefix, SYS_DEVICES)
     basedir = os.path.dirname(sys_device)
     if os.path.exists(basedir):
-        shutil.rmtree(basedir, ignore_errors=False, onerror=None)
+        shutil.rmtree(basedir, ignore_errors=False)
     create_devices_path_and_files(NIC_TREE, sys_device)
