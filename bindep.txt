@@ -10,6 +10,7 @@ pciutils
 # libsrvg2 is needed for sphinxcontrib-svg2pdfconverter in docs builds.
 librsvg2-tools [doc platform:rpm]
 librsvg2-bin [doc platform:dpkg]
+libjpeg-dev [doc platform:dpkg]
 latexmk [pdf-docs]
 texlive [pdf-docs]
 texlive-latex-recommended [pdf-docs]
