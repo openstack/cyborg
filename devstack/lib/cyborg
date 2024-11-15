@@ -143,7 +143,7 @@ function configure_cyborg_agent {
 # API specific configuration.
 function configure_cyborg_api {
     iniset $CYBORG_CONF_FILE DEFAULT auth_strategy $CYBORG_AUTH_STRATEGY
-    configure_auth_token_middleware $CYBORG_CONF_FILE cyborg $CYBORG_AUTH_CACHE_DIR/api
+    configure_keystone_authtoken_middleware $CYBORG_CONF_FILE cyborg
     iniset $CYBORG_CONF_FILE oslo_policy policy_file $CYBORG_POLICY_JSON
 
     iniset $CYBORG_CONF_FILE conductor automated_clean $CYBORG_AUTOMATED_CLEAN_ENABLED
