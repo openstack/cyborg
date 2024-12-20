@@ -8,11 +8,13 @@
     check:
       jobs:
         - cyborg-tempest
+        - cyborg-tempest-jammy
         - cyborg-tempest-ipv6-only
         - cyborg-tox-bandit
     gate:
       jobs:
         - cyborg-tempest
+        - cyborg-tempest-jammy
 
 - job:
     name: cyborg-tox-bandit
