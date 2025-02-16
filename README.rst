@@ -21,3 +21,6 @@ Features
 
 * REST API for basic accelerator life cycle management
 * Generic driver for common accelerator support
+* Cambios realizados en 1 
+
+* GENERACIÓN DE CONFLICTO CAMBIOS_2
