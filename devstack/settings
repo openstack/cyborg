@@ -29,7 +29,7 @@ fi
 # Toggle for deploying Cyborg-API under a wsgi server
 CYBORG_USE_UWSGI=${CYBORG_USE_UWSGI:-True}
 
-CYBORG_UWSGI=$CYBORG_BIN_DIR/cyborg-wsgi-api
+CYBORG_UWSGI=cyborg.wsgi.api:application
 CYBORG_UWSGI_CONF=$CYBORG_CONF_DIR/cyborg-api-uwsgi.ini
 
 if [[ "$CYBORG_USE_UWSGI" == "True" ]]; then
