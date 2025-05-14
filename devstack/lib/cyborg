@@ -149,7 +149,7 @@ function configure_cyborg_api {
     iniset $CYBORG_CONF_FILE conductor automated_clean $CYBORG_AUTOMATED_CLEAN_ENABLED
 
     if [ "$CYBORG_USE_UWSGI" == "True" ]; then
-        write_uwsgi_config "$CYBORG_UWSGI_CONF" "$CYBORG_UWSGI" "/accelerator"
+        write_uwsgi_config "$CYBORG_UWSGI_CONF" "$CYBORG_UWSGI" "/accelerator" "" "cyborg-api"
     fi
     sudo cp -p $CYBORG_DIR/etc/cyborg/api-paste.ini $CYBORG_API_PASTE_INI
 }
