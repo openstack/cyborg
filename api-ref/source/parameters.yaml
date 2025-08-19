@@ -33,8 +33,6 @@ device_profile_uuid_v_21:
   in: path
   required: true
   type: string
-  max_version: 2.1
-  -H "OpenStack-API-Version: 2.1"
 device_uuid:
   description: |
     The UUID of the device.
