@@ -16,10 +16,10 @@
 """Base classes for API tests."""
 
 from oslo_config import cfg
-from oslo_context import context
 import pecan
 import pecan.testing
 
+from cyborg import context as cyborg_context
 from cyborg.tests.unit.db import base
 
 cfg.CONF.import_group('keystone_authtoken', 'keystonemiddleware.auth_token')
@@ -114,7 +114,7 @@ class BaseApiTest(base.DbTestCase):
                                   status=status, method="post")
 
     def gen_context(self, value, **kwargs):
-        ct = context.RequestContext.from_dict(value, **kwargs)
+        ct = cyborg_context.RequestContext.from_dict(value, **kwargs)
         return ct
 
     def gen_headers(self, context, **kw):

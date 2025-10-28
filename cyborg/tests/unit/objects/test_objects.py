@@ -16,8 +16,8 @@ import datetime
 
 from oslo_log import log
 
-from oslo_context import context
 
+from cyborg import context as cyborg_context
 from cyborg.objects import base
 from cyborg.objects import fields
 from cyborg import tests as test
@@ -192,7 +192,8 @@ class _BaseTestCase(test.base.TestCase):
         super(_BaseTestCase, self).setUp()
         self.user_id = 'fake-user'
         self.project_id = 'fake-project'
-        self.context = context.RequestContext(self.user_id, self.project_id)
+        self.context = cyborg_context.RequestContext(self.user_id,
+                                                     self.project_id)
 
         base.CyborgObjectRegistry.register(MyObj)
         base.CyborgObjectRegistry.register(MyOwnedObject)

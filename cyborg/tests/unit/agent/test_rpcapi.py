@@ -17,9 +17,9 @@ import oslo_messaging as messaging
 from cyborg.agent.rpcapi import AgentAPI
 from cyborg.common import constants
 from cyborg.common import rpc
+from cyborg import context as cyborg_context
 from cyborg.objects import base as objects_base
 from cyborg.tests import base
-from oslo_context import context as oslo_context
 from unittest import mock
 
 
@@ -40,8 +40,8 @@ class TestRPCAPI(base.TestCase):
                                      serializer=self.serializer)
 
     def _test_rpc_call(self, method):
-        ctxt = oslo_context.RequestContext(user_id='fake_user',
-                                           project_id='fake_project')
+        ctxt = cyborg_context.RequestContext(user_id='fake_user',
+                                             project_id='fake_project')
         expect_val = True
         with mock.patch.object(self.agent_rpcapi,
                                'fpga_program') as mock_program:

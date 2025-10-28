@@ -18,7 +18,6 @@ from unittest import mock
 
 from oslo_config import cfg
 from oslo_config import fixture as config_fixture
-from oslo_context import context
 from oslo_db import options
 from oslo_log import log
 from oslo_utils import excutils
@@ -29,6 +28,7 @@ import eventlet
 import testtools
 
 from cyborg.common import config as cyborg_config
+from cyborg import context as cyborg_context
 from cyborg.tests import post_mortem_debug
 from cyborg.tests.unit import policy_fixture
 
@@ -46,7 +46,7 @@ class TestCase(base.BaseTestCase):
 
     def setUp(self):
         super(TestCase, self).setUp()
-        self.context = context.get_admin_context()
+        self.context = cyborg_context.get_admin_context()
         self._set_config()
         self.policy = self.useFixture(policy_fixture.PolicyFixture())
 
@@ -100,7 +100,7 @@ class DietTestCase(base.BaseTestCase):
 
     def setUp(self):
         super(DietTestCase, self).setUp()
-        self.context = context.get_admin_context()
+        self.context = cyborg_context.get_admin_context()
 
         options.set_defaults(cfg.CONF, connection='sqlite://')
 

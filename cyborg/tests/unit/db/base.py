@@ -17,9 +17,9 @@
 
 import fixtures
 from oslo_config import cfg
-from oslo_db.sqlalchemy import enginefacade
 
 from cyborg.db import api as dbapi
+from cyborg.db.sqlalchemy import api as sqlalchemy_api
 from cyborg.db.sqlalchemy import migration
 from cyborg.db.sqlalchemy import models
 from cyborg.tests import base
@@ -65,7 +65,11 @@ class DbTestCase(base.TestCase):
 
         global _DB_CACHE
         if not _DB_CACHE:
-            engine = enginefacade.get_legacy_facade().get_engine()
+            engine = (
+                sqlalchemy_api.main_context_manager
+                .get_legacy_facade()
+                .get_engine()
+            )
             _DB_CACHE = Database(engine, migration,
                                  sql_connection=CONF.database.connection)
         self.useFixture(_DB_CACHE)
