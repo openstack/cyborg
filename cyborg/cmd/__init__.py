@@ -13,9 +13,15 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import eventlet
+"""Cyborg command entry point initialization.
+
+Initializes the oslo.service threading backend before any service is
+started. All ``cyborg-*`` entry points import from ``cyborg.cmd``,
+so this module runs before any service code.
+"""
+
 import oslo_i18n as i18n
+import oslo_service.backend as service
 
-eventlet.monkey_patch()
-
+service.init_backend(service.BackendType.THREADING)
 i18n.install('cyborg')

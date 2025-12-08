@@ -15,45 +15,26 @@
 
 """Cyborg DB test base class."""
 
+import os
+import sqlite3
+import tempfile
+
+import alembic.migration as alembic_migration
+from alembic.script import ScriptDirectory
 import fixtures
 from oslo_config import cfg
+from oslo_db.sqlalchemy import enginefacade
+from oslo_db.sqlalchemy import test_fixtures
 
 from cyborg.db import api as dbapi
 from cyborg.db.sqlalchemy import api as sqlalchemy_api
 from cyborg.db.sqlalchemy import migration
 from cyborg.db.sqlalchemy import models
 from cyborg.tests import base
+from cyborg.tests.unit.db_lock_fixture import DatabaseWriteLock
 
 
 CONF = cfg.CONF
-_DB_CACHE = None
-
-
-class Database(fixtures.Fixture):
-
-    def __init__(self, engine, db_migrate, sql_connection):
-        self.sql_connection = sql_connection
-
-        self.engine = engine
-        self.engine.dispose()
-        conn = self.engine.connect()
-        self.setup_sqlite(db_migrate)
-
-        self._DB = ''.join(line for line in conn.connection.iterdump())
-        self.engine.dispose()
-
-    def setup_sqlite(self, db_migrate):
-        if db_migrate.version():
-            return
-        models.Base.metadata.create_all(self.engine)
-        db_migrate.stamp('head')
-
-    def setUp(self):
-        super(Database, self).setUp()
-
-        conn = self.engine.connect()
-        conn.connection.executescript(self._DB)
-        self.addCleanup(self.engine.dispose)
 
 
 class DbTestCase(base.TestCase):
@@ -61,11 +42,45 @@ class DbTestCase(base.TestCase):
     def setUp(self):
         super(DbTestCase, self).setUp()
 
-        self.dbapi = dbapi.get_instance()
+        # Create a temporary directory for SQLite temp files;
+        # NestedTempfile patches tempfile to use it as the default.
+        self.useFixture(fixtures.NestedTempfile())
 
-        global _DB_CACHE
-        if not _DB_CACHE:
-            engine = sqlalchemy_api.main_context_manager.writer.get_engine()
-            _DB_CACHE = Database(engine, migration,
-                                 sql_connection=CONF.database.connection)
-        self.useFixture(_DB_CACHE)
+        # File-backed SQLite so each thread gets its own connection.
+        fd, dbfile_path = tempfile.mkstemp(
+            prefix="cyborg_test_", suffix=".db")
+        os.close(fd)
+        CONF.set_override(
+            "connection", "sqlite:///%s" % dbfile_path,
+            group="database")
+
+        # WAL mode: readers don't block writers, writer doesn't
+        # block readers.
+        with sqlite3.connect(dbfile_path) as conn:
+            conn.execute("PRAGMA journal_mode=WAL")
+
+        # Fresh enginefacade per test, replacing the app-level one.
+        local_enginefacade = enginefacade.transaction_context()
+        local_enginefacade.configure(
+            connection=CONF.database.connection,
+            sqlite_synchronous=CONF.database.sqlite_synchronous)
+        self.useFixture(
+            test_fixtures.ReplaceEngineFacadeFixture(
+                sqlalchemy_api.main_context_manager,
+                local_enginefacade))
+
+        # Build schema from models directly, bypassing Alembic's env.py
+        # which would create its own engine via the global enginefacade.
+        engine = local_enginefacade.writer.get_engine()
+        models.Base.metadata.create_all(engine)
+        alembic_cfg = migration._alembic_config()
+        script = ScriptDirectory.from_config(alembic_cfg)
+        with engine.connect() as conn:
+            context = alembic_migration.MigrationContext.configure(conn)
+            context.stamp(script, 'head')
+            conn.commit()
+
+        # SQLite only supports one writer; serialize write txns.
+        self.useFixture(DatabaseWriteLock())
+
+        self.dbapi = dbapi.get_instance()

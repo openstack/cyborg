@@ -23,8 +23,6 @@ from oslo_log import log
 from oslo_utils import excutils
 from oslotest import base
 
-import contextlib
-import eventlet
 import testtools
 
 from cyborg.common import config as cyborg_config
@@ -86,10 +84,6 @@ class TestCase(base.BaseTestCase):
             return root
 
 
-# Test worker cannot survive eventlet's Timeout exception, which effectively
-# kills the whole worker, with all test cases scheduled to it. This metaclass
-# makes all test cases convert Timeout exceptions into unittest friendly
-# failure mode (self.fail).
 class DietTestCase(base.BaseTestCase):
     """Same great taste, less filling.
 
@@ -134,13 +128,6 @@ class DietTestCase(base.BaseTestCase):
                 raise
             # This makes sys.exit(0) still a failure
             self.force_failure = True
-
-    @contextlib.contextmanager
-    def assert_max_execution_time(self, max_execution_time=5):
-        with eventlet.Timeout(max_execution_time, False):
-            yield
-            return
-        self.fail('Execution of this test timed out')
 
     def assertOrderedEqual(self, expected, actual):
         expect_val = self.sort_dict_lists(expected)
