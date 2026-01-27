@@ -65,11 +65,7 @@ class DbTestCase(base.TestCase):
 
         global _DB_CACHE
         if not _DB_CACHE:
-            engine = (
-                sqlalchemy_api.main_context_manager
-                .get_legacy_facade()
-                .get_engine()
-            )
+            engine = sqlalchemy_api.main_context_manager.writer.get_engine()
             _DB_CACHE = Database(engine, migration,
                                  sql_connection=CONF.database.connection)
         self.useFixture(_DB_CACHE)

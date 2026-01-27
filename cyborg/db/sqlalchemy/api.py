@@ -44,11 +44,6 @@ def get_backend():
     return Connection()
 
 
-def get_session(use_slave=False, **kwargs):
-    return main_context_manager._factory.get_legacy_facade().get_session(
-        use_slave=use_slave, **kwargs)
-
-
 def model_query(context, model, *args, **kwargs):
     """Query helper for simpler session usage.
 

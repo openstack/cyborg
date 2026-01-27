@@ -37,7 +37,7 @@ def version(config=None, engine=None):
     :rtype: string
     """
     if engine is None:
-        engine = enginefacade.get_legacy_facade().get_engine()
+        engine = enginefacade.writer.get_engine()
     with engine.connect() as conn:
         context = alembic_migration.MigrationContext.configure(conn)
         return context.get_current_revision()
@@ -60,7 +60,7 @@ def create_schema(config=None, engine=None):
     Can be used for initial installation instead of upgrade('head').
     """
     if engine is None:
-        engine = enginefacade.get_legacy_facade().get_engine()
+        engine = enginefacade.writer.get_engine()
 
     if version(engine=engine) is not None:
         raise db_exc.DBMigrationError("DB schema is already under version"
