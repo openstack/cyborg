@@ -32,7 +32,14 @@ _PCI_ADDRESS_REGEX = re.compile(_PCI_ADDRESS_PATTERN)
 
 _SRIOV_TOTALVFS = "sriov_totalvfs"
 
-VENDOR_MAPS = {"10de": "nvidia", "102b": "matrox"}
+VENDOR_MAPS = {
+    "10de": "nvidia",
+    "102b": "matrox",
+    "8086": "intel",
+    "1bd4": "inspur",
+    "10ee": "xilinx",
+    "19e5": "huawei",
+}
 
 
 @cyborg.privsep.sys_admin_pctxt.entrypoint

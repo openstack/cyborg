@@ -16,6 +16,8 @@
 """
 Cyborg PCI driver implementation.
 """
+import re
+
 from oslo_log import log as logging
 from oslo_serialization import jsonutils
 
@@ -33,6 +35,13 @@ from cyborg.objects.driver_objects import driver_device
 LOG = logging.getLogger(__name__)
 CONF = cyborg.conf.CONF
 
+# Regex to parse lspci -nnn -D output format:
+# 0000:00:00.0 Host bridge [0600]: Intel Corporation ... [8086:2020] (rev 07)
+LSPCI_PATTERN = re.compile(
+    r'^(?P<devices>[\da-fA-F]{4}:[\da-fA-F]{2}:[\da-fA-F]{2}\.\d)\s+'
+    r'.*\[(?P<vendor_id>[\da-fA-F]{4}):(?P<product_id>[\da-fA-F]{4})\]'
+)
+
 
 def _get_traits(vendor_id, product_id):
     """Generate traits for PCIs.
@@ -42,8 +51,10 @@ def _get_traits(vendor_id, product_id):
     Example PGPU traits:
     {traits:["OWNER_CYBORG", "CUSTOM_PCI_1EB8"]}
     """
-    vendor_name = pci_utils.VENDOR_MAPS.get(vendor_id).upper()
-    traits = ["CUSTOM_PCI_" + vendor_name]
+    traits = []
+    vendor_name = pci_utils.VENDOR_MAPS.get(vendor_id)
+    if vendor_name:
+        traits.append("CUSTOM_PCI_" + vendor_name.upper())
     # PCIE trait
     product_trait = "_".join(('CUSTOM_PCI_PRODUCT_ID', product_id.upper()))
     traits.append(product_trait)
@@ -87,8 +98,9 @@ def _generate_dep_list(pci):
     # NOTE(yumeng) Since Wallaby release, the deplpyable_name is named as
     # <Compute_hostname>_<Device_address>
     driver_dep.name = pci.get('hostname', '') + '_' + pci["devices"]
-    driver_dep.driver_name = \
-        pci_utils.VENDOR_MAPS.get(pci["vendor_id"]).upper()
+    vendor_name = pci_utils.VENDOR_MAPS.get(
+        pci["vendor_id"], pci["vendor_id"])
+    driver_dep.driver_name = vendor_name.upper()
     driver_dep.num_accelerators = 1
     driver_dep.attach_handle_list = [_generate_attach_handle(pci)]
     dep_list.append(driver_dep)
@@ -123,14 +135,23 @@ def _discover_pcis():
     cyborg.conf.devices.register_dynamic_opts(CONF)
     # discover pci devices by "lspci"
     pci_list = []
-    pcis = pci_utils.get_pci_devices()
-    LOG.info('pcis:%s', pcis)
+    stdout, _stderr = pci_utils.get_pci_devices()
+    LOG.info('lspci output: %s', stdout)
     # report trait,rc and generate driver object
     dev_filter = whitelist.Whitelist(CONF.pci.passthrough_whitelist)
-    for pci in pcis:
-        m = dev_filter.device_assignable(pci)
-        if m:
-            pci_dict = m.groupdict()
+    for line in stdout.splitlines():
+        m = LSPCI_PATTERN.match(line)
+        if not m:
+            continue
+        pci_dict = m.groupdict()
+        # Build device dict for whitelist matching
+        dev_info = {
+            'vendor_id': pci_dict['vendor_id'],
+            'product_id': pci_dict['product_id'],
+            'address': pci_dict['devices'],
+            'parent_addr': None
+        }
+        if dev_filter.device_assignable(dev_info):
             # get hostname for deployable_name usage
             pci_dict['hostname'] = CONF.host
             pci_dict["rc"] = constants.RESOURCES["PCI"]
@@ -138,7 +159,7 @@ def _discover_pcis():
                                  pci_dict["product_id"])
             pci_dict.update(traits)
             pci_list.append(_generate_driver_device(pci_dict))
-    LOG.info('pci_list:%s', pci_list)
+    LOG.info('pci_list: %s', pci_list)
     return pci_list
 
 

@@ -1,0 +1,8 @@
+---
+fixes:
+  - |
+    Fixed a crash in the PCI driver where discovery of devices with
+    vendor IDs not present in the vendor map would raise an
+    ``AttributeError``. The PCI driver now gracefully handles unknown
+    vendors by skipping the vendor-specific trait and falling back to
+    using the raw vendor ID as the driver name.
