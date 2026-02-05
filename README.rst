@@ -2,6 +2,8 @@
 Cyborg
 ======
 
+.. image:: https://governance.openstack.org/tc/badges/cyborg.svg
+
 OpenStack Acceleration as a Service
 
 Cyborg provides a general management framework for accelerators such as
