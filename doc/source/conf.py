@@ -47,7 +47,8 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-copyright = '2013, OpenStack Foundation'
+project = "Cyborg"
+copyright = '2013-present, OpenStack Foundation'
 
 # openstackdocstheme options
 openstackdocs_auto_name = False
@@ -56,13 +57,13 @@ openstackdocs_bug_project = 'cyborg'
 openstackdocs_bug_tag = 'doc'
 openstackdocs_pdf_link = True
 
-config_generator_config_file = \
+config_generator_config_file = (
     '../../tools/config/cyborg-config-generator.conf'
+)
 sample_config_basename = '_static/cyborg'
 
 policy_generator_config_file = [
-    ('../../tools/config/cyborg-policy-generator.conf',
-     '_static/cyborg'),
+    ('../../tools/config/cyborg-policy-generator.conf', '_static/cyborg'),
 ]
 
 # If true, '()' will be appended to :func: etc. cross-reference text.
@@ -99,10 +100,8 @@ html_theme = 'openstackdocs'
 latex_elements = {
     # The paper size ('letterpaper' or 'a4paper').
     # 'papersize': 'letterpaper',
-
     # The font size ('10pt', '11pt' or '12pt').
     # 'pointsize': '10pt',
-
     # Additional stuff for the LaTeX preamble.
     # openany: Skip blank pages in generated PDFs
     'maxlistdepth': 10,
@@ -120,10 +119,13 @@ latex_use_xindy = False
 # (source start file, target name, title, author, documentclass
 # [howto/manual]).
 latex_documents = [
-    ('index',
-     'doc-cyborg.tex',
-     'Cyborg Documentation',
-     'OpenStack Foundation', 'manual'),
+    (
+        'index',
+        'doc-cyborg.tex',
+        'Cyborg Documentation',
+        'OpenStack Foundation',
+        'manual',
+    ),
 ]
 
 # Example configuration for intersphinx: refer to the Python standard library.
