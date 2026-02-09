@@ -144,7 +144,7 @@ class GlanceClientWrapper(object):
         """Call a glance client method.  If we get a connection error,
         retry the request according to CONF.glance.num_retries.
         """
-        retry_excs = (glanceclient.exc.ServiceUnavailable,
+        retry_excs = (glanceclient.exc.HTTPServiceUnavailable,
                       glanceclient.exc.InvalidEndpoint,
                       glanceclient.exc.CommunicationError)
         num_attempts = 1 + CONF.glance.num_retries
@@ -585,26 +585,26 @@ def _reraise_translated_exception():
 
 
 def _translate_image_exception(image_id, exc_value):
-    if isinstance(exc_value, (glanceclient.exc.Forbidden,
-                  glanceclient.exc.Unauthorized)):
+    if isinstance(exc_value, (glanceclient.exc.HTTPForbidden,
+                  glanceclient.exc.HTTPUnauthorized)):
         return exception.ImageNotAuthorized(image_id=image_id)
-    if isinstance(exc_value, glanceclient.exc.NotFound):
+    if isinstance(exc_value, glanceclient.exc.HTTPNotFound):
         return exception.ResourceNotFound(
             resource='Image',
             msg='with uuid=%s' % image_id)
-    if isinstance(exc_value, glanceclient.exc.BadRequest):
+    if isinstance(exc_value, glanceclient.exc.HTTPBadRequest):
         return exception.ImageBadRequest(image_id=image_id,
                                          response=str(exc_value))
     return exc_value
 
 
 def _translate_plain_exception(exc_value):
-    if isinstance(exc_value, (glanceclient.exc.Forbidden,
-                  glanceclient.exc.Unauthorized)):
-        return exception.Forbidden(str(exc_value))
-    if isinstance(exc_value, glanceclient.exc.NotFound):
-        return exception.NotFound(str(exc_value))
-    if isinstance(exc_value, glanceclient.exc.BadRequest):
+    if isinstance(exc_value, (glanceclient.exc.HTTPForbidden,
+                  glanceclient.exc.HTTPUnauthorized)):
+        return exception.HTTPForbidden(str(exc_value))
+    if isinstance(exc_value, glanceclient.exc.HTTPNotFound):
+        return exception.HTTPNotFound(str(exc_value))
+    if isinstance(exc_value, glanceclient.exc.HTTPBadRequest):
         return exception.Invalid(str(exc_value))
     return exc_value
 
