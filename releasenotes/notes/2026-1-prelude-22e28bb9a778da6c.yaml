@@ -1,0 +1,17 @@
+---
+prelude: |
+    The 2026.1 release focuses on reducing technical debt and improving
+    operational reliability. The most significant change is the removal of
+    the eventlet dependency, completing Cyborg's migration to native
+    threading for oslo.service and oslo.messaging. Database session
+    management has been modernized to use the current oslo.db enginefacade
+    API, replacing the legacy facade that was removed upstream.
+    Additionally, the cyborg-agent now validates its Placement resource
+    provider at startup, fixing a long-standing hostname mismatch issue
+    between Cyborg and Nova. Several accelerator driver bugs have also
+    been corrected.
+
+    The documentation has also been enhanced, a new driver configuration
+    guide has been added covering all supported accelerator drivers
+    with configuration examples and troubleshooting tips, and a release
+    liaison guide has been added for contributors.

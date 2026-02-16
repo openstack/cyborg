@@ -31,6 +31,7 @@ doc/source/_static/*.sample
 doc/build/*
 doc/source/api/*
 api-ref/build/*
+releasenotes/build/*
 
 cover
 
