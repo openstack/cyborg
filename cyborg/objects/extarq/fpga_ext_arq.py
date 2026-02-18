@@ -70,7 +70,7 @@ class FPGAExtARQ(ExtARQ):
         resp = conn.image.get('/images', params=properties)
         if resp:
             image_list = resp.json()['images']
-            if type(image_list) != list:
+            if not isinstance(image_list, list):
                 raise exception.InvalidType(
                     obj='image', type=type(image_list),
                     expected='list')

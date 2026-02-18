@@ -26,7 +26,7 @@ class TestException(base.TestCase):
             item = getattr(exception, name)
             if item == base_class:
                 continue
-            elif type(item) != type:
+            elif type(item) is not type:
                 continue
             elif not issubclass(item, base_class):
                 continue

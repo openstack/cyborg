@@ -68,8 +68,6 @@ def init_enforcer(policy_file=None, rules=None,
 
 def get_enforcer():
     """Provides access to the single accelerator of policy enforcer."""
-    global _ENFORCER
-
     if not _ENFORCER:
         init_enforcer()
 
