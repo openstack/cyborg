@@ -54,10 +54,11 @@ class RPCService(service.Service):
         self.rpcserver.start()
 
         admin_context = context.get_admin_context()
-        self.tg.add_dynamic_timer(
+        # Use the _args variant to pass kwargs to the callback.
+        self.tg.add_dynamic_timer_args(
             self.manager.periodic_tasks,
-            periodic_interval_max=CONF.periodic_interval,
-            context=admin_context)
+            kwargs={"context": admin_context},
+            periodic_interval_max=CONF.periodic_interval)
 
         LOG.info('Created RPC server for service %(service)s on host '
                  '%(host)s.',
