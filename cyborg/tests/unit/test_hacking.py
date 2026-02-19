@@ -77,46 +77,6 @@ class HackingTestCase(base.TestCase):
     def _assert_has_no_errors(self, code, checker, filename=None):
         self._assert_has_errors(code, checker, filename=filename)
 
-    def test_assert_equal_in(self):
-        errors = [(1, 0, "M338")]
-        check = checks.assert_equal_in
-
-        code = "self.assertEqual(a in b, True)"
-        self._assert_has_errors(code, check, errors)
-
-        code = "self.assertEqual('str' in 'string', True)"
-        self._assert_has_errors(code, check, errors)
-
-        code = "self.assertEqual(any(a==1 for a in b), True)"
-        self._assert_has_no_errors(code, check)
-
-        code = "self.assertEqual(True, a in b)"
-        self._assert_has_errors(code, check, errors)
-
-        code = "self.assertEqual(True, 'str' in 'string')"
-        self._assert_has_errors(code, check, errors)
-
-        code = "self.assertEqual(True, any(a==1 for a in b))"
-        self._assert_has_no_errors(code, check)
-
-        code = "self.assertEqual(a in b, False)"
-        self._assert_has_errors(code, check, errors)
-
-        code = "self.assertEqual('str' in 'string', False)"
-        self._assert_has_errors(code, check, errors)
-
-        code = "self.assertEqual(any(a==1 for a in b), False)"
-        self._assert_has_no_errors(code, check)
-
-        code = "self.assertEqual(False, a in b)"
-        self._assert_has_errors(code, check, errors)
-
-        code = "self.assertEqual(False, 'str' in 'string')"
-        self._assert_has_errors(code, check, errors)
-
-        code = "self.assertEqual(False, any(a==1 for a in b))"
-        self._assert_has_no_errors(code, check)
-
     def test_no_mutable_default_args(self):
         errors = [(1, 0, "M322")]
         check = checks.no_mutable_default_args
@@ -128,49 +88,6 @@ class HackingTestCase(base.TestCase):
         self._assert_has_no_errors(code, check)
 
         code = "defined, undefined = [], {}"
-        self._assert_has_no_errors(code, check)
-
-    def test_assert_is_not_none(self):
-        errors = [(1, 0, "M302")]
-        check = checks.assert_equal_not_none
-
-        code = "self.assertEqual(A is not None)"
-        self._assert_has_errors(code, check, errors)
-
-        code = "self.assertIsNotNone()"
-        self._assert_has_no_errors(code, check)
-
-    def test_assert_true_isinstance(self):
-        errors = [(1, 0, "M316")]
-        check = checks.assert_true_isinstance
-
-        code = "self.assertTrue(isinstance(e, exception.BuilAbortException))"
-        self._assert_has_errors(code, check, errors)
-
-        code = "self.assertTrue()"
-        self._assert_has_no_errors(code, check)
-
-    def test_no_xrange(self):
-        errors = [(1, 0, "M339")]
-        check = checks.no_xrange
-
-        code = "xrange(45)"
-        self._assert_has_errors(code, check, errors)
-
-        code = "range(45)"
-        self._assert_has_no_errors(code, check)
-
-    def test_no_log_warn(self):
-        errors = [(1, 0, "M352")]
-        check = checks.no_log_warn
-        code = """
-                  LOG.warn("LOG.warn is deprecated")
-               """
-        self._assert_has_errors(code, check, errors)
-
-        code = """
-                  LOG.warning("LOG.warn is deprecated")
-               """
         self._assert_has_no_errors(code, check)
 
     def test_use_timeunitls_utcow(self):
@@ -245,13 +162,3 @@ class HackingTestCase(base.TestCase):
         self.assertEqual(len(list(checks.check_explicit_underscore_import(
             "msg = _('My message')",
             "magnum/tests/other_files3.py"))), 0)
-
-    def test_import_stock_mock(self):
-        self._assert_has_errors(
-            "import mock",
-            checks.import_stock_mock, expected_errors=[(1, 0, 'N366')])
-        code = """
-                    from unittest import mock
-                    import unittest.mock
-               """
-        self._assert_has_no_errors(code, checks.import_stock_mock)

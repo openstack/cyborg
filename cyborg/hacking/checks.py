@@ -34,18 +34,7 @@ Guidelines for writing new hacking checks
 UNDERSCORE_IMPORT_FILES = []
 
 mutable_default_args = re.compile(r"^\s*def .+\((.+=\{\}|.+=\[\])")
-assert_equal_in_end_with_true_or_false_re = re.compile(
-    r"assertEqual\((\w|[][.'\"])+ in (\w|[][.'\", ])+, (True|False)\)")
-assert_equal_in_start_with_true_or_false_re = re.compile(
-    r"assertEqual\((True|False), (\w|[][.'\"])+ in (\w|[][.'\", ])+\)")
-assert_equal_with_is_not_none_re = re.compile(
-    r"assertEqual\(.*?\s+is+\s+not+\s+None\)$")
-assert_true_isinstance_re = re.compile(
-    r"(.)*assertTrue\(isinstance\((\w|\.|\'|\"|\[|\])+, "
-    r"(\w|\.|\'|\"|\[|\])+\)\)")
 dict_constructor_with_list_copy_re = re.compile(r".*\bdict\((\[)?(\(|\[)")
-assert_xrange_re = re.compile(
-    r"\s*xrange\s*\(")
 log_translation = re.compile(
     r"(.)*LOG\.(audit|error|critical)\(\s*('|\")")
 log_translation_info = re.compile(
@@ -67,50 +56,6 @@ def no_mutable_default_args(logical_line):
     msg = "M322: Method's default argument shouldn't be mutable!"
     if mutable_default_args.match(logical_line):
         yield (0, msg)
-
-
-@core.flake8ext
-def assert_equal_not_none(logical_line):
-    """Check for assertEqual(A is not None) sentences M302"""
-    msg = "M302: assertEqual(A is not None) sentences not allowed."
-    res = assert_equal_with_is_not_none_re.search(logical_line)
-    if res:
-        yield (0, msg)
-
-
-@core.flake8ext
-def assert_true_isinstance(logical_line):
-    """Check for assertTrue(isinstance(a, b)) sentences
-
-    M316
-    """
-    if assert_true_isinstance_re.match(logical_line):
-        yield (0, "M316: assertTrue(isinstance(a, b)) sentences not allowed")
-
-
-@core.flake8ext
-def assert_equal_in(logical_line):
-    """Check for assertEqual(True|False, A in B),
-     assertEqual(A in B, True|False)
-
-    M338
-    """
-    res = (assert_equal_in_start_with_true_or_false_re.search(logical_line) or
-           assert_equal_in_end_with_true_or_false_re.search(logical_line))
-    if res:
-        yield (0, "M338: Use assertIn/NotIn(A, B) rather than "
-                  "assertEqual(A in B, True/False) when checking collection "
-                  "contents.")
-
-
-@core.flake8ext
-def no_xrange(logical_line):
-    """Disallow 'xrange()'
-
-    M339
-    """
-    if assert_xrange_re.match(logical_line):
-        yield (0, "M339: Do not use xrange().")
 
 
 @core.flake8ext
@@ -137,21 +82,6 @@ def dict_constructor_with_list_copy(logical_line):
 
 
 @core.flake8ext
-def no_log_warn(logical_line):
-    """Disallow 'LOG.warn('
-
-    Deprecated LOG.warn(), instead use LOG.warning
-    https://bugs.launchpad.net/magnum/+bug/1508442
-
-    M352
-    """
-
-    msg = ("M352: LOG.warn is deprecated, please use LOG.warning!")
-    if "LOG.warn(" in logical_line:
-        yield (0, msg)
-
-
-@core.flake8ext
 def check_explicit_underscore_import(logical_line, filename):
     """Check for explicit import of the _ function
 
@@ -171,31 +101,3 @@ def check_explicit_underscore_import(logical_line, filename):
     elif (translated_log.match(logical_line) or
           string_translation.match(logical_line)):
         yield (0, "M340: Found use of _() without explicit import of _ !")
-
-
-@core.flake8ext
-def import_stock_mock(logical_line):
-    """Use python's mock, not the mock library.
-
-    Since we `dropped support for python 2`__, we no longer need to use the
-    mock library, which existed to backport py3 functionality into py2.
-    Which must be done by saying::
-
-        from unittest import mock
-
-    ...because if you say::
-
-        import mock
-
-    ...you definitely will not be getting the standard library mock. That will
-    always import the third party mock library. This check can be removed in
-    the future (and we can start saying ``import mock`` again) if we manage to
-    purge these transitive dependencies.
-
-    .. __: https://review.opendev.org/#/c/688593/
-
-    N366
-    """
-    if logical_line == 'import mock':
-        yield (0, "N366: You must explicitly import python's mock: "
-                  "``from unittest import mock``")

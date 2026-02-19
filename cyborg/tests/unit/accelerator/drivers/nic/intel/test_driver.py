@@ -86,7 +86,7 @@ class TestIntelNICDriver(base.TestCase):
                              {'num_accelerators': 1,
                               'name': '0000:05:01.0',
                               'attach_handle_list': attach_handle_list[0],
-                              'attribute_list':attribute_list[0]
+                              'attribute_list': attribute_list[0]
                               },
                          ],
                      'controlpath_id':
@@ -104,7 +104,7 @@ class TestIntelNICDriver(base.TestCase):
                              {'num_accelerators': 1,
                               'name': '0000:06:00.0',
                               'attach_handle_list': attach_handle_list[1],
-                              'attribute_list':attribute_list[1]
+                              'attribute_list': attribute_list[1]
                               },
                          ],
                      'controlpath_id':

@@ -174,16 +174,16 @@ NIC_DEVICE_VF_SOFT_LINK = {
 def gen_nic_content(path, dev):
     content = copy.copy(NIC_DEVICE_COMMON_CONTENT)
     content.update(NIC_DEVICES_SPECIAL_COMMON_CONTENT[dev])
-    for k, v in content.items():
-        p = os.path.join(path, k)
-        if not v:
+    for key, value in content.items():
+        p = os.path.join(path, key)
+        if not value:
             os.mknod(p)
-        elif type(v) is str:
+        elif type(value) is str:
             with open(p, 'a') as f:
-                f.write(v + "\n")
-        elif type(v) is list:
+                f.write(value + "\n")
+        elif type(value) is list:
             with open(p, 'a') as f:
-                f.writelines([l + "\n" for l in v])
+                f.writelines([line + "\n" for line in value])
 
 
 def gen_nic_sub_dir(path):
