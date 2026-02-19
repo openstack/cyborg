@@ -21,17 +21,12 @@
    :platform: Unix
 """
 
-import eventlet
+import oslo_service.backend as service
 
 from cyborg import objects
 
+service.init_backend(service.BackendType.THREADING)
 
-eventlet.monkey_patch(os=False)
-
-# Make sure this is done after eventlet monkey patching otherwise
-# the threading.local() store used in oslo_messaging will be initialized to
-# threadlocal storage rather than greenthread local. This will cause context
-# sets and deletes in that storage to clobber each other.
 # Make sure we have all of the objects loaded. We do this
 # at module import time, because we may be using mock decorators in our
 # tests that run at import time.

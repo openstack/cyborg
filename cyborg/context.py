@@ -66,7 +66,7 @@ class RequestContext(context.RequestContext):
                 'yes' indicates deleted records are visible,
                 'only' indicates that *only* deleted records are visible.
 
-           :param overwrite: Set to False to ensure that the greenthread local
+           :param overwrite: Set to False to ensure that the thread-local
                 copy of the index is not overwritten.
 
            :param instance_lock_checked: This is not used and will be removed
@@ -157,7 +157,7 @@ def get_context():
     """A helper method to get a blank context.
 
     Note that overwrite is False here so this context will not update the
-    greenthread-local stored context that is used when logging.
+    thread-local stored context that is used when logging.
     """
     return RequestContext(user_id=None,
                           project_id=None,

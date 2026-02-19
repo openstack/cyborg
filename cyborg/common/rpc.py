@@ -105,12 +105,9 @@ def get_server(target, endpoints, serializer=None):
     assert TRANSPORT is not None
     access_policy = dispatcher.DefaultRPCAccessPolicy
     serializer = RequestContextSerializer(serializer)
-    return messaging.get_rpc_server(TRANSPORT,
-                                    target,
-                                    endpoints,
-                                    executor='eventlet',
-                                    serializer=serializer,
-                                    access_policy=access_policy)
+    return messaging.get_rpc_server(
+        TRANSPORT, target, endpoints,
+        serializer=serializer, access_policy=access_policy)
 
 
 def get_notifier(service=None, host=None, publisher_id=None):

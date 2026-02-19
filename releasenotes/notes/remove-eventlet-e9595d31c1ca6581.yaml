@@ -1,0 +1,8 @@
+---
+upgrade:
+  - |
+    Cyborg no longer uses eventlet. The eventlet dependency has been
+    removed and Cyborg now uses the native threading backend for
+    oslo.service and the threading RPC server. No configuration
+    changes are required. Packagers should ensure that
+    ``oslo.service[threading]`` is installed as a dependency.

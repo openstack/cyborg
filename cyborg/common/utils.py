@@ -15,9 +15,8 @@
 
 """Utilities and helper functions."""
 
-from concurrent.futures import ThreadPoolExecutor as CFThreadPoolExecutor
+from concurrent import futures
 from functools import wraps
-import queue
 import time
 import traceback
 
@@ -220,28 +219,6 @@ class Singleton(_Singleton('SingletonMeta', (object,), {})):
     pass
 
 
-class ThreadPoolExecutor(CFThreadPoolExecutor):
-    """Derived from concurrent.futures.ThreadPoolExecutor"""
-
-    def __init__(self, *args, **kwargs):
-        """Initializes a new ThreadPoolExecutor instance.
-
-        Args:
-            max_workers: The maximum number of threads that can be used to
-                execute the given calls.
-            thread_name_prefix: An optional name prefix to give our threads.
-            initializer: A callable used to initialize worker threads.
-            initargs: A tuple of arguments to pass to the initializer.
-        """
-        super(ThreadPoolExecutor, self).__init__(*args, **kwargs)
-        # NOTE(Shaohe): py37/38 will use SimpleQueue as _work_queue, it will
-        # cause hang the main thread with eventlet.monkey_patch. Change it
-        # to queue._PySimpleQueue
-        if hasattr(queue, "SimpleQueue") and not isinstance(
-                self._work_queue, queue._PySimpleQueue):
-            self._work_queue = queue._PySimpleQueue()
-
-
 class ThreadWorks(Singleton):
     """Passthrough method for ThreadPoolExecutor.
 
@@ -252,13 +229,7 @@ class ThreadWorks(Singleton):
 
     def __init__(self, pool_size=CONF.thread_pool_size):
         """Singleton ThreadWorks init."""
-        # Ref: https://pythonhosted.org/futures/
-        # NOTE(Shaohe) We can let eventlet greening ThreadPoolExecutor
-        # eventlet.patcher.monkey_patch(os=False, socket=True,
-        #     select=True, thread=True)
-        # futures = eventlet.import_patched('concurrent.futures')
-        # ThreadPoolExecutor = futures.ThreadPoolExecutor
-        self.executor = ThreadPoolExecutor(max_workers=pool_size)
+        self.executor = futures.ThreadPoolExecutor(max_workers=pool_size)
         self.masters = {}
 
     def spawn(self, func, *args, **kwargs):
@@ -270,7 +241,7 @@ class ThreadWorks(Singleton):
 
     def spawn_master(self, func, *args, **kwargs):
         """Start a new thread for a job."""
-        executor = ThreadPoolExecutor()
+        executor = futures.ThreadPoolExecutor()
         # TODO(Shaohe) every submit func should be wrapped with exception catch
         job = executor.submit(func, *args, **kwargs)
         LOG.debug("Spawn master job. func: %s is with parameters args: %s, "
