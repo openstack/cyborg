@@ -12,6 +12,8 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import socket
+
 from oslo_config import cfg
 
 from cyborg.common.i18n import _
@@ -24,6 +26,23 @@ opts = [
                        'as intel_fpga_driver, inspur_fpga_driver,'
                        'nvidia_gpu_driver, intel_qat_driver,'
                        'inspur_nvme_ssd_driver, xilinx_fpga_driver, etc.')),
+    cfg.IntOpt('resource_provider_startup_retries',
+               default=3,
+               min=0,
+               help=_('Number of times to retry looking up the resource '
+                      'provider in Placement during agent startup. Uses '
+                      'exponential backoff (1s, 2s, 4s, ...) between '
+                      'attempts. Set to 0 to fail immediately without '
+                      'retrying.')),
+    cfg.StrOpt('resource_provider_name',
+               default=socket.getfqdn(),
+               sample_default='compute.fully.qualified.name',
+               help=_('Name of the compute resource provider in Placement. '
+                      'This should match the hypervisor_hostname used by Nova '
+                      'for this compute host. Defaults to socket.getfqdn() '
+                      'which typically matches libvirt behavior. If resource '
+                      'provider lookup fails with this name, Cyborg will fall '
+                      'back to using CONF.host.')),
 ]
 
 opt_group = cfg.OptGroup(name='agent',

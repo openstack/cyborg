@@ -14,7 +14,10 @@
 
 import os
 import tempfile
+import time
+import urllib.parse
 
+from keystoneauth1 import exceptions as ks_exc
 from oslo_log import log as logging
 import oslo_messaging as messaging
 from oslo_service import periodic_task
@@ -25,6 +28,7 @@ from cyborg.accelerator.drivers.gpu import utils as gpu_utils
 from cyborg.agent.resource_tracker import ResourceTracker
 from cyborg.agent.rpcapi import AgentAPI
 from cyborg.common import exception
+from cyborg.common import placement_client as placement
 from cyborg.conductor import rpcapi as cond_api
 from cyborg.conf import CONF
 from cyborg.image.api import API as ImageAPI
@@ -48,12 +52,105 @@ class AgentManager(periodic_task.PeriodicTasks):
     def __init__(self, topic, host=None):
         super(AgentManager, self).__init__(CONF)
         self.topic = topic
-        self.host = host or CONF.host
+        self.host = host or CONF.host  # RPC server identity
+
+        # TODO(cyborg): Long-term, the conductor should not be responsible
+        # for creating resource providers in Placement. That responsibility
+        # should be moved to the agent, similar to how nova-compute manages
+        # its own resource provider.
+        # See: https://bugs.launchpad.net/openstack-cyborg/+bug/2139369
+        self.placement_client = placement.PlacementClient()
+
+        # Validate and resolve the resource provider name at startup by
+        # querying Placement. This ensures we use the correct hostname that
+        # matches the Nova compute resource provider. Unlike self.host (used
+        # for RPC), this name is used for Placement resource provider lookup.
+        # Retry with exponential backoff to tolerate startup ordering when
+        # nova-compute has not yet created the resource provider.
+        retries = CONF.agent.resource_provider_startup_retries
+        for attempt in range(retries + 1):
+            try:
+                self.resource_provider_name = (
+                    self._get_resource_provider_name())
+                break
+            except exception.PlacementResourceProviderNotFound:
+                if attempt < retries:
+                    wait = 2 ** attempt  # 1, 2, 4, 8, ...
+                    LOG.warning(
+                        "Resource provider not found in Placement, "
+                        "retrying in %(wait)ds (attempt %(attempt)d/"
+                        "%(total)d)",
+                        {'wait': wait,
+                         'attempt': attempt + 1,
+                         'total': retries + 1})
+                    time.sleep(wait)
+                else:
+                    raise
+
         self.fpga_driver = FPGADriver()
         self.cond_api = cond_api.ConductorAPI()
         self.agent_api = AgentAPI()
         self.image_api = ImageAPI()
-        self._rt = ResourceTracker(host, self.cond_api)
+        self._rt = ResourceTracker(self.resource_provider_name, self.cond_api)
+
+    def _get_resource_provider_name(self):
+        """Determine the correct resource provider name by querying Placement.
+
+        Tries CONF.agent.resource_provider_name (defaults to socket.getfqdn())
+        first, then falls back to CONF.host. Aborts agent startup if neither
+        hostname has a valid resource provider in Placement.
+
+        :returns: The validated resource provider name.
+        :raises PlacementResourceProviderNotFound: If no resource provider
+            is found with either hostname.
+        """
+        primary = CONF.agent.resource_provider_name
+        candidates = [primary]
+        if CONF.host and CONF.host != primary:
+            candidates.append(CONF.host)
+
+        for candidate in candidates:
+            if self._check_resource_provider_exists(candidate):
+                if candidate != primary:
+                    LOG.warning(
+                        "Resource provider not found with name '%(primary)s', "
+                        "using fallback '%(fallback)s'",
+                        {'primary': primary, 'fallback': candidate})
+                LOG.info("Using resource provider name: %s", candidate)
+                return candidate
+
+        LOG.error(
+            "Could not find resource provider in Placement. Tried: %s. "
+            "Ensure nova-compute is running and has registered with "
+            "Placement, or set [agent] resource_provider_name to match "
+            "the compute node's hypervisor_hostname.", candidates)
+        raise exception.PlacementResourceProviderNotFound(
+            resource_provider=primary)
+
+    def _check_resource_provider_exists(self, hostname):
+        """Check if a resource provider exists in Placement.
+
+        :param hostname: The hostname to check.
+        :returns: True if the resource provider exists, False otherwise.
+        """
+        try:
+            resp = self.placement_client.get(
+                "/resource_providers?name="
+                + urllib.parse.quote(hostname))
+            providers = resp.json().get("resource_providers", [])
+            return len(providers) > 0
+        except (ValueError, AttributeError) as e:
+            LOG.warning(
+                "Failed to parse Placement response for "
+                "'%(name)s': %(err)s",
+                {'name': hostname, 'err': e})
+            return False
+        except (ks_exc.ClientException,
+                exception.PlacementServerError) as e:
+            LOG.warning(
+                "Failed to check resource provider '%(name)s': %(err)s",
+                {'name': hostname, 'err': e})
+            return False
 
     def periodic_tasks(self, context, raise_on_error=False):
         return self.run_periodic_tasks(context, raise_on_error=raise_on_error)

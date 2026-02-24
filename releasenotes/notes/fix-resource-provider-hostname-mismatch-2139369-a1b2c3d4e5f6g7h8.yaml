@@ -1,0 +1,50 @@
+---
+fixes:
+  - |
+    A new configuration option ``[agent] resource_provider_name`` that
+    allows operators to explicitly specify the name of the compute resource
+    provider in Placement has been added.
+
+    This defaults to ``socket.getfqdn()`` which typically
+    matches libvirt's hypervisor hostname behavior. If the resource provider
+    lookup fails with this name, Cyborg will automatically fall back to using
+    ``CONF.host``, providing backward compatibility for existing deployments.
+
+    The cyborg-agent now validates the resource provider name at startup by
+    querying Placement directly. It tries the configured name (defaulting to
+    ``socket.getfqdn()``) first, then falls back to ``CONF.host``. If neither
+    hostname finds a valid resource provider, the agent will fail to start
+    with a clear error message.
+
+    A new ``[agent] resource_provider_startup_retries`` option (default: 3)
+    controls how many times the agent retries the Placement lookup at startup,
+    using exponential backoff (1s, 2s, 4s, ...). This tolerates a startup race
+    where nova-compute has not yet created the resource provider in Placement.
+
+    This fixes `Bug 2139369`_ and addresses the disconnect between
+    how Cyborg identifies the compute resource provider name and
+    how Nova/Placement names it.
+
+    Previously, Cyborg used ``CONF.host`` (which defaults to
+    ``socket.gethostname()``) to look up the compute resource provider in
+    Placement. However, Nova uses libvirt's hostname determination, which
+    typically returns the FQDN. This mismatch caused
+    ``PlacementResourceProviderNotFound`` errors on systems where the short
+    hostname differs from the FQDN.
+
+    .. _Bug 2139369: https://bugs.launchpad.net/openstack-cyborg/+bug/2139369
+
+upgrade:
+  - |
+    The cyborg-agent now requires Placement to be reachable at startup.
+    Previously the agent would start and only fail during the
+    ``update_usage`` periodic task. This aligns with nova-compute behavior
+    where the compute service validates its resource provider at startup.
+    Ensure Placement is available before starting cyborg-agent.
+
+    The agent retries the resource provider lookup up to 3 times by default
+    (configurable via ``[agent] resource_provider_startup_retries``), using
+    exponential backoff. The default of 3 retries gives approximately 7
+    seconds of tolerance (1s + 2s + 4s) for nova-compute to create the
+    resource provider.
+
