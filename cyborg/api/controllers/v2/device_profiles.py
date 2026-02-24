@@ -13,6 +13,23 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+"""
+The device profile object and db table has a profile_json field, which has
+its own version apart from the device profile groups field. The reasoning
+behind that was this structure may evolve more rapidly. Since then the
+feedback has been to manage this with the API version itself, preferably
+with microversions, rather than use a second version.
+
+One problem with that is that we have to decide on a suitable db
+representation for device profile groups, which form an array of
+string pairs. The Cyborg community wishes to keep the number of
+tables small and manageable.
+
+As of now, the db layer for device profiles still uses the profile_json
+field. But the API layer returns the device profile as it should be.
+The objects layer does the conversion.
+"""
+
 import copy
 from http import HTTPStatus
 import pecan
@@ -35,23 +52,6 @@ from cyborg.common import exception
 from cyborg.common.i18n import _
 from cyborg import objects
 LOG = log.getLogger(__name__)
-
-"""
-The device profile object and db table has a profile_json field, which has
-its own version apart from the device profile groups field. The reasoning
-behind that was this structure may evolve more rapidly. Since then the
-feedback has been to manage this with the API version itself, preferably
-with microversions, rather than use a second version.
-
-One problem with that is that we have to decide on a suitable db
-representation for device profile groups, which form an array of
-string pairs. The Cyborg community wishes to keep the number of
-tables small and manageable.
-
-As of now, the db layer for device profiles still uses the profile_json
-field. But the API layer returns the device profile as it should be.
-The objects layer does the conversion.
-"""
 
 
 class DeviceProfile(base.APIBase):
@@ -81,7 +81,7 @@ class DeviceProfile(base.APIBase):
     links = wsme.wsattr([link.Link], readonly=True)
 
     def __init__(self, **kwargs):
-        super(DeviceProfile, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         self.fields = []
         for field in objects.DeviceProfile.fields:
             self.fields.append(field)

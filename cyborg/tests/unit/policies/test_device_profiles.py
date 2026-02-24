@@ -38,7 +38,7 @@ class DeviceProfilePolicyTest(base.BasePolicyTest):
     """
 
     def setUp(self):
-        super(DeviceProfilePolicyTest, self).setUp()
+        super().setUp()
 
         self.flags(enforce_scope=False, group="oslo_policy")
         self.controller = device_profiles.DeviceProfilesController()
@@ -151,7 +151,7 @@ class DeviceProfileScopeTypePolicyTest(DeviceProfilePolicyTest):
     """
 
     def setUp(self):
-        super(DeviceProfileScopeTypePolicyTest, self).setUp()
+        super().setUp()
         self.flags(enforce_scope=True, group="oslo_policy")
         # check that admin is able to do create and delete operations.
         self.create_authorized_contexts = [

@@ -74,7 +74,7 @@ class ExtARQ(base.CyborgObject, object_base.VersionedObjectDictCompat,
     }
 
     def obj_make_compatible(self, primitive, target_version):
-        super(ExtARQ, self).obj_make_compatible(
+        super().obj_make_compatible(
             primitive, target_version)
         target_version = versionutils.convert_version_to_tuple(target_version)
         # TODO(eric): need to handle v1.1 changes
@@ -82,7 +82,7 @@ class ExtARQ(base.CyborgObject, object_base.VersionedObjectDictCompat,
             del primitive['deployable_id']
 
     def __init__(self, *args, **kwargs):
-        super(ExtARQ, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.agent = AgentAPI()
 
     def create(self, context, device_profile_id=None):

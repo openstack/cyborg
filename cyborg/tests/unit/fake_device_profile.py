@@ -12,18 +12,18 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import datetime
-
-from oslo_serialization import jsonutils
-
-from cyborg.objects import device_profile
-
 """
    See note at the start of cyborg/api/controllers/v2/device_profiles.py.
    Device profiles have an API format (which is provided to POST to
    create one) and an object format. The code in this file can provide
    fake device profiles in either format.
 """
+
+import datetime
+
+from oslo_serialization import jsonutils
+
+from cyborg.objects import device_profile
 
 
 def _get_device_profiles_as_dict():
@@ -52,7 +52,7 @@ def _get_device_profiles_as_dict():
     }
     dp2 = {
         "id": 2,
-        "uuid": u"199c46b7-63a7-431b-aa40-35da4b9420b1",
+        "uuid": "199c46b7-63a7-431b-aa40-35da4b9420b1",
         "name": 'dp_example_2',
         "created_at": date2,
         "updated_at": None,

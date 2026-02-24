@@ -21,7 +21,7 @@ import unittest
 class TestUtils(unittest.TestCase):
     def setUp(self):
         self.utils = utils
-        super(TestUtils, self).setUp()
+        super().setUp()
 
     def test_pci_str_to_json(self):
         pci_address = '0000:0b:00.0'

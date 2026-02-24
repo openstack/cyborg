@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -50,7 +49,7 @@ class AgentManager(periodic_task.PeriodicTasks):
     target = messaging.Target(version=RPC_API_VERSION)
 
     def __init__(self, topic, host=None):
-        super(AgentManager, self).__init__(CONF)
+        super().__init__(CONF)
         self.topic = topic
         self.host = host or CONF.host  # RPC server identity
 

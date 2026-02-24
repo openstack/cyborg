@@ -29,12 +29,12 @@ NVME_SSD_INFO = \
     "Device [1bd4:1001] (rev 02)"
 
 
-class stdout(object):
+class stdout:
     def readlines(self):
         return [NVME_SSD_INFO]
 
 
-class p(object):
+class p:
     def __init__(self):
         self.stdout = stdout()
 

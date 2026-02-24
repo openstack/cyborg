@@ -21,7 +21,7 @@ CONF = cfg.CONF
 SHARED_CONF_GROUP = 'backend_defaults'
 
 
-class DefaultGroupConfiguration(object):
+class DefaultGroupConfiguration:
     """Get config options from only DEFAULT."""
 
     def __init__(self):
@@ -55,7 +55,7 @@ class DefaultGroupConfiguration(object):
         return getattr(local_conf, value)
 
 
-class BackendGroupConfiguration(object):
+class BackendGroupConfiguration:
     def __init__(self, accelerator_opts, config_group=None):
         """Initialize configuration.
 
@@ -128,7 +128,7 @@ class BackendGroupConfiguration(object):
         return opt_value
 
 
-class Configuration(object):
+class Configuration:
     def __init__(self, accelerator_opts, config_group=None):
         """Initialize configuration.
 

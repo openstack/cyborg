@@ -26,7 +26,7 @@ class TestAgentManager(base.TestCase):
     """Test Agent Manager resource provider name resolution."""
 
     def setUp(self):
-        super(TestAgentManager, self).setUp()
+        super().setUp()
         self.placement_mock = self.useFixture(fixtures.MockPatch(
             'cyborg.agent.manager.placement.PlacementClient')
         ).mock.return_value

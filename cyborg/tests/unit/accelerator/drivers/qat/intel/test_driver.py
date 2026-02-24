@@ -23,7 +23,7 @@ import fixtures
 
 class TestIntelQATDriver(base.TestCase):
     def setUp(self):
-        super(TestIntelQATDriver, self).setUp()
+        super().setUp()
         self.pcipath = sysinfo.PCI_DEVICES_PATH
         tmp_sys_dir = self.useFixture(fixtures.TempDir())
         prepare_test_data.create_fake_sysfs(tmp_sys_dir.path)
@@ -32,7 +32,7 @@ class TestIntelQATDriver(base.TestCase):
             tmp_path, sysinfo.PCI_DEVICES_PATH.split("/", 1)[-1])
 
     def tearDown(self):
-        super(TestIntelQATDriver, self).tearDown()
+        super().tearDown()
         sysinfo.PCI_DEVICES_PATH = self.pcipath
 
     def test_discover(self):

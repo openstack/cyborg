@@ -24,12 +24,12 @@ INSPUR_FPGA_INFO = ("0000:86:00.0 Processing accelerators [1200]: "
                     "Device [1bd4:a115] (rev 04)")
 
 
-class stdout(object):
+class stdout:
     def readlines(self):
         return [INSPUR_FPGA_INFO]
 
 
-class p(object):
+class p:
     def __init__(self):
         self.stdout = stdout()
 
@@ -40,7 +40,7 @@ class p(object):
 class TestInspurFPGADriver(base.TestCase):
 
     def setUp(self):
-        super(TestInspurFPGADriver, self).setUp()
+        super().setUp()
         self.p = p()
 
     @mock.patch('cyborg.accelerator.drivers.fpga.'

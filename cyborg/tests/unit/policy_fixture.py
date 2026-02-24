@@ -33,7 +33,7 @@ policy_data = """
 
 class PolicyFixture(fixtures.Fixture):
     def setUp(self):
-        super(PolicyFixture, self).setUp()
+        super().setUp()
         self.policy_dir = self.useFixture(fixtures.TempDir())
         self.policy_file_name = os.path.join(self.policy_dir.path,
                                              'policy.yaml')

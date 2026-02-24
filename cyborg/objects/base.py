@@ -112,8 +112,8 @@ class CyborgObject(object_base.VersionedObject):
                                of the object.
         """
         _log_backport(self, target_version)
-        super(CyborgObject, self).obj_make_compatible(primitive,
-                                                      target_version)
+        super().obj_make_compatible(primitive,
+                                    target_version)
 
 
 class CyborgObjectSerializer(object_base.VersionedObjectSerializer):
@@ -124,7 +124,7 @@ class CyborgObjectSerializer(object_base.VersionedObjectSerializer):
 CyborgObjectDictCompat = object_base.VersionedObjectDictCompat
 
 
-class CyborgPersistentObject(object):
+class CyborgPersistentObject:
     """Mixin class for Persistent objects.
 
     This adds the fields that we use in common for most persistent objects.

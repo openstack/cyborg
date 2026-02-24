@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -30,7 +29,7 @@ LOG = log.getLogger(__name__)
 CONF = cfg.CONF
 
 
-class AgentAPI(object):
+class AgentAPI:
     """Client side of the Agent RPC API.
 
     API version history:
@@ -42,7 +41,7 @@ class AgentAPI(object):
     RPC_API_VERSION = '1.0'
 
     def __init__(self, topic=None):
-        super(AgentAPI, self).__init__()
+        super().__init__()
         self.topic = topic or constants.AGENT_TOPIC
         target = messaging.Target(topic=self.topic,
                                   version='1.0')

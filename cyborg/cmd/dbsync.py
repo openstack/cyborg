@@ -27,7 +27,7 @@ from cyborg.conf import CONF
 from cyborg.db import migration
 
 
-class DBCommand(object):
+class DBCommand:
 
     def upgrade(self):
         migration.upgrade(CONF.command.revision)

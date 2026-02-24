@@ -156,7 +156,7 @@ class FPGAExtARQ(ExtARQ):
             self._update_placement(context, fun_id, deployable.driver_name)
             deployable.update(context, {'bitstream_id': bs_md['id']})
 
-        super(FPGAExtARQ, self).bind(context, deployable)
+        super().bind(context, deployable)
 
         return True
 

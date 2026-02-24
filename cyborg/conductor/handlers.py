@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -14,7 +13,7 @@
 # under the License.
 
 
-class NotificationEndpoint(object):
+class NotificationEndpoint:
     # filter_rule = messaging.NotificationFilter(publisher_id='^cyborg.*')
 
     # We have an update from an agent and we need to add it to our in memory

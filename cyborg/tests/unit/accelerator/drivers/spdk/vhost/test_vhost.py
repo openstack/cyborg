@@ -24,11 +24,11 @@ from cyborg.tests import base
 class TestVHOSTDRIVER(base.TestCase):
 
     def setUp(self):
-        super(TestVHOSTDRIVER, self).setUp()
+        super().setUp()
         self.vhost_driver = VHOSTDRIVER()
 
     def tearDown(self):
-        super(TestVHOSTDRIVER, self).tearDown()
+        super().tearDown()
         self.vhost_driver = None
 
     @mock.patch.object(VHOSTDRIVER, 'get_one_accelerator')

@@ -71,7 +71,7 @@ class CyborgException(Exception):
                     # happened
                     message = self._msg_fmt
 
-        super(CyborgException, self).__init__(message)
+        super().__init__(message)
 
     def __str__(self):
         """Encode to utf-8 then wsme api can consume it as well."""

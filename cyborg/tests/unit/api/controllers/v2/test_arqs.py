@@ -32,7 +32,7 @@ class TestARQsController(v2_test.APITestV2):
     ARQ_URL = '/accelerator_requests'
 
     def setUp(self):
-        super(TestARQsController, self).setUp()
+        super().setUp()
         self.headers = self.gen_headers(self.context)
         self.fake_extarqs = fake_extarq.get_fake_extarq_objs()
         self.fake_bind_extarqs = fake_extarq.get_fake_extarq_bind_objs()

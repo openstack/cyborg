@@ -69,7 +69,7 @@ class CyborgController(rest.RestController):
 
 
 @functools.total_ordering
-class Version(object):
+class Version:
     """API Version object."""
 
     current_api_version = 'OpenStack-API-Version'

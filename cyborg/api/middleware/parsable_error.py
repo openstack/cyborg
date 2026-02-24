@@ -23,7 +23,7 @@ Based on pecan.middleware.errordocument
 from oslo_serialization import jsonutils
 
 
-class ParsableErrorMiddleware(object):
+class ParsableErrorMiddleware:
     """Replace error body with something the client can parse."""
 
     def __init__(self, app):

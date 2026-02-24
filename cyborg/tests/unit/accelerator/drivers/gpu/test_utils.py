@@ -41,7 +41,7 @@ NVIDIA_T4_SUPPORTED_MDEV_TYPES = ['nvidia-222', 'nvidia-223', 'nvidia-224',
 BUILTIN = '__builtin__' if (sys.version_info[0] < 3) else '__builtins__'
 
 
-class stdout(object):
+class stdout:
     def readlines(self):
         return [NVIDIA_GPU_INFO]
 
@@ -49,7 +49,7 @@ class stdout(object):
         return [NVIDIA_T4_GPU_INFO]
 
 
-class p(object):
+class p:
     def __init__(self):
         self.stdout = stdout()
 
@@ -60,7 +60,7 @@ class p(object):
 class TestGPUDriverUtils(base.TestCase):
 
     def setUp(self):
-        super(TestGPUDriverUtils, self).setUp()
+        super().setUp()
         self.p = p()
 
     @mock.patch('cyborg.accelerator.drivers.gpu.utils.lspci_privileged')

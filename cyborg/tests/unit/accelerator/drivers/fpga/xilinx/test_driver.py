@@ -32,7 +32,7 @@ def fake_output(arg):
 class TestXilinxFPGADriver(base.TestCase):
 
     def setUp(self):
-        super(TestXilinxFPGADriver, self).setUp()
+        super().setUp()
 
     @mock.patch('cyborg.accelerator.drivers.fpga.'
                 'xilinx.sysinfo.lspci_privileged')

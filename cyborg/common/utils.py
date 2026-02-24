@@ -207,8 +207,7 @@ class _Singleton(type):
         ins = cls._instances.get(cls)
         if not ins or (hasattr(ins, "_reset")
                        and isinstance(ins, cls) and ins._reset()):
-            cls._instances[cls] = super(
-                _Singleton, cls).__call__(*args, **kwargs)
+            cls._instances[cls] = super().__call__(*args, **kwargs)
 
         return cls._instances[cls]
 
@@ -379,7 +378,7 @@ def factory_register(SuperClass, ClassName):
     return decorator
 
 
-class FactoryMixin(object):
+class FactoryMixin:
     """A factory Mixin to create an concrete class."""
 
     @classmethod

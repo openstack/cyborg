@@ -69,7 +69,7 @@ class Device(base.APIBase):
     """A list containing a self link"""
 
     def __init__(self, **kwargs):
-        super(Device, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         self.fields = []
         for field in objects.Device.fields:
             self.fields.append(field)

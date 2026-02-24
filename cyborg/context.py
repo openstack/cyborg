@@ -34,7 +34,7 @@ class _ContextAuthPlugin(plugin.BaseAuthPlugin):
     """
 
     def __init__(self, auth_token, sc):
-        super(_ContextAuthPlugin, self).__init__()
+        super().__init__()
 
         self.auth_token = auth_token
         self.service_catalog = ksa_service_catalog.ServiceCatalogV2(sc)
@@ -80,7 +80,7 @@ class RequestContext(context.RequestContext):
         if project_id:
             kwargs['project_id'] = project_id
 
-        super(RequestContext, self).__init__(is_admin=is_admin, **kwargs)
+        super().__init__(is_admin=is_admin, **kwargs)
 
         self.read_deleted = read_deleted
         self.remote_address = remote_address
@@ -109,7 +109,7 @@ class RequestContext(context.RequestContext):
             return _ContextAuthPlugin(self.auth_token, self.service_catalog)
 
     def to_dict(self):
-        values = super(RequestContext, self).to_dict()
+        values = super().to_dict()
         # FIXME(dims): defensive hasattr() checks need to be
         # removed once we figure out why we are seeing stack
         # traces
@@ -138,7 +138,7 @@ class RequestContext(context.RequestContext):
 
     @classmethod
     def from_dict(cls, values):
-        return super(RequestContext, cls).from_dict(
+        return super().from_dict(
             values,
             user_id=values.get('user_id'),
             project_id=values.get('project_id'),

@@ -48,7 +48,7 @@ class AuthTokenMiddleware(auth_token.AuthProtocol):
             LOG.error(msg)
             raise exception.ConfigInvalid(error_msg=msg)
 
-        super(AuthTokenMiddleware, self).__init__(app, conf)
+        super().__init__(app, conf)
 
     def __call__(self, env, start_response):
         path = utils.safe_rstrip(env.get('PATH_INFO'), '/')
@@ -62,7 +62,7 @@ class AuthTokenMiddleware(auth_token.AuthProtocol):
         if env['is_public_api']:
             return self.app(env, start_response)
 
-        return super(AuthTokenMiddleware, self).__call__(env, start_response)
+        return super().__call__(env, start_response)
 
     @classmethod
     def factory(cls, global_config, **local_conf):

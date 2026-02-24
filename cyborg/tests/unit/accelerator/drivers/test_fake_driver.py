@@ -24,10 +24,10 @@ from cyborg.tests import base
 class TestFakeDriver(base.TestCase):
 
     def setUp(self):
-        super(TestFakeDriver, self).setUp()
+        super().setUp()
 
     def tearDown(self):
-        super(TestFakeDriver, self).tearDown()
+        super().tearDown()
 
     def _get_pci_bdfs(self, num_pci_bdfs):
         """Return a list of PCI BDFs, first for cpid, rest

@@ -114,10 +114,10 @@ def _generate_dep_list(gpu):
         # if is vGPU, num_accelerators is the total vGPU capability of
         # the asked vGPU type
         vGPU_path = os.path.expandvars(
-            '/sys/bus/pci/devices/{0}/mdev_supported_types/{1}/'
+            '/sys/bus/pci/devices/{}/mdev_supported_types/{}/'
             .format(gpu["devices"], gpu["vGPU_type"]))
         num_available = 0
-        with open(vGPU_path + 'available_instances', 'r') as f:
+        with open(vGPU_path + 'available_instances') as f:
             num_available = int(f.read().strip())
         num_created = len(os.listdir(vGPU_path + 'devices'))
         driver_dep.num_accelerators = num_available + num_created
@@ -259,18 +259,18 @@ def _discover_gpus(vendor_id):
                 # get rc
                 gpu_dict["rc"] = constants.RESOURCES["VGPU"]
                 mdev_path = os.path.expandvars(
-                    '/sys/bus/pci/devices/{0}/mdev_supported_types'.
+                    '/sys/bus/pci/devices/{}/mdev_supported_types'.
                     format(gpu_dict["devices"]))
                 valid_types = os.listdir(mdev_path)
                 if vgpu_type not in valid_types:
                     raise exception.InvalidVGPUType(name=vgpu_type)
                 gpu_dict["vGPU_type"] = vgpu_type
                 vGPU_path = os.path.expandvars(
-                    '/sys/bus/pci/devices/{0}/mdev_supported_types/{1}/'
+                    '/sys/bus/pci/devices/{}/mdev_supported_types/{}/'
                     .format(gpu_dict["devices"], gpu_dict["vGPU_type"]))
                 # transfer vgpu_type to vgpu_type_name.
                 # eg. transfer 'nvidia-223' to 'T4_1B'
-                with open(vGPU_path + 'name', 'r') as f:
+                with open(vGPU_path + 'name') as f:
                     name = f.read().strip()
                 vgpu_type_name = name.split(' ')[1].replace('-', '_')
                 traits = _get_traits(gpu_dict["vendor_id"],

@@ -20,7 +20,7 @@ Cyborg QAT driver implementation.
 VENDOR_MAPS = {"0x8086": "intel"}
 
 
-class QATDriver(object):
+class QATDriver:
     """Base class for QAT drivers.
 
        This is just a virtual QAT drivers interface.

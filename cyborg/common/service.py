@@ -36,7 +36,7 @@ LOG = log.getLogger(__name__)
 
 class RPCService(service.Service):
     def __init__(self, manager_module, manager_class, topic, host=None):
-        super(RPCService, self).__init__()
+        super().__init__()
         self.topic = topic
         self.host = host or CONF.host
         manager_module = importutils.try_import(manager_module)
@@ -45,7 +45,7 @@ class RPCService(service.Service):
         self.rpcserver = None
 
     def start(self):
-        super(RPCService, self).start()
+        super().start()
 
         target = messaging.Target(topic=self.topic, server=self.host)
         endpoints = [self.manager]
@@ -72,7 +72,7 @@ class RPCService(service.Service):
             LOG.exception('Service error occurred when stopping the '
                           'RPC server. Error: %s', e)
 
-        super(RPCService, self).stop(graceful=graceful)
+        super().stop(graceful=graceful)
         LOG.info('Stopped RPC server for service %(service)s on host '
                  '%(host)s.',
                  {'service': self.topic, 'host': self.host})

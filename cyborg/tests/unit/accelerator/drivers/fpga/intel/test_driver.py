@@ -26,7 +26,7 @@ from cyborg.tests.unit.accelerator.drivers.fpga.intel import prepare_test_data
 class TestIntelFPGADriver(base.TestCase):
 
     def setUp(self):
-        super(TestIntelFPGADriver, self).setUp()
+        super().setUp()
         self.syspath = sysinfo.SYS_FPGA
         self.pcipath = sysinfo.PCI_DEVICES_PATH
         self.pcipath_pattern = sysinfo.PCI_DEVICES_PATH_PATTERN
@@ -41,7 +41,7 @@ class TestIntelFPGADriver(base.TestCase):
             tmp_path, sysinfo.PCI_DEVICES_PATH_PATTERN.split("/", 1)[-1])
 
     def tearDown(self):
-        super(TestIntelFPGADriver, self).tearDown()
+        super().tearDown()
         sysinfo.SYS_FPGA = self.syspath
         sysinfo.PCI_DEVICES_PATH = self.pcipath
         sysinfo.PCI_DEVICES_PATH_PATTERN = self.pcipath_pattern

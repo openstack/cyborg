@@ -24,7 +24,7 @@ VENDOR_MAPS = {"0x8086": "intel",
                "1bd4": 'inspur'}
 
 
-class FPGADriver(object):
+class FPGADriver:
     """Base class for FPGA drivers.
 
        This is just a virtual FPGA drivers interface.

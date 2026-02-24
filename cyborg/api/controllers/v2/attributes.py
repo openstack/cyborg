@@ -56,7 +56,7 @@ class Attribute(base.APIBase):
     links = wsme.wsattr([link.Link], readonly=True)
 
     def __init__(self, **kwargs):
-        super(Attribute, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         self.fields = []
         for field in objects.Attribute.fields:
             self.fields.append(field)

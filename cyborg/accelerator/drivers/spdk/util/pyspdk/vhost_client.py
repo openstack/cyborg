@@ -17,10 +17,10 @@ from oslo_serialization import jsonutils
 LOG = logging.getLogger(__name__)
 
 
-class VhostTgt(object):
+class VhostTgt:
 
     def __init__(self, py):
-        super(VhostTgt, self).__init__()
+        super().__init__()
         self.py = py
 
     def get_rpc_methods(self):

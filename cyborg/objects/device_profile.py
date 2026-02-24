@@ -1,4 +1,3 @@
-# -*- encoding: utf-8 -*-
 # Copyright (c) 2019 ZTE Corporation
 #
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -44,7 +43,7 @@ class DeviceProfile(base.CyborgObject, object_base.VersionedObjectDictCompat):
     }
 
     def obj_make_compatible(self, primitive, target_version):
-        super(DeviceProfile, self).obj_make_compatible(
+        super().obj_make_compatible(
             primitive, target_version)
         target_version = versionutils.convert_version_to_tuple(target_version)
         if target_version < (1, 1) and 'description' in primitive:

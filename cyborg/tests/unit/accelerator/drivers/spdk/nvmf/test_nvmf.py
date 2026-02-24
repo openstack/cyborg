@@ -24,11 +24,11 @@ from cyborg.tests import base
 class TestNVMFDRIVER(base.TestCase):
 
     def setUp(self,):
-        super(TestNVMFDRIVER, self).setUp()
+        super().setUp()
         self.nvmf_driver = NVMFDRIVER()
 
     def tearDown(self):
-        super(TestNVMFDRIVER, self).tearDown()
+        super().tearDown()
         self.vhost_driver = None
 
     @mock.patch.object(NVMFDRIVER, 'get_one_accelerator')

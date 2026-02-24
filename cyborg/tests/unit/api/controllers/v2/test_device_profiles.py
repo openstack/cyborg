@@ -28,7 +28,7 @@ class TestDeviceProfileController(v2_test.APITestV2):
     DP_URL = '/device_profiles'
 
     def setUp(self):
-        super(TestDeviceProfileController, self).setUp()
+        super().setUp()
         self.headers = self.gen_headers(self.context)
         self.fake_dp_objs = fake_device_profile.get_obj_devprofs()
         self.fake_dps = fake_device_profile.get_api_devprofs()

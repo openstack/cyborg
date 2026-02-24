@@ -213,7 +213,7 @@ class Connection(api.Connection):
             # OK, filtering on this key; what value do we search for?
             value = filters.pop(key)
 
-            if isinstance(value, (list, tuple, set, frozenset)):
+            if isinstance(value, list | tuple | set | frozenset):
                 if not value:
                     return None
                 # Looking for values in a list; apply to query directly
@@ -264,7 +264,7 @@ class Connection(api.Connection):
         values = {"in_use": True}
         ref = query.with_for_update().first()
         if not ref:
-            msg = 'Matching deployable_id {0}'.format(deployable_id)
+            msg = 'Matching deployable_id {}'.format(deployable_id)
             raise exception.ResourceNotFound(
                 resource='AttachHandle', msg=msg)
         ref.update(values)
@@ -280,7 +280,7 @@ class Connection(api.Connection):
             ah = self._do_allocate_attach_handle(
                 context, deployable_id)
         except NoResultFound:
-            msg = 'Matching deployable_id {0}'.format(deployable_id)
+            msg = 'Matching deployable_id {}'.format(deployable_id)
             raise exception.ResourceNotFound(
                 resource='AttachHandle', msg=msg)
         return ah

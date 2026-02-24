@@ -30,7 +30,7 @@ ANY = '*'
 REGEX_ANY = '.*'
 
 
-class PciAddressSpec(object, metaclass=abc.ABCMeta):
+class PciAddressSpec(metaclass=abc.ABCMeta):
     """Abstract class for all PCI address spec styles
 
     This class checks the address fields of the pci.passthrough_whitelist
@@ -172,7 +172,7 @@ class PciAddressRegexSpec(PciAddressSpec):
         return all(conditions)
 
 
-class WhitelistPciAddress(object):
+class WhitelistPciAddress:
     """Manages the address fields of the whitelist.
 
     This class checks the address fields of the pci.passthrough_whitelist

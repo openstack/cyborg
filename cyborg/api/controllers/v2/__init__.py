@@ -133,7 +133,7 @@ class Controller(rest.RestController):
         pecan.response.headers[base.Version.current_api_version] = str(v)
         pecan.request.version = v
 
-        return super(Controller, self)._route(args, request)
+        return super()._route(args, request)
 
 
 __all__ = ('Controller',)

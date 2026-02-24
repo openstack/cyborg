@@ -26,7 +26,7 @@ from cyborg.objects import base as objects_base
 CONF = cfg.CONF
 
 
-class ConductorAPI(object):
+class ConductorAPI:
     """Client side of the conductor RPC API.
 
     API version history:
@@ -38,7 +38,7 @@ class ConductorAPI(object):
     RPC_API_VERSION = '1.0'
 
     def __init__(self, topic=None):
-        super(ConductorAPI, self).__init__()
+        super().__init__()
         self.topic = topic or constants.CONDUCTOR_TOPIC
         target = messaging.Target(topic=self.topic,
                                   version='1.0')

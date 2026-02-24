@@ -40,7 +40,7 @@ CONF = cfg.CONF
 class DbTestCase(base.TestCase):
 
     def setUp(self):
-        super(DbTestCase, self).setUp()
+        super().setUp()
 
         # Create a temporary directory for SQLite temp files;
         # NestedTempfile patches tempfile to use it as the default.

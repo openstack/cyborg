@@ -24,10 +24,10 @@ import cyborg.privsep
 LOG = logging.getLogger(__name__)
 
 
-class PySPDK(object):
+class PySPDK:
 
     def __init__(self, pname):
-        super(PySPDK, self).__init__()
+        super().__init__()
         self.pid = None
         self.pname = pname
 

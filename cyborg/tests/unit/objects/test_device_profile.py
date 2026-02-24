@@ -23,7 +23,7 @@ from cyborg.tests.unit import fake_device_profile
 class TestDeviceProfileObject(base.DbTestCase):
 
     def setUp(self):
-        super(TestDeviceProfileObject, self).setUp()
+        super().setUp()
         self.fake_device_profile = utils.get_test_device_profile()
 
     def test_get_by_name(self):

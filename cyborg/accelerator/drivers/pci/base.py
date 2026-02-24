@@ -18,7 +18,7 @@ Cyborg Pci driver implementation.
 """
 
 
-class PciDriver(object):
+class PciDriver:
     """Base class for Pci drivers.
     """
 

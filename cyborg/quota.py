@@ -47,7 +47,7 @@ CONF = cfg.CONF
 CONF.register_opts(quota_opts)
 
 
-class QuotaEngine(object):
+class QuotaEngine:
     """Represent the set of recognized quotas."""
 
     def __init__(self, quota_driver_class=None):
@@ -133,7 +133,7 @@ class QuotaEngine(object):
         pass
 
 
-class DbQuotaDriver(object):
+class DbQuotaDriver:
     """Driver to perform check to enforcement of quotas.
 
     Also allows to obtain quota information.

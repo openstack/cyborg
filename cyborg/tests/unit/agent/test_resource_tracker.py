@@ -13,9 +13,10 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+"""Cyborg agent resource_tracker test cases."""
+
 from unittest import mock
 
-"""Cyborg agent resource_tracker test cases."""
 from cyborg.agent.resource_tracker import ResourceTracker
 from cyborg.common import exception
 from cyborg.conductor import rpcapi as cond_api
@@ -27,7 +28,7 @@ class TestResourceTracker(base.TestCase):
     """Test Agent ResourceTracker """
 
     def setUp(self):
-        super(TestResourceTracker, self).setUp()
+        super().setUp()
         self.host = CONF.host
         self.cond_api = cond_api.ConductorAPI()
         self.rt = ResourceTracker(self.host, self.cond_api)

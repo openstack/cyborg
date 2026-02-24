@@ -116,7 +116,7 @@ def get_api_server(context):
     return endpoint
 
 
-class GlanceClientWrapper(object):
+class GlanceClientWrapper:
     """Glance client wrapper class that implements retries."""
 
     def __init__(self, context=None, endpoint=None):
@@ -178,7 +178,7 @@ class GlanceClientWrapper(object):
                 time.sleep(1)
 
 
-class GlanceImageServiceV2(object):
+class GlanceImageServiceV2:
     """Provides storage and retrieval of disk image objects within Glance."""
 
     def __init__(self, client=None):
@@ -585,8 +585,7 @@ def _reraise_translated_exception():
 
 
 def _translate_image_exception(image_id, exc_value):
-    if isinstance(exc_value, (glanceclient.exc.HTTPForbidden,
-                  glanceclient.exc.HTTPUnauthorized)):
+    if isinstance(exc_value, glanceclient.exc.HTTPForbidden | glanceclient.exc.HTTPUnauthorized):  # noqa: E501
         return exception.ImageNotAuthorized(image_id=image_id)
     if isinstance(exc_value, glanceclient.exc.HTTPNotFound):
         return exception.ResourceNotFound(
@@ -599,8 +598,7 @@ def _translate_image_exception(image_id, exc_value):
 
 
 def _translate_plain_exception(exc_value):
-    if isinstance(exc_value, (glanceclient.exc.HTTPForbidden,
-                  glanceclient.exc.HTTPUnauthorized)):
+    if isinstance(exc_value, glanceclient.exc.HTTPForbidden | glanceclient.exc.HTTPUnauthorized):  # noqa: E501
         return exception.HTTPForbidden(str(exc_value))
     if isinstance(exc_value, glanceclient.exc.HTTPNotFound):
         return exception.HTTPNotFound(str(exc_value))
@@ -642,7 +640,7 @@ def get_default_image_service():
     return GlanceImageServiceV2()
 
 
-class UpdateGlanceImage(object):
+class UpdateGlanceImage:
     def __init__(self, context, image_id, metadata, stream):
         self.context = context
         self.image_id = image_id

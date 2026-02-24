@@ -22,7 +22,7 @@ from cyborg.tests.unit.db import utils
 class TestAttachHandleObject(base.DbTestCase):
 
     def setUp(self):
-        super(TestAttachHandleObject, self).setUp()
+        super().setUp()
         self.fake_attach_handle = utils.get_test_attach_handle()
 
     def test_get(self):

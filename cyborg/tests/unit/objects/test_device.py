@@ -23,7 +23,7 @@ from cyborg.tests.unit import fake_device
 class TestDeviceObject(base.DbTestCase):
 
     def setUp(self):
-        super(TestDeviceObject, self).setUp()
+        super().setUp()
         self.fake_device = fake_device.get_db_devices()[0]
 
     def test_get(self):

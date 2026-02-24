@@ -71,7 +71,7 @@ class Deployable(base.APIBase):
     """A list containing a self link"""
 
     def __init__(self, **kwargs):
-        super(Deployable, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         self.fields = []
         for field in objects.Deployable.fields:
             self.fields.append(field)

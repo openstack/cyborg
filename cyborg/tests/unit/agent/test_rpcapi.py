@@ -29,7 +29,7 @@ class TestRPCAPI(base.TestCase):
     RPC_API_VERSION = '1.1'
 
     def setUp(self, topic=None):
-        super(TestRPCAPI, self).setUp()
+        super().setUp()
         self.topic = topic or constants.AGENT_TOPIC
         target = messaging.Target(topic=self.topic,
                                   version=self.RPC_API_VERSION)
