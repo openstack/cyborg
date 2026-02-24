@@ -14,7 +14,6 @@
 import os
 import psutil
 import re
-import subprocess
 
 from oslo_concurrency import processutils
 from oslo_log import log as logging
@@ -89,10 +88,5 @@ class PySPDK:
         if sub_args is None:
             sub_args = []
         exec_cmd.extend(sub_args)
-        p = subprocess.Popen(
-            exec_cmd,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE
-        )
-        out, err = p.communicate()
+        out, _err = processutils.execute(*exec_cmd)
         return out
