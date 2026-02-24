@@ -7,4 +7,4 @@ features:
     Device Personalization) which provides the ability to reconfigure the
     packet processing pipeline to support a broader range of traffic types.
     It also supports SR-IOV technology, each physical card can be virtualized
-    into mulitiple VFs.
+    into multiple VFs.

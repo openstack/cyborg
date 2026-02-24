@@ -149,6 +149,6 @@ class TestDeviceObject(base.DbTestCase):
         for t in ["GPU", "FPGA", "AICHIP"]:
             device = objects.Device(self.context, type=t)
             self.assertEqual(self.context, device._context)
-        # Invaild type will raise ValueError
+        # Invalid type will raise ValueError
         self.assertRaises(ValueError, objects.Device,
                           self.context, type='OTHER_TYPE')

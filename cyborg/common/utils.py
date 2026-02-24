@@ -248,12 +248,12 @@ class ThreadWorks(Singleton):
                   "kwargs: %s", func, args, kwargs)
         # NOTE(Shaohe) shutdown should be after job submit
         executor.shutdown(wait=False)
-        # TODO(Shaohe) we need to consider resouce collection such as the
-        # follow code to recoder them with timestemp?
+        # TODO(Shaohe) we need to consider resource collection such as the
+        # follow code to recoder them with timestamp?
         # master = {tag: {
         #     "executor": executor,
         #     "job": f,
-        #     "timestemp": time.time(),
+        #     "timestamp": time.time(),
         #     "timeout": timeout}}
         # self.masters.update(master)
         return job
@@ -334,7 +334,7 @@ class ThreadWorks(Singleton):
 # info https://www.oreilly.com/library/view/python-cookbook/
 # 0596001673/ch14s05.html
 def format_tb(tb, limit=None):
-    """Fromat traceback to a string list.
+    """Format traceback to a string list.
 
     Print the usual traceback information, followed by a listing of all the
     local variables in each frame.
@@ -351,7 +351,7 @@ def format_tb(tb, limit=None):
 
 
 def wrap_job_tb(msg="Reason: %s"):
-    """Wrap a function with a is_job tag added, and catch Excetpion."""
+    """Wrap a function with a is_job tag added, and catch Exception."""
     def _wrap_job_tb(method):
         @wraps(method)
         def _impl(self, *args, **kwargs):

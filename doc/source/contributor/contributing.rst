@@ -46,7 +46,7 @@ Task Tracking
 
 We track our tasks in the `Launchpad <https://bugs.launchpad.net/openstack-cyborg>`_.
 
-We also have our planed goals and schedule for each OpenStack official release.
+We also have our planned goals and schedule for each OpenStack official release.
 If you are a new contributor who are looking for tasks, please take a look.
 we have tasks from low-hanging-fruit to middle, and advanced levels.
 `Development_Release_Schedule
@@ -74,7 +74,7 @@ To merge a patch, it must pass all voting Zuul checks and get two +2s from
 core reviewers. We strive to avoid scenarios where one person from a company
 or organization proposes a patch, and two other core reviewers from the
 same organization approve it to get it merged. In other words, at least
-one among the patch author and the two approving reviwers must be from
+one among the patch author and the two approving reviewers must be from
 another organization.
 
 We are constantly striving to improve quality. Proposed patches must

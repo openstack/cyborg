@@ -46,7 +46,7 @@ class NovaAPITest(base.TestCase):
         nova = nova_client.NovaAPI()
         nova._send_events(self.events)
 
-        msg = 'Sucessfully sent events to Nova, events: %(events)s'
+        msg = 'Successfully sent events to Nova, events: %(events)s'
         self.mock_log_info.assert_called_once_with(
             msg, {'events': self.events})
 

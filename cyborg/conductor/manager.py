@@ -112,7 +112,7 @@ class ConductorManager(object):
         :param driver_device_list: a list of driver_device object
         discovered by agent in the host.
         """
-        # TODO(): Everytime get from the DB?
+        # TODO(): Every time get from the DB?
         # First retrieve the old_device_list from the DB.
         old_driver_device_list = DriverDevice.list(context, hostname)
         # TODO(wangzhh): Remove invalid driver_devices without controlpath_id.
@@ -185,7 +185,7 @@ class ConductorManager(object):
             old_driver_dev_obj = old_driver_device_list[old_cpid_list.index(s)]
             # First, get dev_obj_list from hostname
             device_obj_list = Device.get_list_by_hostname(context, host)
-            # Then, use controlpath_id.cpid_info to identiy one Device.
+            # Then, use controlpath_id.cpid_info to identify one Device.
             cpid_info = new_driver_dev_obj.controlpath_id.cpid_info
             for dev_obj in device_obj_list:
                 # get cpid_obj, could be empty or only one value.
@@ -424,7 +424,7 @@ class ConductorManager(object):
         for rp in rp_in_tree[::-1]:
             if rp["parent_provider_uuid"] == rp_uuid or rp["uuid"] == rp_uuid:
                 self.placement_client.delete_provider(rp["uuid"])
-                LOG.info("Sucessfully delete resource provider %(rp_uuid)s",
+                LOG.info("Successfully delete resource provider %(rp_uuid)s",
                          {"rp_uuid": rp["uuid"]})
                 if rp["uuid"] == rp_uuid:
                     break

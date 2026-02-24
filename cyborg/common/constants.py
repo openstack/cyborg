@@ -49,7 +49,7 @@ ARQ_BIND_STATES_STATUS_MAP = {
 
 # TODO(Shaohe): maybe we can use oslo automaton lib
 # ref: https://docs.openstack.org/automaton/latest/user/examples.html
-# The states in value list can transfrom to the key state
+# The states in value list can transform to the key state
 ARQ_STATES_TRANSFORM_MATRIX = {
     ARQ_INITIAL: [],
     ARQ_BIND_STARTED: [ARQ_INITIAL, ARQ_UNBOUND],

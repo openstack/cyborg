@@ -112,7 +112,7 @@ def authorize_wsgi(api_name, act=None, need_target=True):
             def post(self, values):
                 ...
     """
-    def wraper(fn):
+    def wrapper(fn):
         action = '%s:%s' % (api_name, act or fn.__name__)
 
         # In this authorize method, we return a dict data when authorization
@@ -171,4 +171,4 @@ def authorize_wsgi(api_name, act=None, need_target=True):
 
         return handle
 
-    return wraper
+    return wrapper

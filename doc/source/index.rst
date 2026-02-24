@@ -48,7 +48,7 @@ Once you are running cyborg, the following information is extremely useful.
 * :doc:`Admin Guide </admin/index>`: A collection of guides for administrating
   cyborg.
 
-.. # NOTE(amotoki): toctree needs to be placed at the end of the secion to
+.. # NOTE(amotoki): toctree needs to be placed at the end of the section to
    # keep the document structure in the PDF doc.
 .. toctree::
    :hidden:
@@ -84,7 +84,7 @@ following endpoints:
 
 /v2.0 - same API as v2, except uses microversions
 
-The follwoing guide concentrates on documenting the v2 API, please note that
+The following guide concentrates on documenting the v2 API, please note that
 the v2.0 is the first microversion of the v2 API and are also covered by this
 guide.
 

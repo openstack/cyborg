@@ -27,7 +27,7 @@ permissions on REST API actions.
 .. # NOTE(mriedem): This is the section where we hide things that we don't
    # actually want in the table of contents but sphinx build would fail if
    # they aren't in the toctree somewhere.
-.. # NOTE(amotoki): toctree needs to be placed at the end of the secion to
+.. # NOTE(amotoki): toctree needs to be placed at the end of the section to
    # keep the document structure in the PDF doc.
 .. toctree::
    :hidden:

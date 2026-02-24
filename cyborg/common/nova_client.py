@@ -44,7 +44,7 @@ class NovaAPI(object):
         # NOTE(Sundar): Response status should always be 200/207. See
         # https://review.opendev.org/#/c/698037/
         if response.status_code == 200:
-            LOG.info("Sucessfully sent events to Nova, events: %(events)s",
+            LOG.info("Successfully sent events to Nova, events: %(events)s",
                      {"events": events})
         elif response.status_code == 207:
             # NOTE(Sundar): If Nova returns per-event code of 422, that

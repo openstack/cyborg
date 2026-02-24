@@ -93,7 +93,7 @@ def _generate_dep_list(pci):
     driver_dep.attribute_list = _generate_attribute_list(pci)
     driver_dep.attach_handle_list = []
     # NOTE(wangzhh): The name of deployable should be unique, its format is
-    # under disscussion, may looks like
+    # under discussion, may looks like
     # <ComputeNodeName>_<NumaNodeName>_<CyborgName>_<NumInHost>
     # NOTE(yumeng) Since Wallaby release, the deplpyable_name is named as
     # <Compute_hostname>_<Device_address>

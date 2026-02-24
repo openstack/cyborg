@@ -102,7 +102,7 @@ class DriverDevice(base.DriverObjectBase,
         """
         # get dev_obj_list from hostname
         device_obj_list = Device.get_list_by_hostname(context, host)
-        # use controlpath_id.cpid_info to identiy one Device.
+        # use controlpath_id.cpid_info to identify one Device.
         for device_obj in device_obj_list:
             # get cpid_obj, could be empty or only one value.
             cpid_obj = ControlpathID.get_by_device_id_cpidinfo(
@@ -147,7 +147,7 @@ class DriverDevice(base.DriverObjectBase,
         """
         # get dev_obj_list from hostname
         device_obj = Device.get_by_device_id(context, device_id)
-        # use controlpath_id.cpid_info to identiy one Device.
+        # use controlpath_id.cpid_info to identify one Device.
         # get cpid_obj, could be empty or only one value.
         ControlpathID.get_by_device_id_cpidinfo(
             context, device_obj.id, self.controlpath_id.cpid_info)
