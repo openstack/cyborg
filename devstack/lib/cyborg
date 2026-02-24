@@ -1,5 +1,3 @@
-#!/bin/bash
-#
 # lib/cyborg
 # Functions to control the configuration and operation of the **Cyborg** service
 
@@ -286,4 +284,3 @@ function cyborg_configure_tempest {
 # Restore xtrace + pipefail
 $_XTRACE_CYBORG
 $_PIPEFAIL_CYBORG
-

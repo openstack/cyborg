@@ -33,6 +33,7 @@ class AuthTokenMiddleware(auth_token.AuthProtocol):
     for public routes in the API.
 
     """
+
     def __init__(self, app, conf, public_api_routes=None):
         public_api_routes = public_api_routes or []
         self.app = app
