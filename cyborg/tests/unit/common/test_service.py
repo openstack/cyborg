@@ -19,7 +19,6 @@ from cyborg.tests import base
 
 
 class TestRPCService(base.TestCase):
-
     def setUp(self):
         super().setUp()
         self.topic = 'cyborg-conductor'
@@ -27,35 +26,41 @@ class TestRPCService(base.TestCase):
         self.manager_module = 'cyborg.conductor.manager'
         self.manager_class = 'ConductorManager'
 
-        self.mock_try_import = self.useFixture(fixtures.MockPatch(
-            'cyborg.common.service.importutils.try_import',
-            autospec=True)).mock
+        self.mock_try_import = self.useFixture(
+            fixtures.MockPatch(
+                'cyborg.common.service.importutils.try_import', autospec=True
+            )
+        ).mock
         mock_module = mock.MagicMock()
         mock_manager_cls = mock.MagicMock()
         self.mock_manager = mock_manager_cls.return_value
         setattr(mock_module, self.manager_class, mock_manager_cls)
         self.mock_try_import.return_value = mock_module
 
-        self.mock_get_server = self.useFixture(fixtures.MockPatch(
-            'cyborg.common.service.rpc.get_server',
-            autospec=True)).mock
+        self.mock_get_server = self.useFixture(
+            fixtures.MockPatch(
+                'cyborg.common.service.rpc.get_server', autospec=True
+            )
+        ).mock
         self.mock_rpcserver = self.mock_get_server.return_value
 
-        self.mock_get_admin_context = self.useFixture(fixtures.MockPatch(
-            'cyborg.common.service.context.get_admin_context',
-            autospec=True)).mock
-        self.mock_admin_context = (
-            self.mock_get_admin_context.return_value)
+        self.mock_get_admin_context = self.useFixture(
+            fixtures.MockPatch(
+                'cyborg.common.service.context.get_admin_context',
+                autospec=True,
+            )
+        ).mock
+        self.mock_admin_context = self.mock_get_admin_context.return_value
 
-        self.mock_log_info = self.useFixture(fixtures.MockPatch(
-            'cyborg.common.service.LOG.info')).mock
+        self.mock_log_info = self.useFixture(
+            fixtures.MockPatch('cyborg.common.service.LOG.info')
+        ).mock
 
-    @mock.patch.object(
-        cyborg_service.service.Service, 'start', autospec=True)
+    @mock.patch.object(cyborg_service.service.Service, 'start', autospec=True)
     def test_start(self, mock_super_start):
         svc = cyborg_service.RPCService(
-            self.manager_module, self.manager_class,
-            self.topic, host=self.host)
+            self.manager_module, self.manager_class, self.topic, host=self.host
+        )
         svc.tg = mock.MagicMock()
 
         svc.start()
@@ -67,9 +72,10 @@ class TestRPCService(base.TestCase):
         svc.tg.add_dynamic_timer_args.assert_called_once_with(
             self.mock_manager.periodic_tasks,
             kwargs={'context': self.mock_admin_context},
-            periodic_interval_max=CONF.periodic_interval)
+            periodic_interval_max=CONF.periodic_interval,
+        )
 
         self.mock_log_info.assert_called_once_with(
-            'Created RPC server for service %(service)s on host '
-            '%(host)s.',
-            {'service': self.topic, 'host': self.host})
+            'Created RPC server for service %(service)s on host %(host)s.',
+            {'service': self.topic, 'host': self.host},
+        )

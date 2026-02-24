@@ -38,7 +38,8 @@ class CyborgObjectRegistry(object_base.VersionedObjectRegistry):
             setattr(objects, cls.obj_name(), cls)
         else:
             cur_version = versionutils.convert_version_to_tuple(
-                getattr(objects, cls.obj_name()).VERSION)
+                getattr(objects, cls.obj_name()).VERSION
+            )
             if version >= cur_version:
                 setattr(objects, cls.obj_name(), cls)
 
@@ -73,8 +74,9 @@ class CyborgObject(object_base.VersionedObject):
                 attr = attr.as_dict()
             return attr
 
-        return {k: _attr_as_dict(k)
-                for k in self.fields if self.obj_attr_is_set(k)}
+        return {
+            k: _attr_as_dict(k) for k in self.fields if self.obj_attr_is_set(k)
+        }
 
     @staticmethod
     def _from_db_object(obj, db_obj):
@@ -112,8 +114,7 @@ class CyborgObject(object_base.VersionedObject):
                                of the object.
         """
         _log_backport(self, target_version)
-        super().obj_make_compatible(primitive,
-                                    target_version)
+        super().obj_make_compatible(primitive, target_version)
 
 
 class CyborgObjectSerializer(object_base.VersionedObjectSerializer):
@@ -129,23 +130,24 @@ class CyborgPersistentObject:
 
     This adds the fields that we use in common for most persistent objects.
     """
+
     fields = {
         'created_at': object_fields.DateTimeField(nullable=True),
         'updated_at': object_fields.DateTimeField(nullable=True),
         'deleted_at': object_fields.DateTimeField(nullable=True),
         'deleted': object_fields.BooleanField(default=False),
-        }
+    }
 
 
 class ObjectListBase(object_base.ObjectListBase):
-
     @classmethod
     def _obj_primitive_key(cls, field):
         return 'cyborg_object.%s' % field
 
     @classmethod
-    def _obj_primitive_field(cls, primitive, field,
-                             default=object_fields.UnspecifiedDefault):
+    def _obj_primitive_field(
+        cls, primitive, field, default=object_fields.UnspecifiedDefault
+    ):
         key = cls._obj_primitive_key(field)
         if default == object_fields.UnspecifiedDefault:
             return primitive[key]
@@ -224,8 +226,12 @@ class DriverObjectBase(CyborgObject):
 def _log_backport(ovo, target_version):
     """Log backported versioned objects."""
     if target_version and target_version != ovo.VERSION:
-        LOG.debug('Backporting %(obj_name)s from version %(src_vers)s '
-                  'to version %(dst_vers)s',
-                  {'obj_name': ovo.obj_name(),
-                   'src_vers': ovo.VERSION,
-                   'dst_vers': target_version})
+        LOG.debug(
+            'Backporting %(obj_name)s from version %(src_vers)s '
+            'to version %(dst_vers)s',
+            {
+                'obj_name': ovo.obj_name(),
+                'src_vers': ovo.VERSION,
+                'dst_vers': target_version,
+            },
+        )

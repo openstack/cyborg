@@ -26,6 +26,7 @@ from cyborg.api.controllers import types
 from cyborg.api import expose
 from cyborg.common import authorize_wsgi
 from cyborg import objects
+
 LOG = log.getLogger(__name__)
 
 
@@ -66,9 +67,13 @@ class Attribute(base.APIBase):
     def convert_with_links(cls, obj_attribute):
         api_attribute = cls(**obj_attribute.as_dict())
         api_attribute.links = [
-            link.Link.make_link('self', pecan.request.public_url,
-                                'attributes', api_attribute.uuid)
-            ]
+            link.Link.make_link(
+                'self',
+                pecan.request.public_url,
+                'attributes',
+                api_attribute.uuid,
+            )
+        ]
         return api_attribute
 
     def get_attribute(self, obj_attribute):
@@ -79,7 +84,7 @@ class Attribute(base.APIBase):
             api_obj[field] = str(obj_attribute[field])
         api_obj['links'] = [
             link.Link.make_link_dict('attributes', api_obj['uuid'])
-            ]
+        ]
         return api_obj
 
 
@@ -94,26 +99,30 @@ class AttributeCollection(Attribute):
         collection = cls()
         collection.attributes = [
             Attribute.convert_with_links(obj_attribute)
-            for obj_attribute in obj_attributes]
+            for obj_attribute in obj_attributes
+        ]
         return collection
 
     def get_attributes(self, obj_attributes):
         api_obj_attributes = [
             self.get_attribute(obj_attribute)
-            for obj_attribute in obj_attributes]
+            for obj_attribute in obj_attributes
+        ]
         return api_obj_attributes
 
 
-class AttributesController(base.CyborgController,
-                           AttributeCollection):
+class AttributesController(base.CyborgController, AttributeCollection):
     """REST controller for Attributes."""
 
     @authorize_wsgi.authorize_wsgi("cyborg:attribute", "get_all", False)
     @expose.expose(AttributeCollection, wtypes.IntegerType(), wtypes.text)
     def get_all(self, deployable_id=None, key=None):
         """Retrieve a list of attributes."""
-        LOG.info('[attributes] get_all by deployable_id:(%s) and key:(%s).',
-                 deployable_id, key)
+        LOG.info(
+            '[attributes] get_all by deployable_id:(%s) and key:(%s).',
+            deployable_id,
+            key,
+        )
         search_opts = {}
         if deployable_id:
             search_opts['deployable_id'] = deployable_id
@@ -137,8 +146,9 @@ class AttributesController(base.CyborgController,
         return ret
 
     @authorize_wsgi.authorize_wsgi("cyborg:attribute", "create", False)
-    @expose.expose(Attribute, body=types.jsontype,
-                   status_code=HTTPStatus.CREATED)
+    @expose.expose(
+        Attribute, body=types.jsontype, status_code=HTTPStatus.CREATED
+    )
     def post(self, req_attr):
         """Create one attribute.
         :param req_attr: attribute value.
@@ -159,7 +169,7 @@ class AttributesController(base.CyborgController,
     @expose.expose(None, wtypes.text, status_code=HTTPStatus.NO_CONTENT)
     def delete(self, uuid):
         """Delete one attribute.
-            - UUID of a attribute.
+        - UUID of a attribute.
         """
         LOG.info('[attributes] delete by uuid: %s.', uuid)
         context = pecan.request.context

@@ -31,9 +31,11 @@ def main():
     # Parse config file and command line options, then start logging
     cyborg_service.prepare_service(sys.argv)
 
-    mgr = cyborg_service.RPCService('cyborg.conductor.manager',
-                                    'ConductorManager',
-                                    constants.CONDUCTOR_TOPIC)
+    mgr = cyborg_service.RPCService(
+        'cyborg.conductor.manager',
+        'ConductorManager',
+        constants.CONDUCTOR_TOPIC,
+    )
 
     launcher = service.launch(CONF, mgr, restart_method='mutate')
     launcher.wait()

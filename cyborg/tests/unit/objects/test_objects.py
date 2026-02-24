@@ -31,18 +31,21 @@ class MyOwnedObject(base.CyborgPersistentObject, base.CyborgObject):
     fields = {'baz': fields.IntegerField()}
 
 
-class MyObj(base.CyborgPersistentObject, base.CyborgObject,
-            base.CyborgObjectDictCompat):
+class MyObj(
+    base.CyborgPersistentObject, base.CyborgObject, base.CyborgObjectDictCompat
+):
     VERSION = '1.6'
-    fields = {'foo': fields.IntegerField(default=1),
-              'bar': fields.StringField(),
-              'missing': fields.StringField(),
-              'readonly': fields.IntegerField(read_only=True),
-              'rel_object': fields.ObjectField('MyOwnedObject', nullable=True),
-              'rel_objects': fields.ListOfObjectsField('MyOwnedObject',
-                                                       nullable=True),
-              'mutable_default': fields.ListOfStringsField(default=[]),
-              }
+    fields = {
+        'foo': fields.IntegerField(default=1),
+        'bar': fields.StringField(),
+        'missing': fields.StringField(),
+        'readonly': fields.IntegerField(read_only=True),
+        'rel_object': fields.ObjectField('MyOwnedObject', nullable=True),
+        'rel_objects': fields.ListOfObjectsField(
+            'MyOwnedObject', nullable=True
+        ),
+        'mutable_default': fields.ListOfStringsField(default=[]),
+    }
 
     @staticmethod
     def _from_db_object(context, obj, db_obj):
@@ -92,6 +95,7 @@ class MyObj(base.CyborgPersistentObject, base.CyborgObject,
 
 class RandomMixInWithNoFields:
     """Used to test object inheritance using a mixin that has no fields."""
+
     pass
 
 
@@ -101,7 +105,6 @@ class TestSubclassedObject(RandomMixInWithNoFields, MyObj):
 
 
 class TestObjToPrimitive(test.base.TestCase):
-
     def test_obj_to_primitive_list(self):
         @base.CyborgObjectRegistry.register_if(False)
         class MyObjElement(base.CyborgObject):
@@ -117,14 +120,16 @@ class TestObjToPrimitive(test.base.TestCase):
 
         mylist = MyList()
         mylist.objects = [MyObjElement(1), MyObjElement(2), MyObjElement(3)]
-        self.assertEqual([1, 2, 3],
-                         [x['foo'] for x in base.obj_to_primitive(mylist)])
+        self.assertEqual(
+            [1, 2, 3], [x['foo'] for x in base.obj_to_primitive(mylist)]
+        )
 
     def test_obj_to_primitive_dict(self):
         base.CyborgObjectRegistry.register(MyObj)
         myobj = MyObj(foo=1, bar='foo')
-        self.assertEqual({'foo': 1, 'bar': 'foo'},
-                         base.obj_to_primitive(myobj))
+        self.assertEqual(
+            {'foo': 1, 'bar': 'foo'}, base.obj_to_primitive(myobj)
+        )
 
     def test_obj_to_primitive_recursive(self):
         base.CyborgObjectRegistry.register(MyObj)
@@ -135,22 +140,28 @@ class TestObjToPrimitive(test.base.TestCase):
         mylist = MyList(objects=[MyObj(), MyObj()])
         for i, value in enumerate(mylist):
             value.foo = i
-        self.assertEqual([{'foo': 0}, {'foo': 1}],
-                         base.obj_to_primitive(mylist))
+        self.assertEqual(
+            [{'foo': 0}, {'foo': 1}], base.obj_to_primitive(mylist)
+        )
 
     def test_obj_to_primitive_with_ip_addr(self):
         @base.CyborgObjectRegistry.register_if(False)
         class TestObject(base.CyborgObject):
-            fields = {'addr': fields.IPAddressField(),
-                      'cidr': fields.IPNetworkField()}
+            fields = {
+                'addr': fields.IPAddressField(),
+                'cidr': fields.IPNetworkField(),
+            }
 
         obj = TestObject(addr='1.2.3.4', cidr='1.1.1.1/16')
-        self.assertEqual({'addr': '1.2.3.4', 'cidr': '1.1.1.1/16'},
-                         base.obj_to_primitive(obj))
+        self.assertEqual(
+            {'addr': '1.2.3.4', 'cidr': '1.1.1.1/16'},
+            base.obj_to_primitive(obj),
+        )
 
 
-def compare_obj(test, obj, db_obj, subs=None, allow_missing=None,
-                comparators=None):
+def compare_obj(
+    test, obj, db_obj, subs=None, allow_missing=None, comparators=None
+):
     """Compare a CyborgObject and a dict-like database object.
 
     This automatically converts TZ-aware datetimes and iterates over
@@ -192,16 +203,24 @@ class _BaseTestCase(test.base.TestCase):
         super().setUp()
         self.user_id = 'fake-user'
         self.project_id = 'fake-project'
-        self.context = cyborg_context.RequestContext(self.user_id,
-                                                     self.project_id)
+        self.context = cyborg_context.RequestContext(
+            self.user_id, self.project_id
+        )
 
         base.CyborgObjectRegistry.register(MyObj)
         base.CyborgObjectRegistry.register(MyOwnedObject)
 
-    def compare_obj(self, obj, db_obj, subs=None, allow_missing=None,
-                    comparators=None):
-        compare_obj(self, obj, db_obj, subs=subs, allow_missing=allow_missing,
-                    comparators=comparators)
+    def compare_obj(
+        self, obj, db_obj, subs=None, allow_missing=None, comparators=None
+    ):
+        compare_obj(
+            self,
+            obj,
+            db_obj,
+            subs=subs,
+            allow_missing=allow_missing,
+            comparators=comparators,
+        )
 
     def str_comparator(self, expected, obj_val):
         """Compare an object field to a string in the db by performing

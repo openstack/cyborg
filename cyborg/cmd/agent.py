@@ -31,9 +31,9 @@ def main():
     cyborg_service.prepare_service(sys.argv)
     priv_context.init(root_helper=shlex.split('sudo'))
 
-    mgr = cyborg_service.RPCService('cyborg.agent.manager',
-                                    'AgentManager',
-                                    constants.AGENT_TOPIC)
+    mgr = cyborg_service.RPCService(
+        'cyborg.agent.manager', 'AgentManager', constants.AGENT_TOPIC
+    )
 
     launcher = service.launch(CONF, mgr, restart_method='mutate')
     launcher.wait()

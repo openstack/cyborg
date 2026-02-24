@@ -21,32 +21,35 @@ from cyborg.objects import fields as object_fields
 
 
 @base.CyborgObjectRegistry.register
-class DriverControlPathID(base.DriverObjectBase,
-                          object_base.VersionedObjectDictCompat):
+class DriverControlPathID(
+    base.DriverObjectBase, object_base.VersionedObjectDictCompat
+):
     # Version 1.0: Initial version
     VERSION = '1.0'
 
     fields = {
         'cpid_type': object_fields.StringField(nullable=False),
         # PCI BDF, PowerVM device, etc.
-        'cpid_info': object_fields.StringField(nullable=False)
+        'cpid_info': object_fields.StringField(nullable=False),
     }
 
     def create(self, context, device_id):
         """Create a driver-side ControlPathID for drivers. Call
         ControlpathID object to store in DB.
         """
-        cpid_obj = ControlpathID(context=context,
-                                 device_id=device_id,
-                                 cpid_type=self.cpid_type,
-                                 cpid_info=self.cpid_info)
+        cpid_obj = ControlpathID(
+            context=context,
+            device_id=device_id,
+            cpid_type=self.cpid_type,
+            cpid_info=self.cpid_info,
+        )
         cpid_obj.create(context)
         return cpid_obj
 
     def destroy(self, context, device_id):
-        cpid_obj = ControlpathID.get_by_device_id_cpidinfo(context,
-                                                           device_id,
-                                                           self.cpid_info)
+        cpid_obj = ControlpathID.get_by_device_id_cpidinfo(
+            context, device_id, self.cpid_info
+        )
         if cpid_obj is not None:
             cpid_obj.destroy(context)
 
@@ -56,7 +59,9 @@ class DriverControlPathID(base.DriverObjectBase,
         cpid_obj = ControlpathID.get_by_device_id(context, device_id)
         driver_cpid_obj = None
         if cpid_obj is not None:
-            driver_cpid_obj = cls(context=context,
-                                  cpid_type=cpid_obj.cpid_type,
-                                  cpid_info=cpid_obj.cpid_info)
+            driver_cpid_obj = cls(
+                context=context,
+                cpid_type=cpid_obj.cpid_type,
+                cpid_info=cpid_obj.cpid_info,
+            )
         return driver_cpid_obj

@@ -37,10 +37,10 @@ class BaseApiTest(base.DbTestCase):
 
     def setUp(self):
         super().setUp()
-        cfg.CONF.set_override("auth_version", "v3",
-                              group='keystone_authtoken')
-        cfg.CONF.set_override("admin_user", "admin",
-                              group='keystone_authtoken')
+        cfg.CONF.set_override("auth_version", "v3", group='keystone_authtoken')
+        cfg.CONF.set_override(
+            "admin_user", "admin", group='keystone_authtoken'
+        )
         self.app = self._make_app()
 
         def reset_pecan():
@@ -69,8 +69,16 @@ class BaseApiTest(base.DbTestCase):
         }
         return pecan.testing.load_test_app(self.app_config)
 
-    def _request_json(self, path, params, expect_errors=False, headers=None,
-                      method="post", extra_environ=None, status=None):
+    def _request_json(
+        self,
+        path,
+        params,
+        expect_errors=False,
+        headers=None,
+        method="post",
+        extra_environ=None,
+        status=None,
+    ):
         """Sends simulated HTTP request to Pecan test app.
 
         :param path: url path of target service
@@ -90,12 +98,19 @@ class BaseApiTest(base.DbTestCase):
             headers=headers,
             status=status,
             extra_environ=extra_environ,
-            expect_errors=expect_errors
+            expect_errors=expect_errors,
         )
         return response
 
-    def post_json(self, path, params, expect_errors=False, headers=None,
-                  extra_environ=None, status=None):
+    def post_json(
+        self,
+        path,
+        params,
+        expect_errors=False,
+        headers=None,
+        extra_environ=None,
+        status=None,
+    ):
         """Sends simulated HTTP POST request to Pecan test app.
 
         :param path: url path of target service
@@ -108,10 +123,15 @@ class BaseApiTest(base.DbTestCase):
         :param status: expected status code of response
         """
         full_path = self.PATH_PREFIX + path
-        return self._request_json(path=full_path, params=params,
-                                  expect_errors=expect_errors,
-                                  headers=headers, extra_environ=extra_environ,
-                                  status=status, method="post")
+        return self._request_json(
+            path=full_path,
+            params=params,
+            expect_errors=expect_errors,
+            headers=headers,
+            extra_environ=extra_environ,
+            status=status,
+            method="post",
+        )
 
     def gen_context(self, value, **kwargs):
         ct = cyborg_context.RequestContext.from_dict(value, **kwargs)
@@ -135,24 +155,32 @@ class BaseApiTest(base.DbTestCase):
             role = "user"
         headers = {
             'X-User-Name': ct.get("user_name") or "user",
-            'X-User-Id':
-                ct.get("user_id") or "1d6d686bc2c949ddb685ffb4682e0047",
+            'X-User-Id': ct.get("user_id")
+            or "1d6d686bc2c949ddb685ffb4682e0047",
             'X-Project-Name': ct.get("project_name") or "no_project_name",
-            'X-Project-Id':
-                ct.get("project_id") or "86f64f561b6d4f479655384572727f70",
-            'X-User-Domain-Id':
-                ct.get("domain_id") or "bd5eeb7d0fb046daaf694b36f4df5518",
+            'X-Project-Id': ct.get("project_id")
+            or "86f64f561b6d4f479655384572727f70",
+            'X-User-Domain-Id': ct.get("domain_id")
+            or "bd5eeb7d0fb046daaf694b36f4df5518",
             'X-User-Domain-Name': ct.get("domain_name") or "no_domain",
-            'X-Auth-Token':
-                ct.get("auth_token") or "b9764005b8c145bf972634fb16a826e8",
+            'X-Auth-Token': ct.get("auth_token")
+            or "b9764005b8c145bf972634fb16a826e8",
             'X-Roles': ct.get("roles") or role,
         }
         if ct.get('system_scope') == 'all':
             headers.update({'Openstack-System-Scope': 'all'})
         return headers
 
-    def get_json(self, path, expect_errors=False, headers=None,
-                 extra_environ=None, q=None, return_json=True, **params):
+    def get_json(
+        self,
+        path,
+        expect_errors=False,
+        headers=None,
+        extra_environ=None,
+        q=None,
+        return_json=True,
+        **params,
+    ):
         """Sends simulated HTTP GET request to Pecan test app.
 
         :param path: url path of target service
@@ -172,7 +200,7 @@ class BaseApiTest(base.DbTestCase):
             'q.field': [],
             'q.value': [],
             'q.op': [],
-            }
+        }
         for query in q:
             for name in ['field', 'op', 'value']:
                 query_params['q.%s' % name].append(query.get(name, ''))
@@ -180,17 +208,26 @@ class BaseApiTest(base.DbTestCase):
         all_params.update(params)
         if q:
             all_params.update(query_params)
-        response = self.app.get(full_path,
-                                params=all_params,
-                                headers=headers,
-                                extra_environ=extra_environ,
-                                expect_errors=expect_errors)
+        response = self.app.get(
+            full_path,
+            params=all_params,
+            headers=headers,
+            extra_environ=extra_environ,
+            expect_errors=expect_errors,
+        )
         if return_json and not expect_errors:
             response = response.json
         return response
 
-    def patch_json(self, path, params, expect_errors=False, headers=None,
-                   extra_environ=None, status=None):
+    def patch_json(
+        self,
+        path,
+        params,
+        expect_errors=False,
+        headers=None,
+        extra_environ=None,
+        status=None,
+    ):
         """Sends simulated HTTP PATCH request to Pecan test app.
 
         :param path: url path of target service
@@ -203,13 +240,24 @@ class BaseApiTest(base.DbTestCase):
         :param status: expected status code of response
         """
         full_path = self.PATH_PREFIX + path
-        return self._request_json(path=full_path, params=params,
-                                  expect_errors=expect_errors,
-                                  headers=headers, extra_environ=extra_environ,
-                                  status=status, method="patch")
+        return self._request_json(
+            path=full_path,
+            params=params,
+            expect_errors=expect_errors,
+            headers=headers,
+            extra_environ=extra_environ,
+            status=status,
+            method="patch",
+        )
 
-    def delete(self, path, expect_errors=False, headers=None,
-               extra_environ=None, status=None):
+    def delete(
+        self,
+        path,
+        expect_errors=False,
+        headers=None,
+        extra_environ=None,
+        status=None,
+    ):
         """Sends simulated HTTP DELETE request to Pecan test app.
 
         :param path: url path of target service
@@ -221,9 +269,11 @@ class BaseApiTest(base.DbTestCase):
         :param status: expected status code of response
         """
         full_path = self.PATH_PREFIX + path
-        response = self.app.delete(full_path,
-                                   headers=headers,
-                                   status=status,
-                                   extra_environ=extra_environ,
-                                   expect_errors=expect_errors)
+        response = self.app.delete(
+            full_path,
+            headers=headers,
+            status=status,
+            extra_environ=extra_environ,
+            expect_errors=expect_errors,
+        )
         return response

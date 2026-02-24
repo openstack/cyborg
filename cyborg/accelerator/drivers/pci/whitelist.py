@@ -56,19 +56,21 @@ class Whitelist:
                 dev_spec = jsonutils.loads(jsonspec)
             except ValueError:
                 raise exception.PciConfigInvalidWhitelist(
-                    reason=_("Invalid entry: '%s'") % jsonspec)
+                    reason=_("Invalid entry: '%s'") % jsonspec
+                )
             if isinstance(dev_spec, dict):
                 dev_spec = [dev_spec]
             elif not isinstance(dev_spec, list):
                 raise exception.PciConfigInvalidWhitelist(
-                    reason=_("Invalid entry: '%s'; "
-                             "Expecting list or dict") % jsonspec)
+                    reason=_("Invalid entry: '%s'; Expecting list or dict")
+                    % jsonspec
+                )
 
             for ds in dev_spec:
                 if not isinstance(ds, dict):
                     raise exception.PciConfigInvalidWhitelist(
-                        reason=_("Invalid entry: '%s'; "
-                                 "Expecting dict") % ds)
+                        reason=_("Invalid entry: '%s'; Expecting dict") % ds
+                    )
 
                 spec = devspec.PciDeviceSpec(ds)
                 specs.append(spec)

@@ -38,7 +38,6 @@ CONF = cfg.CONF
 
 
 class DbTestCase(base.TestCase):
-
     def setUp(self):
         super().setUp()
 
@@ -47,12 +46,11 @@ class DbTestCase(base.TestCase):
         self.useFixture(fixtures.NestedTempfile())
 
         # File-backed SQLite so each thread gets its own connection.
-        fd, dbfile_path = tempfile.mkstemp(
-            prefix="cyborg_test_", suffix=".db")
+        fd, dbfile_path = tempfile.mkstemp(prefix="cyborg_test_", suffix=".db")
         os.close(fd)
         CONF.set_override(
-            "connection", "sqlite:///%s" % dbfile_path,
-            group="database")
+            "connection", "sqlite:///%s" % dbfile_path, group="database"
+        )
 
         # WAL mode: readers don't block writers, writer doesn't
         # block readers.
@@ -63,11 +61,13 @@ class DbTestCase(base.TestCase):
         local_enginefacade = enginefacade.transaction_context()
         local_enginefacade.configure(
             connection=CONF.database.connection,
-            sqlite_synchronous=CONF.database.sqlite_synchronous)
+            sqlite_synchronous=CONF.database.sqlite_synchronous,
+        )
         self.useFixture(
             test_fixtures.ReplaceEngineFacadeFixture(
-                sqlalchemy_api.main_context_manager,
-                local_enginefacade))
+                sqlalchemy_api.main_context_manager, local_enginefacade
+            )
+        )
 
         # Build schema from models directly, bypassing Alembic's env.py
         # which would create its own engine via the global enginefacade.

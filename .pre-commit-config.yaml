@@ -35,17 +35,12 @@ repos:
     hooks:
       - id: ruff-check
         args: ['--fix', '--unsafe-fixes']
-  - repo: https://github.com/hhatto/autopep8
-    rev: v2.3.2
-    hooks:
-      - id: autopep8
-        files: '^.*\.py$'
+      - id: ruff-format
   - repo: https://opendev.org/openstack/hacking
-    rev: 7.0.0
+    rev: 8.0.0
     hooks:
       - id: hacking
         additional_dependencies: []
-        exclude: '^(doc|releasenotes|tools)/.*$'
   - repo: https://github.com/codespell-project/codespell
     rev: v2.4.1
     hooks:

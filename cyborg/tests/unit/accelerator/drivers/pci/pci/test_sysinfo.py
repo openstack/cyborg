@@ -22,34 +22,38 @@ CONF = cyborg.conf.CONF
 
 NVIDIA_PCI_LINE = (
     "0000:3b:00.0 3D controller [0302]: "
-    "NVIDIA Corporation Device [10de:1eb8] (rev a1)")
+    "NVIDIA Corporation Device [10de:1eb8] (rev a1)"
+)
 INTEL_PCI_LINE = (
     "0000:00:00.0 Host bridge [0600]: "
-    "Intel Corporation Device [8086:2020] (rev 07)")
+    "Intel Corporation Device [8086:2020] (rev 07)"
+)
 UNKNOWN_VENDOR_LINE = (
     "0000:05:00.0 Network controller [0280]: "
-    "Acme Corp Device [dead:beef] (rev 01)")
+    "Acme Corp Device [dead:beef] (rev 01)"
+)
 MALFORMED_LINE = "garbage data that does not match"
 
-_MOCK_GET_PCI = (
-    'cyborg.accelerator.drivers.pci.utils.get_pci_devices')
+_MOCK_GET_PCI = 'cyborg.accelerator.drivers.pci.utils.get_pci_devices'
 
 
 class TestSysinfo(base.DietTestCase):
     """Unit tests for sysinfo module helpers."""
 
-    def _make_pci_dict(self, vendor_id='10de',
-                       product_id='1eb8',
-                       devices='0000:3b:00.0',
-                       hostname='testhost'):
+    def _make_pci_dict(
+        self,
+        vendor_id='10de',
+        product_id='1eb8',
+        devices='0000:3b:00.0',
+        hostname='testhost',
+    ):
         return {
             'vendor_id': vendor_id,
             'product_id': product_id,
             'devices': devices,
             'hostname': hostname,
             'rc': constants.RESOURCES['PCI'],
-            'traits': ['CUSTOM_PCI_NVIDIA',
-                       'CUSTOM_PCI_PRODUCT_ID_1EB8'],
+            'traits': ['CUSTOM_PCI_NVIDIA', 'CUSTOM_PCI_PRODUCT_ID_1EB8'],
         }
 
     def test_match_standard_device(self):
@@ -60,9 +64,7 @@ class TestSysinfo(base.DietTestCase):
         self.assertEqual('1eb8', m.group('product_id'))
 
     def test_match_uppercase_hex(self):
-        line = (
-            "0000:3B:00.0 3D controller [0302]: "
-            "Device [10DE:1EB8] (rev a1)")
+        line = "0000:3B:00.0 3D controller [0302]: Device [10DE:1EB8] (rev a1)"
         m = sysinfo.LSPCI_PATTERN.match(line)
         self.assertIsNotNone(m)
         self.assertEqual('10DE', m.group('vendor_id'))
@@ -71,7 +73,8 @@ class TestSysinfo(base.DietTestCase):
     def test_match_without_revision(self):
         line = (
             "0000:3b:00.0 3D controller [0302]: "
-            "NVIDIA Corporation Device [10de:1eb8]")
+            "NVIDIA Corporation Device [10de:1eb8]"
+        )
         m = sysinfo.LSPCI_PATTERN.match(line)
         self.assertIsNotNone(m)
         self.assertEqual('10de', m.group('vendor_id'))
@@ -96,8 +99,8 @@ class TestSysinfo(base.DietTestCase):
         self.assertIn('CUSTOM_PCI_PRODUCT_ID_BEEF', traits)
         # No vendor trait should be present
         vendor_traits = [
-            t for t in traits if not t.startswith(
-                'CUSTOM_PCI_PRODUCT_ID')]
+            t for t in traits if not t.startswith('CUSTOM_PCI_PRODUCT_ID')
+        ]
         self.assertEqual([], vendor_traits)
 
     def test_product_id_uppercased(self):
@@ -117,11 +120,9 @@ class TestSysinfo(base.DietTestCase):
         self.assertEqual('DEAD', dep_list[0].driver_name)
 
     def test_deployable_name_format(self):
-        pci = self._make_pci_dict(
-            hostname='myhost', devices='0000:3b:00.0')
+        pci = self._make_pci_dict(hostname='myhost', devices='0000:3b:00.0')
         dep_list, _num = sysinfo._generate_dep_list(pci)
-        self.assertEqual(
-            'myhost_0000:3b:00.0', dep_list[0].name)
+        self.assertEqual('myhost_0000:3b:00.0', dep_list[0].name)
 
 
 class TestDiscoverPcis(base.TestCase):
@@ -137,9 +138,7 @@ class TestDiscoverPcis(base.TestCase):
         :param specs: list of JSON-encoded whitelist entries,
             e.g. ['{"vendor_id":"10de"}']
         """
-        self.config(
-            passthrough_whitelist=specs,
-            group='pci')
+        self.config(passthrough_whitelist=specs, group='pci')
 
     @mock.patch(_MOCK_GET_PCI, autospec=True)
     def test_discover_single_known_device(self, mock_pci):
@@ -158,22 +157,21 @@ class TestDiscoverPcis(base.TestCase):
         # Check deployable
         dep = dev_dict['deployable_list'][0]
         dep_dict = dep.as_dict()
-        self.assertEqual(
-            'fake-pci-host_0000:3b:00.0', dep_dict['name'])
+        self.assertEqual('fake-pci-host_0000:3b:00.0', dep_dict['name'])
         self.assertEqual('NVIDIA', dep_dict['driver_name'])
         self.assertEqual(1, dep_dict['num_accelerators'])
         # Check attach handle
         ah = dep_dict['attach_handle_list'][0].as_dict()
-        self.assertEqual(constants.AH_TYPE_PCI,
-                         ah['attach_type'])
+        self.assertEqual(constants.AH_TYPE_PCI, ah['attach_type'])
         self.assertFalse(ah['in_use'])
         # Check attributes contain traits
         attrs = dep_dict['attribute_list']
         attr_data = [a.as_dict() for a in attrs]
         attr_keys = [a['key'] for a in attr_data]
         self.assertIn('rc', attr_keys)
-        trait_vals = [a['value'] for a in attr_data
-                      if a['key'].startswith('trait')]
+        trait_vals = [
+            a['value'] for a in attr_data if a['key'].startswith('trait')
+        ]
         self.assertIn('CUSTOM_PCI_NVIDIA', trait_vals)
         self.assertIn('CUSTOM_PCI_PRODUCT_ID_1EB8', trait_vals)
 
@@ -190,25 +188,26 @@ class TestDiscoverPcis(base.TestCase):
         # No vendor trait, only product trait
         attrs = dep_dict['attribute_list']
         attr_data = [a.as_dict() for a in attrs]
-        trait_vals = [a['value'] for a in attr_data
-                      if a['key'].startswith('trait')]
+        trait_vals = [
+            a['value'] for a in attr_data if a['key'].startswith('trait')
+        ]
         self.assertIn('CUSTOM_PCI_PRODUCT_ID_BEEF', trait_vals)
         # Ensure no vendor-specific trait is present
         vendor_traits = [
-            t for t in trait_vals
-            if not t.startswith('CUSTOM_PCI_PRODUCT_ID')]
+            t for t in trait_vals if not t.startswith('CUSTOM_PCI_PRODUCT_ID')
+        ]
         self.assertEqual([], vendor_traits)
 
     @mock.patch(_MOCK_GET_PCI, autospec=True)
     def test_discover_multiple_devices_filtered(self, mock_pci):
-        stdout = '\n'.join([
-            NVIDIA_PCI_LINE, INTEL_PCI_LINE, UNKNOWN_VENDOR_LINE])
+        stdout = '\n'.join(
+            [NVIDIA_PCI_LINE, INTEL_PCI_LINE, UNKNOWN_VENDOR_LINE]
+        )
         mock_pci.return_value = (stdout, '')
         self._set_whitelist(['{"vendor_id":"10de"}'])
         devs = sysinfo._discover_pcis()
         self.assertEqual(1, len(devs))
-        self.assertEqual(
-            '10de', devs[0].as_dict()['vendor'])
+        self.assertEqual('10de', devs[0].as_dict()['vendor'])
 
     @mock.patch(_MOCK_GET_PCI, autospec=True)
     def test_discover_empty_output(self, mock_pci):
@@ -226,14 +225,14 @@ class TestDiscoverPcis(base.TestCase):
 
     @mock.patch(_MOCK_GET_PCI, autospec=True)
     def test_discover_malformed_lines_skipped(self, mock_pci):
-        stdout = '\n'.join([
-            MALFORMED_LINE, '', NVIDIA_PCI_LINE, MALFORMED_LINE])
+        stdout = '\n'.join(
+            [MALFORMED_LINE, '', NVIDIA_PCI_LINE, MALFORMED_LINE]
+        )
         mock_pci.return_value = (stdout, '')
         self._set_whitelist(['{"vendor_id":"10de"}'])
         devs = sysinfo._discover_pcis()
         self.assertEqual(1, len(devs))
-        self.assertEqual(
-            '10de', devs[0].as_dict()['vendor'])
+        self.assertEqual('10de', devs[0].as_dict()['vendor'])
 
     @mock.patch(_MOCK_GET_PCI, autospec=True)
     def test_discover_device_not_in_whitelist(self, mock_pci):
@@ -249,5 +248,4 @@ class TestDiscoverPcis(base.TestCase):
         driver = PCIDriver()
         devs = driver.discover()
         self.assertEqual(1, len(devs))
-        self.assertEqual(
-            '10de', devs[0].as_dict()['vendor'])
+        self.assertEqual('10de', devs[0].as_dict()['vendor'])

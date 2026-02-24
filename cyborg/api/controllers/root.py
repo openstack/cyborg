@@ -57,13 +57,17 @@ class Version(base.APIBase):
             version.min_version = None
         else:
             v = importlib.import_module(
-                'cyborg.api.controllers.%s.versions' % id)
+                'cyborg.api.controllers.%s.versions' % id
+            )
             version.max_version = v.max_version_string()
             version.min_version = v.min_version_string()
         version.id = id
         version.status = status
-        version.links = [link.Link.make_link('self', pecan.request.host_url,
-                                             id, '', bookmark=True)]
+        version.links = [
+            link.Link.make_link(
+                'self', pecan.request.host_url, id, '', bookmark=True
+            )
+        ]
         return version
 
 
@@ -87,7 +91,8 @@ class Root(base.APIBase):
         root.description = (
             "Cyborg is the OpenStack project for lifecycle "
             "management of hardware accelerators, such as GPUs,"
-            "FPGAs, AI chips, security accelerators, etc.")
+            "FPGAs, AI chips, security accelerators, etc."
+        )
         root.versions = [Version.convert('v2')]
         root.default_version = Version.convert('v2')
         return root

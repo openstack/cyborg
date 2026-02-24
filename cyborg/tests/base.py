@@ -50,13 +50,11 @@ class TestCase(base.BaseTestCase):
 
     def _set_config(self):
         self.cfg_fixture = self.useFixture(config_fixture.Config(cfg.CONF))
-        self.config(use_stderr=False,
-                    fatal_exception_format_errors=True)
-        self.set_defaults(host='fake-mini',
-                          debug=True)
-        self.set_defaults(connection="sqlite://",
-                          sqlite_synchronous=False,
-                          group='database')
+        self.config(use_stderr=False, fatal_exception_format_errors=True)
+        self.set_defaults(host='fake-mini', debug=True)
+        self.set_defaults(
+            connection="sqlite://", sqlite_synchronous=False, group='database'
+        )
         cyborg_config.parse_args([], default_config_files=[])
 
     def config(self, **kw):
@@ -77,7 +75,7 @@ class TestCase(base.BaseTestCase):
         """
         root = os.path.abspath(
             os.path.join(os.path.dirname(__file__), '..', '..')
-            )
+        )
         if project_file:
             return os.path.join(root, project_file)
         else:
@@ -100,8 +98,9 @@ class DietTestCase(base.BaseTestCase):
 
         debugger = os.environ.get('OS_POST_MORTEM_DEBUGGER')
         if debugger:
-            self.addOnException(post_mortem_debug.get_exception_handler(
-                debugger))
+            self.addOnException(
+                post_mortem_debug.get_exception_handler(debugger)
+            )
 
         self.addCleanup(mock.patch.stopall)
 
@@ -109,15 +108,17 @@ class DietTestCase(base.BaseTestCase):
         self.orig_pid = os.getpid()
 
     def addOnException(self, handler):
-
         def safe_handler(*args, **kwargs):
             try:
                 return handler(*args, **kwargs)
             except Exception:
                 with excutils.save_and_reraise_exception(reraise=False) as ctx:
-                    self.addDetail('Failure in exception handler %s' % handler,
-                                   testtools.content.TracebackContent(
-                                       (ctx.type_, ctx.value, ctx.tb), self))
+                    self.addDetail(
+                        'Failure in exception handler %s' % handler,
+                        testtools.content.TracebackContent(
+                            (ctx.type_, ctx.value, ctx.tb), self
+                        ),
+                    )
 
         return super().addOnException(safe_handler)
 
@@ -151,13 +152,20 @@ class DietTestCase(base.BaseTestCase):
         be reported upon failure.
         """
         if not isinstance(expected_subset, dict):
-            self.fail("expected_subset (%s) is not an instance of dict" %
-                      type(expected_subset))
+            self.fail(
+                "expected_subset (%s) is not an instance of dict"
+                % type(expected_subset)
+            )
         if not isinstance(actual_superset, dict):
-            self.fail("actual_superset (%s) is not an instance of dict" %
-                      type(actual_superset))
+            self.fail(
+                "actual_superset (%s) is not an instance of dict"
+                % type(actual_superset)
+            )
         for k, v in expected_subset.items():
             self.assertIn(k, actual_superset)
-            self.assertEqual(v, actual_superset[k],
-                             "Key %(key)s expected: %(exp)r, actual %(act)r" %
-                             {'key': k, 'exp': v, 'act': actual_superset[k]})
+            self.assertEqual(
+                v,
+                actual_superset[k],
+                "Key %(key)s expected: %(exp)r, actual %(act)r"
+                % {'key': k, 'exp': v, 'act': actual_superset[k]},
+            )

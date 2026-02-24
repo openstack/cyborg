@@ -15,5 +15,6 @@ down_revision = '7a4fd0fc3f8c'
 
 
 def upgrade():
-    op.add_column('device_profiles', sa.Column('description',
-                  sa.Text(), nullable=True))
+    op.add_column(
+        'device_profiles', sa.Column('description', sa.Text(), nullable=True)
+    )

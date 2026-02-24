@@ -58,24 +58,30 @@ class RPCService(service.Service):
         self.tg.add_dynamic_timer_args(
             self.manager.periodic_tasks,
             kwargs={"context": admin_context},
-            periodic_interval_max=CONF.periodic_interval)
+            periodic_interval_max=CONF.periodic_interval,
+        )
 
-        LOG.info('Created RPC server for service %(service)s on host '
-                 '%(host)s.',
-                 {'service': self.topic, 'host': self.host})
+        LOG.info(
+            'Created RPC server for service %(service)s on host %(host)s.',
+            {'service': self.topic, 'host': self.host},
+        )
 
     def stop(self, graceful=True):
         try:
             self.rpcserver.stop()
             self.rpcserver.wait()
         except Exception as e:
-            LOG.exception('Service error occurred when stopping the '
-                          'RPC server. Error: %s', e)
+            LOG.exception(
+                'Service error occurred when stopping the '
+                'RPC server. Error: %s',
+                e,
+            )
 
         super().stop(graceful=graceful)
-        LOG.info('Stopped RPC server for service %(service)s on host '
-                 '%(host)s.',
-                 {'service': self.topic, 'host': self.host})
+        LOG.info(
+            'Stopped RPC server for service %(service)s on host %(host)s.',
+            {'service': self.topic, 'host': self.host},
+        )
 
 
 def prepare_service(argv=None):
@@ -105,17 +111,24 @@ class WSGIService(service.ServiceBase):
         """
         self.name = name
         self.app = app.load_app()
-        self.workers = (CONF.api.api_workers or
-                        processutils.get_worker_count())
+        self.workers = CONF.api.api_workers or processutils.get_worker_count()
         if self.workers and self.workers < 1:
             raise exception.ConfigInvalid(
-                _("api_workers value of %d is invalid, "
-                  "must be greater than 0.") % self.workers)
+                _(
+                    "api_workers value of %d is invalid, "
+                    "must be greater than 0."
+                )
+                % self.workers
+            )
 
-        self.server = wsgi.Server(CONF, self.name, self.app,
-                                  host=CONF.api.host_ip,
-                                  port=CONF.api.port,
-                                  use_ssl=use_ssl)
+        self.server = wsgi.Server(
+            CONF,
+            self.name,
+            self.app,
+            host=CONF.api.host_ip,
+            port=CONF.api.port,
+            use_ssl=use_ssl,
+        )
 
     def start(self):
         """Start serving this service using loaded configuration.

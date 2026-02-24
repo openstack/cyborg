@@ -23,9 +23,11 @@ sys_admin_pctxt = priv_context.PrivContext(
     # TODO(yumeng):
     # CAP_SYS_ADMIN has a lot of scary powers, so
     # consider breaking this out into a separate minimal context.
-    capabilities=[capabilities.CAP_CHOWN,
-                  capabilities.CAP_DAC_OVERRIDE,
-                  capabilities.CAP_DAC_READ_SEARCH,
-                  capabilities.CAP_FOWNER,
-                  capabilities.CAP_SYS_ADMIN],
+    capabilities=[
+        capabilities.CAP_CHOWN,
+        capabilities.CAP_DAC_OVERRIDE,
+        capabilities.CAP_DAC_READ_SEARCH,
+        capabilities.CAP_FOWNER,
+        capabilities.CAP_SYS_ADMIN,
+    ],
 )

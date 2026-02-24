@@ -48,10 +48,11 @@ class DeviceProfilePolicyTest(base.BasePolicyTest):
         self.create_authorized_contexts = [
             self.legacy_admin_context,  # legacy: admin
             self.system_admin_context,  # new policy: system_admin
-            self.project_admin_context
+            self.project_admin_context,
         ]
         self.create_unauthorized_contexts = list(
-            set(self.all_contexts) - set(self.create_authorized_contexts))
+            set(self.all_contexts) - set(self.create_authorized_contexts)
+        )
 
         # check both legacy and new policies for delete APIs
         self.delete_authorized_contexts = [
@@ -63,10 +64,11 @@ class DeviceProfilePolicyTest(base.BasePolicyTest):
             # If later we need support owner policy, we should recheck here.
             # self.legacy_owner_context,
             self.system_admin_context,  # new policy: system_admin
-            self.project_admin_context
+            self.project_admin_context,
         ]
         self.delete_unauthorized_contexts = list(
-            set(self.all_contexts) - set(self.delete_authorized_contexts))
+            set(self.all_contexts) - set(self.delete_authorized_contexts)
+        )
 
     def _validate_links(self, links, dp_uuid):
         has_self_link = False
@@ -114,8 +116,9 @@ class DeviceProfilePolicyTest(base.BasePolicyTest):
     @mock.patch('cyborg.conductor.rpcapi.ConductorAPI.device_profile_delete')
     @mock.patch('cyborg.objects.DeviceProfile.get_by_name')
     @mock.patch('cyborg.objects.DeviceProfile.get_by_uuid')
-    def test_delete_device_profile_success(self, mock_dp_uuid,
-                                           mock_dp_name, mock_cond_del):
+    def test_delete_device_profile_success(
+        self, mock_dp_uuid, mock_dp_name, mock_cond_del
+    ):
         for context in self.delete_authorized_contexts:
             headers = self.gen_headers(context)
             # Delete by UUID
@@ -156,15 +159,19 @@ class DeviceProfileScopeTypePolicyTest(DeviceProfilePolicyTest):
         # check that admin is able to do create and delete operations.
         self.create_authorized_contexts = [
             self.legacy_admin_context,
-            self.project_admin_context]
+            self.project_admin_context,
+        ]
         self.delete_authorized_contexts = self.create_authorized_contexts
         # Check that system or non-admin is not able to perform the system
         # level actions on device_profiles.
         self.create_unauthorized_contexts = [
-            self.system_admin_context, self.system_member_context,
-            self.system_reader_context, self.system_foo_context,
+            self.system_admin_context,
+            self.system_member_context,
+            self.system_reader_context,
+            self.system_foo_context,
             self.project_member_context,
             self.other_project_member_context,
-            self.project_foo_context, self.project_reader_context
+            self.project_foo_context,
+            self.project_reader_context,
         ]
         self.delete_unauthorized_contexts = self.create_unauthorized_contexts

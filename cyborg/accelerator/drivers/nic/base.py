@@ -23,8 +23,8 @@ VENDOR_MAPS = {"0x8086": "intel"}
 class NICDriver:
     """Base class for Nic drivers.
 
-       This is just a virtual NIC drivers interface.
-       Vendor should implement their specific drivers.
+    This is just a virtual NIC drivers interface.
+    Vendor should implement their specific drivers.
     """
 
     @classmethod

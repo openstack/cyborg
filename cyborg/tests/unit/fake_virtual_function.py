@@ -38,8 +38,8 @@ def fake_db_virtual_function(**updates):
         'assignable': True,
         'instance_uuid': None,
         'availability': 'Available',
-        'accelerator_id': 1
-        }
+        'accelerator_id': 1,
+    }
 
     for name, field in virtual_function.VirtualFunction.fields.items():
         if name in db_virtual_function:
@@ -49,8 +49,9 @@ def fake_db_virtual_function(**updates):
         elif field.default != fields.UnspecifiedDefault:
             db_virtual_function[name] = field.default
         else:
-            raise Exception('fake_db_virtual_function needs help with %s'
-                            % name)
+            raise Exception(
+                'fake_db_virtual_function needs help with %s' % name
+            )
 
     if updates:
         db_virtual_function.update(updates)
@@ -62,9 +63,11 @@ def fake_virtual_function_obj(context, obj_vf_class=None, **updates):
     if obj_vf_class is None:
         obj_vf_class = objects.VirtualFunction
     expected_attrs = updates.pop('expected_attrs', None)
-    vf = obj_vf_class._from_db_object(context,
-                                      obj_vf_class(),
-                                      fake_db_virtual_function(**updates),
-                                      expected_attrs=expected_attrs)
+    vf = obj_vf_class._from_db_object(
+        context,
+        obj_vf_class(),
+        fake_db_virtual_function(**updates),
+        expected_attrs=expected_attrs,
+    )
     vf.obj_reset_changes()
     return vf

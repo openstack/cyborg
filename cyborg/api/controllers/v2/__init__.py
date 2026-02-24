@@ -36,13 +36,17 @@ from cyborg.api.controllers.v2 import versions
 def min_version():
     return base.Version(
         {base.Version.current_api_version: versions.min_version_string()},
-        versions.min_version_string(), versions.max_version_string())
+        versions.min_version_string(),
+        versions.max_version_string(),
+    )
 
 
 def max_version():
     return base.Version(
         {base.Version.current_api_version: versions.max_version_string()},
-        versions.min_version_string(), versions.max_version_string())
+        versions.min_version_string(),
+        versions.max_version_string(),
+    )
 
 
 class V2(base.APIBase):
@@ -71,9 +75,8 @@ class V2(base.APIBase):
         v2.min_version = str(min_version())
         v2.status = 'CURRENT'
         v2.links = [
-            link.Link.make_link('self', pecan.request.public_url,
-                                '', ''),
-            ]
+            link.Link.make_link('self', pecan.request.public_url, '', ''),
+        ]
         return v2
 
 
@@ -98,24 +101,35 @@ class Controller(rest.RestController):
             raise exc.HTTPNotAcceptable(
                 "Mutually exclusive versions requested. Version %(ver)s "
                 "requested but not supported by this service. The supported "
-                "version range is: [%(min)s, %(max)s]." %
-                {'ver': version, 'min': versions.min_version_string(),
-                 'max': versions.max_version_string()},
-                headers=headers)
+                "version range is: [%(min)s, %(max)s]."
+                % {
+                    'ver': version,
+                    'min': versions.min_version_string(),
+                    'max': versions.max_version_string(),
+                },
+                headers=headers,
+            )
         # ensure the minor version is within the supported range
         if version < min_version() or version > max_version():
             raise exc.HTTPNotAcceptable(
                 "Version %(ver)s was requested but the minor version is not "
                 "supported by this service. The supported version range is: "
-                "[%(min)s, %(max)s]." %
-                {'ver': version, 'min': versions.min_version_string(),
-                 'max': versions.max_version_string()},
-                headers=headers)
+                "[%(min)s, %(max)s]."
+                % {
+                    'ver': version,
+                    'min': versions.min_version_string(),
+                    'max': versions.max_version_string(),
+                },
+                headers=headers,
+            )
 
     @pecan.expose()
     def _route(self, args, request=None):
-        v = base.Version(pecan.request.headers, versions.min_version_string(),
-                         versions.max_version_string())
+        v = base.Version(
+            pecan.request.headers,
+            versions.min_version_string(),
+            versions.max_version_string(),
+        )
 
         # The Vary header is used as a hint to caching proxies and user agents
         # that the response is also dependent on the OpenStack-API-Version and
@@ -124,9 +138,11 @@ class Controller(rest.RestController):
 
         # Always set the min and max headers
         pecan.response.headers[base.Version.min_api_version] = (
-            versions.min_version_string())
+            versions.min_version_string()
+        )
         pecan.response.headers[base.Version.max_api_version] = (
-            versions.max_version_string())
+            versions.max_version_string()
+        )
 
         # assert that requested version is supported
         self._check_version(v, pecan.response.headers)

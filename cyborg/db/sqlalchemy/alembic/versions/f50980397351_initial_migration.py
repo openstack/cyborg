@@ -47,7 +47,7 @@ def upgrade():
         sa.PrimaryKeyConstraint('id'),
         sa.UniqueConstraint('uuid', name='uniq_accelerators0uuid'),
         mysql_ENGINE='InnoDB',
-        mysql_DEFAULT_CHARSET='UTF8'
+        mysql_DEFAULT_CHARSET='UTF8',
     )
 
     op.create_table(
@@ -57,10 +57,18 @@ def upgrade():
         sa.Column('id', sa.Integer(), nullable=False),
         sa.Column('uuid', sa.String(length=36), nullable=False),
         sa.Column('name', sa.String(length=255), nullable=False),
-        sa.Column('parent_uuid', sa.String(length=36),
-                  sa.ForeignKey('deployables.uuid'), nullable=True),
-        sa.Column('root_uuid', sa.String(length=36),
-                  sa.ForeignKey('deployables.uuid'), nullable=True),
+        sa.Column(
+            'parent_uuid',
+            sa.String(length=36),
+            sa.ForeignKey('deployables.uuid'),
+            nullable=True,
+        ),
+        sa.Column(
+            'root_uuid',
+            sa.String(length=36),
+            sa.ForeignKey('deployables.uuid'),
+            nullable=True,
+        ),
         sa.Column('address', sa.Text(), nullable=False),
         sa.Column('host', sa.Text(), nullable=False),
         sa.Column('board', sa.Text(), nullable=False),
@@ -71,15 +79,18 @@ def upgrade():
         sa.Column('assignable', sa.Boolean(), nullable=False),
         sa.Column('instance_uuid', sa.String(length=36), nullable=True),
         sa.Column('availability', sa.Text(), nullable=False),
-        sa.Column('accelerator_id', sa.Integer(),
-                  sa.ForeignKey('accelerators.id', ondelete="CASCADE"),
-                  nullable=False),
+        sa.Column(
+            'accelerator_id',
+            sa.Integer(),
+            sa.ForeignKey('accelerators.id', ondelete="CASCADE"),
+            nullable=False,
+        ),
         sa.PrimaryKeyConstraint('id'),
         sa.UniqueConstraint('uuid', name='uniq_deployables0uuid'),
         sa.Index('deployables_parent_uuid_idx', 'parent_uuid'),
         sa.Index('deployables_root_uuid_idx', 'root_uuid'),
         mysql_ENGINE='InnoDB',
-        mysql_DEFAULT_CHARSET='UTF8'
+        mysql_DEFAULT_CHARSET='UTF8',
     )
 
     op.create_table(
@@ -88,14 +99,17 @@ def upgrade():
         sa.Column('updated_at', sa.DateTime(), nullable=True),
         sa.Column('id', sa.Integer(), nullable=False),
         sa.Column('uuid', sa.String(length=36), nullable=False),
-        sa.Column('deployable_id', sa.Integer(),
-                  sa.ForeignKey('deployables.id', ondelete="CASCADE"),
-                  nullable=False),
+        sa.Column(
+            'deployable_id',
+            sa.Integer(),
+            sa.ForeignKey('deployables.id', ondelete="CASCADE"),
+            nullable=False,
+        ),
         sa.Column('key', sa.Text(), nullable=False),
         sa.Column('value', sa.Text(), nullable=False),
         sa.PrimaryKeyConstraint('id'),
         sa.UniqueConstraint('uuid', name='uniq_attributes0uuid'),
         sa.Index('attributes_deployable_id_idx', 'deployable_id'),
         mysql_ENGINE='InnoDB',
-        mysql_DEFAULT_CHARSET='UTF8'
+        mysql_DEFAULT_CHARSET='UTF8',
     )

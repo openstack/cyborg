@@ -23,7 +23,7 @@ from cyborg.accelerator.drivers.pci.pci import sysinfo
 
 class PCIDriver(PciDriver):
     """Class for Pci drivers.
-       Vendor should implement their specific drivers in this class.
+    Vendor should implement their specific drivers in this class.
     """
 
     def discover(self):

@@ -16,6 +16,7 @@
 """
 Cyborg PCI driver implementation.
 """
+
 import re
 
 from oslo_log import log as logging
@@ -73,7 +74,8 @@ def _generate_attribute_list(pci):
             values = pci.get(k, [])
             for val in values:
                 driver_attr = driver_attribute.DriverAttribute(
-                    key="trait" + str(index), value=val)
+                    key="trait" + str(index), value=val
+                )
                 index = index + 1
                 attr_list.append(driver_attr)
     return attr_list
@@ -98,8 +100,7 @@ def _generate_dep_list(pci):
     # NOTE(yumeng) Since Wallaby release, the deplpyable_name is named as
     # <Compute_hostname>_<Device_address>
     driver_dep.name = pci.get('hostname', '') + '_' + pci["devices"]
-    vendor_name = pci_utils.VENDOR_MAPS.get(
-        pci["vendor_id"], pci["vendor_id"])
+    vendor_name = pci_utils.VENDOR_MAPS.get(pci["vendor_id"], pci["vendor_id"])
     driver_dep.driver_name = vendor_name.upper()
     driver_dep.num_accelerators = 1
     driver_dep.attach_handle_list = [_generate_attach_handle(pci)]
@@ -118,16 +119,18 @@ def _generate_driver_device(pci):
     driver_device_obj = driver_device.DriverDevice()
     driver_device_obj.vendor = pci['vendor_id']
     driver_device_obj.model = pci['product_id']
-    std_board_info = {'product_id': pci.get('product_id'),
-                      'controller': pci.get('controller'),
-                      }
+    std_board_info = {
+        'product_id': pci.get('product_id'),
+        'controller': pci.get('controller'),
+    }
     driver_device_obj.std_board_info = jsonutils.dumps(std_board_info)
     driver_device_obj.type = constants.DEVICE_GPU
     driver_device_obj.stub = pci.get('stub', False)
     driver_device_obj.controlpath_id = _generate_controlpath_id(pci)
     driver_device_obj.deployable_list, ais = _generate_dep_list(pci)
-    driver_device_obj.vendor_board_info = pci.get('vendor_board_info',
-                                                  "miss_vb_info")
+    driver_device_obj.vendor_board_info = pci.get(
+        'vendor_board_info', "miss_vb_info"
+    )
     return driver_device_obj
 
 
@@ -149,14 +152,13 @@ def _discover_pcis():
             'vendor_id': pci_dict['vendor_id'],
             'product_id': pci_dict['product_id'],
             'address': pci_dict['devices'],
-            'parent_addr': None
+            'parent_addr': None,
         }
         if dev_filter.device_assignable(dev_info):
             # get hostname for deployable_name usage
             pci_dict['hostname'] = CONF.host
             pci_dict["rc"] = constants.RESOURCES["PCI"]
-            traits = _get_traits(pci_dict["vendor_id"],
-                                 pci_dict["product_id"])
+            traits = _get_traits(pci_dict["vendor_id"], pci_dict["product_id"])
             pci_dict.update(traits)
             pci_list.append(_generate_driver_device(pci_dict))
     LOG.info('pci_list: %s', pci_list)

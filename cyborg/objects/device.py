@@ -36,15 +36,19 @@ class Device(base.CyborgObject, object_base.VersionedObjectDictCompat):
     fields = {
         'id': object_fields.IntegerField(nullable=False),
         'uuid': object_fields.UUIDField(nullable=False),
-        'type': object_fields.EnumField(valid_values=constants.DEVICE_TYPE,
-                                        nullable=False),
+        'type': object_fields.EnumField(
+            valid_values=constants.DEVICE_TYPE, nullable=False
+        ),
         'vendor': object_fields.StringField(nullable=False),
         'model': object_fields.StringField(nullable=False),
         'std_board_info': object_fields.StringField(nullable=True),
         'vendor_board_info': object_fields.StringField(nullable=True),
         'hostname': object_fields.StringField(nullable=False),
-        'status': object_fields.EnumField(valid_values=constants.DEVICE_STATUS,
-                                          nullable=False, default="enabled"),
+        'status': object_fields.EnumField(
+            valid_values=constants.DEVICE_STATUS,
+            nullable=False,
+            default="enabled",
+        ),
     }
 
     def create(self, context):
@@ -69,8 +73,13 @@ class Device(base.CyborgObject, object_base.VersionedObjectDictCompat):
             limit = filters.pop('limit', None)
             marker = filters.pop('marker_obj', None)
             db_devices = cls.dbapi.device_list_by_filters(
-                context, filters, sort_dir=sort_dir, sort_key=sort_key,
-                limit=limit, marker=marker)
+                context,
+                filters,
+                sort_dir=sort_dir,
+                sort_key=sort_key,
+                limit=limit,
+                marker=marker,
+            )
         else:
             db_devices = cls.dbapi.device_list(context)
         return cls._from_db_object_list(db_devices, context)

@@ -22,8 +22,10 @@ from cyborg import version
 def parse_args(argv, default_config_files=None):
     rpc.set_defaults(control_exchange='cyborg')
     version_string = version.version_info.release_string()
-    cfg.CONF(argv[1:],
-             project='cyborg',
-             version=version_string,
-             default_config_files=default_config_files)
+    cfg.CONF(
+        argv[1:],
+        project='cyborg',
+        version=version_string,
+        default_config_files=default_config_files,
+    )
     rpc.init(cfg.CONF)

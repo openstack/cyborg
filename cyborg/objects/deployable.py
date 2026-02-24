@@ -96,11 +96,14 @@ class Deployable(base.CyborgObject, object_base.VersionedObjectDictCompat):
             sort_key = filters.pop('sort_key', 'created_at')
             limit = filters.pop('limit', None)
             marker = filters.pop('marker_obj', None)
-            db_deps = cls.dbapi.deployable_get_by_filters(context, filters,
-                                                          sort_dir=sort_dir,
-                                                          sort_key=sort_key,
-                                                          limit=limit,
-                                                          marker=marker)
+            db_deps = cls.dbapi.deployable_get_by_filters(
+                context,
+                filters,
+                sort_dir=sort_dir,
+                sort_key=sort_key,
+                limit=limit,
+                marker=marker,
+            )
         else:
             db_deps = cls.dbapi.deployable_list(context)
         obj_dpl_list = cls._from_db_object_list(db_deps, context)
@@ -112,8 +115,10 @@ class Deployable(base.CyborgObject, object_base.VersionedObjectDictCompat):
         # TODO(Xinran): Will remove this if find some better way.
         updates.pop("uuid", None)
         updates.pop("created_at", None)
-        if "updated_at" in updates.keys() and \
-                updates["updated_at"] is not None:
+        if (
+            "updated_at" in updates.keys()
+            and updates["updated_at"] is not None
+        ):
             updates["updated_at"] = updates["updated_at"].replace(tzinfo=None)
         db_dep = self.dbapi.deployable_update(context, self.uuid, updates)
         self.obj_reset_changes()
@@ -121,8 +126,7 @@ class Deployable(base.CyborgObject, object_base.VersionedObjectDictCompat):
 
     def update(self, context, updates):
         """Update provided key, value pairs"""
-        self.dbapi.deployable_update(context, self.uuid,
-                                     updates)
+        self.dbapi.deployable_update(context, self.uuid, updates)
 
     def destroy(self, context):
         """Delete a Deployable from the DB."""
@@ -130,12 +134,9 @@ class Deployable(base.CyborgObject, object_base.VersionedObjectDictCompat):
         self.obj_reset_changes()
 
     @classmethod
-    def get_by_filter(cls, context,
-                      filters):
+    def get_by_filter(cls, context, filters):
         obj_dpl_list = []
-        db_dpl_list = cls.dbapi.deployable_get_by_filters(
-            context,
-            filters)
+        db_dpl_list = cls.dbapi.deployable_get_by_filters(context, filters)
 
         if db_dpl_list:
             for db_dpl in db_dpl_list:
@@ -173,5 +174,6 @@ class Deployable(base.CyborgObject, object_base.VersionedObjectDictCompat):
         # TODO(Sundar) We should probably get cpid from objects layer,
         # not db layer
         cpid_list = self.dbapi.control_path_get_by_filters(
-            context, query_filter)
+            context, query_filter
+        )
         return cpid_list

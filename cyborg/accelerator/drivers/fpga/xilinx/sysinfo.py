@@ -34,15 +34,15 @@ from cyborg.privsep import sys_admin_pctxt
 
 LOG = logging.getLogger(__name__)
 
-XILINX_FPGA_FLAGS = ["Xilinx Corporation Device",
-                     "Processing accelerators"]
+XILINX_FPGA_FLAGS = ["Xilinx Corporation Device", "Processing accelerators"]
 
 XILINX_FPGA_INFO_PATTERN = re.compile(
     r"(?P<pci_addr>[0-9a-fA-F]{4}:[0-9a-fA-F]{2}:"
     r"[0-9a-fA-F]{2}\.[0-9a-fA-F]) "
     r"(?P<controller>.*) [\[].*]: (?P<model>.*) .*"
     r"[\[](?P<vendor_id>[0-9a-fA-F]"
-    r"{4}):(?P<product_id>[0-9a-fA-F]{4})].*")
+    r"{4}):(?P<product_id>[0-9a-fA-F]{4})].*"
+)
 
 XILINX_PF_MAPS = {"mgmt": "xclmgmt", "user": "xocl"}
 
@@ -101,13 +101,16 @@ def _combine_device_by_pci_func(pci_devices):
             for fpga in fpga_devices:
                 existed_addr = fpga.get('pci_addr')[0]
                 # compare domain:bus:slot
-                if existed_addr and \
-                        new_addr.split('.')[0] == existed_addr.split('.')[0]:
+                if (
+                    existed_addr
+                    and new_addr.split('.')[0] == existed_addr.split('.')[0]
+                ):
                     fpga.update({'pci_addr': [existed_addr, new_addr]})
                     is_existed = True
             if not is_existed:
-                traits = _generate_traits(pci_dict["vendor_id"],
-                                          pci_dict["product_id"])
+                traits = _generate_traits(
+                    pci_dict["vendor_id"], pci_dict["product_id"]
+                )
                 pci_dict["rc"] = constants.RESOURCES["FPGA"]
                 pci_dict.update(traits)
                 pci_dict.update({'pci_addr': [new_addr]})
@@ -144,7 +147,8 @@ def _generate_attribute_list(fpga):
             values = fpga.get(k, [])
             for index, val in enumerate(values):
                 driver_attr = driver_attribute.DriverAttribute(
-                    key="trait" + str(index), value=val)
+                    key="trait" + str(index), value=val
+                )
                 attr_list.append(driver_attr)
     return attr_list
 
@@ -171,13 +175,17 @@ def fpga_tree():
         driver_device_obj = driver_device.DriverDevice()
         driver_device_obj.vendor = fpga["vendor_id"]
         driver_device_obj.model = fpga.get('model', 'miss model info')
-        std_board_info = {'product_id': fpga.get('product_id'),
-                          'controller': fpga.get('controller')}
+        std_board_info = {
+            'product_id': fpga.get('product_id'),
+            'controller': fpga.get('controller'),
+        }
         vendor_board_info = {
-            'vendor_info': fpga.get('vendor_info', 'fpga_vb_info')}
+            'vendor_info': fpga.get('vendor_info', 'fpga_vb_info')
+        }
         driver_device_obj.std_board_info = jsonutils.dumps(std_board_info)
-        driver_device_obj.vendor_board_info = \
-            jsonutils.dumps(vendor_board_info)
+        driver_device_obj.vendor_board_info = jsonutils.dumps(
+            vendor_board_info
+        )
         driver_device_obj.type = constants.DEVICE_FPGA
         driver_device_obj.stub = fpga.get('stub', False)
         driver_device_obj.controlpath_id = _generate_controlpath_id(fpga)

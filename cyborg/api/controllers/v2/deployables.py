@@ -82,12 +82,14 @@ class Deployable(base.APIBase):
         url = pecan.request.public_url
         api_dep.links = [
             link.Link.make_link('self', url, 'deployables', api_dep.uuid),
-            link.Link.make_link('bookmark', url, 'deployables', api_dep.uuid,
-                                bookmark=True)
-            ]
+            link.Link.make_link(
+                'bookmark', url, 'deployables', api_dep.uuid, bookmark=True
+            ),
+        ]
         query = {"deployable_id": obj_dep.id}
-        attr_get_list = objects.Attribute.get_by_filter(pecan.request.context,
-                                                        query)
+        attr_get_list = objects.Attribute.get_by_filter(
+            pecan.request.context, query
+        )
         attributes_list = []
         for exist_attr in attr_get_list:
             attributes_list.append({exist_attr.key: exist_attr.value})
@@ -104,12 +106,12 @@ class DeployableCollection(Deployable):
     def convert_with_links(self, obj_deps):
         collection = DeployableCollection()
         collection.deployables = [
-            self.convert_with_link(obj_dep) for obj_dep in obj_deps]
+            self.convert_with_link(obj_dep) for obj_dep in obj_deps
+        ]
         return collection
 
 
 class DeployablePatchType(types.JsonPatchType):
-
     _api_base = Deployable
 
     @staticmethod
@@ -118,8 +120,7 @@ class DeployablePatchType(types.JsonPatchType):
         return defaults + ['/name', '/num_accelerators']
 
 
-class DeployablesController(base.CyborgController,
-                            DeployableCollection):
+class DeployablesController(base.CyborgController, DeployableCollection):
     """REST controller for Deployables."""
 
     _custom_actions = {'program': ['PATCH']}
@@ -148,15 +149,15 @@ class DeployablesController(base.CyborgController,
 
         obj_dep = objects.Deployable.get(pecan.request.context, uuid)
         obj_dev = objects.Device.get_by_device_id(
-            pecan.request.context,
-            obj_dep.device_id
+            pecan.request.context, obj_dep.device_id
         )
         hostname = obj_dev.hostname
         driver_name = obj_dep.driver_name
         cpid_list = obj_dep.get_cpid_list(pecan.request.context)
         controlpath_id = cpid_list[0]
         controlpath_id['cpid_info'] = jsonutils.loads(
-            cpid_list[0]['cpid_info'])
+            cpid_list[0]['cpid_info']
+        )
         self.agent_rpcapi = AgentAPI()
         ret = self.agent_rpcapi.fpga_program(
             pecan.request.context,
@@ -164,7 +165,7 @@ class DeployablesController(base.CyborgController,
             controlpath_id,
             image_uuid,
             driver_name,
-            )
+        )
         if ret:
             return self.convert_with_link(obj_dep)
         else:

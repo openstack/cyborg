@@ -54,7 +54,8 @@ def _session_and_auth(context):
 
     if not _SESSION:
         _SESSION = ks_loading.load_session_from_conf_options(
-            CONF, cyborg.conf.glance.glance_group.name)
+            CONF, cyborg.conf.glance.glance_group.name
+        )
 
     auth = service_auth.get_auth_plugin(context)
 
@@ -64,9 +65,13 @@ def _session_and_auth(context):
 def _glanceclient_from_endpoint(context, endpoint, version):
     sess, auth = _session_and_auth(context)
 
-    return glanceclient.Client(version, session=sess, auth=auth,
-                               endpoint_override=endpoint,
-                               global_request_id=context.global_id)
+    return glanceclient.Client(
+        version,
+        session=sess,
+        auth=auth,
+        endpoint_override=endpoint,
+        global_request_id=context.global_id,
+    )
 
 
 def generate_glance_url(context):
@@ -103,8 +108,11 @@ def get_api_server(context):
     sess, auth = _session_and_auth(context)
     ksa_adap = utils.get_ksa_adapter(
         cyborg.conf.glance.DEFAULT_SERVICE_TYPE,
-        ksa_auth=auth, ksa_session=sess,
-        min_version='2.0', max_version='2.latest')
+        ksa_auth=auth,
+        ksa_session=sess,
+        min_version='2.0',
+        max_version='2.latest',
+    )
     endpoint = utils.get_endpoint(ksa_adap)
     if endpoint:
         # NOTE(mriedem): Due to python-glanceclient bug 1707995 we have
@@ -122,9 +130,9 @@ class GlanceClientWrapper:
     def __init__(self, context=None, endpoint=None):
         version = 2
         if endpoint is not None:
-            self.client = self._create_static_client(context,
-                                                     endpoint,
-                                                     version)
+            self.client = self._create_static_client(
+                context, endpoint, version
+            )
         else:
             self.client = None
         self.api_server = None
@@ -144,17 +152,21 @@ class GlanceClientWrapper:
         """Call a glance client method.  If we get a connection error,
         retry the request according to CONF.glance.num_retries.
         """
-        retry_excs = (glanceclient.exc.HTTPServiceUnavailable,
-                      glanceclient.exc.InvalidEndpoint,
-                      glanceclient.exc.CommunicationError)
+        retry_excs = (
+            glanceclient.exc.HTTPServiceUnavailable,
+            glanceclient.exc.InvalidEndpoint,
+            glanceclient.exc.CommunicationError,
+        )
         num_attempts = 1 + CONF.glance.num_retries
 
         for attempt in range(1, num_attempts + 1):
-            client = self.client or self._create_onetime_client(context,
-                                                                version)
+            client = self.client or self._create_onetime_client(
+                context, version
+            )
             try:
-                controller = getattr(client,
-                                     kwargs.pop('controller', 'images'))
+                controller = getattr(
+                    client, kwargs.pop('controller', 'images')
+                )
                 result = getattr(controller, method)(*args, **kwargs)
                 if inspect.isgenerator(result):
                     # Convert generator results to a list, so that we can
@@ -167,14 +179,20 @@ class GlanceClientWrapper:
                 else:
                     extra = 'done trying'
 
-                LOG.exception("Error contacting glance server "
-                              "'%(server)s' for '%(method)s', "
-                              "%(extra)s.",
-                              {'server': self.api_server,
-                               'method': method, 'extra': extra})
+                LOG.exception(
+                    "Error contacting glance server "
+                    "'%(server)s' for '%(method)s', "
+                    "%(extra)s.",
+                    {
+                        'server': self.api_server,
+                        'method': method,
+                        'extra': extra,
+                    },
+                )
                 if attempt == num_attempts:
                     raise exception.GlanceConnectionFailed(
-                        server=str(self.api_server), reason=str(e))
+                        server=str(self.api_server), reason=str(e)
+                    )
                 time.sleep(1)
 
 
@@ -210,15 +228,18 @@ class GlanceImageServiceV2:
         if image_chunks.wrapped is None:
             # None is a valid return value, but there's nothing we can do with
             # a image with no associated data
-            raise exception.ImageUnacceptable(image_id=image_id,
-                                              reason='Image has no \
-                                              associated data')
+            raise exception.ImageUnacceptable(
+                image_id=image_id,
+                reason='Image has no \
+                                              associated data',
+            )
 
         # Retrieve properties for verification of Glance image signature
         verifier = None
         if CONF.glance.verify_glance_signatures:
-            image_meta_dict = self.show(context, image_id,
-                                        include_locations=False)
+            image_meta_dict = self.show(
+                context, image_id, include_locations=False
+            )
             image_meta = objects.ImageMeta.from_dict(image_meta_dict)
             img_signature = image_meta.properties.get('img_signature')
             img_sig_hash_method = image_meta.properties.get(
@@ -240,8 +261,10 @@ class GlanceImageServiceV2:
                 )
             except cursive_exception.SignatureVerificationError:
                 with excutils.save_and_reraise_exception():
-                    LOG.error('Image signature verification failed '
-                              'for image: %s', image_id)
+                    LOG.error(
+                        'Image signature verification failed for image: %s',
+                        image_id,
+                    )
 
         close_file = False
         if data is None and dst_path:
@@ -249,7 +272,6 @@ class GlanceImageServiceV2:
             close_file = True
 
         if data is None:
-
             # Perform image signature verification
             if verifier:
                 try:
@@ -257,13 +279,18 @@ class GlanceImageServiceV2:
                         verifier.update(chunk)
                     verifier.verify()
 
-                    LOG.info('Image signature verification succeeded '
-                             'for image: %s', image_id)
+                    LOG.info(
+                        'Image signature verification succeeded for image: %s',
+                        image_id,
+                    )
 
                 except cryptography.exceptions.InvalidSignature:
                     with excutils.save_and_reraise_exception():
-                        LOG.error('Image signature verification failed '
-                                  'for image: %s', image_id)
+                        LOG.error(
+                            'Image signature verification failed '
+                            'for image: %s',
+                            image_id,
+                        )
             return image_chunks
         else:
             try:
@@ -273,17 +300,23 @@ class GlanceImageServiceV2:
                     data.write(chunk)
                 if verifier:
                     verifier.verify()
-                    LOG.info('Image signature verification succeeded '
-                             'for image %s', image_id)
+                    LOG.info(
+                        'Image signature verification succeeded for image %s',
+                        image_id,
+                    )
             except cryptography.exceptions.InvalidSignature:
                 data.truncate(0)
                 with excutils.save_and_reraise_exception():
-                    LOG.error('Image signature verification failed '
-                              'for image: %s', image_id)
+                    LOG.error(
+                        'Image signature verification failed for image: %s',
+                        image_id,
+                    )
             except Exception as ex:
                 with excutils.save_and_reraise_exception():
-                    LOG.error("Error writing to %(path)s: %(exception)s",
-                              {'path': dst_path, 'exception': ex})
+                    LOG.error(
+                        "Error writing to %(path)s: %(exception)s",
+                        {'path': dst_path, 'exception': ex},
+                    )
             finally:
                 if close_file:
                     # Ensure that the data is pushed all the way down to
@@ -297,8 +330,14 @@ class GlanceImageServiceV2:
 
 def _extract_query_params(params):
     _params = {}
-    accepted_params = ('filters', 'marker', 'limit',
-                       'page_size', 'sort_key', 'sort_dir')
+    accepted_params = (
+        'filters',
+        'marker',
+        'limit',
+        'page_size',
+        'sort_key',
+        'sort_dir',
+    )
     for param in accepted_params:
         if params.get(param):
             _params[param] = params.get(param)
@@ -313,8 +352,14 @@ def _extract_query_params(params):
 
 def _extract_query_params_v2(params):
     _params = {}
-    accepted_params = ('filters', 'marker', 'limit',
-                       'page_size', 'sort_key', 'sort_dir')
+    accepted_params = (
+        'filters',
+        'marker',
+        'limit',
+        'page_size',
+        'sort_key',
+        'sort_dir',
+    )
     for param in accepted_params:
         if params.get(param):
             _params[param] = params.get(param)
@@ -408,15 +453,16 @@ def _convert_to_v2(image_meta):
                 # if allow_additional_image_properties is disabled we can't
                 # define kernel_id and ramdisk_id as None, so we have to omit
                 # these properties if they are not set.
-                if prop_name in ('kernel_id', 'ramdisk_id') and \
-                   prop_value is not None and \
-                   prop_value.strip().lower() in ('none', ''):
+                if (
+                    prop_name in ('kernel_id', 'ramdisk_id')
+                    and prop_value is not None
+                    and prop_value.strip().lower() in ('none', '')
+                ):
                     continue
                 # in glance only string and None property values are allowed,
                 # v1 client accepts any values and converts them to string,
                 # v2 doesn't - so we have to take care of it.
-                elif prop_value is None or isinstance(
-                        prop_value, str):
+                elif prop_value is None or isinstance(prop_value, str):
                     output[prop_name] = prop_value
                 else:
                     output[prop_name] = str(prop_value)
@@ -434,7 +480,8 @@ def _convert_to_v2(image_meta):
 
 def _translate_from_glance(image, include_locations=False):
     image_meta = _extract_attributes_v2(
-        image, include_locations=include_locations)
+        image, include_locations=include_locations
+    )
 
     image_meta = _convert_timestamps_to_datetimes(image_meta)
     image_meta = _convert_from_string(image_meta)
@@ -492,12 +539,25 @@ def _extract_attributes(image, include_locations=False):
     # therefore sorted, with dependent attributes as the end
     # 'deleted_at' depends on 'deleted'
     # 'checksum' depends on 'status' == 'active'
-    IMAGE_ATTRIBUTES = ['size', 'disk_format', 'owner',
-                        'container_format', 'status', 'id',
-                        'name', 'created_at', 'updated_at',
-                        'deleted', 'deleted_at', 'checksum',
-                        'min_disk', 'min_ram', 'is_public',
-                        'direct_url', 'locations']
+    IMAGE_ATTRIBUTES = [
+        'size',
+        'disk_format',
+        'owner',
+        'container_format',
+        'status',
+        'id',
+        'name',
+        'created_at',
+        'updated_at',
+        'deleted',
+        'deleted_at',
+        'checksum',
+        'min_disk',
+        'min_ram',
+        'is_public',
+        'direct_url',
+        'locations',
+    ]
 
     queued = getattr(image, 'status') == 'queued'
     queued_exclude_attrs = ['disk_format', 'container_format']
@@ -538,16 +598,31 @@ def _extract_attributes(image, include_locations=False):
 
 def _extract_attributes_v2(image, include_locations=False):
     include_locations_attrs = ['direct_url', 'locations']
-    omit_attrs = ['self', 'schema', 'protected', 'virtual_size', 'file',
-                  'tags']
+    omit_attrs = [
+        'self',
+        'schema',
+        'protected',
+        'virtual_size',
+        'file',
+        'tags',
+    ]
     raw_schema = image.schema
     schema = schemas.Schema(raw_schema)
-    output = {'properties': {}, 'deleted': False, 'deleted_at': None,
-              'disk_format': None, 'container_format': None, 'name': None,
-              'checksum': None}
+    output = {
+        'properties': {},
+        'deleted': False,
+        'deleted_at': None,
+        'disk_format': None,
+        'container_format': None,
+        'name': None,
+        'checksum': None,
+    }
     for name, value in image.items():
-        if (name in omit_attrs
-                or name in include_locations_attrs and not include_locations):
+        if (
+            name in omit_attrs
+            or name in include_locations_attrs
+            and not include_locations
+        ):
             continue
         elif name == 'visibility':
             output['is_public'] = value == 'public'
@@ -585,20 +660,27 @@ def _reraise_translated_exception():
 
 
 def _translate_image_exception(image_id, exc_value):
-    if isinstance(exc_value, glanceclient.exc.HTTPForbidden | glanceclient.exc.HTTPUnauthorized):  # noqa: E501
+    if isinstance(
+        exc_value,
+        glanceclient.exc.HTTPForbidden | glanceclient.exc.HTTPUnauthorized,
+    ):  # noqa: E501
         return exception.ImageNotAuthorized(image_id=image_id)
     if isinstance(exc_value, glanceclient.exc.HTTPNotFound):
         return exception.ResourceNotFound(
-            resource='Image',
-            msg='with uuid=%s' % image_id)
+            resource='Image', msg='with uuid=%s' % image_id
+        )
     if isinstance(exc_value, glanceclient.exc.HTTPBadRequest):
-        return exception.ImageBadRequest(image_id=image_id,
-                                         response=str(exc_value))
+        return exception.ImageBadRequest(
+            image_id=image_id, response=str(exc_value)
+        )
     return exc_value
 
 
 def _translate_plain_exception(exc_value):
-    if isinstance(exc_value, glanceclient.exc.HTTPForbidden | glanceclient.exc.HTTPUnauthorized):  # noqa: E501
+    if isinstance(
+        exc_value,
+        glanceclient.exc.HTTPForbidden | glanceclient.exc.HTTPUnauthorized,
+    ):  # noqa: E501
         return exception.HTTPForbidden(str(exc_value))
     if isinstance(exc_value, glanceclient.exc.HTTPNotFound):
         return exception.HTTPNotFound(str(exc_value))
@@ -627,8 +709,7 @@ def get_remote_image_service(context, image_href):
 
     try:
         (image_id, endpoint) = _endpoint_from_image_ref(image_href)
-        glance_client = GlanceClientWrapper(context=context,
-                                            endpoint=endpoint)
+        glance_client = GlanceClientWrapper(context=context, endpoint=endpoint)
     except ValueError:
         raise exception.InvalidImageRef(image_href=image_href)
 
@@ -648,7 +729,13 @@ class UpdateGlanceImage:
         self.image_stream = stream
 
     def start(self):
-        image_service, image_id = (
-            get_remote_image_service(self.context, self.image_id))
-        image_service.update(self.context, image_id, self.metadata,
-                             self.image_stream, purge_props=False)
+        image_service, image_id = get_remote_image_service(
+            self.context, self.image_id
+        )
+        image_service.update(
+            self.context,
+            image_id,
+            self.metadata,
+            self.image_stream,
+            purge_props=False,
+        )

@@ -14,6 +14,7 @@
 """
 Utils for GPU driver.
 """
+
 from oslo_concurrency import processutils
 from oslo_log import log as logging
 
@@ -26,11 +27,13 @@ import cyborg.privsep
 LOG = logging.getLogger(__name__)
 
 GPU_FLAGS = ["VGA compatible controller", "3D controller"]
-GPU_INFO_PATTERN = re.compile(r"(?P<devices>[0-9a-fA-F]{4}:[0-9a-fA-F]{2}:"
-                              r"[0-9a-fA-F]{2}\.[0-9a-fA-F]) "
-                              r"(?P<controller>.*) [\[].*]: (?P<model>.*) .*"
-                              r"[\[](?P<vendor_id>[0-9a-fA-F]"
-                              r"{4}):(?P<product_id>[0-9a-fA-F]{4})].*")
+GPU_INFO_PATTERN = re.compile(
+    r"(?P<devices>[0-9a-fA-F]{4}:[0-9a-fA-F]{2}:"
+    r"[0-9a-fA-F]{2}\.[0-9a-fA-F]) "
+    r"(?P<controller>.*) [\[].*]: (?P<model>.*) .*"
+    r"[\[](?P<vendor_id>[0-9a-fA-F]"
+    r"{4}):(?P<product_id>[0-9a-fA-F]{4})].*"
+)
 
 VENDOR_MAPS = {"10de": "nvidia", "102b": "matrox"}
 PRODUCT_ID_MAPS = {"1eb8": "T4", "15f7": "P100_PCIE_12GB"}
@@ -56,8 +59,9 @@ def create_mdev_privileged(pci_addr, mdev_type, ah_uuid):
 
 @cyborg.privsep.sys_admin_pctxt.entrypoint
 def remove_mdev_privileged(physical_device, mdev_type, medv_uuid):
-    fpath = ('/sys/class/mdev_bus/{0}/mdev_supported_types/'
-             '{1}/devices/{2}/remove')
+    fpath = (
+        '/sys/class/mdev_bus/{0}/mdev_supported_types/{1}/devices/{2}/remove'
+    )
     fpath = fpath.format(physical_device, mdev_type, medv_uuid)
     with open(fpath, 'w') as f:
         f.write("1")

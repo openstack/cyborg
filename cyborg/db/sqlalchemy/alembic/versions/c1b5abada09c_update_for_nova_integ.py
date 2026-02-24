@@ -33,55 +33,76 @@ def upgrade():
     # Update Deployables
     op.add_column(
         'deployables',
-        sa.Column('rp_uuid', sa.String(length=36), nullable=True))
+        sa.Column('rp_uuid', sa.String(length=36), nullable=True),
+    )
     op.add_column(
         'deployables',
-        sa.Column('driver_name', sa.String(length=100), nullable=True))
+        sa.Column('driver_name', sa.String(length=100), nullable=True),
+    )
     op.add_column(
         'deployables',
-        sa.Column('bitstream_id', sa.String(length=36), nullable=True))
+        sa.Column('bitstream_id', sa.String(length=36), nullable=True),
+    )
 
     # Update ExtARQ table
     op.add_column(
         'extended_accelerator_requests',
-        sa.Column('device_profile_group_id', sa.Integer(), nullable=False))
+        sa.Column('device_profile_group_id', sa.Integer(), nullable=False),
+    )
     op.add_column(
         'extended_accelerator_requests',
-        sa.Column('instance_uuid', sa.String(length=36),
-                  nullable=True))
-    op.create_index('extArqs_instance_uuid_idx',  # index name
-                    'extended_accelerator_requests',  # table name
-                    ['instance_uuid']  # columns on which index is defined
-                    )
-    op.drop_index('extArqs_device_instance_uuid_idx',  # index name
-                  'extended_accelerator_requests',  # table name
-                  )
+        sa.Column('instance_uuid', sa.String(length=36), nullable=True),
+    )
+    op.create_index(
+        'extArqs_instance_uuid_idx',  # index name
+        'extended_accelerator_requests',  # table name
+        ['instance_uuid'],  # columns on which index is defined
+    )
+    op.drop_index(
+        'extArqs_device_instance_uuid_idx',  # index name
+        'extended_accelerator_requests',  # table name
+    )
     op.drop_column('extended_accelerator_requests', 'device_instance_uuid')
     # Add more valid states for 'state' field
-    ns = sa.Enum(constants.ARQ_INITIAL,
-                 constants.ARQ_BIND_STARTED,
-                 constants.ARQ_BOUND,
-                 constants.ARQ_UNBOUND,
-                 constants.ARQ_BIND_FAILED,
-                 constants.ARQ_DELETING, name='state')
+    ns = sa.Enum(
+        constants.ARQ_INITIAL,
+        constants.ARQ_BIND_STARTED,
+        constants.ARQ_BOUND,
+        constants.ARQ_UNBOUND,
+        constants.ARQ_BIND_FAILED,
+        constants.ARQ_DELETING,
+        name='state',
+    )
     op.alter_column(
-        'extended_accelerator_requests', 'state',
-        existing_type=ns, nullable=False, default=constants.ARQ_INITIAL)
+        'extended_accelerator_requests',
+        'state',
+        existing_type=ns,
+        nullable=False,
+        default=constants.ARQ_INITIAL,
+    )
 
     # update attach type fields
-    new_attach_type = sa.Enum(constants.AH_TYPE_PCI,
-                              constants.AH_TYPE_MDEV,
-                              constants.AH_TYPE_TEST_PCI,
-                              name='attach_type')
-    op.alter_column('attach_handles', 'attach_type',
-                    existing_type=new_attach_type,
-                    nullable=False)
+    new_attach_type = sa.Enum(
+        constants.AH_TYPE_PCI,
+        constants.AH_TYPE_MDEV,
+        constants.AH_TYPE_TEST_PCI,
+        name='attach_type',
+    )
+    op.alter_column(
+        'attach_handles',
+        'attach_type',
+        existing_type=new_attach_type,
+        nullable=False,
+    )
 
     # Update device_profiles table to make name and uuid unique separately.
     # Previous schema made the pair unique.
-    op.create_unique_constraint('uniq_device_profiles0uuid',
-                                'device_profiles', ['uuid'])
-    op.create_unique_constraint('uniq_device_profiles0name',
-                                'device_profiles', ['name'])
-    op.drop_constraint('uniq_device_profiles0uuid0name',
-                       'device_profiles', type_='unique')
+    op.create_unique_constraint(
+        'uniq_device_profiles0uuid', 'device_profiles', ['uuid']
+    )
+    op.create_unique_constraint(
+        'uniq_device_profiles0name', 'device_profiles', ['name']
+    )
+    op.drop_constraint(
+        'uniq_device_profiles0uuid0name', 'device_profiles', type_='unique'
+    )

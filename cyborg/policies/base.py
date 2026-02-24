@@ -36,7 +36,7 @@ DEPRECATED_ADMIN_OR_OWNER = policy.DeprecatedRule(
     name=ADMIN_OR_OWNER,
     check_str='is_admin:True or project_id:%(project_id)s',
     deprecated_reason=DEPRECATED_REASON,
-    deprecated_since=versionutils.deprecated.WALLABY
+    deprecated_since=versionutils.deprecated.WALLABY,
 )
 
 deprecated_default_policies = [
@@ -47,7 +47,8 @@ deprecated_default_policies = [
         description='legacy rule of Internal flag for public API routes',
         deprecated_for_removal=True,
         deprecated_reason=DEPRECATED_REASON,
-        deprecated_since=versionutils.deprecated.WALLABY),
+        deprecated_since=versionutils.deprecated.WALLABY,
+    ),
     # The policy check "@" will always accept an access. The empty list
     # (``[]``) or the empty string (``""``) is equivalent to the "@"
     policy.RuleDefault(
@@ -56,7 +57,8 @@ deprecated_default_policies = [
         description='legacy rule: any access will be passed',
         deprecated_for_removal=True,
         deprecated_reason=DEPRECATED_REASON,
-        deprecated_since=versionutils.deprecated.WALLABY),
+        deprecated_since=versionutils.deprecated.WALLABY,
+    ),
     # the policy check "!" will always reject an access.
     policy.RuleDefault(
         name='deny',
@@ -64,35 +66,40 @@ deprecated_default_policies = [
         description='legacy rule: all access will be forbidden',
         deprecated_for_removal=True,
         deprecated_reason=DEPRECATED_REASON,
-        deprecated_since=versionutils.deprecated.WALLABY),
+        deprecated_since=versionutils.deprecated.WALLABY,
+    ),
     policy.RuleDefault(
         name='default',
         check_str='rule:admin_or_owner',
         description='Legacy rule for default rule',
         deprecated_for_removal=True,
         deprecated_reason=DEPRECATED_REASON,
-        deprecated_since=versionutils.deprecated.WALLABY),
+        deprecated_since=versionutils.deprecated.WALLABY,
+    ),
     policy.RuleDefault(
         name='is_admin',
         check_str='rule:admin_api',
         description='Full read/write API access',
         deprecated_for_removal=True,
         deprecated_reason=DEPRECATED_REASON,
-        deprecated_since=versionutils.deprecated.WALLABY),
+        deprecated_since=versionutils.deprecated.WALLABY,
+    ),
     policy.RuleDefault(
         name='admin_or_owner',
         check_str='is_admin:True or project_id:%(project_id)s',
         description='Admin or owner API access',
         deprecated_for_removal=True,
         deprecated_reason=DEPRECATED_REASON,
-        deprecated_since=versionutils.deprecated.WALLABY),
+        deprecated_since=versionutils.deprecated.WALLABY,
+    ),
     policy.RuleDefault(
         name='admin_or_user',
         check_str='is_admin:True or user_id:%(user_id)s',
         description='Admin or user API access',
         deprecated_for_removal=True,
         deprecated_reason=DEPRECATED_REASON,
-        deprecated_since=versionutils.deprecated.WALLABY),
+        deprecated_since=versionutils.deprecated.WALLABY,
+    ),
 ]
 
 ADMIN = 'rule:admin_api'
@@ -120,32 +127,37 @@ default_policies = [
     policy.RuleDefault(
         name='admin_api',
         check_str='role:admin or role:administrator',
-        description='Legacy rule for cloud admin access'),
+        description='Legacy rule for cloud admin access',
+    ),
     policy.RuleDefault(
         name="project_admin_api",
         check_str="role:admin and project_id:%(project_id)s",
-        description="Default rule for Project level admin APIs."),
+        description="Default rule for Project level admin APIs.",
+    ),
     policy.RuleDefault(
         name="project_member_api",
         check_str="role:member and project_id:%(project_id)s",
-        description="Default rule for Project level non admin APIs."),
+        description="Default rule for Project level non admin APIs.",
+    ),
     policy.RuleDefault(
         name="project_reader_api",
         check_str="role:reader and project_id:%(project_id)s",
-        description="Default rule for Project level read only APIs."),
+        description="Default rule for Project level read only APIs.",
+    ),
     policy.RuleDefault(
         "project_member_or_admin",
         "rule:project_member_api or rule:admin_api",
         "Default rule for Project Member or admin APIs.",
-        deprecated_rule=DEPRECATED_ADMIN_OR_OWNER),
+        deprecated_rule=DEPRECATED_ADMIN_OR_OWNER,
+    ),
     policy.RuleDefault(
         "project_reader_or_admin",
         "rule:project_reader_api or rule:admin_api",
         "Default rule for Project reader or admin APIs.",
-        deprecated_rule=DEPRECATED_ADMIN_OR_OWNER)
+        deprecated_rule=DEPRECATED_ADMIN_OR_OWNER,
+    ),
 ]
 
 
 def list_policies():
-    return default_policies \
-        + deprecated_default_policies
+    return default_policies + deprecated_default_policies

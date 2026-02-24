@@ -25,21 +25,22 @@ CONF = cfg.CONF
 
 
 class Checks(upgradecheck.UpgradeCommands):
-
     """Various upgrade checks should be added as separate methods in this class
     and added to _upgrade_checks tuple.
     """
 
     def _check_policy_json(self):
         "Checks to see if policy file is JSON-formatted policy file."
-        msg = _("Your policy file is JSON-formatted which is "
-                "deprecated since Victoria release (Cyborg 5.0.0). "
-                "You need to switch to YAML-formatted file. You can use the "
-                "``oslopolicy-convert-json-to-yaml`` tool to convert existing "
-                "JSON-formatted files to YAML-formatted files in a "
-                "backwards-compatible manner: "
-                "https://docs.openstack.org/oslo.policy/"
-                "latest/cli/oslopolicy-convert-json-to-yaml.html.")
+        msg = _(
+            "Your policy file is JSON-formatted which is "
+            "deprecated since Victoria release (Cyborg 5.0.0). "
+            "You need to switch to YAML-formatted file. You can use the "
+            "``oslopolicy-convert-json-to-yaml`` tool to convert existing "
+            "JSON-formatted files to YAML-formatted files in a "
+            "backwards-compatible manner: "
+            "https://docs.openstack.org/oslo.policy/"
+            "latest/cli/oslopolicy-convert-json-to-yaml.html."
+        )
         status = upgradecheck.Result(upgradecheck.Code.SUCCESS)
         # NOTE(gmann): Check if policy file exist and is in
         # JSON format by actually loading the file not just
@@ -64,7 +65,8 @@ class Checks(upgradecheck.UpgradeCommands):
 
 def main():
     return upgradecheck.main(
-        cfg.CONF, project='cyborg', upgrade_command=Checks())
+        cfg.CONF, project='cyborg', upgrade_command=Checks()
+    )
 
 
 if __name__ == '__main__':

@@ -15,8 +15,9 @@ down_revision = '7e6f1f107f2b'
 
 
 def upgrade():
-    new_device_type = sa.Enum('GPU', 'FPGA', 'AICHIP', 'QAT', 'NIC',
-                             name='device_type')
-    op.alter_column('devices', 'type',
-                    existing_type=new_device_type,
-                    nullable=False)
+    new_device_type = sa.Enum(
+        'GPU', 'FPGA', 'AICHIP', 'QAT', 'NIC', name='device_type'
+    )
+    op.alter_column(
+        'devices', 'type', existing_type=new_device_type, nullable=False
+    )

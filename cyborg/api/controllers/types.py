@@ -27,26 +27,35 @@ from cyborg.common.i18n import _
 
 class FilterType(wtypes.UserType):
     """Query filter."""
+
     name = 'filtertype'
     basetype = wtypes.text
 
-    _supported_fields = wtypes.Enum(wtypes.text, 'parent_uuid', 'root_uuid',
-                                    'board', 'availability', 'interface_type',
-                                    'instance_uuid', 'limit', 'marker',
-                                    'sort_key', 'sort_dir', 'name')
+    _supported_fields = wtypes.Enum(
+        wtypes.text,
+        'parent_uuid',
+        'root_uuid',
+        'board',
+        'availability',
+        'interface_type',
+        'instance_uuid',
+        'limit',
+        'marker',
+        'sort_key',
+        'sort_dir',
+        'name',
+    )
 
     field = wsme.wsattr(_supported_fields, mandatory=True)
     value = wsme.wsattr(wtypes.text, mandatory=True)
 
     def __repr__(self):
         # for logging calls
-        return '<Query %s %s>' % (self.field,
-                                  self.value)
+        return '<Query %s %s>' % (self.field, self.value)
 
     @classmethod
     def sample(cls):
-        return cls(field='interface_type',
-                   value='pci')
+        return cls(field='interface_type', value='pci')
 
     def as_dict(self):
         d = dict()
@@ -131,10 +140,12 @@ integer = wtypes.IntegerType()
 class JsonPatchType(wtypes.Base):
     """A complex type that represents a single json-patch operation."""
 
-    path = wtypes.wsattr(wtypes.StringType(pattern=r'^(/[\w-]+)+$'),
-                         mandatory=True)
-    op = wtypes.wsattr(wtypes.Enum(str, 'add', 'replace', 'remove'),
-                       mandatory=True)
+    path = wtypes.wsattr(
+        wtypes.StringType(pattern=r'^(/[\w-]+)+$'), mandatory=True
+    )
+    op = wtypes.wsattr(
+        wtypes.Enum(str, 'add', 'replace', 'remove'), mandatory=True
+    )
     value = wtypes.wsattr(jsontype, default=wtypes.Unset)
 
     # The class of the objects being patched. Override this in subclasses.
@@ -170,8 +181,9 @@ class JsonPatchType(wtypes.Base):
         if cls._non_removable_attrs is None:
             cls._non_removable_attrs = cls._extra_non_removable_attrs.copy()
             if cls._api_base:
-                fields = inspect.getmembers(cls._api_base,
-                                            lambda a: not inspect.isroutine(a))
+                fields = inspect.getmembers(
+                    cls._api_base, lambda a: not inspect.isroutine(a)
+                )
                 for name, field in fields:
                     if getattr(field, 'mandatory', False):
                         cls._non_removable_attrs.add('/%s' % name)

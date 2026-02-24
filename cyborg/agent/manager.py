@@ -70,18 +70,22 @@ class AgentManager(periodic_task.PeriodicTasks):
         for attempt in range(retries + 1):
             try:
                 self.resource_provider_name = (
-                    self._get_resource_provider_name())
+                    self._get_resource_provider_name()
+                )
                 break
             except exception.PlacementResourceProviderNotFound:
                 if attempt < retries:
-                    wait = 2 ** attempt  # 1, 2, 4, 8, ...
+                    wait = 2**attempt  # 1, 2, 4, 8, ...
                     LOG.warning(
                         "Resource provider not found in Placement, "
                         "retrying in %(wait)ds (attempt %(attempt)d/"
                         "%(total)d)",
-                        {'wait': wait,
-                         'attempt': attempt + 1,
-                         'total': retries + 1})
+                        {
+                            'wait': wait,
+                            'attempt': attempt + 1,
+                            'total': retries + 1,
+                        },
+                    )
                     time.sleep(wait)
                 else:
                     raise
@@ -114,7 +118,8 @@ class AgentManager(periodic_task.PeriodicTasks):
                     LOG.warning(
                         "Resource provider not found with name '%(primary)s', "
                         "using fallback '%(fallback)s'",
-                        {'primary': primary, 'fallback': candidate})
+                        {'primary': primary, 'fallback': candidate},
+                    )
                 LOG.info("Using resource provider name: %s", candidate)
                 return candidate
 
@@ -122,9 +127,12 @@ class AgentManager(periodic_task.PeriodicTasks):
             "Could not find resource provider in Placement. Tried: %s. "
             "Ensure nova-compute is running and has registered with "
             "Placement, or set [agent] resource_provider_name to match "
-            "the compute node's hypervisor_hostname.", candidates)
+            "the compute node's hypervisor_hostname.",
+            candidates,
+        )
         raise exception.PlacementResourceProviderNotFound(
-            resource_provider=primary)
+            resource_provider=primary
+        )
 
     def _check_resource_provider_exists(self, hostname):
         """Check if a resource provider exists in Placement.
@@ -134,36 +142,38 @@ class AgentManager(periodic_task.PeriodicTasks):
         """
         try:
             resp = self.placement_client.get(
-                "/resource_providers?name="
-                + urllib.parse.quote(hostname))
+                "/resource_providers?name=" + urllib.parse.quote(hostname)
+            )
             providers = resp.json().get("resource_providers", [])
             return len(providers) > 0
         except (ValueError, AttributeError) as e:
             LOG.warning(
-                "Failed to parse Placement response for "
-                "'%(name)s': %(err)s",
-                {'name': hostname, 'err': e})
+                "Failed to parse Placement response for '%(name)s': %(err)s",
+                {'name': hostname, 'err': e},
+            )
             return False
-        except (ks_exc.ClientException,
-                exception.PlacementServerError) as e:
+        except (ks_exc.ClientException, exception.PlacementServerError) as e:
             LOG.warning(
                 "Failed to check resource provider '%(name)s': %(err)s",
-                {'name': hostname, 'err': e})
+                {'name': hostname, 'err': e},
+            )
             return False
 
     def periodic_tasks(self, context, raise_on_error=False):
         return self.run_periodic_tasks(context, raise_on_error=raise_on_error)
 
-    def fpga_program(self, context, controlpath_id,
-                     bitstream_uuid, driver_name):
+    def fpga_program(
+        self, context, controlpath_id, bitstream_uuid, driver_name
+    ):
         bitstream_uuid = str(bitstream_uuid)
         if not uuidutils.is_uuid_like(bitstream_uuid):
             raise exception.InvalidUUID(uuid=bitstream_uuid)
-        download_path = tempfile.NamedTemporaryFile(suffix=".gbs",
-                                                    prefix=bitstream_uuid)
-        self.image_api.download(context,
-                                bitstream_uuid,
-                                dest_path=download_path.name)
+        download_path = tempfile.NamedTemporaryFile(
+            suffix=".gbs", prefix=bitstream_uuid
+        )
+        self.image_api.download(
+            context, bitstream_uuid, dest_path=download_path.name
+        )
         try:
             driver = self.fpga_driver.create(driver_name)
             ret = driver.program(controlpath_id, download_path.name)

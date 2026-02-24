@@ -68,6 +68,11 @@ html_theme_options = {
 # (source start file, target name, title, author, documentclass
 # [howto/manual]).
 latex_documents = [
-    ('index', 'Cyborg.tex', 'OpenStack Acceleration API Documentation',
-     'OpenStack Foundation', 'manual'),
+    (
+        'index',
+        'Cyborg.tex',
+        'OpenStack Acceleration API Documentation',
+        'OpenStack Foundation',
+        'manual',
+    ),
 ]

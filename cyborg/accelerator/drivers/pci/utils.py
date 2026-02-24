@@ -25,9 +25,9 @@ import cyborg.privsep
 LOG = logging.getLogger(__name__)
 
 PCI_VENDOR_PATTERN = "^(hex{4})$".replace("hex", r"[\da-fA-F]")
-_PCI_ADDRESS_PATTERN = ("^(hex{4}):(hex{2}):(hex{2}).(oct{1})$".
-                        replace("hex", r"[\da-fA-F]").
-                        replace("oct", "[0-7]"))
+_PCI_ADDRESS_PATTERN = "^(hex{4}):(hex{2}):(hex{2}).(oct{1})$".replace(
+    "hex", r"[\da-fA-F]"
+).replace("oct", "[0-7]")
 _PCI_ADDRESS_REGEX = re.compile(_PCI_ADDRESS_PATTERN)
 
 _SRIOV_TOTALVFS = "sriov_totalvfs"
@@ -61,6 +61,7 @@ def pci_device_prop_match(pci_dev, specs):
       "capabilities_network": ["rx", "tx", "tso", "gso"]}]
 
     """
+
     def _matching_devices(spec):
         for k, v in spec.items():
             pci_dev_v = pci_dev.get(k)
@@ -127,8 +128,7 @@ def get_function_by_ifname(ifname):
             # sriov_totalvfs contains the maximum possible VFs for this PF
             with open(os.path.join(dev_path, _SRIOV_TOTALVFS)) as fd:
                 sriov_totalvfs = int(fd.read())
-                return (os.readlink(dev_path).strip("./"),
-                        sriov_totalvfs > 0)
+                return (os.readlink(dev_path).strip("./"), sriov_totalvfs > 0)
         except (OSError, ValueError):
             return os.readlink(dev_path).strip("./"), False
     return None, False
@@ -136,7 +136,11 @@ def get_function_by_ifname(ifname):
 
 def is_physical_function(domain, bus, slot, function):
     dev_path = "/sys/bus/pci/devices/%(d)s:%(b)s:%(s)s.%(f)s/" % {
-        "d": domain, "b": bus, "s": slot, "f": function}
+        "d": domain,
+        "b": bus,
+        "s": slot,
+        "f": function,
+    }
     if os.path.isdir(dev_path):
         try:
             with open(dev_path + _SRIOV_TOTALVFS) as fd:
@@ -185,10 +189,12 @@ def get_mac_by_pci_address(pci_addr, pf_interface=False):
             mac = next(f).strip()
             return mac
     except (OSError, StopIteration) as e:
-        LOG.warning("Could not find the expected sysfs file for "
-                    "determining the MAC address of the PCI device "
-                    "%(addr)s. May not be a NIC. Error: %(e)s",
-                    {'addr': pci_addr, 'e': e})
+        LOG.warning(
+            "Could not find the expected sysfs file for "
+            "determining the MAC address of the PCI device "
+            "%(addr)s. May not be a NIC. Error: %(e)s",
+            {'addr': pci_addr, 'e': e},
+        )
         raise exception.PciDeviceNotFoundById(id=pci_addr)
 
 
@@ -230,9 +236,13 @@ def get_net_name_by_vf_pci_address(vfaddress):
     try:
         mac = get_mac_by_pci_address(vfaddress).split(':')
         ifname = get_ifname_by_pci_address(vfaddress)
-        return ("net_%(ifname)s_%(mac)s" %
-                {'ifname': ifname, 'mac': '_'.join(mac)})
+        return "net_%(ifname)s_%(mac)s" % {
+            'ifname': ifname,
+            'mac': '_'.join(mac),
+        }
     except Exception:
-        LOG.warning("No net device was found for VF %(vfaddress)s",
-                    {'vfaddress': vfaddress})
+        LOG.warning(
+            "No net device was found for VF %(vfaddress)s",
+            {'vfaddress': vfaddress},
+        )
         return

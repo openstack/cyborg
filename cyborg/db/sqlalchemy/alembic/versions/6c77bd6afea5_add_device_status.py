@@ -14,8 +14,11 @@ revision = '6c77bd6afea5'
 down_revision = '4cc1d79978fc'
 
 
-
 def upgrade():
-    new_column = sa.Column('status', sa.Enum('enabled', 'maintaining'),
-                           nullable=False, default='enabled')
+    new_column = sa.Column(
+        'status',
+        sa.Enum('enabled', 'maintaining'),
+        nullable=False,
+        default='enabled',
+    )
     op.add_column('devices', new_column)

@@ -51,9 +51,11 @@ def _import_modules(module_names):
     for modname in module_names:
         mod = importlib.import_module("cyborg.conf." + modname)
         if not hasattr(mod, LIST_OPTS_FUNC_NAME):
-            msg = "The module 'zun.conf.%s' should have a '%s' "\
-                  "function which returns the config options." % \
-                  (modname, LIST_OPTS_FUNC_NAME)
+            msg = (
+                "The module 'zun.conf.%s' should have a '%s' "
+                "function which returns the config options."
+                % (modname, LIST_OPTS_FUNC_NAME)
+            )
             raise AttributeError(msg)
         else:
             imported_modules.append(mod)

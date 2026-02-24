@@ -25,7 +25,7 @@ from cyborg.tests import base
 
 
 class TestResourceTracker(base.TestCase):
-    """Test Agent ResourceTracker """
+    """Test Agent ResourceTracker"""
 
     def setUp(self):
         super().setUp()
@@ -49,15 +49,20 @@ class TestResourceTracker(base.TestCase):
 
     def test_initialize_invalid_driver(self):
         enabled_drivers = ['invalid_driver']
-        self.assertRaises(exception.InvalidDriver, self.rt._initialize_drivers,
-                          enabled_drivers)
+        self.assertRaises(
+            exception.InvalidDriver,
+            self.rt._initialize_drivers,
+            enabled_drivers,
+        )
 
     @mock.patch('cyborg.agent.resource_tracker.LOG')
     def test_update_usage_failed_parent_provider(self, mock_log):
         with mock.patch.object(self.rt.conductor_api, 'report_data') as m:
             m.side_effect = exception.PlacementResourceProviderNotFound(
-                resource_provider='foo')
+                resource_provider='foo'
+            )
             self.rt.update_usage(None)
             m.assert_called_once_with(None, 'fake-mini', mock.ANY)
-        mock_log.error.assert_called_once_with('Unable to report usage: %s',
-                                               m.side_effect)
+        mock_log.error.assert_called_once_with(
+            'Unable to report usage: %s', m.side_effect
+        )

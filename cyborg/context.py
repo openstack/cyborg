@@ -42,12 +42,21 @@ class _ContextAuthPlugin(plugin.BaseAuthPlugin):
     def get_token(self, *args, **kwargs):
         return self.auth_token
 
-    def get_endpoint(self, session, service_type=None, interface=None,
-                     region_name=None, service_name=None, **kwargs):
-        return self.service_catalog.url_for(service_type=service_type,
-                                            service_name=service_name,
-                                            interface=interface,
-                                            region_name=region_name)
+    def get_endpoint(
+        self,
+        session,
+        service_type=None,
+        interface=None,
+        region_name=None,
+        service_name=None,
+        **kwargs,
+    ):
+        return self.service_catalog.url_for(
+            service_type=service_type,
+            service_name=service_name,
+            interface=interface,
+            region_name=region_name,
+        )
 
 
 @enginefacade.transaction_context_provider
@@ -58,22 +67,31 @@ class RequestContext(context.RequestContext):
 
     """
 
-    def __init__(self, user_id=None, project_id=None, is_admin=None,
-                 read_deleted="no", remote_address=None, timestamp=None,
-                 quota_class=None, service_catalog=None,
-                 user_auth_plugin=None, **kwargs):
+    def __init__(
+        self,
+        user_id=None,
+        project_id=None,
+        is_admin=None,
+        read_deleted="no",
+        remote_address=None,
+        timestamp=None,
+        quota_class=None,
+        service_catalog=None,
+        user_auth_plugin=None,
+        **kwargs,
+    ):
         """:param read_deleted: 'no' indicates deleted records are hidden,
-                'yes' indicates deleted records are visible,
-                'only' indicates that *only* deleted records are visible.
+             'yes' indicates deleted records are visible,
+             'only' indicates that *only* deleted records are visible.
 
-           :param overwrite: Set to False to ensure that the thread-local
-                copy of the index is not overwritten.
+        :param overwrite: Set to False to ensure that the thread-local
+             copy of the index is not overwritten.
 
-           :param instance_lock_checked: This is not used and will be removed
-                in a future release.
+        :param instance_lock_checked: This is not used and will be removed
+             in a future release.
 
-           :param user_auth_plugin: The auth plugin for the current request's
-                authentication data.
+        :param user_auth_plugin: The auth plugin for the current request's
+             authentication data.
         """
         if user_id:
             kwargs['user_id'] = user_id
@@ -92,8 +110,9 @@ class RequestContext(context.RequestContext):
 
         if service_catalog:
             # Only include required parts of service_catalog
-            self.service_catalog = [s for s in service_catalog
-                                    if s.get('type') in ('image')]
+            self.service_catalog = [
+                s for s in service_catalog if s.get('type') in ('image')
+            ]
         else:
             # if list is empty or none
             self.service_catalog = []
@@ -113,27 +132,32 @@ class RequestContext(context.RequestContext):
         # FIXME(dims): defensive hasattr() checks need to be
         # removed once we figure out why we are seeing stack
         # traces
-        values.update({
-            'user_id': getattr(self, 'user_id', None),
-            'project_id': getattr(self, 'project_id', None),
-            'is_admin': getattr(self, 'is_admin', None),
-            'read_deleted': getattr(self, 'read_deleted', 'no'),
-            'remote_address': getattr(self, 'remote_address', None),
-            'timestamp': utils.strtime(self.timestamp) if hasattr(
-                self, 'timestamp') else None,
-            'request_id': getattr(self, 'request_id', None),
-            'quota_class': getattr(self, 'quota_class', None),
-            'user_name': getattr(self, 'user_name', None),
-            'service_catalog': getattr(self, 'service_catalog', None),
-            'project_name': getattr(self, 'project_name', None),
-        })
+        values.update(
+            {
+                'user_id': getattr(self, 'user_id', None),
+                'project_id': getattr(self, 'project_id', None),
+                'is_admin': getattr(self, 'is_admin', None),
+                'read_deleted': getattr(self, 'read_deleted', 'no'),
+                'remote_address': getattr(self, 'remote_address', None),
+                'timestamp': utils.strtime(self.timestamp)
+                if hasattr(self, 'timestamp')
+                else None,
+                'request_id': getattr(self, 'request_id', None),
+                'quota_class': getattr(self, 'quota_class', None),
+                'user_name': getattr(self, 'user_name', None),
+                'service_catalog': getattr(self, 'service_catalog', None),
+                'project_name': getattr(self, 'project_name', None),
+            }
+        )
         # NOTE(tonyb): This can be removed once we're certain to have a
         # RequestContext contains 'is_admin_project', We can only get away with
         # this because we "know" the default value of 'is_admin_project' which
         # is very fragile.
-        values.update({
-            'is_admin_project': getattr(self, 'is_admin_project', True),
-        })
+        values.update(
+            {
+                'is_admin_project': getattr(self, 'is_admin_project', True),
+            }
+        )
         return values
 
     @classmethod
@@ -159,10 +183,9 @@ def get_context():
     Note that overwrite is False here so this context will not update the
     thread-local stored context that is used when logging.
     """
-    return RequestContext(user_id=None,
-                          project_id=None,
-                          is_admin=False,
-                          overwrite=False)
+    return RequestContext(
+        user_id=None, project_id=None, is_admin=False, overwrite=False
+    )
 
 
 def get_admin_context(read_deleted="no"):
@@ -172,11 +195,13 @@ def get_admin_context(read_deleted="no"):
     # use context.elevated() where necessary. Some periodic tasks may use
     # get_admin_context so that their database calls are not filtered on
     # project_id.
-    return RequestContext(user_id=None,
-                          project_id=None,
-                          is_admin=True,
-                          read_deleted=read_deleted,
-                          overwrite=False)
+    return RequestContext(
+        user_id=None,
+        project_id=None,
+        is_admin=True,
+        read_deleted=read_deleted,
+        overwrite=False,
+    )
 
 
 def is_user_context(context):

@@ -20,15 +20,14 @@ Cyborg FPGA driver implementation.
 from cyborg.accelerator.drivers.fpga import utils
 
 
-VENDOR_MAPS = {"0x8086": "intel",
-               "1bd4": 'inspur'}
+VENDOR_MAPS = {"0x8086": "intel", "1bd4": 'inspur'}
 
 
 class FPGADriver:
     """Base class for FPGA drivers.
 
-       This is just a virtual FPGA drivers interface.
-       Vendor should implement their specific drivers.
+    This is just a virtual FPGA drivers interface.
+    Vendor should implement their specific drivers.
     """
 
     @classmethod

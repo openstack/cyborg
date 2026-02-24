@@ -16,15 +16,17 @@ Cyborg SPDK driver modules implementation.
 """
 
 from oslo_log import log as logging
+
 LOG = logging.getLogger(__name__)
 
 
 class SPDKDRIVER:
     """SPDKDRIVER
 
-        This is just a virtual SPDK drivers interface.
-        SPDK-based app server should implement their specific drivers.
+    This is just a virtual SPDK drivers interface.
+    SPDK-based app server should implement their specific drivers.
     """
+
     @classmethod
     def create(cls, server, *args, **kwargs):
         for subclass in cls.__subclasses__():

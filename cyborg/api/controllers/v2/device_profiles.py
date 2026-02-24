@@ -51,6 +51,7 @@ from cyborg.common import constants
 from cyborg.common import exception
 from cyborg.common.i18n import _
 from cyborg import objects
+
 LOG = log.getLogger(__name__)
 
 
@@ -91,9 +92,13 @@ class DeviceProfile(base.APIBase):
     def convert_with_links(cls, obj_devprof):
         api_devprof = cls(**obj_devprof.as_dict())
         api_devprof.links = [
-            link.Link.make_link('self', pecan.request.public_url,
-                                'device_profiles', api_devprof.uuid)
-            ]
+            link.Link.make_link(
+                'self',
+                pecan.request.public_url,
+                'device_profiles',
+                api_devprof.uuid,
+            )
+        ]
         return api_devprof
 
     def get_device_profile(self, obj_devprof):
@@ -104,7 +109,7 @@ class DeviceProfile(base.APIBase):
             api_obj[field] = str(obj_devprof[field])
         api_obj['links'] = [
             link.Link.make_link_dict('device_profiles', api_obj['uuid'])
-            ]
+        ]
         return api_obj
 
 
@@ -119,23 +124,25 @@ class DeviceProfileCollection(DeviceProfile):
         collection = cls()
         collection.device_profiles = [
             DeviceProfile.convert_with_links(obj_devprof)
-            for obj_devprof in obj_devprofs]
+            for obj_devprof in obj_devprofs
+        ]
         return collection
 
     def get_device_profiles(self, obj_devprofs):
         api_obj_devprofs = [
             self.get_device_profile(obj_devprof)
-            for obj_devprof in obj_devprofs]
+            for obj_devprof in obj_devprofs
+        ]
         return api_obj_devprofs
 
 
-class DeviceProfilesController(base.CyborgController,
-                               DeviceProfileCollection):
+class DeviceProfilesController(base.CyborgController, DeviceProfileCollection):
     """REST controller for Device Profiles."""
 
     @authorize_wsgi.authorize_wsgi("cyborg:device_profile", "create", False)
-    @expose.expose(DeviceProfile, body=types.jsontype,
-                   status_code=HTTPStatus.CREATED)
+    @expose.expose(
+        DeviceProfile, body=types.jsontype, status_code=HTTPStatus.CREATED
+    )
     def post(self, req_devprof_list):
         """Create one or more device_profiles.
 
@@ -154,8 +161,8 @@ class DeviceProfilesController(base.CyborgController,
         LOG.info("[device_profiles] POST request = (%s)", req_devprof_list)
         if len(req_devprof_list) != 1:
             raise exception.InvalidParameterValue(
-                err="Only one device profile allowed "
-                    "per POST request for now.")
+                err="Only one device profile allowed per POST request for now."
+            )
         req_devprof = req_devprof_list[0]
         self._validate_post_request(req_devprof)
 
@@ -163,7 +170,8 @@ class DeviceProfilesController(base.CyborgController,
         obj_devprof = objects.DeviceProfile(context, **req_devprof)
 
         new_devprof = pecan.request.conductor_api.device_profile_create(
-            context, obj_devprof)
+            context, obj_devprof
+        )
         return DeviceProfile.convert_with_links(new_devprof)
 
     def _validate_post_request(self, req_devprof):
@@ -177,7 +185,8 @@ class DeviceProfilesController(base.CyborgController,
             raise exception.DeviceProfileNameNeeded()
         elif not re.match(NAME, name):
             raise exception.InvalidParameterValue(
-                err="Device profile name must be of the form %s" % NAME)
+                err="Device profile name must be of the form %s" % NAME
+            )
 
         groups = req_devprof.get("groups")
         if not groups:
@@ -190,7 +199,8 @@ class DeviceProfilesController(base.CyborgController,
                 if not re.match(GROUP_KEYS, key):
                     raise exception.InvalidParameterValue(
                         err="Device profile group keys must be of"
-                            " the form %s" % GROUP_KEYS)
+                        " the form %s" % GROUP_KEYS
+                    )
                 # check trait name and it's value
                 if key.startswith("trait:"):
                     inner_origin_trait = ":".join(key.split(":")[1:])
@@ -198,11 +208,13 @@ class DeviceProfilesController(base.CyborgController,
                     if not inner_trait.startswith('CUSTOM_'):
                         raise exception.InvalidParameterValue(
                             err="Unsupported trait name format %s, should "
-                                "start with CUSTOM_" % inner_trait)
+                            "start with CUSTOM_" % inner_trait
+                        )
                     if value not in TRAIT_VALUES:
                         raise exception.InvalidParameterValue(
                             err="Unsupported trait value %s, the value must"
-                                " be one among %s" % (value, TRAIT_VALUES))
+                            " be one among %s" % (value, TRAIT_VALUES)
+                        )
                     # strip " " and update old group key.
                     if inner_origin_trait != inner_trait:
                         del group[key]
@@ -212,15 +224,19 @@ class DeviceProfilesController(base.CyborgController,
                 if key.startswith("resources:"):
                     inner_origin_rc = ":".join(key.split(":")[1:])
                     inner_rc = inner_origin_rc.strip(" ")
-                    if inner_rc not in constants.SUPPORT_RESOURCES and \
-                            not inner_rc.startswith('CUSTOM_'):
+                    if (
+                        inner_rc not in constants.SUPPORT_RESOURCES
+                        and not inner_rc.startswith('CUSTOM_')
+                    ):
                         raise exception.InvalidParameterValue(
-                            err="Unsupported resource class %s" % inner_rc)
+                            err="Unsupported resource class %s" % inner_rc
+                        )
                     try:
                         int(value)
                     except ValueError:
                         raise exception.InvalidParameterValue(
-                            err="Resources number %s is invalid" % value)
+                            err="Resources number %s is invalid" % value
+                        )
                     # strip " " and update old group key.
                     if inner_origin_rc != inner_rc:
                         del group[key]
@@ -233,12 +249,14 @@ class DeviceProfilesController(base.CyborgController,
         context = pecan.request.context
         obj_devprofs = objects.DeviceProfile.list(context)
         if names:
-            new_obj_devprofs = [devprof for devprof in obj_devprofs
-                                if devprof['name'] in names]
+            new_obj_devprofs = [
+                devprof for devprof in obj_devprofs if devprof['name'] in names
+            ]
             obj_devprofs = new_obj_devprofs
         elif uuid is not None:
-            new_obj_devprofs = [devprof for devprof in obj_devprofs
-                                if devprof['uuid'] == uuid]
+            new_obj_devprofs = [
+                devprof for devprof in obj_devprofs if devprof['uuid'] == uuid
+            ]
             obj_devprofs = new_obj_devprofs
 
         return obj_devprofs
@@ -265,32 +283,39 @@ class DeviceProfilesController(base.CyborgController,
         context = pecan.request.context
         if uuidutils.is_uuid_like(dp_uuid_or_name):
             LOG.info('[device_profiles] get_one. uuid=%s', dp_uuid_or_name)
-            obj_devprof = objects.DeviceProfile.get_by_uuid(context,
-                                                            dp_uuid_or_name)
+            obj_devprof = objects.DeviceProfile.get_by_uuid(
+                context, dp_uuid_or_name
+            )
         else:
             if api.request.version.minor >= versions.MINOR_2_DP_BY_NAME:
                 LOG.info('[device_profiles] get_one. name=%s', dp_uuid_or_name)
-                obj_devprof = \
-                    objects.DeviceProfile.get_by_name(context,
-                                                      dp_uuid_or_name)
+                obj_devprof = objects.DeviceProfile.get_by_name(
+                    context, dp_uuid_or_name
+                )
             else:
-                raise exception.NotAcceptable(_(
-                    "Request not acceptable. The minimal required API "
-                    "version should be %(base)s.%(opr)s") %
-                    {'base': versions.BASE_VERSION,
-                     'opr': versions.MINOR_2_DP_BY_NAME})
+                raise exception.NotAcceptable(
+                    _(
+                        "Request not acceptable. The minimal required API "
+                        "version should be %(base)s.%(opr)s"
+                    )
+                    % {
+                        'base': versions.BASE_VERSION,
+                        'opr': versions.MINOR_2_DP_BY_NAME,
+                    }
+                )
         if not obj_devprof:
             LOG.warning("Device profile with %s not found!", dp_uuid_or_name)
             raise exception.ResourceNotFound(
-                resource='Device profile',
-                msg='with %s' % dp_uuid_or_name)
+                resource='Device profile', msg='with %s' % dp_uuid_or_name
+            )
         api_obj_devprof = self.get_device_profile(obj_devprof)
 
         ret = {"device_profile": api_obj_devprof}
         LOG.info('[device_profiles] get_one returned: %s', ret)
         # TODO(Sundar) Replace this with convert_with_links()
-        return wsme.api.Response(ret, status_code=HTTPStatus.OK,
-                                 return_type=wsme.types.DictType)
+        return wsme.api.Response(
+            ret, status_code=HTTPStatus.OK, return_type=wsme.types.DictType
+        )
 
     @authorize_wsgi.authorize_wsgi("cyborg:device_profile", "delete")
     @expose.expose(None, wtypes.text, status_code=HTTPStatus.NO_CONTENT)
@@ -309,11 +334,13 @@ class DeviceProfilesController(base.CyborgController,
             LOG.info('[device_profiles] delete uuid=%s', uuid)
             obj_devprof = objects.DeviceProfile.get_by_uuid(context, uuid)
             pecan.request.conductor_api.device_profile_delete(
-                context, obj_devprof)
+                context, obj_devprof
+            )
         else:
             names = value.split(",")
             LOG.info('[device_profiles] delete names=(%s)', names)
             for name in names:
                 obj_devprof = objects.DeviceProfile.get_by_name(context, name)
                 pecan.request.conductor_api.device_profile_delete(
-                    context, obj_devprof)
+                    context, obj_devprof
+                )

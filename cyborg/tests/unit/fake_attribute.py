@@ -25,8 +25,8 @@ def fake_db_attribute(**updates):
         'uuid': attr_uuid,
         'deployable_id': 1,
         'key': 'rc',
-        'value': 'FPGA'
-        }
+        'value': 'FPGA',
+    }
 
     for name, field in objects.Attribute.fields.items():
         if name in db_attribute:
@@ -48,7 +48,7 @@ def fake_attribute_obj(context, obj_attr_class=None, **updates):
     if obj_attr_class is None:
         obj_attr_class = objects.Attribute
     attribute = obj_attr_class._from_db_object(
-        obj_attr_class(),
-        fake_db_attribute(**updates))
+        obj_attr_class(), fake_db_attribute(**updates)
+    )
     attribute.obj_reset_changes()
     return attribute

@@ -21,7 +21,6 @@ from cyborg.tests.unit.db import base
 
 
 class TestExceptionTranslations(base.DbTestCase):
-
     def test_client_notfound_converts_to_imagenotfound(self):
         in_exc = glanceclient.exc.HTTPNotFound('123')
         out_exc = glance._translate_image_exception('123', in_exc)

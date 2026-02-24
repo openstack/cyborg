@@ -43,8 +43,7 @@ class DeviceProfile(base.CyborgObject, object_base.VersionedObjectDictCompat):
     }
 
     def obj_make_compatible(self, primitive, target_version):
-        super().obj_make_compatible(
-            primitive, target_version)
+        super().obj_make_compatible(primitive, target_version)
         target_version = versionutils.convert_version_to_tuple(target_version)
         if target_version < (1, 1) and 'description' in primitive:
             del primitive['description']
@@ -62,8 +61,9 @@ class DeviceProfile(base.CyborgObject, object_base.VersionedObjectDictCompat):
         """Create a Device Profile record in the DB."""
         # TODO() validate with a JSON schema
         if 'name' not in self:
-            raise exception.ObjectActionError(action='create',
-                                              reason='name is required')
+            raise exception.ObjectActionError(
+                action='create', reason='name is required'
+            )
 
         values = self.obj_get_changes()
         self._to_profile_json(values)
@@ -105,8 +105,9 @@ class DeviceProfile(base.CyborgObject, object_base.VersionedObjectDictCompat):
         updates = self.obj_get_changes()
         self._to_profile_json(updates)
 
-        db_devprof = self.dbapi.device_profile_update(context,
-                                                      self.name, updates)
+        db_devprof = self.dbapi.device_profile_update(
+            context, self.name, updates
+        )
         self._from_db_object(self, db_devprof)
 
     def destroy(self, context):

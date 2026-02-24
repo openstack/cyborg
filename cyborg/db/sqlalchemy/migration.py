@@ -63,8 +63,9 @@ def create_schema(config=None, engine=None):
         engine = enginefacade.writer.get_engine()
 
     if version(engine=engine) is not None:
-        raise db_exc.DBMigrationError("DB schema is already under version"
-                                      " control. Use upgrade() instead")
+        raise db_exc.DBMigrationError(
+            "DB schema is already under version control. Use upgrade() instead"
+        )
 
     models.Base.metadata.create_all(engine)
     stamp('head', config=config)
@@ -104,5 +105,6 @@ def revision(message=None, autogenerate=False, config=None):
     :type autogenerate: bool
     """
     config = config or _alembic_config()
-    return alembic.command.revision(config, message=message,
-                                    autogenerate=autogenerate)
+    return alembic.command.revision(
+        config, message=message, autogenerate=autogenerate
+    )

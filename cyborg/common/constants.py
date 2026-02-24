@@ -24,27 +24,42 @@ DEVICE_NIC = 'NIC'
 DEVICE_SSD = 'SSD'
 
 
-ARQ_STATES = (ARQ_INITIAL, ARQ_BIND_STARTED, ARQ_BOUND, ARQ_UNBOUND,
-              ARQ_BIND_FAILED, ARQ_UNBIND_FAILED, ARQ_DELETING) = (
-    'Initial', 'BindStarted', 'Bound', 'Unbound', 'BindFailed', 'UnbindFailed',
-    'Deleting')
+ARQ_STATES = (
+    ARQ_INITIAL,
+    ARQ_BIND_STARTED,
+    ARQ_BOUND,
+    ARQ_UNBOUND,
+    ARQ_BIND_FAILED,
+    ARQ_UNBIND_FAILED,
+    ARQ_DELETING,
+) = (
+    'Initial',
+    'BindStarted',
+    'Bound',
+    'Unbound',
+    'BindFailed',
+    'UnbindFailed',
+    'Deleting',
+)
 
 
-ARQ_BIND_STAGE = (ARQ_PRE_BIND, ARQ_FINISH_BIND,
-                  ARQ_OUFOF_BIND_FLOW) = (
+ARQ_BIND_STAGE = (ARQ_PRE_BIND, ARQ_FINISH_BIND, ARQ_OUFOF_BIND_FLOW) = (
     [ARQ_INITIAL, ARQ_BIND_STARTED],
     [ARQ_BOUND, ARQ_BIND_FAILED],
-    [ARQ_UNBOUND, ARQ_DELETING])
+    [ARQ_UNBOUND, ARQ_DELETING],
+)
 
 
 ARQ_BIND_STATUS = (ARQ_BIND_STATUS_FINISH, ARQ_BIND_STATUS_FAILED) = (
-    "completed", "failed")
+    "completed",
+    "failed",
+)
 
 
 ARQ_BIND_STATES_STATUS_MAP = {
     ARQ_BOUND: ARQ_BIND_STATUS_FINISH,
     ARQ_BIND_FAILED: ARQ_BIND_STATUS_FAILED,
-    ARQ_DELETING: ARQ_BIND_STATUS_FAILED
+    ARQ_DELETING: ARQ_BIND_STATUS_FAILED,
 }
 
 # TODO(Shaohe): maybe we can use oslo automaton lib
@@ -56,14 +71,25 @@ ARQ_STATES_TRANSFORM_MATRIX = {
     ARQ_BOUND: [ARQ_BIND_STARTED],
     ARQ_UNBOUND: [ARQ_INITIAL, ARQ_BIND_STARTED, ARQ_BOUND, ARQ_BIND_FAILED],
     ARQ_BIND_FAILED: [ARQ_BIND_STARTED, ARQ_BOUND],
-    ARQ_DELETING: [ARQ_INITIAL, ARQ_BIND_STARTED, ARQ_BOUND,
-                   ARQ_UNBOUND, ARQ_BIND_FAILED]
+    ARQ_DELETING: [
+        ARQ_INITIAL,
+        ARQ_BIND_STARTED,
+        ARQ_BOUND,
+        ARQ_UNBOUND,
+        ARQ_BIND_FAILED,
+    ],
 }
 
 
 # Device type
-DEVICE_TYPE = (DEVICE_GPU, DEVICE_FPGA, DEVICE_AICHIP, DEVICE_QAT, DEVICE_NIC,
-               DEVICE_SSD)
+DEVICE_TYPE = (
+    DEVICE_GPU,
+    DEVICE_FPGA,
+    DEVICE_AICHIP,
+    DEVICE_QAT,
+    DEVICE_NIC,
+    DEVICE_SSD,
+)
 
 
 # Device type
@@ -73,11 +99,14 @@ DEVICE_STATUS = ("enabled", "maintaining")
 # Attach handle type
 #  'TEST_PCI': used by fake driver, ignored by Nova virt driver.
 ATTACH_HANDLE_TYPES = (AH_TYPE_PCI, AH_TYPE_MDEV, AH_TYPE_TEST_PCI) = (
-    "PCI", "MDEV", "TEST_PCI")
+    "PCI",
+    "MDEV",
+    "TEST_PCI",
+)
 
 
 # Control Path ID type
-CPID_TYPE = (CPID_TYPE_PCI) = ("PCI")
+CPID_TYPE = CPID_TYPE_PCI = "PCI"
 
 
 # Resource Class
@@ -92,26 +121,24 @@ RESOURCES = {
 }
 
 
-ACCEL_SPECS = (
-    ACCEL_BITSTREAM_ID,
-    ACCEL_FUNCTION_ID
-) = (
+ACCEL_SPECS = (ACCEL_BITSTREAM_ID, ACCEL_FUNCTION_ID) = (
     "accel:bitstream_id",
-    "accel:function_id"
+    "accel:function_id",
 )
 
 
-SUPPORT_RESOURCES = (
-    FPGA, GPU, VGPU, PGPU, QAT, NIC, SSD) = (
-    "FPGA", "GPU", "VGPU", "PGPU", "CUSTOM_QAT", "CUSTOM_NIC", "CUSTOM_SSD"
+SUPPORT_RESOURCES = (FPGA, GPU, VGPU, PGPU, QAT, NIC, SSD) = (
+    "FPGA",
+    "GPU",
+    "VGPU",
+    "PGPU",
+    "CUSTOM_QAT",
+    "CUSTOM_NIC",
+    "CUSTOM_SSD",
 )
 
 
-FPGA_TRAITS = (
-    FPGA_FUNCTION_ID,
-) = (
-    "CUSTOM_FPGA_FUNCTION_ID",
-)
+FPGA_TRAITS = (FPGA_FUNCTION_ID,) = ("CUSTOM_FPGA_FUNCTION_ID",)
 
 
 RESOURCES_PREFIX = "resources:"

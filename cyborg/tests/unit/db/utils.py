@@ -31,7 +31,7 @@ def get_test_deployable(**kw):
         'rp_uuid': kw.get('rp_uuid', '1c559644-2b56-3470-8427-d9d71f0f8621'),
         'bitstream_id': kw.get('bitstream_id', None),
         'created_at': kw.get('created_at', None),
-        'updated_at': kw.get('updated_at', None)
+        'updated_at': kw.get('updated_at', None),
     }
 
 
@@ -49,10 +49,7 @@ def create_test_deployable(context, **kwargs):
 
 
 def get_test_device(**kw):
-    std_board_info = {
-        "class": "Fake class",
-        "device_id": "0xabcd"
-        }
+    std_board_info = {"class": "Fake class", "device_id": "0xabcd"}
     return {
         'id': kw.get('id', 1),
         'uuid': kw.get('uuid', '20efe63d-dfea-4a37-ad94-4116fba50122'),
@@ -87,14 +84,15 @@ def get_test_extarq(**kwargs):
         'state': kwargs.get('state', 'Bound'),
         'device_profile_id': kwargs.get('id', 1),
         'hostname': kwargs.get('hostname', 'testnode1'),
-        'device_rp_uuid': kwargs.get('device_rp_uuid',
-                                     'f2b96c5f-242a-41a0-a736-b6e1fada071b'),
-        'device_instance_uuid':
-            kwargs.get('device_rp_uuid',
-                       '6219e0fb-2935-4db2-a3c7-86a2ac3ac84e'),
+        'device_rp_uuid': kwargs.get(
+            'device_rp_uuid', 'f2b96c5f-242a-41a0-a736-b6e1fada071b'
+        ),
+        'device_instance_uuid': kwargs.get(
+            'device_rp_uuid', '6219e0fb-2935-4db2-a3c7-86a2ac3ac84e'
+        ),
         'attach_handle_id': kwargs.get('id', 1),
         'created_at': kwargs.get('created_at', None),
-        'updated_at': kwargs.get('updated_at', None)
+        'updated_at': kwargs.get('updated_at', None),
     }
 
 
@@ -118,11 +116,12 @@ def get_test_arq(**kwargs):
         'state': kwargs.get('state', 'Initial'),
         'device_profile': kwargs.get('device_profile', None),
         'hostname': kwargs.get('hostname', 'testnode1'),
-        'device_rp_uuid': kwargs.get('device_rp_uuid',
-                                     'f2b96c5f-242a-41a0-a736-b6e1fada071b'),
-        'device_instance_uuid':
-            kwargs.get('device_rp_uuid',
-                       '6219e0fb-2935-4db2-a3c7-86a2ac3ac84e'),
+        'device_rp_uuid': kwargs.get(
+            'device_rp_uuid', 'f2b96c5f-242a-41a0-a736-b6e1fada071b'
+        ),
+        'device_instance_uuid': kwargs.get(
+            'device_rp_uuid', '6219e0fb-2935-4db2-a3c7-86a2ac3ac84e'
+        ),
         'attach_handle': kwargs.get('attach_handle', None),
         'created_at': kwargs.get('created_at', None),
         'updated_at': kwargs.get('updated_at', None),
@@ -164,9 +163,10 @@ def get_test_control_path(**kw):
         'id': kw.get('id', 1),
         'device_id': kw.get('device_id', 1),
         'cpid_type': kw.get('cpid_type', "PCI"),
-        'cpid_info': kw.get('cpid_info',
-                            '{"device": "2", "bus": "00", "function": "01", '
-                            '"domain": "0001"}'),
+        'cpid_info': kw.get(
+            'cpid_info',
+            '{"device": "2", "bus": "00", "function": "01", "domain": "0001"}',
+        ),
         'created_at': kw.get('create_at', None),
         'updated_at': kw.get('updated_at', None),
     }
@@ -183,7 +183,8 @@ def get_test_device_profile(**kw):
             '{"version": "1.0", \
              "groups": [{"resources:CUSTOM_ACCELERATOR_FPGA": "1"}, \
              {"trait:CUSTOM_FPGA_INTEL_PAC_ARRIA10": "required"}, \
-             {"trait:CUSTOM_FUNCTION_ID_3AFB": "required"}]}'),
+             {"trait:CUSTOM_FUNCTION_ID_3AFB": "required"}]}',
+        ),
         'created_at': kw.get('create_at', None),
         'updated_at': kw.get('updated_at', None),
     }

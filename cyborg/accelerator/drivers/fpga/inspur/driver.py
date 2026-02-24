@@ -27,8 +27,9 @@ LOG = logging.getLogger(__name__)
 
 class InspurFPGADriver(FPGADriver):
     """Class for Inspur FPGA drivers.
-       Vendor should implement their specific drivers in this class.
+    Vendor should implement their specific drivers in this class.
     """
+
     VENDOR = "inspur"
 
     def __init__(self, *args, **kwargs):

@@ -31,20 +31,25 @@ class TestRPCAPI(base.TestCase):
     def setUp(self, topic=None):
         super().setUp()
         self.topic = topic or constants.AGENT_TOPIC
-        target = messaging.Target(topic=self.topic,
-                                  version=self.RPC_API_VERSION)
+        target = messaging.Target(
+            topic=self.topic, version=self.RPC_API_VERSION
+        )
         self.agent_rpcapi = AgentAPI()
         self.serializer = objects_base.CyborgObjectSerializer()
-        self.client = rpc.get_client(target,
-                                     version_cap=self.RPC_API_VERSION,
-                                     serializer=self.serializer)
+        self.client = rpc.get_client(
+            target,
+            version_cap=self.RPC_API_VERSION,
+            serializer=self.serializer,
+        )
 
     def _test_rpc_call(self, method):
-        ctxt = cyborg_context.RequestContext(user_id='fake_user',
-                                             project_id='fake_project')
+        ctxt = cyborg_context.RequestContext(
+            user_id='fake_user', project_id='fake_project'
+        )
         expect_val = True
-        with mock.patch.object(self.agent_rpcapi,
-                               'fpga_program') as mock_program:
+        with mock.patch.object(
+            self.agent_rpcapi, 'fpga_program'
+        ) as mock_program:
             func_obj = getattr(self.agent_rpcapi, method)
             mock_program.return_value = expect_val
             actual_val = func_obj(ctxt, 'fake_dep_uuid')

@@ -18,19 +18,16 @@ LOG = logging.getLogger(__name__)
 
 
 class NvmfTgt:
-
     def __init__(self, py):
         super().__init__()
         self.py = py
 
     def get_rpc_methods(self):
-        rpc_methods = self._get_json_objs(
-            'get_rpc_methods', '10.0.2.15')
+        rpc_methods = self._get_json_objs('get_rpc_methods', '10.0.2.15')
         return rpc_methods
 
     def get_bdevs(self):
-        block_devices = self._get_json_objs(
-            'get_bdevs', '10.0.2.15')
+        block_devices = self._get_json_objs('get_bdevs', '10.0.2.15')
         return block_devices
 
     def delete_bdev(self, name):
@@ -46,27 +43,20 @@ class NvmfTgt:
     def construct_aio_bdev(self, filename, name, block_size):
         sub_args = [filename, name, str(block_size)]
         res = self.py.exec_rpc(
-            'construct_aio_bdev',
-            '10.0.2.15',
-            sub_args=sub_args)
+            'construct_aio_bdev', '10.0.2.15', sub_args=sub_args
+        )
         LOG.info(res)
 
     def construct_error_bdev(self, basename):
         sub_args = [basename]
         res = self.py.exec_rpc(
-            'construct_error_bdev',
-            '10.0.2.15',
-            sub_args=sub_args)
+            'construct_error_bdev', '10.0.2.15', sub_args=sub_args
+        )
         LOG.info(res)
 
     def construct_nvme_bdev(
-            self,
-            name,
-            trtype,
-            traddr,
-            adrfam=None,
-            trsvcid=None,
-            subnqn=None):
+        self, name, trtype, traddr, adrfam=None, trsvcid=None, subnqn=None
+    ):
         sub_args = ["-b", "-t", "-a"]
         sub_args.insert(1, name)
         sub_args.insert(2, trtype)
@@ -81,52 +71,42 @@ class NvmfTgt:
             sub_args.append("-n")
             sub_args.append(subnqn)
         res = self.py.exec_rpc(
-            'construct_nvme_bdev',
-            '10.0.2.15',
-            sub_args=sub_args)
+            'construct_nvme_bdev', '10.0.2.15', sub_args=sub_args
+        )
         return res
 
     def construct_null_bdev(self, name, total_size, block_size):
         sub_args = [name, str(total_size), str(block_size)]
         res = self.py.exec_rpc(
-            'construct_null_bdev',
-            '10.0.2.15',
-            sub_args=sub_args)
+            'construct_null_bdev', '10.0.2.15', sub_args=sub_args
+        )
         return res
 
     def construct_malloc_bdev(self, total_size, block_size):
         sub_args = [str(total_size), str(block_size)]
         res = self.py.exec_rpc(
-            'construct_malloc_bdev',
-            '10.0.2.15',
-            sub_args=sub_args)
+            'construct_malloc_bdev', '10.0.2.15', sub_args=sub_args
+        )
         LOG.info(res)
 
     def delete_nvmf_subsystem(self, nqn):
         sub_args = [nqn]
         res = self.py.exec_rpc(
-            'delete_nvmf_subsystem',
-            '10.0.2.15',
-            sub_args=sub_args)
+            'delete_nvmf_subsystem', '10.0.2.15', sub_args=sub_args
+        )
         LOG.info(res)
 
     def construct_nvmf_subsystem(
-            self,
-            nqn,
-            listen,
-            hosts,
-            serial_number,
-            namespaces):
+        self, nqn, listen, hosts, serial_number, namespaces
+    ):
         sub_args = [nqn, listen, hosts, serial_number, namespaces]
         res = self.py.exec_rpc(
-            'construct_nvmf_subsystem',
-            '10.0.2.15',
-            sub_args=sub_args)
+            'construct_nvmf_subsystem', '10.0.2.15', sub_args=sub_args
+        )
         LOG.info(res)
 
     def get_nvmf_subsystems(self):
-        subsystems = self._get_json_objs(
-            'get_nvmf_subsystems', '10.0.2.15')
+        subsystems = self._get_json_objs('get_nvmf_subsystems', '10.0.2.15')
         return subsystems
 
     def _get_json_objs(self, method, server_ip):

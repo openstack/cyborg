@@ -12,7 +12,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-"""Accelerator base exception handling. """
+"""Accelerator base exception handling."""
 
 import collections
 from http import HTTPStatus
@@ -38,8 +38,10 @@ def _ensure_exception_kwargs_serializable(exc_class_name, kwargs):
         constructor.
     :returns: a dictionary of serializable keyword arguments.
     """
-    serializers = [(jsonutils.dumps, _('when converting to JSON')),
-                   (str, _('when converting to string'))]
+    serializers = [
+        (jsonutils.dumps, _('when converting to JSON')),
+        (str, _('when converting to string')),
+    ]
     exceptions = collections.defaultdict(list)
     serializable_kwargs = {}
     for k, v in kwargs.items():
@@ -50,20 +52,29 @@ def _ensure_exception_kwargs_serializable(exc_class_name, kwargs):
                 break
             except Exception as e:
                 exceptions[k].append(
-                    '(%(serializer_type)s) %(e_type)s: %(e_contents)s' %
-                    {'serializer_type': msg, 'e_contents': e,
-                     'e_type': e.__class__.__name__})
+                    '(%(serializer_type)s) %(e_type)s: %(e_contents)s'
+                    % {
+                        'serializer_type': msg,
+                        'e_contents': e,
+                        'e_type': e.__class__.__name__,
+                    }
+                )
     if exceptions:
-        LOG.error("One or more arguments passed to the %(exc_class)s "
-                  "constructor as kwargs can not be serialized. The "
-                  "serialized arguments: %(serialized)s. These "
-                  "unserialized kwargs were dropped because of the "
-                  "exceptions encountered during their "
-                  "serialization:\n%(errors)s",
-                  dict(errors=';\n'.join("%s: %s" % (k, '; '.join(v))
-                                         for k, v in exceptions.items()),
-                       exc_class=exc_class_name,
-                       serialized=serializable_kwargs))
+        LOG.error(
+            "One or more arguments passed to the %(exc_class)s "
+            "constructor as kwargs can not be serialized. The "
+            "serialized arguments: %(serialized)s. These "
+            "unserialized kwargs were dropped because of the "
+            "exceptions encountered during their "
+            "serialization:\n%(errors)s",
+            dict(
+                errors=';\n'.join(
+                    "%s: %s" % (k, '; '.join(v)) for k, v in exceptions.items()
+                ),
+                exc_class=exc_class_name,
+                serialized=serializable_kwargs,
+            ),
+        )
         # We might be able to actually put the following keys' values into
         # format string, but there is no guarantee, drop it just in case.
         for k in exceptions:
@@ -81,15 +92,16 @@ class AcceleratorException(Exception):
     If you need to access the message from an exception you should use
     str(exc).
     """
+
     _msg_fmt = _("An unknown exception occurred.")
     code = HTTPStatus.INTERNAL_SERVER_ERROR
     headers = {}
     safe = False
 
     def __init__(self, message=None, **kwargs):
-
         self.kwargs = _ensure_exception_kwargs_serializable(
-            self.__class__.__name__, kwargs)
+            self.__class__.__name__, kwargs
+        )
 
         if 'code' not in self.kwargs:
             try:

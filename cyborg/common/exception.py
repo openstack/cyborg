@@ -39,6 +39,7 @@ class CyborgException(Exception):
     If you need to access the message from an exception you should use
     str(exc).
     """
+
     _msg_fmt = _("An unknown exception occurred.")
     code = HTTPStatus.INTERNAL_SERVER_ERROR
     headers = {}
@@ -61,8 +62,9 @@ class CyborgException(Exception):
                 # log the issue and the kwargs
                 LOG.exception('Exception in string format operation')
                 for name, value in kwargs.items():
-                    LOG.error("%(name)s: %(value)s",
-                              {"name": name, "value": value})
+                    LOG.error(
+                        "%(name)s: %(value)s", {"name": name, "value": value}
+                    )
 
                 if CONF.fatal_exception_format_errors:
                     raise
@@ -84,8 +86,10 @@ class Forbidden(CyborgException):
 
 
 class ARQBadState(CyborgException):
-    _msg_fmt = _('Bad state: %(state)s for ARQ: %(uuid)s. '
-                 'Expected state(s): %(expected)s')
+    _msg_fmt = _(
+        'Bad state: %(state)s for ARQ: %(uuid)s. '
+        'Expected state(s): %(expected)s'
+    )
 
 
 class AttachHandleAlreadyExists(CyborgException):
@@ -129,8 +133,7 @@ class ExtArqAlreadyExists(CyborgException):
 
 
 class ExpectedOneObject(CyborgException):
-    _msg_fmt = _("Expected one object of type %(obj)s "
-                 "but got %(count)s.")
+    _msg_fmt = _("Expected one object of type %(obj)s but got %(count)s.")
 
 
 class InUse(CyborgException):
@@ -155,14 +158,17 @@ class InvalidJsonType(Invalid):
 
 
 class InvalidAPIVersionString(Invalid):
-    _msg_fmt = _("API Version String %(version)s is of invalid format. Must "
-                 "be of format MajorNum.MinorNum.")
+    _msg_fmt = _(
+        "API Version String %(version)s is of invalid format. Must "
+        "be of format MajorNum.MinorNum."
+    )
 
 
 # TODO(All): Consider whether Placement/Image exceptions can be included here.
 class InvalidAPIResponse(Invalid):
-    _msg_fmt = _('Bad API response from %(service)s for %(api)s API. '
-                 'Details: %(msg)s')
+    _msg_fmt = _(
+        'Bad API response from %(service)s for %(api)s API. Details: %(msg)s'
+    )
 
 
 # Cannot be templated as the error syntax varies.
@@ -203,8 +209,9 @@ class ServiceNotFound(NotFound):
 
 
 class ConfGroupForServiceTypeNotFound(ServiceNotFound):
-    _msg_fmt = _("No conf group name could be found for service type "
-                 "%(stype)s.")
+    _msg_fmt = _(
+        "No conf group name could be found for service type %(stype)s."
+    )
 
 
 class InvalidDeployType(CyborgException):
@@ -233,18 +240,23 @@ class PlacementEndpointNotFound(NotFound):
 
 
 class PlacementResourceProviderNotFound(NotFound):
-    _msg_fmt = _("Placement resource provider not found: "
-                 "%(resource_provider)s.")
+    _msg_fmt = _(
+        "Placement resource provider not found: %(resource_provider)s."
+    )
 
 
 class PlacementInventoryNotFound(NotFound):
-    _msg_fmt = _("Placement inventory not found for resource provider "
-                 "%(resource_provider)s, resource class %(resource_class)s.")
+    _msg_fmt = _(
+        "Placement inventory not found for resource provider "
+        "%(resource_provider)s, resource class %(resource_class)s."
+    )
 
 
 class PlacementInventoryUpdateConflict(Conflict):
-    _msg_fmt = _("Placement inventory update conflict for resource provider "
-                 "%(resource_provider)s, resource class %(resource_class)s.")
+    _msg_fmt = _(
+        "Placement inventory update conflict for resource provider "
+        "%(resource_provider)s, resource class %(resource_class)s."
+    )
 
 
 class ObjectActionError(CyborgException):
@@ -274,13 +286,15 @@ class ResourceProviderRetrievalFailed(CyborgException):
 
 
 class ResourceProviderAggregateRetrievalFailed(CyborgException):
-    _msg_fmt = _("Failed to get aggregates for resource provider with UUID"
-                 " %(uuid)s")
+    _msg_fmt = _(
+        "Failed to get aggregates for resource provider with UUID %(uuid)s"
+    )
 
 
 class ResourceProviderTraitRetrievalFailed(CyborgException):
-    _msg_fmt = _("Failed to get traits for resource provider with UUID"
-                 " %(uuid)s")
+    _msg_fmt = _(
+        "Failed to get traits for resource provider with UUID %(uuid)s"
+    )
 
 
 class ResourceProviderCreationFailed(CyborgException):
@@ -292,13 +306,16 @@ class ResourceProviderDeletionFailed(CyborgException):
 
 
 class ResourceProviderUpdateFailed(CyborgException):
-    _msg_fmt = _("Failed to update resource provider via URL %(url)s: "
-                 "%(error)s")
+    _msg_fmt = _(
+        "Failed to update resource provider via URL %(url)s: %(error)s"
+    )
 
 
 class ResourceProviderSyncFailed(CyborgException):
-    _msg_fmt = _("Failed to synchronize the placement service with resource "
-                 "provider information supplied by the compute host.")
+    _msg_fmt = _(
+        "Failed to synchronize the placement service with resource "
+        "provider information supplied by the compute host."
+    )
 
 
 class PlacementAPIConnectFailure(CyborgException):
@@ -313,16 +330,22 @@ class PlacementAPIConflict(CyborgException):
     """Any 409 error from placement APIs should use (a subclass of) this
     exception.
     """
-    _msg_fmt = _("A conflict was encountered attempting to invoke the "
-                 "placement API at URL %(url)s: %(error)s")
+
+    _msg_fmt = _(
+        "A conflict was encountered attempting to invoke the "
+        "placement API at URL %(url)s: %(error)s"
+    )
 
 
 class ResourceProviderUpdateConflict(PlacementAPIConflict):
     """A 409 caused by generation mismatch from attempting to update an
     existing provider record or its associated data (aggregates, traits, etc.).
     """
-    _msg_fmt = _("A conflict was encountered attempting to update resource "
-                 "provider %(uuid)s (generation %(generation)d): %(error)s")
+
+    _msg_fmt = _(
+        "A conflict was encountered attempting to update resource "
+        "provider %(uuid)s (generation %(generation)d): %(error)s"
+    )
 
 
 class TraitCreationFailed(CyborgException):
@@ -342,8 +365,10 @@ class InvalidResourceAmount(Invalid):
 
 
 class InvalidInventory(Invalid):
-    _msg_fmt = _("Inventory for '%(resource_class)s' on "
-                 "resource provider '%(resource_provider)s' invalid.")
+    _msg_fmt = _(
+        "Inventory for '%(resource_class)s' on "
+        "resource provider '%(resource_provider)s' invalid."
+    )
 
 
 # An exception with this name is used on both sides of the placement/
@@ -351,8 +376,10 @@ class InvalidInventory(Invalid):
 class InventoryInUse(InvalidInventory):
     # NOTE(mriedem): This message cannot change without impacting the
     # cyborg.services.client.report._RE_INV_IN_USE regex.
-    _msg_fmt = _("Inventory for '%(resource_classes)s' on "
-                 "resource provider '%(resource_provider)s' in use.")
+    _msg_fmt = _(
+        "Inventory for '%(resource_classes)s' on "
+        "resource provider '%(resource_provider)s' in use."
+    )
 
 
 class QuotaNotFound(NotFound):
@@ -372,8 +399,7 @@ class InvalidReservationExpiration(Invalid):
 
 
 class GlanceConnectionFailed(CyborgException):
-    _msg_fmt = _("Connection to glance host %(server)s failed: "
-                 "%(reason)s")
+    _msg_fmt = _("Connection to glance host %(server)s failed: %(reason)s")
 
 
 class ImageUnacceptable(Invalid):
@@ -385,8 +411,9 @@ class ImageNotAuthorized(CyborgException):
 
 
 class ImageBadRequest(Invalid):
-    _msg_fmt = _("Request of image %(image_id)s got BadRequest response: "
-                 "%(response)s")
+    _msg_fmt = _(
+        "Request of image %(image_id)s got BadRequest response: %(response)s"
+    )
 
 
 class InvalidDriver(Invalid):
@@ -406,8 +433,7 @@ class PciDeviceWrongAddressFormat(Invalid):
 
 
 class InvalidType(Invalid):
-    _msg_fmt = _("Invalid type for %(obj)s: %(type)s."
-                 "Expected: %(expected)s")
+    _msg_fmt = _("Invalid type for %(obj)s: %(type)s.Expected: %(expected)s")
 
 
 class ResourceNotFound(NotFound):
@@ -432,5 +458,7 @@ class PciConfigInvalidWhitelist(Invalid):
 
 
 class PciDeviceInvalidDeviceName(CyborgException):
-    _msg_fmt = _("Invalid PCI whitelist: The PCI whitelist can specify "
-                 "devname or address, but not both.")
+    _msg_fmt = _(
+        "Invalid PCI whitelist: The PCI whitelist can specify "
+        "devname or address, but not both."
+    )

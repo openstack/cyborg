@@ -36,11 +36,13 @@ import cyborg.privsep
 LOG = logging.getLogger(__name__)
 
 SSD_FLAGS = ["Non-Volatile memory controller"]
-SSD_INFO_PATTERN = re.compile(r"(?P<devices>[0-9a-fA-F]{4}:[0-9a-fA-F]{2}:"
-                              r"[0-9a-fA-F]{2}\.[0-9a-fA-F]) "
-                              r"(?P<controller>.*) [\[].*]: (?P<model>.*) .*"
-                              r"[\[](?P<vendor_id>[0-9a-fA-F]"
-                              r"{4}):(?P<product_id>[0-9a-fA-F]{4})].*")
+SSD_INFO_PATTERN = re.compile(
+    r"(?P<devices>[0-9a-fA-F]{4}:[0-9a-fA-F]{2}:"
+    r"[0-9a-fA-F]{2}\.[0-9a-fA-F]) "
+    r"(?P<controller>.*) [\[].*]: (?P<model>.*) .*"
+    r"[\[](?P<vendor_id>[0-9a-fA-F]"
+    r"{4}):(?P<product_id>[0-9a-fA-F]{4})].*"
+)
 
 VENDOR_MAPS = utils.get_vendor_maps()
 
@@ -107,8 +109,10 @@ def _generate_driver_device(ssd):
     driver_device_obj = driver_device.DriverDevice()
     driver_device_obj.vendor = ssd["vendor_id"]
     driver_device_obj.model = ssd.get('model', 'miss model info')
-    std_board_info = {'product_id': ssd.get('product_id'),
-                      'controller': ssd.get('controller')}
+    std_board_info = {
+        'product_id': ssd.get('product_id'),
+        'controller': ssd.get('controller'),
+    }
     vendor_board_info = {'vendor_info': ssd.get('vendor_info', 'ssd_vb_info')}
     driver_device_obj.std_board_info = jsonutils.dumps(std_board_info)
     driver_device_obj.vendor_board_info = jsonutils.dumps(vendor_board_info)
@@ -165,6 +169,7 @@ def _generate_attribute_list(ssd):
             values = ssd.get(k, [])
             for index, val in enumerate(values):
                 driver_attr = driver_attribute.DriverAttribute(
-                    key="trait" + str(index), value=val)
+                    key="trait" + str(index), value=val
+                )
                 attr_list.append(driver_attr)
     return attr_list

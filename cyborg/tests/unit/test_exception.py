@@ -41,6 +41,9 @@ class TestException(base.TestCase):
             if parent._msg_fmt == cls._msg_fmt:
                 bad_classes.append(cls.__name__)
 
-        self.assertEqual([], bad_classes,
-                         'Exception classes %s do not '
-                         'set _msg_fmt' % ', '.join(bad_classes))
+        self.assertEqual(
+            [],
+            bad_classes,
+            'Exception classes %s do not '
+            'set _msg_fmt' % ', '.join(bad_classes),
+        )

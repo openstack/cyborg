@@ -41,6 +41,7 @@ class ARQ(base.APIBase):
     This class enforces type checking and value constraints, and converts
     between the internal object model and the API representation.
     """
+
     uuid = types.uuid
     """The UUID of the ARQ"""
 
@@ -77,9 +78,13 @@ class ARQ(base.APIBase):
     def convert_with_links(cls, obj_arq):
         api_arq = cls(**obj_arq.as_dict())
         api_arq.links = [
-            link.Link.make_link('self', pecan.request.public_url,
-                                'accelerator_requests', api_arq.uuid)
-            ]
+            link.Link.make_link(
+                'self',
+                pecan.request.public_url,
+                'accelerator_requests',
+                api_arq.uuid,
+            )
+        ]
         return api_arq
 
 
@@ -92,31 +97,33 @@ class ARQCollection(base.APIBase):
     @classmethod
     def convert_with_links(cls, obj_arqs):
         collection = cls()
-        collection.arqs = [ARQ.convert_with_links(obj_arq)
-                           for obj_arq in obj_arqs]
+        collection.arqs = [
+            ARQ.convert_with_links(obj_arq) for obj_arq in obj_arqs
+        ]
         return collection
 
 
 class ARQsController(base.CyborgController):
     """REST controller for ARQs.
 
-       For the relationship between ARQs and device profiles, see
-       nova/nova/accelerator/cyborg.py.
+    For the relationship between ARQs and device profiles, see
+    nova/nova/accelerator/cyborg.py.
     """
 
     @authorize_wsgi.authorize_wsgi("cyborg:arq", "create", False)
-    @expose.expose(ARQCollection, body=types.jsontype,
-                   status_code=HTTPStatus.CREATED)
+    @expose.expose(
+        ARQCollection, body=types.jsontype, status_code=HTTPStatus.CREATED
+    )
     def post(self, req):
         """Create one or more ARQs for a single device profile.
-           Request body:
-              { 'device_profile_name': <string> }
-           Future:
-              { 'device_profile_name': <string> # required
-                'device_profile_group_id': <integer>, # opt, default=0
-                'image_uuid': <glance-image-UUID>, #optional, for future
-              }
-           :param req: request body.
+        Request body:
+           { 'device_profile_name': <string> }
+        Future:
+           { 'device_profile_name': <string> # required
+             'device_profile_group_id': <integer>, # opt, default=0
+             'image_uuid': <glance-image-UUID>, #optional, for future
+           }
+        :param req: request body.
         """
         LOG.info("[arq] post req = (%s)", req)
         context = pecan.request.context
@@ -126,8 +133,8 @@ class ARQsController(base.CyborgController):
                 devprof = objects.DeviceProfile.get_by_name(context, dp_name)
             except exception.ResourceNotFound:
                 raise exception.ResourceNotFound(
-                    resource='Device Profile',
-                    msg='with name=%s' % dp_name)
+                    resource='Device Profile', msg='with name=%s' % dp_name
+                )
             except Exception as e:
                 raise e
         else:
@@ -145,8 +152,10 @@ class ARQsController(base.CyborgController):
                 accel_resources = [int(group.get("resources:FPGA"))] * 2
             else:
                 accel_resources = [
-                    int(val) for key, val in group.items()
-                    if key.startswith('resources')]
+                    int(val)
+                    for key, val in group.items()
+                    if key.startswith('resources')
+                ]
 
             # If/when we introduce non-accelerator resources, like
             # device-local memory, the key search above needs to be
@@ -161,11 +170,13 @@ class ARQsController(base.CyborgController):
                 extarq_fields = {'arq': obj_arq}
                 obj_extarq = objects.ExtARQ(context, **extarq_fields)
                 new_extarq = pecan.request.conductor_api.arq_create(
-                    context, obj_extarq, devprof.id)
+                    context, obj_extarq, devprof.id
+                )
                 extarq_list.append(new_extarq)
 
         ret = ARQCollection.convert_with_links(
-            [extarq.arq for extarq in extarq_list])
+            [extarq.arq for extarq in extarq_list]
+        )
         LOG.info('[arqs] post returned: %s', ret)
         return ret
 
@@ -182,8 +193,11 @@ class ARQsController(base.CyborgController):
     def get_all(self, bind_state=None, instance=None):
         """Retrieve a list of arqs."""
         # TODO(Sundar) Need to implement 'arq=uuid1,...' query parameter
-        LOG.info('[arqs] get_all. bind_state:(%s), instance:(%s)',
-                 bind_state or '', instance or '')
+        LOG.info(
+            '[arqs] get_all. bind_state:(%s), instance:(%s)',
+            bind_state or '',
+            instance or '',
+        )
         context = pecan.request.context
         extarqs = objects.ExtARQ.list(context)
         state_map = constants.ARQ_BIND_STATES_STATUS_MAP
@@ -193,32 +207,36 @@ class ARQsController(base.CyborgController):
         # Apply instance filter before state filter.
         if bind_state and bind_state != 'resolved':
             raise exception.ARQBadState(
-                state=bind_state, uuid=None, expected=['resolved'])
+                state=bind_state, uuid=None, expected=['resolved']
+            )
         if instance:
-            new_arqs = [arq for arq in arqs
-                        if arq['instance_uuid'] == instance]
+            new_arqs = [
+                arq for arq in arqs if arq['instance_uuid'] == instance
+            ]
             arqs = new_arqs
             if bind_state:
                 for arq in new_arqs:
                     if arq['state'] not in valid_bind_states:
                         # NOTE(Sundar) This should return HTTP code 423
                         # if any ARQ for this instance is not resolved.
-                        LOG.warning('Some of ARQs for instance %s is not '
-                                    'resolved', instance)
+                        LOG.warning(
+                            'Some of ARQs for instance %s is not resolved',
+                            instance,
+                        )
                         return wsme.api.Response(
-                            None,
-                            status_code=HTTPStatus.LOCKED)
+                            None, status_code=HTTPStatus.LOCKED
+                        )
         elif bind_state:
-            arqs = [arq for arq in arqs
-                    if arq['state'] in valid_bind_states]
+            arqs = [arq for arq in arqs if arq['state'] in valid_bind_states]
 
         ret = ARQCollection.convert_with_links(arqs)
         LOG.info('[arqs:get_all] Returned: %s', ret)
         return ret
 
     @authorize_wsgi.authorize_wsgi("cyborg:arq", "delete", False)
-    @expose.expose(None, wtypes.text, types.uuid,
-                   status_code=HTTPStatus.NO_CONTENT)
+    @expose.expose(
+        None, wtypes.text, types.uuid, status_code=HTTPStatus.NO_CONTENT
+    )
     def delete(self, arqs=None, instance=None):
         """Delete one or more ARQS.
 
@@ -241,14 +259,16 @@ class ARQsController(base.CyborgController):
         if (arqs and instance) or (not arqs and not instance):
             raise exception.ObjectActionError(
                 action='delete',
-                reason='Provide either an ARQ uuid list or an instance UUID')
+                reason='Provide either an ARQ uuid list or an instance UUID',
+            )
         elif arqs:
             LOG.info("[arqs] delete. arqs=(%s)", arqs)
             pecan.request.conductor_api.arq_delete_by_uuid(context, arqs)
         else:  # instance is not None
             LOG.info("[arqs] delete. instance=(%s)", instance)
             pecan.request.conductor_api.arq_delete_by_instance_uuid(
-                context, instance)
+                context, instance
+            )
 
     def _validate_arq_patch(self, patch):
         """Validate a single patch for an ARQ.
@@ -258,31 +278,39 @@ class ARQsController(base.CyborgController):
             value field of arq_uuid in patch() method below.
         :returns: dict of valid fields
         """
-        valid_fields = {'hostname': None,
-                        'device_rp_uuid': None,
-                        'instance_uuid': None}
+        valid_fields = {
+            'hostname': None,
+            'device_rp_uuid': None,
+            'instance_uuid': None,
+        }
         if utils.allow_project_id():
             valid_fields['project_id'] = None
-        if ((not all(p['op'] == 'add' for p in patch)) and
-           (not all(p['op'] == 'remove' for p in patch))):
-            raise exception.PatchError(
-                reason='Every op must be add or remove')
+        if (not all(p['op'] == 'add' for p in patch)) and (
+            not all(p['op'] == 'remove' for p in patch)
+        ):
+            raise exception.PatchError(reason='Every op must be add or remove')
 
         for p in patch:
             path = p['path'].lstrip('/')
             if path == 'project_id' and not utils.allow_project_id():
-                raise exception.NotAcceptable(_(
-                    "Request not acceptable. The minimal required API "
-                    "version should be %(base)s.%(opr)s") %
-                    {'base': versions.BASE_VERSION,
-                     'opr': versions.MINOR_1_PROJECT_ID})
+                raise exception.NotAcceptable(
+                    _(
+                        "Request not acceptable. The minimal required API "
+                        "version should be %(base)s.%(opr)s"
+                    )
+                    % {
+                        'base': versions.BASE_VERSION,
+                        'opr': versions.MINOR_1_PROJECT_ID,
+                    }
+                )
             if path not in valid_fields.keys():
                 reason = 'Invalid path in patch {}'.format(p['path'])
                 raise exception.PatchError(reason=reason)
             if p['op'] == 'add':
                 valid_fields[path] = p['value']
-        not_found = [field for field, value in valid_fields.items()
-                     if value is None]
+        not_found = [
+            field for field, value in valid_fields.items() if value is None
+        ]
         if patch[0]['op'] == 'add' and len(not_found) > 0:
             msg = ','.join(not_found)
             reason = _('Fields absent in patch {}').format(msg)
@@ -296,17 +324,20 @@ class ARQsController(base.CyborgController):
         instance_uuid = patch_fields['instance_uuid']
         extarqs = objects.ExtARQ.list(context)
         extarqs_for_instance = [
-            extarq for extarq in extarqs
-            if extarq.arq['instance_uuid'] == instance_uuid]
+            extarq
+            for extarq in extarqs
+            if extarq.arq['instance_uuid'] == instance_uuid
+        ]
         if extarqs_for_instance:  # duplicate binding request
-            msg = _('Instance {} already has accelerator requests. '
-                    'Cannot bind additional ARQs.')
+            msg = _(
+                'Instance {} already has accelerator requests. '
+                'Cannot bind additional ARQs.'
+            )
             reason = msg.format(instance_uuid)
             raise exception.PatchError(reason=reason)
 
     @authorize_wsgi.authorize_wsgi("cyborg:arq", "update", False)
-    @expose.expose(None, body=types.jsontype,
-                   status_code=HTTPStatus.ACCEPTED)
+    @expose.expose(None, body=types.jsontype, status_code=HTTPStatus.ACCEPTED)
     def patch(self, patch_list):
         """Bind/Unbind one or more ARQs.
 
@@ -345,4 +376,5 @@ class ARQsController(base.CyborgController):
             self._check_if_already_bound(context, valid_fields)
 
         pecan.request.conductor_api.arq_apply_patch(
-            context, patch_list, valid_fields)
+            context, patch_list, valid_fields
+        )

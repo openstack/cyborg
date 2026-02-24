@@ -25,25 +25,32 @@ class TestUtils(unittest.TestCase):
 
     def test_pci_str_to_json(self):
         pci_address = '0000:0b:00.0'
-        json_str = '{"bus": "0b", "device": "00", "domain": "0000", ' \
-                   '"function": "0"}'
+        json_str = (
+            '{"bus": "0b", "device": "00", "domain": "0000", "function": "0"}'
+        )
         result = self.utils.pci_str_to_json(pci_address)
         self.assertEqual(result, json_str)
 
         pci_address = '0000:0b:00.1'
-        json_str = '{"bus": "0b", "device": "00", "domain": "0000", ' \
-                   '"function": "1", "physical_network": "physnet"}'
+        json_str = (
+            '{"bus": "0b", "device": "00", "domain": "0000", '
+            '"function": "1", "physical_network": "physnet"}'
+        )
         result = self.utils.pci_str_to_json(pci_address, 'physnet')
         self.assertEqual(result, json_str)
 
     def test_mdev_str_to_json(self):
-        json_str = '{"asked_type": "type", "bus": "0b", "device": "00", ' \
-                   '"domain": "0000", "function": "1", "vgpu_mark": "mask"}'
+        json_str = (
+            '{"asked_type": "type", "bus": "0b", "device": "00", '
+            '"domain": "0000", "function": "1", "vgpu_mark": "mask"}'
+        )
         result = self.utils.mdev_str_to_json('0000:0b:00.1', 'type', 'mask')
         self.assertEqual(result, json_str)
 
-        json_str = '{"asked_type": null, "bus": "0b", "device": "00", ' \
-                   '"domain": "0000", "function": "1", "vgpu_mark": null}'
+        json_str = (
+            '{"asked_type": null, "bus": "0b", "device": "00", '
+            '"domain": "0000", "function": "1", "vgpu_mark": null}'
+        )
         result = self.utils.mdev_str_to_json('0000:0b:00.1', None, None)
         self.assertEqual(result, json_str)
 

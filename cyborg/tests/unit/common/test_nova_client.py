@@ -27,18 +27,24 @@ class NovaAPITest(base.TestCase):
     def setUp(self):
         super().setUp()
         self.instance_uuid = '00000000-0000-0000-0000-000000000001'
-        template = {'name': 'accelerator-request-bound',
-                    'server_uuid': self.instance_uuid,
-                    'code': 200,
-                    'status': 'completed'}
-        tags = ['00000000-0000-0000-0000-000000000002',
-                '00000000-0000-0000-0000-000000000003']
+        template = {
+            'name': 'accelerator-request-bound',
+            'server_uuid': self.instance_uuid,
+            'code': 200,
+            'status': 'completed',
+        }
+        tags = [
+            '00000000-0000-0000-0000-000000000002',
+            '00000000-0000-0000-0000-000000000003',
+        ]
         self.events = [dict(template, tag=tag) for tag in tags]
 
-        self.mock_sdk = self.useFixture(fixtures.MockPatch(
-            'cyborg.common.utils.get_sdk_adapter')).mock.return_value
-        self.mock_log_info = self.useFixture(fixtures.MockPatch(
-            'cyborg.common.nova_client.LOG.info')).mock
+        self.mock_sdk = self.useFixture(
+            fixtures.MockPatch('cyborg.common.utils.get_sdk_adapter')
+        ).mock.return_value
+        self.mock_log_info = self.useFixture(
+            fixtures.MockPatch('cyborg.common.nova_client.LOG.info')
+        ).mock
 
     def test_send_events(self):
         self.mock_sdk.post.return_value = mock.Mock(status_code=200)
@@ -48,7 +54,8 @@ class NovaAPITest(base.TestCase):
 
         msg = 'Successfully sent events to Nova, events: %(events)s'
         self.mock_log_info.assert_called_once_with(
-            msg, {'events': self.events})
+            msg, {'events': self.events}
+        )
 
     def test_send_events_422(self):
         # If Nova returns HTTP 207 with event code 422 for all events,
@@ -64,8 +71,10 @@ class NovaAPITest(base.TestCase):
         nova = nova_client.NovaAPI()
         nova._send_events(self.events)
 
-        msg = ('Ignoring Nova notification error that the instance %s is not '
-               'yet associated with a host.')
+        msg = (
+            'Ignoring Nova notification error that the instance %s is not '
+            'yet associated with a host.'
+        )
         self.mock_log_info.assert_called_once_with(msg, self.instance_uuid)
 
     def test_send_events_with_event_code_422_exception(self):
@@ -80,8 +89,9 @@ class NovaAPITest(base.TestCase):
         self.mock_sdk.post.return_value = mock_ret
 
         nova = nova_client.NovaAPI()
-        self.assertRaises(exception.InvalidAPIResponse,
-                          nova._send_events, self.events)
+        self.assertRaises(
+            exception.InvalidAPIResponse, nova._send_events, self.events
+        )
 
     def test_send_events_with_event_code_400_exception(self):
         # If Nova returns HTTP 207 with event code 400 for some events,
@@ -94,8 +104,9 @@ class NovaAPITest(base.TestCase):
         self.mock_sdk.post.return_value = mock_ret
 
         nova = nova_client.NovaAPI()
-        self.assertRaises(exception.InvalidAPIResponse,
-                          nova._send_events, self.events)
+        self.assertRaises(
+            exception.InvalidAPIResponse, nova._send_events, self.events
+        )
 
     def test_send_events_with_all_event_code_400_exception(self):
         # If Nova returns HTTP 207 with event code 400 for all events,
@@ -109,8 +120,9 @@ class NovaAPITest(base.TestCase):
         self.mock_sdk.post.return_value = mock_ret
 
         nova = nova_client.NovaAPI()
-        self.assertRaises(exception.InvalidAPIResponse,
-                          nova._send_events, self.events)
+        self.assertRaises(
+            exception.InvalidAPIResponse, nova._send_events, self.events
+        )
 
     def test_send_events_failure(self):
         # Nova is expected to return 200/207 but this is future-proofing.
@@ -119,5 +131,6 @@ class NovaAPITest(base.TestCase):
         self.mock_sdk.post.return_value = mock_ret
 
         nova = nova_client.NovaAPI()
-        self.assertRaises(exception.InvalidAPIResponse,
-                          nova._send_events, self.events)
+        self.assertRaises(
+            exception.InvalidAPIResponse, nova._send_events, self.events
+        )

@@ -22,7 +22,6 @@ LOG = log.getLogger(__name__)
 
 
 class API:
-
     """Responsible for exposing a relatively stable internal API for other
     modules in Cyborg to retrieve information about accelerator images.
     """
@@ -71,5 +70,6 @@ class API:
         """
 
         session, image_id = self._get_session_and_image_id(context, id_or_uri)
-        return session.download(context, image_id, data=data,
-                                dst_path=dest_path)
+        return session.download(
+            context, image_id, data=data, dst_path=dest_path
+        )

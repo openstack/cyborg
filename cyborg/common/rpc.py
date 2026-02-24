@@ -35,15 +35,14 @@ EXTRA_EXMODS = []
 def init(conf):
     global TRANSPORT, NOTIFICATION_TRANSPORT, NOTIFIER
     exmods = get_allowed_exmods()
-    TRANSPORT = messaging.get_rpc_transport(conf,
-                                            allowed_remote_exmods=exmods)
+    TRANSPORT = messaging.get_rpc_transport(conf, allowed_remote_exmods=exmods)
     NOTIFICATION_TRANSPORT = messaging.get_notification_transport(
-        conf,
-        allowed_remote_exmods=exmods)
+        conf, allowed_remote_exmods=exmods
+    )
     serializer = RequestContextSerializer(messaging.JsonPayloadSerializer())
-    NOTIFIER = messaging.Notifier(NOTIFICATION_TRANSPORT,
-                                  serializer=serializer,
-                                  topics=['notifications'])
+    NOTIFIER = messaging.Notifier(
+        NOTIFICATION_TRANSPORT, serializer=serializer, topics=['notifications']
+    )
 
 
 def cleanup():
@@ -97,8 +96,8 @@ def get_client(target, version_cap=None, serializer=None):
     assert TRANSPORT is not None
     serializer = RequestContextSerializer(serializer)
     return messaging.get_rpc_client(
-        TRANSPORT, target, version_cap=version_cap,
-        serializer=serializer)
+        TRANSPORT, target, version_cap=version_cap, serializer=serializer
+    )
 
 
 def get_server(target, endpoints, serializer=None):
@@ -106,8 +105,12 @@ def get_server(target, endpoints, serializer=None):
     access_policy = dispatcher.DefaultRPCAccessPolicy
     serializer = RequestContextSerializer(serializer)
     return messaging.get_rpc_server(
-        TRANSPORT, target, endpoints,
-        serializer=serializer, access_policy=access_policy)
+        TRANSPORT,
+        target,
+        endpoints,
+        serializer=serializer,
+        access_policy=access_policy,
+    )
 
 
 def get_notifier(service=None, host=None, publisher_id=None):

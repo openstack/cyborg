@@ -10,6 +10,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 """Policy Authorize Engine For Cyborg."""
+
 import functools
 import sys
 
@@ -31,9 +32,13 @@ LOG = log.getLogger(__name__)
 
 
 @lockutils.synchronized('policy_enforcer', 'cyborg-')
-def init_enforcer(policy_file=None, rules=None,
-                  default_rule=None, use_conf=True,
-                  suppress_deprecation_warnings=False):
+def init_enforcer(
+    policy_file=None,
+    rules=None,
+    default_rule=None,
+    use_conf=True,
+    suppress_deprecation_warnings=False,
+):
     """Synchronously initializes the policy enforcer
     :param policy_file: Custom policy file to use, if none is specified,
                         `CONF.oslo_policy.policy_file` will be used.
@@ -60,7 +65,8 @@ def init_enforcer(policy_file=None, rules=None,
         policy_file=policy_file,
         rules=rules,
         default_rule=default_rule,
-        use_conf=use_conf)
+        use_conf=use_conf,
+    )
     if suppress_deprecation_warnings:
         _ENFORCER.suppress_deprecation_warnings = True
     _ENFORCER.register_defaults(policies.list_policies())
@@ -87,8 +93,9 @@ def authorize(rule, target, creds, do_raise=False, *args, **kwargs):
     """
     enforcer = get_enforcer()
     try:
-        return enforcer.authorize(rule, target, creds, do_raise=do_raise,
-                                  *args, **kwargs)
+        return enforcer.authorize(
+            rule, target, creds, do_raise=do_raise, *args, **kwargs
+        )
     except policy.PolicyNotAuthorized:
         raise exception.HTTPForbidden(resource=rule)
 
@@ -112,6 +119,7 @@ def authorize_wsgi(api_name, act=None, need_target=True):
             def post(self, values):
                 ...
     """
+
     def wrapper(fn):
         action = '%s:%s' % (api_name, act or fn.__name__)
 
@@ -124,8 +132,7 @@ def authorize_wsgi(api_name, act=None, need_target=True):
             orig_code = getattr(orig_exception, 'code', None)
             pecan.response.status = orig_code or resp_status
             data = wsme.api.format_exception(
-                exception_info,
-                pecan.conf.get('wsme', {}).get('debug', False)
+                exception_info, pecan.conf.get('wsme', {}).get('debug', False)
             )
             del exception_info
             return data
@@ -145,10 +152,13 @@ def authorize_wsgi(api_name, act=None, need_target=True):
                     # just support object, other type will just keep target as
                     # empty, then follow authorize method will fail and throw
                     # an exception
-                    if isinstance(resource,
-                                  object_base.VersionedObjectDictCompat):
-                        target = {'project_id': resource.project_id,
-                                  'user_id': resource.user_id}
+                    if isinstance(
+                        resource, object_base.VersionedObjectDictCompat
+                    ):
+                        target = {
+                            'project_id': resource.project_id,
+                            'user_id': resource.user_id,
+                        }
                 except Exception:
                     return return_error(500)
             elif need_target:
@@ -159,8 +169,10 @@ def authorize_wsgi(api_name, act=None, need_target=True):
             else:
                 # for create method, before resource exsites, we can check the
                 # the credentials with itself.
-                target = {'project_id': context.project_id,
-                          'user_id': context.user_id}
+                target = {
+                    'project_id': context.project_id,
+                    'user_id': context.user_id,
+                }
 
             try:
                 authorize(action, target, credentials, do_raise=True)

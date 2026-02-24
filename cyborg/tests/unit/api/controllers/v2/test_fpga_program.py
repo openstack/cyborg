@@ -21,7 +21,6 @@ from cyborg.tests.unit import fake_device
 
 
 class TestFPGAProgramController(v2_test.APITestV2):
-
     def setUp(self):
         super().setUp()
         self.headers = self.gen_headers(self.context)
@@ -30,8 +29,9 @@ class TestFPGAProgramController(v2_test.APITestV2):
         self.nonexistent_image_uuid = "1234abcd-1234-1234-1234-abcde1234567"
         self.invalid_image_uuid = "abcd1234"
         dep_uuid = self.deployable_uuids[0]
-        self.dep = fake_deployable.fake_deployable_obj(self.context,
-                                                       uuid=dep_uuid)
+        self.dep = fake_deployable.fake_deployable_obj(
+            self.context, uuid=dep_uuid
+        )
         self.dev = fake_device.get_fake_devices_objs()[0]
         bdf = {"domain": "0000", "bus": "00", "device": "01", "function": "1"}
         self.cpid = {
@@ -39,15 +39,20 @@ class TestFPGAProgramController(v2_test.APITestV2):
             "uuid": "e4a66b0d-b377-40d6-9cdc-6bf7e720e596",
             "device_id": "1",
             "cpid_type": "PCI",
-            "cpid_info": jsonutils.dumps(bdf).encode('utf-8')
+            "cpid_info": jsonutils.dumps(bdf).encode('utf-8'),
         }
 
     @mock.patch('cyborg.objects.Device.get_by_device_id')
     @mock.patch('cyborg.objects.Deployable.get_cpid_list')
     @mock.patch('cyborg.objects.Deployable.get')
     @mock.patch('cyborg.agent.rpcapi.AgentAPI.fpga_program')
-    def test_program_success(self, mock_program, mock_get_dep,
-                             mock_get_cpid_list, mock_get_by_device_id):
+    def test_program_success(
+        self,
+        mock_program,
+        mock_get_dep,
+        mock_get_cpid_list,
+        mock_get_by_device_id,
+    ):
         self.headers['X-Roles'] = 'admin'
         self.headers['Content-Type'] = 'application/json'
         dep_uuid = self.deployable_uuids[0]
@@ -56,9 +61,11 @@ class TestFPGAProgramController(v2_test.APITestV2):
         mock_get_cpid_list.return_value = [self.cpid]
         mock_program.return_value = True
         body = [{"image_uuid": self.existent_image_uuid}]
-        response = self.patch_json('/deployables/%s/program' % dep_uuid,
-                                   [{'path': '/bitstream_id', 'value': body,
-                                     'op': 'replace'}], headers=self.headers)
+        response = self.patch_json(
+            '/deployables/%s/program' % dep_uuid,
+            [{'path': '/bitstream_id', 'value': body, 'op': 'replace'}],
+            headers=self.headers,
+        )
         self.assertEqual(HTTPStatus.OK, response.status_code)
         data = response.json_body
         self.assertEqual(dep_uuid, data['uuid'])
@@ -67,8 +74,13 @@ class TestFPGAProgramController(v2_test.APITestV2):
     @mock.patch('cyborg.objects.Deployable.get_cpid_list')
     @mock.patch('cyborg.objects.Deployable.get')
     @mock.patch('cyborg.agent.rpcapi.AgentAPI.fpga_program')
-    def test_program_failed(self, mock_program, mock_get_dep,
-                            mock_get_cpid_list, mock_get_by_device_id):
+    def test_program_failed(
+        self,
+        mock_program,
+        mock_get_dep,
+        mock_get_cpid_list,
+        mock_get_by_device_id,
+    ):
         self.headers['X-Roles'] = 'admin'
         self.headers['Content-Type'] = 'application/json'
         dep_uuid = self.deployable_uuids[0]
@@ -78,22 +90,29 @@ class TestFPGAProgramController(v2_test.APITestV2):
         mock_program.return_value = False
         body = [{"image_uuid": self.existent_image_uuid}]
         try:
-            self.patch_json('/deployables/%s/program' % dep_uuid,
-                            [{'path': '/bitstream_id', 'value': body,
-                              'op': 'replace'}], headers=self.headers)
+            self.patch_json(
+                '/deployables/%s/program' % dep_uuid,
+                [{'path': '/bitstream_id', 'value': body, 'op': 'replace'}],
+                headers=self.headers,
+            )
         except Exception as e:
             exc = e
-        self.assertIn(exception.FPGAProgramError(
-                      ret=mock_program.return_value).args[0],
-                      exc.args[0]
-                      )
+        self.assertIn(
+            exception.FPGAProgramError(ret=mock_program.return_value).args[0],
+            exc.args[0],
+        )
 
     @mock.patch('cyborg.objects.Device.get_by_device_id')
     @mock.patch('cyborg.objects.Deployable.get_cpid_list')
     @mock.patch('cyborg.objects.Deployable.get')
     @mock.patch('cyborg.agent.rpcapi.AgentAPI.fpga_program')
-    def test_program_invalid_uuid(self, mock_program, mock_get_dep,
-                                  mock_get_cpid_list, mock_get_by_device_id):
+    def test_program_invalid_uuid(
+        self,
+        mock_program,
+        mock_get_dep,
+        mock_get_cpid_list,
+        mock_get_by_device_id,
+    ):
         self.headers['X-Roles'] = 'admin'
         self.headers['Content-Type'] = 'application/json'
         dep_uuid = self.deployable_uuids[0]
@@ -103,24 +122,28 @@ class TestFPGAProgramController(v2_test.APITestV2):
         mock_program.return_value = False
         body = [{"image_uuid": self.invalid_image_uuid}]
         try:
-            self.patch_json('/deployables/%s/program' % dep_uuid,
-                            [{'path': '/bitstream_id',
-                              'value': body,
-                              'op': 'replace'}],
-                            headers=self.headers)
+            self.patch_json(
+                '/deployables/%s/program' % dep_uuid,
+                [{'path': '/bitstream_id', 'value': body, 'op': 'replace'}],
+                headers=self.headers,
+            )
         except Exception as e:
             exc = e
-        self.assertIn(exception.InvalidUUID(self.invalid_image_uuid).args[0],
-                      exc.args[0])
+        self.assertIn(
+            exception.InvalidUUID(self.invalid_image_uuid).args[0], exc.args[0]
+        )
 
     @mock.patch('cyborg.objects.Device.get_by_device_id')
     @mock.patch('cyborg.objects.Deployable.get_cpid_list')
     @mock.patch('cyborg.objects.Deployable.get')
     @mock.patch('cyborg.agent.rpcapi.AgentAPI.fpga_program')
-    def test_program_wrong_image_uuid(self, mock_program,
-                                      mock_get_dep,
-                                      mock_get_cpid_list,
-                                      mock_get_by_device_id):
+    def test_program_wrong_image_uuid(
+        self,
+        mock_program,
+        mock_get_dep,
+        mock_get_cpid_list,
+        mock_get_by_device_id,
+    ):
         self.headers['X-Roles'] = 'admin'
         self.headers['Content-Type'] = 'application/json'
         dep_uuid = self.deployable_uuids[0]
@@ -130,14 +153,14 @@ class TestFPGAProgramController(v2_test.APITestV2):
         mock_program.return_value = False
         body = [{"image_uuid": self.nonexistent_image_uuid}]
         try:
-            self.patch_json('/deployables/%s/program' % dep_uuid,
-                            [{'path': '/bitstream_id',
-                              'value': body,
-                              'op': 'replace'}],
-                            headers=self.headers)
+            self.patch_json(
+                '/deployables/%s/program' % dep_uuid,
+                [{'path': '/bitstream_id', 'value': body, 'op': 'replace'}],
+                headers=self.headers,
+            )
         except Exception as e:
             exc = e
-        self.assertIn(exception.FPGAProgramError(
-                      ret=mock_program.return_value).args[0],
-                      exc.args[0]
-                      )
+        self.assertIn(
+            exception.FPGAProgramError(ret=mock_program.return_value).args[0],
+            exc.args[0],
+        )

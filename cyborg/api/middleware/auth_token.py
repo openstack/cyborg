@@ -40,8 +40,10 @@ class AuthTokenMiddleware(auth_token.AuthProtocol):
         route_pattern_tpl = r'%s(\.json)?$'
 
         try:
-            self.public_api_routes = [re.compile(route_pattern_tpl % route_tpl)
-                                      for route_tpl in public_api_routes]
+            self.public_api_routes = [
+                re.compile(route_pattern_tpl % route_tpl)
+                for route_tpl in public_api_routes
+            ]
         except re.error as e:
             msg = _('Cannot compile public API routes: %s') % e
 
@@ -56,8 +58,11 @@ class AuthTokenMiddleware(auth_token.AuthProtocol):
         # The information whether the API call is being performed against the
         # public API is required for some other components. Saving it to the
         # WSGI environment is reasonable thereby.
-        env['is_public_api'] = any(map(lambda pattern: re.match(pattern, path),
-                                       self.public_api_routes))
+        env['is_public_api'] = any(
+            map(
+                lambda pattern: re.match(pattern, path), self.public_api_routes
+            )
+        )
 
         if env['is_public_api']:
             return self.app(env, start_response)

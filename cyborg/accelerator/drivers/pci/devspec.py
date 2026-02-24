@@ -41,11 +41,14 @@ class PciAddressSpec(metaclass=abc.ABCMeta):
         pass
 
     def is_single_address(self):
-        return all([
-            all(c in string.hexdigits for c in self.domain),
-            all(c in string.hexdigits for c in self.bus),
-            all(c in string.hexdigits for c in self.slot),
-            all(c in string.hexdigits for c in self.func)])
+        return all(
+            [
+                all(c in string.hexdigits for c in self.domain),
+                all(c in string.hexdigits for c in self.bus),
+                all(c in string.hexdigits for c in self.slot),
+                all(c in string.hexdigits for c in self.func),
+            ]
+        )
 
     def _set_pci_dev_info(self, prop, maxval, hex_value):
         a = getattr(self, prop)
@@ -55,13 +58,20 @@ class PciAddressSpec(metaclass=abc.ABCMeta):
             v = int(a, 16)
         except ValueError:
             raise exception.PciConfigInvalidWhitelist(
-                reason=_("property %(property)s ('%(attr)s') does not parse "
-                         "as a hex number.") % {'property': prop, 'attr': a})
+                reason=_(
+                    "property %(property)s ('%(attr)s') does not parse "
+                    "as a hex number."
+                )
+                % {'property': prop, 'attr': a}
+            )
         if v > maxval:
             raise exception.PciConfigInvalidWhitelist(
-                reason=_("property %(property)s (%(attr)s) is greater than "
-                         "the maximum allowable value (%(max)X).") % {
-                    'property': prop, 'attr': a, 'max': maxval})
+                reason=_(
+                    "property %(property)s (%(attr)s) is greater than "
+                    "the maximum allowable value (%(max)X)."
+                )
+                % {'property': prop, 'attr': a, 'max': maxval}
+            )
         setattr(self, prop, hex_value % v)
 
 
@@ -81,7 +91,8 @@ class PhysicalPciAddress(PciAddressSpec):
                 self.func = pci_addr['function']
             else:
                 self.domain, self.bus, self.slot, self.func = (
-                    utils.get_pci_address_fields(pci_addr))
+                    utils.get_pci_address_fields(pci_addr)
+                )
             self._set_pci_dev_info('func', MAX_FUNC, '%1x')
             self._set_pci_dev_info('domain', MAX_DOMAIN, '%04x')
             self._set_pci_dev_info('bus', MAX_BUS, '%02x')
@@ -95,7 +106,7 @@ class PhysicalPciAddress(PciAddressSpec):
             self.bus == phys_pci_addr.bus,
             self.slot == phys_pci_addr.slot,
             self.func == phys_pci_addr.func,
-            ]
+        ]
         return all(conditions)
 
 
@@ -136,8 +147,8 @@ class PciAddressGlobSpec(PciAddressSpec):
             self.domain in (ANY, phys_pci_addr.domain),
             self.bus in (ANY, phys_pci_addr.bus),
             self.slot in (ANY, phys_pci_addr.slot),
-            self.func in (ANY, phys_pci_addr.func)
-            ]
+            self.func in (ANY, phys_pci_addr.func),
+        ]
         return all(conditions)
 
 
@@ -167,8 +178,8 @@ class PciAddressRegexSpec(PciAddressSpec):
             bool(self.domain_regex.match(phys_pci_addr.domain)),
             bool(self.bus_regex.match(phys_pci_addr.bus)),
             bool(self.slot_regex.match(phys_pci_addr.slot)),
-            bool(self.func_regex.match(phys_pci_addr.func))
-            ]
+            bool(self.func_regex.match(phys_pci_addr.func)),
+        ]
         return all(conditions)
 
 
@@ -197,12 +208,12 @@ class WhitelistPciAddress:
 
     def _check_physical_function(self):
         if self.pci_address_spec.is_single_address():
-            self.is_physical_function = (
-                utils.is_physical_function(
-                    self.pci_address_spec.domain,
-                    self.pci_address_spec.bus,
-                    self.pci_address_spec.slot,
-                    self.pci_address_spec.func))
+            self.is_physical_function = utils.is_physical_function(
+                self.pci_address_spec.domain,
+                self.pci_address_spec.bus,
+                self.pci_address_spec.slot,
+                self.pci_address_spec.func,
+            )
 
     def _init_address_fields(self, pci_addr):
         if not self.is_physical_function:
@@ -266,8 +277,7 @@ class PciDeviceSpec(PciAddressSpec):
 
     def match(self, dev_dict):
         if self.dev_name:
-            address_str, pf = utils.get_function_by_ifname(
-                self.dev_name)
+            address_str, pf = utils.get_function_by_ifname(self.dev_name)
             if not address_str:
                 return False
             # Note(moshele): In this case we always passing a string
@@ -275,17 +285,25 @@ class PciDeviceSpec(PciAddressSpec):
             address_obj = WhitelistPciAddress(address_str, pf)
         elif self.address:
             address_obj = self.address
-        return all([
-            self.vendor_id in (ANY, dev_dict['vendor_id']),
-            self.product_id in (ANY, dev_dict['product_id']),
-            address_obj.match(dev_dict['address'],
-                              dev_dict.get('parent_addr'))])
+        return all(
+            [
+                self.vendor_id in (ANY, dev_dict['vendor_id']),
+                self.product_id in (ANY, dev_dict['product_id']),
+                address_obj.match(
+                    dev_dict['address'], dev_dict.get('parent_addr')
+                ),
+            ]
+        )
 
     def match_pci_obj(self, pci_obj):
-        return self.match({'vendor_id': pci_obj.vendor_id,
-                           'product_id': pci_obj.product_id,
-                           'address': pci_obj.address,
-                           'parent_addr': pci_obj.parent_addr})
+        return self.match(
+            {
+                'vendor_id': pci_obj.vendor_id,
+                'product_id': pci_obj.product_id,
+                'address': pci_obj.address,
+                'parent_addr': pci_obj.parent_addr,
+            }
+        )
 
     def get_tags(self):
         return self.tags

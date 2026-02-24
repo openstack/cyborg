@@ -23,25 +23,37 @@ from cyborg import db as db_api
 LOG = logging.getLogger(__name__)
 
 quota_opts = [
-    cfg.IntOpt('reservation_expire',
-               default=86400,
-               help='Number of seconds until a reservation expires'),
-    cfg.IntOpt('until_refresh',
-               default=0,
-               help='Count of reservations until usage is refreshed'),
-    cfg.StrOpt('quota_driver',
-               default="cyborg.quota.DbQuotaDriver",
-               help='Default driver to use for quota checks'),
-    cfg.IntOpt('quota_fpgas',
-               default=10,
-               help='Total amount of fpga allowed per project'),
-    cfg.IntOpt('quota_gpus',
-               default=10,
-               help='Total amount of storage allowed per project'),
-    cfg.IntOpt('max_age',
-               default=0,
-               help='Number of seconds between subsequent usage refreshes')
-    ]
+    cfg.IntOpt(
+        'reservation_expire',
+        default=86400,
+        help='Number of seconds until a reservation expires',
+    ),
+    cfg.IntOpt(
+        'until_refresh',
+        default=0,
+        help='Count of reservations until usage is refreshed',
+    ),
+    cfg.StrOpt(
+        'quota_driver',
+        default="cyborg.quota.DbQuotaDriver",
+        help='Default driver to use for quota checks',
+    ),
+    cfg.IntOpt(
+        'quota_fpgas',
+        default=10,
+        help='Total amount of fpga allowed per project',
+    ),
+    cfg.IntOpt(
+        'quota_gpus',
+        default=10,
+        help='Total amount of storage allowed per project',
+    ),
+    cfg.IntOpt(
+        'max_age',
+        default=0,
+        help='Number of seconds between subsequent usage refreshes',
+    ),
+]
 
 CONF = cfg.CONF
 CONF.register_opts(quota_opts)
@@ -101,9 +113,13 @@ class QuotaEngine:
         """
         if not project_id:
             project_id = context.project_id
-        reservations = self._driver.reserve(context, self._resources, deltas,
-                                            expire=expire,
-                                            project_id=project_id)
+        reservations = self._driver.reserve(
+            context,
+            self._resources,
+            deltas,
+            expire=expire,
+            project_id=project_id,
+        )
 
         LOG.debug("Created reservations %s", reservations)
 
@@ -139,10 +155,12 @@ class DbQuotaDriver:
     Also allows to obtain quota information.
     The default driver utilizes the local database.
     """
+
     dbapi = db_api.get_instance()
 
-    def reserve(self, context, resources, deltas, expire=None,
-                project_id=None):
+    def reserve(
+        self, context, resources, deltas, expire=None, project_id=None
+    ):
         # Set up the reservation expiration
         if expire is None:
             expire = CONF.reservation_expire
@@ -157,13 +175,18 @@ class DbQuotaDriver:
         if project_id is None:
             project_id = context.project_id
 
-        return self._reserve(context, resources, deltas, expire,
-                             project_id)
+        return self._reserve(context, resources, deltas, expire, project_id)
 
     def _reserve(self, context, resources, deltas, expire, project_id):
-        return self.dbapi.quota_reserve(context, resources, deltas, expire,
-                                        CONF.until_refresh, CONF.max_age,
-                                        project_id=project_id)
+        return self.dbapi.quota_reserve(
+            context,
+            resources,
+            deltas,
+            expire,
+            CONF.until_refresh,
+            CONF.max_age,
+            project_id=project_id,
+        )
 
     def commit(self, context, reservations, project_id=None):
         """Commit reservations.
@@ -177,8 +200,9 @@ class DbQuotaDriver:
         """
 
         try:
-            self.dbapi.reservation_commit(context, reservations,
-                                          project_id=project_id)
+            self.dbapi.reservation_commit(
+                context, reservations, project_id=project_id
+            )
         except Exception:
             # NOTE(Vek): Ignoring exceptions here is safe, because the
             # usage resynchronization and the reservation expiration

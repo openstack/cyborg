@@ -63,8 +63,7 @@ def model_query(context, model, *args, **kwargs):
     if kwargs.pop("project_only", False):
         kwargs["project_id"] = context.project_id
 
-    query = sqlalchemyutils.model_query(
-        model, context.session, args, **kwargs)
+    query = sqlalchemyutils.model_query(model, context.session, args, **kwargs)
 
     return query
 
@@ -87,19 +86,27 @@ def add_identity_filter(query, value):
         raise exception.InvalidIdentity(identity=value)
 
 
-def _paginate_query(context, model, query, limit=None, marker=None,
-                    sort_key=None, sort_dir=None):
+def _paginate_query(
+    context,
+    model,
+    query,
+    limit=None,
+    marker=None,
+    sort_key=None,
+    sort_dir=None,
+):
     sort_keys = ['id']
     if sort_key and sort_key not in sort_keys:
         sort_keys.insert(0, sort_key)
     try:
-        query = sqlalchemyutils.paginate_query(query, model, limit, sort_keys,
-                                               marker=marker,
-                                               sort_dir=sort_dir)
+        query = sqlalchemyutils.paginate_query(
+            query, model, limit, sort_keys, marker=marker, sort_dir=sort_dir
+        )
     except db_exc.InvalidSortKey:
         raise exception.InvalidParameterValue(
             _('The sort_key value "%(key)s" is an invalid field for sorting')
-            % {'key': sort_key})
+            % {'key': sort_key}
+        )
     return query.all()
 
 
@@ -126,44 +133,47 @@ class Connection(api.Connection):
 
     @main_context_manager.reader
     def attach_handle_get_by_uuid(self, context, uuid):
-        query = model_query(
-            context,
-            models.AttachHandle).filter_by(uuid=uuid)
+        query = model_query(context, models.AttachHandle).filter_by(uuid=uuid)
         try:
             return query.one()
         except NoResultFound:
             raise exception.ResourceNotFound(
-                resource='AttachHandle',
-                msg='with uuid=%s' % uuid)
+                resource='AttachHandle', msg='with uuid=%s' % uuid
+            )
 
     @main_context_manager.reader
     def attach_handle_get_by_id(self, context, id):
-        query = model_query(
-            context,
-            models.AttachHandle).filter_by(id=id)
+        query = model_query(context, models.AttachHandle).filter_by(id=id)
         try:
             return query.one()
         except NoResultFound:
             raise exception.ResourceNotFound(
-                resource='AttachHandle',
-                msg='with id=%s' % id)
+                resource='AttachHandle', msg='with id=%s' % id
+            )
 
     @main_context_manager.reader
     def attach_handle_list_by_type(self, context, attach_type='PCI'):
-        query = model_query(context, models.AttachHandle). \
-            filter_by(attach_type=attach_type)
+        query = model_query(context, models.AttachHandle).filter_by(
+            attach_type=attach_type
+        )
         try:
             return query.all()
         except NoResultFound:
             raise exception.ResourceNotFound(
-                resource='AttachHandle',
-                msg='with type=%s' % attach_type)
+                resource='AttachHandle', msg='with type=%s' % attach_type
+            )
 
     @main_context_manager.reader
-    def attach_handle_get_by_filters(self, context,
-                                     filters, sort_key='created_at',
-                                     sort_dir='desc', limit=None,
-                                     marker=None, join_columns=None):
+    def attach_handle_get_by_filters(
+        self,
+        context,
+        filters,
+        sort_key='created_at',
+        sort_dir='desc',
+        limit=None,
+        marker=None,
+        join_columns=None,
+    ):
         """Return attach_handle that match all filters sorted by the given
         keys. Deleted attach_handle will be returned by default, unless
         there's a filter that says otherwise.
@@ -178,12 +188,23 @@ class Connection(api.Connection):
         exact_match_filter_names = ['uuid', 'id', 'deployable_id', 'cpid_id']
 
         # Filter the query
-        query_prefix = self._exact_filter(models.AttachHandle, query_prefix,
-                                          filters, exact_match_filter_names)
+        query_prefix = self._exact_filter(
+            models.AttachHandle,
+            query_prefix,
+            filters,
+            exact_match_filter_names,
+        )
         if query_prefix is None:
             return []
-        return _paginate_query(context, models.AttachHandle, query_prefix,
-                               limit, marker, sort_key, sort_dir)
+        return _paginate_query(
+            context,
+            models.AttachHandle,
+            query_prefix,
+            limit,
+            marker,
+            sort_key,
+            sort_dir,
+        )
 
     def _exact_filter(self, model, query, filters, legal_keys=None):
         """Applies exact match filtering to a deployable query.
@@ -223,8 +244,9 @@ class Connection(api.Connection):
                 filter_dict[key] = value
         # Apply simple exact matches
         if filter_dict:
-            query = query.filter(*[getattr(model, k) == v
-                                   for k, v in filter_dict.items()])
+            query = query.filter(
+                *[getattr(model, k) == v for k, v in filter_dict.items()]
+            )
         return query
 
     @main_context_manager.reader
@@ -247,8 +269,8 @@ class Connection(api.Connection):
             ref = query.with_for_update().one()
         except NoResultFound:
             raise exception.ResourceNotFound(
-                resource='AttachHandle',
-                msg='with uuid=%s' % uuid)
+                resource='AttachHandle', msg='with uuid=%s' % uuid
+            )
         ref.update(values)
         return ref
 
@@ -256,17 +278,16 @@ class Connection(api.Connection):
     @main_context_manager.writer
     def _do_allocate_attach_handle(self, context, deployable_id):
         """Atomically get a set of attach handles that match the query
-           and mark one of those as in_use.
+        and mark one of those as in_use.
         """
-        query = model_query(context, models.AttachHandle). \
-            filter_by(deployable_id=deployable_id,
-                      in_use=False)
+        query = model_query(context, models.AttachHandle).filter_by(
+            deployable_id=deployable_id, in_use=False
+        )
         values = {"in_use": True}
         ref = query.with_for_update().first()
         if not ref:
             msg = 'Matching deployable_id {}'.format(deployable_id)
-            raise exception.ResourceNotFound(
-                resource='AttachHandle', msg=msg)
+            raise exception.ResourceNotFound(resource='AttachHandle', msg=msg)
         ref.update(values)
         context.session.flush()
         return ref
@@ -274,15 +295,13 @@ class Connection(api.Connection):
     def attach_handle_allocate(self, context, deployable_id):
         """Allocate an attach handle with given deployable.
 
-           To allocate is to get an unused resource and mark it as in_use.
+        To allocate is to get an unused resource and mark it as in_use.
         """
         try:
-            ah = self._do_allocate_attach_handle(
-                context, deployable_id)
+            ah = self._do_allocate_attach_handle(context, deployable_id)
         except NoResultFound:
             msg = 'Matching deployable_id {}'.format(deployable_id)
-            raise exception.ResourceNotFound(
-                resource='AttachHandle', msg=msg)
+            raise exception.ResourceNotFound(resource='AttachHandle', msg=msg)
         return ah
 
     # NOTE: For deallocate, we use attach_handle_update()
@@ -295,8 +314,8 @@ class Connection(api.Connection):
         count = query.delete()
         if count != 1:
             raise exception.ResourceNotFound(
-                resource='AttachHandle',
-                msg='with uuid=%s' % uuid)
+                resource='AttachHandle', msg='with uuid=%s' % uuid
+            )
 
     @main_context_manager.writer
     def control_path_create(self, context, values):
@@ -315,21 +334,25 @@ class Connection(api.Connection):
 
     @main_context_manager.reader
     def control_path_get_by_uuid(self, context, uuid):
-        query = model_query(
-            context,
-            models.ControlpathID).filter_by(uuid=uuid)
+        query = model_query(context, models.ControlpathID).filter_by(uuid=uuid)
         try:
             return query.one()
         except NoResultFound:
             raise exception.ResourceNotFound(
-                resource='ControlpathID',
-                msg='with uuid=%s' % uuid)
+                resource='ControlpathID', msg='with uuid=%s' % uuid
+            )
 
     @main_context_manager.reader
-    def control_path_get_by_filters(self, context,
-                                    filters, sort_key='created_at',
-                                    sort_dir='desc', limit=None,
-                                    marker=None, join_columns=None):
+    def control_path_get_by_filters(
+        self,
+        context,
+        filters,
+        sort_key='created_at',
+        sort_dir='desc',
+        limit=None,
+        marker=None,
+        join_columns=None,
+    ):
         """Return attach_handle that match all filters sorted by the given
         keys. Deleted attach_handle will be returned by default, unless
         there's a filter that says otherwise.
@@ -341,16 +364,32 @@ class Connection(api.Connection):
         query_prefix = model_query(context, models.ControlpathID)
         filters = copy.deepcopy(filters)
 
-        exact_match_filter_names = ['uuid', 'id', 'device_id', 'cpid_info',
-                                    'cpid_type']
+        exact_match_filter_names = [
+            'uuid',
+            'id',
+            'device_id',
+            'cpid_info',
+            'cpid_type',
+        ]
 
         # Filter the query
-        query_prefix = self._exact_filter(models.ControlpathID, query_prefix,
-                                          filters, exact_match_filter_names)
+        query_prefix = self._exact_filter(
+            models.ControlpathID,
+            query_prefix,
+            filters,
+            exact_match_filter_names,
+        )
         if query_prefix is None:
             return []
-        return _paginate_query(context, models.ControlpathID, query_prefix,
-                               limit, marker, sort_key, sort_dir)
+        return _paginate_query(
+            context,
+            models.ControlpathID,
+            query_prefix,
+            limit,
+            marker,
+            sort_key,
+            sort_dir,
+        )
 
     @main_context_manager.reader
     def control_path_list(self, context):
@@ -372,8 +411,8 @@ class Connection(api.Connection):
             ref = query.with_for_update().one()
         except NoResultFound:
             raise exception.ResourceNotFound(
-                resource='ControlpathID',
-                msg='with uuid=%s' % uuid)
+                resource='ControlpathID', msg='with uuid=%s' % uuid
+            )
         ref.update(values)
         return ref
 
@@ -403,33 +442,35 @@ class Connection(api.Connection):
 
     @main_context_manager.reader
     def device_get(self, context, uuid):
-        query = model_query(
-            context,
-            models.Device).filter_by(uuid=uuid)
+        query = model_query(context, models.Device).filter_by(uuid=uuid)
         try:
             return query.one()
         except NoResultFound:
             raise exception.ResourceNotFound(
-                resource='Device',
-                msg='with uuid=%s' % uuid)
+                resource='Device', msg='with uuid=%s' % uuid
+            )
 
     @main_context_manager.reader
     def device_get_by_id(self, context, id):
-        query = model_query(
-            context,
-            models.Device).filter_by(id=id)
+        query = model_query(context, models.Device).filter_by(id=id)
         try:
             return query.one()
         except NoResultFound:
             raise exception.ResourceNotFound(
-                resource='Device',
-                msg='with id=%s' % id)
+                resource='Device', msg='with id=%s' % id
+            )
 
     @main_context_manager.reader
-    def device_list_by_filters(self, context,
-                               filters, sort_key='created_at',
-                               sort_dir='desc', limit=None,
-                               marker=None, join_columns=None):
+    def device_list_by_filters(
+        self,
+        context,
+        filters,
+        sort_key='created_at',
+        sort_dir='desc',
+        limit=None,
+        marker=None,
+        join_columns=None,
+    ):
         """Return devices that match all filters sorted by the given keys."""
 
         if limit == 0:
@@ -438,23 +479,39 @@ class Connection(api.Connection):
         query_prefix = model_query(context, models.Device)
         filters = copy.deepcopy(filters)
 
-        exact_match_filter_names = ['uuid', 'id', 'type',
-                                    'vendor', 'model', 'hostname']
+        exact_match_filter_names = [
+            'uuid',
+            'id',
+            'type',
+            'vendor',
+            'model',
+            'hostname',
+        ]
 
         # Filter the query
-        query_prefix = self._exact_filter(models.Device, query_prefix,
-                                          filters, exact_match_filter_names)
+        query_prefix = self._exact_filter(
+            models.Device, query_prefix, filters, exact_match_filter_names
+        )
         if query_prefix is None:
             return []
-        return _paginate_query(context, models.Device, query_prefix,
-                               limit, marker, sort_key, sort_dir)
+        return _paginate_query(
+            context,
+            models.Device,
+            query_prefix,
+            limit,
+            marker,
+            sort_key,
+            sort_dir,
+        )
 
     @main_context_manager.reader
-    def device_list(self, context, limit=None, marker=None, sort_key=None,
-                    sort_dir=None):
+    def device_list(
+        self, context, limit=None, marker=None, sort_key=None, sort_dir=None
+    ):
         query = model_query(context, models.Device)
-        return _paginate_query(context, models.Device, query,
-                               limit, marker, sort_key, sort_dir)
+        return _paginate_query(
+            context, models.Device, query, limit, marker, sort_key, sort_dir
+        )
 
     def device_update(self, context, uuid, values):
         if 'uuid' in values:
@@ -476,8 +533,8 @@ class Connection(api.Connection):
             ref = query.with_for_update().one()
         except NoResultFound:
             raise exception.ResourceNotFound(
-                resource='Device',
-                msg='with uuid=%s' % uuid)
+                resource='Device', msg='with uuid=%s' % uuid
+            )
 
         ref.update(values)
         return ref
@@ -490,8 +547,8 @@ class Connection(api.Connection):
         count = query.delete()
         if count != 1:
             raise exception.ResourceNotFound(
-                resource='Device',
-                msg='with uuid=%s' % uuid)
+                resource='Device', msg='with uuid=%s' % uuid
+            )
 
     @main_context_manager.writer
     def device_profile_create(self, context, values):
@@ -508,55 +565,57 @@ class Connection(api.Connection):
             # mysql duplicate key error changed as reference link below:
             # https://review.opendev.org/c/openstack/oslo.db/+/792124
             LOG.info('Duplicate columns are: ', e.columns)
-            columns = [column.split('0')[1] if 'uniq_' in column else
-                       column for column in e.columns]
+            columns = [
+                column.split('0')[1] if 'uniq_' in column else column
+                for column in e.columns
+            ]
             if 'name' in columns:
-                raise exception.DuplicateDeviceProfileName(
-                    name=values['name'])
+                raise exception.DuplicateDeviceProfileName(name=values['name'])
             else:
-                raise exception.DeviceProfileAlreadyExists(
-                    uuid=values['uuid'])
+                raise exception.DeviceProfileAlreadyExists(uuid=values['uuid'])
         return device_profile
 
     @main_context_manager.reader
     def device_profile_get_by_uuid(self, context, uuid):
-        query = model_query(
-            context,
-            models.DeviceProfile).filter_by(uuid=uuid)
+        query = model_query(context, models.DeviceProfile).filter_by(uuid=uuid)
         try:
             return query.one()
         except NoResultFound:
             raise exception.ResourceNotFound(
-                resource='Device Profile',
-                msg='with uuid=%s' % uuid)
+                resource='Device Profile', msg='with uuid=%s' % uuid
+            )
 
     @main_context_manager.reader
     def device_profile_get_by_id(self, context, id):
-        query = model_query(
-            context,
-            models.DeviceProfile).filter_by(id=id)
+        query = model_query(context, models.DeviceProfile).filter_by(id=id)
         try:
             return query.one()
         except NoResultFound:
             raise exception.ResourceNotFound(
-                resource='Device Profile',
-                msg='with id=%s' % id)
+                resource='Device Profile', msg='with id=%s' % id
+            )
 
     @main_context_manager.reader
     def device_profile_get(self, context, name):
-        query = model_query(
-            context, models.DeviceProfile).filter_by(name=name)
+        query = model_query(context, models.DeviceProfile).filter_by(name=name)
         try:
             return query.one()
         except NoResultFound:
             raise exception.ResourceNotFound(
-                resource='Device Profile',
-                msg='with name=%s' % name)
+                resource='Device Profile', msg='with name=%s' % name
+            )
 
     @main_context_manager.reader
     def device_profile_list_by_filters(
-            self, context, filters, sort_key='created_at', sort_dir='desc',
-            limit=None, marker=None, join_columns=None):
+        self,
+        context,
+        filters,
+        sort_key='created_at',
+        sort_dir='desc',
+        limit=None,
+        marker=None,
+        join_columns=None,
+    ):
         if limit == 0:
             return []
 
@@ -566,12 +625,23 @@ class Connection(api.Connection):
         exact_match_filter_names = ['uuid', 'id', 'name']
 
         # Filter the query
-        query_prefix = self._exact_filter(models.DeviceProfile, query_prefix,
-                                          filters, exact_match_filter_names)
+        query_prefix = self._exact_filter(
+            models.DeviceProfile,
+            query_prefix,
+            filters,
+            exact_match_filter_names,
+        )
         if query_prefix is None:
             return []
-        return _paginate_query(context, models.DeviceProfile, query_prefix,
-                               limit, marker, sort_key, sort_dir)
+        return _paginate_query(
+            context,
+            models.DeviceProfile,
+            query_prefix,
+            limit,
+            marker,
+            sort_key,
+            sort_dir,
+        )
 
     @main_context_manager.reader
     def device_profile_list(self, context):
@@ -598,8 +668,8 @@ class Connection(api.Connection):
             ref = query.with_for_update().one()
         except NoResultFound:
             raise exception.ResourceNotFound(
-                resource='Device Profile',
-                msg='with uuid=%s' % uuid)
+                resource='Device Profile', msg='with uuid=%s' % uuid
+            )
 
         ref.update(values)
         return ref
@@ -612,8 +682,8 @@ class Connection(api.Connection):
         count = query.delete()
         if count != 1:
             raise exception.ResourceNotFound(
-                resource='Device Profile',
-                msg='with uuid=%s' % uuid)
+                resource='Device Profile', msg='with uuid=%s' % uuid
+            )
 
     @main_context_manager.writer
     def deployable_create(self, context, values):
@@ -633,28 +703,27 @@ class Connection(api.Connection):
 
     @main_context_manager.reader
     def deployable_get(self, context, uuid):
-        query = model_query(
-            context,
-            models.Deployable).filter_by(uuid=uuid)
+        query = model_query(context, models.Deployable).filter_by(uuid=uuid)
         try:
             return query.one()
         except NoResultFound:
             raise exception.ResourceNotFound(
-                resource='Deployable',
-                msg='with uuid=%s' % uuid)
+                resource='Deployable', msg='with uuid=%s' % uuid
+            )
 
     @main_context_manager.reader
     def deployable_get_by_rp_uuid(self, context, rp_uuid):
         """Get a deployable by resource provider UUID."""
-        query = model_query(
-            context,
-            models.Deployable).filter_by(rp_uuid=rp_uuid)
+        query = model_query(context, models.Deployable).filter_by(
+            rp_uuid=rp_uuid
+        )
         try:
             return query.one()
         except NoResultFound:
             raise exception.ResourceNotFound(
                 resource='Deployable',
-                msg='with resource provider uuid=%s' % rp_uuid)
+                msg='with resource provider uuid=%s' % rp_uuid,
+            )
 
     @main_context_manager.reader
     def deployable_list(self, context):
@@ -682,8 +751,8 @@ class Connection(api.Connection):
             ref = query.with_for_update().one()
         except NoResultFound:
             raise exception.ResourceNotFound(
-                resource='Deployable',
-                msg='with uuid=%s' % uuid)
+                resource='Deployable', msg='with uuid=%s' % uuid
+            )
 
         ref.update(values)
         return ref
@@ -697,27 +766,44 @@ class Connection(api.Connection):
         count = query.delete()
         if count != 1:
             raise exception.ResourceNotFound(
-                resource='Deployable',
-                msg='with uuid=%s' % uuid)
+                resource='Deployable', msg='with uuid=%s' % uuid
+            )
 
-    def deployable_get_by_filters(self, context,
-                                  filters, sort_key='created_at',
-                                  sort_dir='desc', limit=None,
-                                  marker=None, join_columns=None):
+    def deployable_get_by_filters(
+        self,
+        context,
+        filters,
+        sort_key='created_at',
+        sort_dir='desc',
+        limit=None,
+        marker=None,
+        join_columns=None,
+    ):
         """Return list of deployables matching all filters sorted by
         the sort_key. See deployable_get_by_filters_sort for
         more information.
         """
-        return self.deployable_get_by_filters_sort(context, filters,
-                                                   limit=limit, marker=marker,
-                                                   join_columns=join_columns,
-                                                   sort_key=sort_key,
-                                                   sort_dir=sort_dir)
+        return self.deployable_get_by_filters_sort(
+            context,
+            filters,
+            limit=limit,
+            marker=marker,
+            join_columns=join_columns,
+            sort_key=sort_key,
+            sort_dir=sort_dir,
+        )
 
     @main_context_manager.reader
-    def deployable_get_by_filters_sort(self, context, filters, limit=None,
-                                       marker=None, join_columns=None,
-                                       sort_key=None, sort_dir=None):
+    def deployable_get_by_filters_sort(
+        self,
+        context,
+        filters,
+        limit=None,
+        marker=None,
+        join_columns=None,
+        sort_key=None,
+        sort_dir=None,
+    ):
         """Return deployables that match all filters sorted by the given
         keys. Deleted deployables will be returned by default, unless
         there's a filter that says otherwise.
@@ -728,19 +814,34 @@ class Connection(api.Connection):
         query_prefix = model_query(context, models.Deployable)
         filters = copy.deepcopy(filters)
 
-        exact_match_filter_names = ['id', 'uuid', 'name',
-                                    'parent_id', 'root_id',
-                                    'num_accelerators', 'device_id',
-                                    'driver_name', 'rp_uuid', 'bitstream_id']
+        exact_match_filter_names = [
+            'id',
+            'uuid',
+            'name',
+            'parent_id',
+            'root_id',
+            'num_accelerators',
+            'device_id',
+            'driver_name',
+            'rp_uuid',
+            'bitstream_id',
+        ]
 
         # Filter the query
-        query_prefix = self._exact_filter(models.Deployable, query_prefix,
-                                          filters,
-                                          exact_match_filter_names)
+        query_prefix = self._exact_filter(
+            models.Deployable, query_prefix, filters, exact_match_filter_names
+        )
         if query_prefix is None:
             return []
-        return _paginate_query(context, models.Deployable, query_prefix,
-                               limit, marker, sort_key, sort_dir)
+        return _paginate_query(
+            context,
+            models.Deployable,
+            query_prefix,
+            limit,
+            marker,
+            sort_key,
+            sort_dir,
+        )
 
     @main_context_manager.writer
     def attribute_create(self, context, values):
@@ -755,39 +856,36 @@ class Connection(api.Connection):
             context.session.add(attribute)
             context.session.flush()
         except db_exc.DBDuplicateEntry:
-            raise exception.AttributeAlreadyExists(
-                uuid=values['uuid'])
+            raise exception.AttributeAlreadyExists(uuid=values['uuid'])
         return attribute
 
     @main_context_manager.reader
     def attribute_get(self, context, uuid):
-        query = model_query(
-            context,
-            models.Attribute).filter_by(uuid=uuid)
+        query = model_query(context, models.Attribute).filter_by(uuid=uuid)
         try:
             return query.one()
         except NoResultFound:
             raise exception.ResourceNotFound(
-                resource='Attribute',
-                msg='with uuid=%s' % uuid)
+                resource='Attribute', msg='with uuid=%s' % uuid
+            )
 
     @main_context_manager.reader
     def attribute_get_by_deployable_id(self, context, deployable_id):
-        query = model_query(
-            context,
-            models.Attribute).filter_by(deployable_id=deployable_id)
+        query = model_query(context, models.Attribute).filter_by(
+            deployable_id=deployable_id
+        )
         return query.all()
 
     @main_context_manager.reader
     def attribute_get_by_filter(self, context, filters):
-        """Return attributes that matches the filters
-        """
+        """Return attributes that matches the filters"""
         query_prefix = model_query(context, models.Attribute)
         exact_match_filter_names = ['deployable_id', 'key']
 
         # Filter the query
-        query_prefix = self._exact_filter(models.Attribute, query_prefix,
-                                          filters, exact_match_filter_names)
+        query_prefix = self._exact_filter(
+            models.Attribute, query_prefix, filters, exact_match_filter_names
+        )
         if query_prefix is None:
             return []
 
@@ -820,8 +918,8 @@ class Connection(api.Connection):
             ref = query.with_for_update().one()
         except NoResultFound:
             raise exception.ResourceNotFound(
-                resource='Attribute',
-                msg='with uuid=%s' % uuid)
+                resource='Attribute', msg='with uuid=%s' % uuid
+            )
 
         ref.update(update_fields)
         return ref
@@ -833,8 +931,8 @@ class Connection(api.Connection):
         count = query.delete()
         if count != 1:
             raise exception.ResourceNotFound(
-                resource='Attribute',
-                msg='with uuid=%s' % uuid)
+                resource='Attribute', msg='with uuid=%s' % uuid
+            )
 
     @main_context_manager.writer
     def extarq_create(self, context, values):
@@ -846,8 +944,9 @@ class Connection(api.Connection):
         if values.get('device_profile_id'):
             pass  # Already have the devprof id, so nothing to do
         elif values.get('device_profile_name'):
-            devprof = self.device_profile_get(context,
-                                              values['device_profile_name'])
+            devprof = self.device_profile_get(
+                context, values['device_profile_name']
+            )
             values['device_profile_id'] = devprof['id']
         else:
             raise exception.DeviceProfileNameNeeded()
@@ -870,8 +969,8 @@ class Connection(api.Connection):
         count = query.delete()
         if count != 1:
             raise exception.ResourceNotFound(
-                resource='ExtArq',
-                msg='with uuid=%s' % uuid)
+                resource='ExtArq', msg='with uuid=%s' % uuid
+            )
 
     def extarq_update(self, context, uuid, values, state_scope=None):
         if 'uuid' in values and values['uuid'] != uuid:
@@ -883,18 +982,17 @@ class Connection(api.Connection):
     @main_context_manager.writer
     def _do_update_extarq(self, context, uuid, values, state_scope=None):
         query = model_query(context, models.ExtArq)
-        query = query_update = query.filter_by(
-            uuid=uuid).with_for_update()
+        query = query_update = query.filter_by(uuid=uuid).with_for_update()
         if type(state_scope) is list:
             query_update = query_update.filter(
-                models.ExtArq.state.in_(state_scope))
+                models.ExtArq.state.in_(state_scope)
+            )
         try:
-            query_update.update(
-                values, synchronize_session="fetch")
+            query_update.update(values, synchronize_session="fetch")
         except NoResultFound:
             raise exception.ResourceNotFound(
-                resource='ExtArq',
-                msg='with uuid=%s' % uuid)
+                resource='ExtArq', msg='with uuid=%s' % uuid
+            )
         ref = query.first()
         return ref
 
@@ -902,16 +1000,13 @@ class Connection(api.Connection):
     def extarq_list(self, context, uuid_range=None):
         query = model_query(context, models.ExtArq)
         if type(uuid_range) is list:
-            query = query.filter(
-                models.ExtArq.uuid.in_(uuid_range))
+            query = query.filter(models.ExtArq.uuid.in_(uuid_range))
         return _paginate_query(context, models.ExtArq, query)
 
     @oslo_db_api.retry_on_deadlock
     @main_context_manager.writer
     def extarq_get(self, context, uuid, lock=False):
-        query = model_query(
-            context,
-            models.ExtArq).filter_by(uuid=uuid)
+        query = model_query(context, models.ExtArq).filter_by(uuid=uuid)
         # NOTE we will support aync bind, so get query by lock
         if lock:
             query = query.with_for_update()
@@ -919,24 +1014,34 @@ class Connection(api.Connection):
             return query.one()
         except NoResultFound:
             raise exception.ResourceNotFound(
-                resource='ExtArq',
-                msg='with uuid=%s' % uuid)
+                resource='ExtArq', msg='with uuid=%s' % uuid
+            )
 
     @main_context_manager.writer
     def _get_quota_usages(self, context, project_id, resources=None):
         # Broken out for testability
-        query = model_query(context, models.QuotaUsage,).filter_by(
-            project_id=project_id)
+        query = model_query(
+            context,
+            models.QuotaUsage,
+        ).filter_by(project_id=project_id)
         if resources:
-            query = query.filter(models.QuotaUsage.resource.in_(
-                list(resources)))
-        rows = query.order_by(models.QuotaUsage.id.asc()). \
-            with_for_update().all()
+            query = query.filter(
+                models.QuotaUsage.resource.in_(list(resources))
+            )
+        rows = (
+            query.order_by(models.QuotaUsage.id.asc()).with_for_update().all()
+        )
         return {row.resource: row for row in rows}
 
-    def _quota_usage_create(self, project_id, resource, until_refresh,
-                            in_use, reserved, session=None):
-
+    def _quota_usage_create(
+        self,
+        project_id,
+        resource,
+        until_refresh,
+        in_use,
+        reserved,
+        session=None,
+    ):
         quota_usage_ref = models.QuotaUsage()
         quota_usage_ref.project_id = project_id
         quota_usage_ref.resource = resource
@@ -947,8 +1052,9 @@ class Connection(api.Connection):
 
         return quota_usage_ref
 
-    def _reservation_create(self, uuid, usage, project_id, resource, delta,
-                            expire, session=None):
+    def _reservation_create(
+        self, uuid, usage, project_id, resource, delta, expire, session=None
+    ):
         usage_id = usage['id'] if usage else None
         reservation_ref = models.Reservation()
         reservation_ref.uuid = uuid
@@ -963,30 +1069,43 @@ class Connection(api.Connection):
     def _get_reservation_resources(self, context, reservation_ids):
         """Return the relevant resources by reservations."""
 
-        reservations = model_query(context, models.Reservation). \
-            options(load_only('resource')). \
-            filter(models.Reservation.uuid.in_(reservation_ids)). \
-            all()
+        reservations = (
+            model_query(context, models.Reservation)
+            .options(load_only('resource'))
+            .filter(models.Reservation.uuid.in_(reservation_ids))
+            .all()
+        )
         return {r.resource for r in reservations}
 
     def _quota_reservations(self, session, context, reservations):
         """Return the relevant reservations."""
 
         # Get the listed reservations
-        return model_query(context, models.Reservation). \
-            filter(models.Reservation.uuid.in_(reservations)). \
-            with_for_update(). \
-            all()
+        return (
+            model_query(context, models.Reservation)
+            .filter(models.Reservation.uuid.in_(reservations))
+            .with_for_update()
+            .all()
+        )
 
     @main_context_manager.writer
-    def quota_reserve(self, context, resources, deltas, expire,
-                      until_refresh, max_age, project_id=None,
-                      is_allocated_reserve=False):
+    def quota_reserve(
+        self,
+        context,
+        resources,
+        deltas,
+        expire,
+        until_refresh,
+        max_age,
+        project_id=None,
+        is_allocated_reserve=False,
+    ):
         """Create reservation record in DB according to params"""
         if project_id is None:
             project_id = context.project_id
-        usages = self._get_quota_usages(context, project_id,
-                                        resources=deltas.keys())
+        usages = self._get_quota_usages(
+            context, project_id, resources=deltas.keys()
+        )
         work = set(deltas.keys())
         while work:
             resource = work.pop()
@@ -997,8 +1116,13 @@ class Connection(api.Connection):
             # of resource
             if resource not in usages:
                 usages[resource] = self._quota_usage_create(
-                    project_id, resource, until_refresh or None,
-                    in_use=0, reserved=0, session=context.session)
+                    project_id,
+                    resource,
+                    until_refresh or None,
+                    in_use=0,
+                    reserved=0,
+                    session=context.session,
+                )
                 refresh = True
             elif usages[resource].in_use < 0:
                 # Negative in_use count indicates a desync, so try to
@@ -1008,17 +1132,22 @@ class Connection(api.Connection):
                 usages[resource].until_refresh -= 1
                 if usages[resource].until_refresh <= 0:
                     refresh = True
-            elif max_age and usages[resource].updated_at is not None and (
-                (timeutils.utcnow() -
-                    usages[resource].updated_at).total_seconds() >=
-                    max_age):
+            elif (
+                max_age
+                and usages[resource].updated_at is not None
+                and (
+                    (
+                        timeutils.utcnow() - usages[resource].updated_at
+                    ).total_seconds()
+                    >= max_age
+                )
+            ):
                 refresh = True
 
             # refresh the usage
             if refresh:
                 # Grab the sync routine
-                updates = self._sync_acc_res(context,
-                                             resource, project_id)
+                updates = self._sync_acc_res(context, resource, project_id)
                 for res, in_use in updates.items():
                     # Make sure we have a destination for the usage!
                     if res not in usages:
@@ -1028,7 +1157,7 @@ class Connection(api.Connection):
                             until_refresh or None,
                             in_use=0,
                             reserved=0,
-                            session=context.session
+                            session=context.session,
                         )
 
                     # Update the usage
@@ -1047,26 +1176,39 @@ class Connection(api.Connection):
                     #            for.  We don't check, because this is
                     #            a best-effort mechanism.
 
-        unders = [r for r, delta in deltas.items()
-                  if delta < 0 and delta + usages[r].in_use < 0]
+        unders = [
+            r
+            for r, delta in deltas.items()
+            if delta < 0 and delta + usages[r].in_use < 0
+        ]
         reservations = []
         for resource, delta in deltas.items():
             usage = usages[resource]
             reservation = self._reservation_create(
-                str(uuid.uuid4()), usage, project_id, resource,
-                delta, expire, session=context.session)
+                str(uuid.uuid4()),
+                usage,
+                project_id,
+                resource,
+                delta,
+                expire,
+                session=context.session,
+            )
             reservations.append(reservation.uuid)
             usages[resource].reserved += delta
         context.session.flush()
         if unders:
-            LOG.warning("Change will make usage less than 0 for the "
-                        "following resources: %s", unders)
+            LOG.warning(
+                "Change will make usage less than 0 for the "
+                "following resources: %s",
+                unders,
+            )
         return reservations
 
     def _sync_acc_res(self, context, resource, project_id):
         """Quota sync function"""
-        res_in_use = self._device_data_get_for_project(context, resource,
-                                                       project_id)
+        res_in_use = self._device_data_get_for_project(
+            context, resource, project_id
+        )
         return {resource: res_in_use}
 
     @main_context_manager.reader
@@ -1083,14 +1225,15 @@ class Connection(api.Connection):
     def reservation_commit(self, context, reservations, project_id=None):
         """Commit quota reservation to quota usage table"""
         quota_usage = self._get_quota_usages(
-            context, project_id,
-            resources=self._get_reservation_resources(context,
-                                                      reservations))
+            context,
+            project_id,
+            resources=self._get_reservation_resources(context, reservations),
+        )
         usages = self._dict_with_usage_id(quota_usage)
 
-        for reservation in self._quota_reservations(context.session, context,
-                                                    reservations):
-
+        for reservation in self._quota_reservations(
+            context.session, context, reservations
+        ):
             usage = usages[reservation.usage_id]
             if reservation.delta >= 0:
                 usage.reserved -= reservation.delta
@@ -1098,10 +1241,13 @@ class Connection(api.Connection):
             context.session.flush()
             reservation.delete(session=context.session)
 
-    def process_sort_params(self, sort_keys, sort_dirs,
-                            default_keys=['created_at', 'id'],
-                            default_dir='asc'):
-
+    def process_sort_params(
+        self,
+        sort_keys,
+        sort_dirs,
+        default_keys=['created_at', 'id'],
+        default_dir='asc',
+    ):
         # Determine direction to use for when adding default keys
         if sort_dirs and len(sort_dirs) != 0:
             default_dir_value = sort_dirs[0]

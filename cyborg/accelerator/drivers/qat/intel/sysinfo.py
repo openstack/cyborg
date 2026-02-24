@@ -17,7 +17,6 @@
 Cyborg Intel QAT driver implementation.
 """
 
-
 import glob
 import os
 import socket
@@ -41,17 +40,12 @@ INTEL_QAT_DEV_PREFIX = "intel-qat-dev"
 RC_QAT = constants.RESOURCES["QAT"]
 DRIVER_NAME = "intel"
 
-RESOURCES = {
-    "qat": RC_QAT
-}
+RESOURCES = {"qat": RC_QAT}
 
 
 def pci_attributes(path):
     with open(os.path.join(path, "uevent")) as f:
-        attributes = dict(map(
-            lambda p: p.strip().split("="),
-            f.readlines()
-        ))
+        attributes = dict(map(lambda p: p.strip().split("="), f.readlines()))
 
     with open(os.path.join(path, "vendor")) as f:
         attributes["VENDOR"] = f.readline().strip()
@@ -64,47 +58,49 @@ def pci_attributes(path):
 
 def get_link_targets(links):
     return map(
-        lambda p:
-            os.path.realpath(
-                os.path.join(os.path.dirname(p), os.readlink(p))),
-        links)
+        lambda p: os.path.realpath(
+            os.path.join(os.path.dirname(p), os.readlink(p))
+        ),
+        links,
+    )
 
 
 def all_qats():
-    return set(filter(
-        lambda p: (
-            pci_attributes(p)["VENDOR"],
-            pci_attributes(p)["PRODUCT_ID"]
-        ) in KNOW_QATS,
-        glob.glob(os.path.join(PCI_DEVICES_PATH, "*"))))
+    return set(
+        filter(
+            lambda p: (
+                pci_attributes(p)["VENDOR"],
+                pci_attributes(p)["PRODUCT_ID"],
+            )
+            in KNOW_QATS,
+            glob.glob(os.path.join(PCI_DEVICES_PATH, "*")),
+        )
+    )
 
 
 def all_pfs_with_vf():
-    return set(filter(
-        lambda p: glob.glob(os.path.join(p, VF)),
-        all_qats()))
+    return set(filter(lambda p: glob.glob(os.path.join(p, VF)), all_qats()))
 
 
 def all_vfs_in_pf(pf_path):
     return map(
-        lambda p:
-        os.path.join(
+        lambda p: os.path.join(
             os.path.dirname(os.path.dirname(p)),
-            os.path.basename(os.readlink(p))),
-        glob.glob(os.path.join(pf_path, VF)))
+            os.path.basename(os.readlink(p)),
+        ),
+        glob.glob(os.path.join(pf_path, VF)),
+    )
 
 
 def find_pf_by_vf(vf_path):
     return os.path.join(
         os.path.dirname(vf_path),
-        os.path.basename(os.readlink(
-            os.path.join(vf_path, PF))))
+        os.path.basename(os.readlink(os.path.join(vf_path, PF))),
+    )
 
 
 def all_vfs():
-    return map(
-        lambda p: all_vfs_in_pf(p), all_pfs_with_vf()
-    )
+    return map(lambda p: all_vfs_in_pf(p), all_pfs_with_vf())
 
 
 def qat_gen(path):
@@ -142,8 +138,8 @@ def _generate_driver_device(qat):
     driver_device_obj.stub = qat["stub"]
     driver_device_obj.model = qat.get("model", "miss_model_info")
     driver_device_obj.vendor_board_info = qat.get(
-        "vendor_board_info",
-        "miss_vb_info")
+        "vendor_board_info", "miss_vb_info"
+    )
     std_board_info = {"product_id": qat.get("product_id")}
     driver_device_obj.std_board_info = jsonutils.dumps(std_board_info)
     driver_device_obj.type = qat["type"]
@@ -165,8 +161,7 @@ def _generate_dep_list(qat):
     if "vfs" not in qat:
         driver_dep = driver_deployable.DriverDeployable()
         driver_dep.num_accelerators = 1
-        driver_dep.attach_handle_list = [
-            _generate_attach_handle(qat)]
+        driver_dep.attach_handle_list = [_generate_attach_handle(qat)]
         driver_dep.name = qat["name"]
         driver_dep.driver_name = DRIVER_NAME
         driver_dep.attribute_list = _generate_attribute_list(qat)
@@ -176,8 +171,7 @@ def _generate_dep_list(qat):
         for vf in qat["vfs"]:
             driver_dep = driver_deployable.DriverDeployable()
             driver_dep.num_accelerators = 1
-            driver_dep.attach_handle_list = [
-                _generate_attach_handle(vf)]
+            driver_dep.attach_handle_list = [_generate_attach_handle(vf)]
             driver_dep.name = vf["name"]
             driver_dep.driver_name = DRIVER_NAME
             driver_dep.attribute_list = _generate_attribute_list(qat)

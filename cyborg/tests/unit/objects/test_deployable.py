@@ -26,7 +26,6 @@ from cyborg.tests.unit.objects import test_objects
 
 
 class TestDeployableObject(DbTestCase):
-
     @property
     def fake_device(self):
         db_device = fake_device.get_fake_devices_as_dict()[0]
@@ -44,13 +43,11 @@ class TestDeployableObject(DbTestCase):
 
     def test_create(self):
         db_device = self.fake_device
-        device = objects.Device(context=self.context,
-                                **db_device)
+        device = objects.Device(context=self.context, **db_device)
         device.create(self.context)
         device_get = objects.Device.get(self.context, device.uuid)
         db_dpl = self.fake_deployable
-        dpl = objects.Deployable(context=self.context,
-                                 **db_dpl)
+        dpl = objects.Deployable(context=self.context, **db_dpl)
 
         dpl.device_id = device_get.id
         dpl.create(self.context)
@@ -59,13 +56,11 @@ class TestDeployableObject(DbTestCase):
 
     def test_get(self):
         db_device = self.fake_device
-        device = objects.Device(context=self.context,
-                                **db_device)
+        device = objects.Device(context=self.context, **db_device)
         device.create(self.context)
         device_get = objects.Device.get(self.context, device.uuid)
         db_dpl = self.fake_deployable
-        dpl = objects.Deployable(context=self.context,
-                                 **db_dpl)
+        dpl = objects.Deployable(context=self.context, **db_dpl)
 
         dpl.device_id = device_get.id
         dpl.create(self.context)
@@ -74,13 +69,11 @@ class TestDeployableObject(DbTestCase):
 
     def test_get_by_filter(self):
         db_device = self.fake_device
-        device = objects.Device(context=self.context,
-                                **db_device)
+        device = objects.Device(context=self.context, **db_device)
         device.create(self.context)
         device_get = objects.Device.get(self.context, device.uuid)
         db_dpl = self.fake_deployable
-        dpl = objects.Deployable(context=self.context,
-                                 **db_dpl)
+        dpl = objects.Deployable(context=self.context, **db_dpl)
 
         dpl.device_id = device_get.id
         dpl.create(self.context)
@@ -91,13 +84,11 @@ class TestDeployableObject(DbTestCase):
 
     def test_save(self):
         db_device = self.fake_device
-        device = objects.Device(context=self.context,
-                                **db_device)
+        device = objects.Device(context=self.context, **db_device)
         device.create(self.context)
         device_get = objects.Device.get(self.context, device.uuid)
         db_dpl = self.fake_deployable
-        dpl = objects.Deployable(context=self.context,
-                                 **db_dpl)
+        dpl = objects.Deployable(context=self.context, **db_dpl)
 
         dpl.device_id = device_get.id
         dpl.create(self.context)
@@ -108,35 +99,40 @@ class TestDeployableObject(DbTestCase):
 
     def test_destroy(self):
         db_device = self.fake_device
-        device = objects.Device(context=self.context,
-                                **db_device)
+        device = objects.Device(context=self.context, **db_device)
         device.create(self.context)
         device_get = objects.Device.get(self.context, device.uuid)
         db_dpl = self.fake_deployable
-        dpl = objects.Deployable(context=self.context,
-                                 **db_dpl)
+        dpl = objects.Deployable(context=self.context, **db_dpl)
 
         dpl.device_id = device_get.id
         dpl.create(self.context)
         self.assertEqual(db_dpl['uuid'], dpl.uuid)
         dpl.destroy(self.context)
-        self.assertRaises(exception.ResourceNotFound,
-                          objects.Deployable.get, self.context,
-                          dpl.uuid)
+        self.assertRaises(
+            exception.ResourceNotFound,
+            objects.Deployable.get,
+            self.context,
+            dpl.uuid,
+        )
 
 
-class TestDeployableObject(test_objects._LocalTest,
-                           TestDeployableObject):
-    def _test_save_objectfield_fk_constraint_fails(self, foreign_key,
-                                                   expected_exception):
-
-        error = db_exc.DBReferenceError('table', 'constraint', foreign_key,
-                                        'key_table')
+class TestDeployableObject(test_objects._LocalTest, TestDeployableObject):
+    def _test_save_objectfield_fk_constraint_fails(
+        self, foreign_key, expected_exception
+    ):
+        error = db_exc.DBReferenceError(
+            'table', 'constraint', foreign_key, 'key_table'
+        )
         # Prevent lazy-loading any fields, results in InstanceNotFound
         deployable = fake_deployable.fake_deployable_obj(self.context)
-        fields_with_save_methods = [field for field in deployable.fields
-                                    if hasattr(deployable, '_save_%s' % field)]
+        fields_with_save_methods = [
+            field
+            for field in deployable.fields
+            if hasattr(deployable, '_save_%s' % field)
+        ]
         for field in fields_with_save_methods:
+
             @mock.patch.object(deployable, '_save_%s' % field)
             @mock.patch.object(deployable, 'obj_attr_is_set')
             def _test(mock_is_set, mock_save_field):
@@ -146,4 +142,5 @@ class TestDeployableObject(test_objects._LocalTest,
                 deployable._changed_fields.add(field)
                 self.assertRaises(expected_exception, deployable.save)
                 deployable.obj_reset_changes(fields=[field])
+
             _test()

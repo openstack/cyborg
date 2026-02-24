@@ -37,11 +37,11 @@ class AttachHandle(base.CyborgObject, object_base.VersionedObjectDictCompat):
         'deployable_id': object_fields.IntegerField(nullable=False),
         'cpid_id': object_fields.IntegerField(nullable=False),
         'attach_type': object_fields.EnumField(
-            valid_values=constants.ATTACH_HANDLE_TYPES,
-            nullable=False),
+            valid_values=constants.ATTACH_HANDLE_TYPES, nullable=False
+        ),
         # attach_info should be JSON here.
         'attach_info': object_fields.StringField(nullable=False),
-        'in_use': object_fields.BooleanField(nullable=False, default=False)
+        'in_use': object_fields.BooleanField(nullable=False, default=False),
     }
 
     def create(self, context):
@@ -72,11 +72,14 @@ class AttachHandle(base.CyborgObject, object_base.VersionedObjectDictCompat):
             sort_key = filters.pop('sort_key', 'created_at')
             limit = filters.pop('limit', None)
             marker = filters.pop('marker_obj', None)
-            db_ahs = cls.dbapi.attach_handle_get_by_filters(context, filters,
-                                                            sort_dir=sort_dir,
-                                                            sort_key=sort_key,
-                                                            limit=limit,
-                                                            marker=marker)
+            db_ahs = cls.dbapi.attach_handle_get_by_filters(
+                context,
+                filters,
+                sort_dir=sort_dir,
+                sort_key=sort_key,
+                limit=limit,
+                marker=marker,
+            )
         else:
             db_ahs = cls.dbapi.attach_handle_list(context)
         obj_ah_list = cls._from_db_object_list(db_ahs, context)
@@ -101,8 +104,10 @@ class AttachHandle(base.CyborgObject, object_base.VersionedObjectDictCompat):
 
     @classmethod
     def get_ah_by_depid_attachinfo(cls, context, deployable_id, attach_info):
-        ah_filter = {'deployable_id': deployable_id,
-                     'attach_info': attach_info}
+        ah_filter = {
+            'deployable_id': deployable_id,
+            'attach_info': attach_info,
+        }
         ah_obj_list = AttachHandle.list(context, ah_filter)
         if len(ah_obj_list) != 0:
             return ah_obj_list[0]

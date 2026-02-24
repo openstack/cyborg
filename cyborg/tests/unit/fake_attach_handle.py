@@ -28,8 +28,8 @@ def get_fake_attach_handle_as_dict():
         'deployable_id': 1,
         'attach_type': "PCI",
         'attach_info': '{"domain": "0000", "bus": "0c",'
-                       '"device": "0", "function": "1"}',
-        }
+        '"device": "0", "function": "1"}',
+    }
 
     attach_handle2 = {
         'id': 2,
@@ -39,8 +39,8 @@ def get_fake_attach_handle_as_dict():
         'deployable_id': 2,
         'attach_type': "PCI",
         'attach_info': '{"domain": "0000", "bus": "0c",'
-                       '"device": "0", "function": "1"}',
-        }
+        '"device": "0", "function": "1"}',
+    }
 
     return [attach_handle1, attach_handle2]
 

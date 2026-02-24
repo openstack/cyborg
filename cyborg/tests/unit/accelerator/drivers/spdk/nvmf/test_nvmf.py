@@ -22,8 +22,9 @@ from cyborg.tests import base
 
 
 class TestNVMFDRIVER(base.TestCase):
-
-    def setUp(self,):
+    def setUp(
+        self,
+    ):
         super().setUp()
         self.nvmf_driver = NVMFDRIVER()
 
@@ -35,14 +36,16 @@ class TestNVMFDRIVER(base.TestCase):
     def test_discover_accelerator(self, mock_get_one_accelerator):
         expect_accelerator = {
             'server': 'nvmf',
-            'bdevs': [{"num_blocks": 131072,
-                       "name": "nvme1",
-                       "block_size": 512
-                       }],
-            'subsystems': [{"core": 0,
-                            "nqn": "nqn.2018-01.org.nvmexpress.discovery",
-                            "hosts": []
-                            }]
+            'bdevs': [
+                {"num_blocks": 131072, "name": "nvme1", "block_size": 512}
+            ],
+            'subsystems': [
+                {
+                    "core": 0,
+                    "nqn": "nqn.2018-01.org.nvmexpress.discovery",
+                    "hosts": [],
+                }
+            ],
         }
         alive = mock.Mock(return_value=False)
         self.nvmf_driver.py.is_alive = alive
@@ -50,29 +53,31 @@ class TestNVMFDRIVER(base.TestCase):
         common_fun.check_for_setup_error = check_error
         self.assertFalse(
             mock_get_one_accelerator.called,
-            "Failed to discover_accelerator if py not alive."
+            "Failed to discover_accelerator if py not alive.",
         )
         alive = mock.Mock(return_value=True)
         self.nvmf_driver.py.is_alive = alive
         check_error = mock.Mock(return_value=True)
         common_fun.check_for_setup_error = check_error
         acce_client = NvmfTgt(self.nvmf_driver.py)
-        bdevs_fake = [{"num_blocks": 131072,
-                       "name": "nvme1",
-                       "block_size": 512
-                       }]
+        bdevs_fake = [
+            {"num_blocks": 131072, "name": "nvme1", "block_size": 512}
+        ]
         bdev_list = mock.Mock(return_value=bdevs_fake)
         acce_client.get_bdevs = bdev_list
-        subsystems_fake = [{"core": 0,
-                            "nqn": "nqn.2018-01.org.nvmexpress.discovery",
-                            "hosts": []
-                            }]
+        subsystems_fake = [
+            {
+                "core": 0,
+                "nqn": "nqn.2018-01.org.nvmexpress.discovery",
+                "hosts": [],
+            }
+        ]
         subsystem_list = mock.Mock(return_value=subsystems_fake)
         acce_client.get_nvmf_subsystems = subsystem_list
         accelerator_fake = {
             'server': self.nvmf_driver.SERVER,
             'bdevs': acce_client.get_bdevs(),
-            'subsystems': acce_client.get_nvmf_subsystems()
+            'subsystems': acce_client.get_nvmf_subsystems(),
         }
         success_send = mock.Mock(return_value=accelerator_fake)
         self.nvmf_driver.get_one_accelerator = success_send
@@ -80,35 +85,39 @@ class TestNVMFDRIVER(base.TestCase):
         self.assertEqual(accelerator, expect_accelerator)
 
     def test_accelerator_list(self):
-        expect_accelerators = [{
-            'server': 'nvmf',
-            'bdevs': [{"num_blocks": 131072,
-                       "name": "nvme1",
-                       "block_size": 512
-                       }],
-            'subsystems':
-                [{"core": 0,
-                  "nqn": "nqn.2018-01.org.nvmexpress.discovery",
-                  "hosts": []
-                  }]
-        },
+        expect_accelerators = [
+            {
+                'server': 'nvmf',
+                'bdevs': [
+                    {"num_blocks": 131072, "name": "nvme1", "block_size": 512}
+                ],
+                'subsystems': [
+                    {
+                        "core": 0,
+                        "nqn": "nqn.2018-01.org.nvmexpress.discovery",
+                        "hosts": [],
+                    }
+                ],
+            },
             {
                 'server': 'nvnf_tgt',
-                'bdevs': [{"num_blocks": 131072,
-                           "name": "nvme1",
-                           "block_size": 512
-                           }],
-                'subsystems':
-                    [{"core": 0,
-                      "nqn": "nqn.2018-01.org.nvmexpress.discovery",
-                      "hosts": []
-                      }]
-            }
+                'bdevs': [
+                    {"num_blocks": 131072, "name": "nvme1", "block_size": 512}
+                ],
+                'subsystems': [
+                    {
+                        "core": 0,
+                        "nqn": "nqn.2018-01.org.nvmexpress.discovery",
+                        "hosts": [],
+                    }
+                ],
+            },
         ]
         success_send = mock.Mock(return_value=expect_accelerators)
         self.nvmf_driver.get_all_accelerators = success_send
-        self.assertEqual(self.nvmf_driver.accelerator_list(),
-                         expect_accelerators)
+        self.assertEqual(
+            self.nvmf_driver.accelerator_list(), expect_accelerators
+        )
 
     def test_install_accelerator(self):
         pass

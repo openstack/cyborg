@@ -20,14 +20,14 @@ from cyborg.tests.unit import fake_deployable
 
 
 class TestDeployablesController(v2_test.APITestV2):
-
     DEPLOYABLE_URL = '/deployables'
 
     def setUp(self):
         super().setUp()
         self.headers = self.gen_headers(self.context)
         self.fake_deployable = fake_deployable.fake_deployable_obj(
-            self.context)
+            self.context
+        )
 
     def _validate_links(self, links, deployable_uuid):
         has_self_link = False
@@ -76,10 +76,12 @@ class TestDeployablesController(v2_test.APITestV2):
         # order to list the deployables with limited number which is 1.
         data = self.get_json(
             self.DEPLOYABLE_URL + "?filters.field=limit&filters.value=1",
-            headers=self.headers)
+            headers=self.headers,
+        )
         out_deployable = data['deployables']
-        mock_deployables.assert_called_once_with(mock.ANY,
-                                                 filters={"limit": "1"})
+        mock_deployables.assert_called_once_with(
+            mock.ANY, filters={"limit": "1"}
+        )
         self._validate_deployable(self.fake_deployable, out_deployable[0])
 
     @mock.patch('cyborg.objects.Deployable.list')
@@ -88,10 +90,12 @@ class TestDeployablesController(v2_test.APITestV2):
         # is "dp_name".
         mock_deployables.return_value = []
         data = self.get_json(
-            self.DEPLOYABLE_URL +
-            "?filters.field=name&filters.value=wrongname",
-            headers=self.headers)
+            self.DEPLOYABLE_URL
+            + "?filters.field=name&filters.value=wrongname",
+            headers=self.headers,
+        )
         out_deployable = data['deployables']
-        mock_deployables.assert_called_once_with(mock.ANY,
-                                                 filters={"name": "wrongname"})
+        mock_deployables.assert_called_once_with(
+            mock.ANY, filters={"name": "wrongname"}
+        )
         self.assertEqual(len(out_deployable), 0)

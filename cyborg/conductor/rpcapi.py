@@ -40,20 +40,23 @@ class ConductorAPI:
     def __init__(self, topic=None):
         super().__init__()
         self.topic = topic or constants.CONDUCTOR_TOPIC
-        target = messaging.Target(topic=self.topic,
-                                  version='1.0')
+        target = messaging.Target(topic=self.topic, version='1.0')
         serializer = objects_base.CyborgObjectSerializer()
-        self.client = rpc.get_client(target,
-                                     version_cap=self.RPC_API_VERSION,
-                                     serializer=serializer)
+        self.client = rpc.get_client(
+            target, version_cap=self.RPC_API_VERSION, serializer=serializer
+        )
 
     def report_data(self, context, hostname, driver_device_list):
         """Signal to conductor service to update the cyborg DB
         :param context: request context.
         """
         cctxt = self.client.prepare(topic=self.topic)
-        cctxt.call(context, 'report_data', hostname=hostname,
-                   driver_device_list=driver_device_list)
+        cctxt.call(
+            context,
+            'report_data',
+            hostname=hostname,
+            driver_device_list=driver_device_list,
+        )
 
     def device_profile_create(self, context, obj_devprof):
         """Signal to conductor service to create a device_profile.
@@ -63,8 +66,9 @@ class ConductorAPI:
         :returns: created device_profile object.
         """
         cctxt = self.client.prepare(topic=self.topic)
-        return cctxt.call(context, 'device_profile_create',
-                          obj_devprof=obj_devprof)
+        return cctxt.call(
+            context, 'device_profile_create', obj_devprof=obj_devprof
+        )
 
     def device_profile_delete(self, context, obj_devprof):
         """Signal to conductor service to delete a device_profile.
@@ -72,8 +76,7 @@ class ConductorAPI:
         :param obj_devprof: a device_profile object to delete.
         """
         cctxt = self.client.prepare(topic=self.topic)
-        cctxt.call(context, 'device_profile_delete',
-                   obj_devprof=obj_devprof)
+        cctxt.call(context, 'device_profile_delete', obj_devprof=obj_devprof)
 
     def arq_create(self, context, obj_extarq, devprof_id):
         """Signal to conductor service to create an accelerator requests.
@@ -85,8 +88,9 @@ class ConductorAPI:
         :returns: saved accelerator_requests object.
         """
         cctxt = self.client.prepare(topic=self.topic)
-        return cctxt.call(context, 'arq_create', obj_extarq=obj_extarq,
-                          devprof_id=devprof_id)
+        return cctxt.call(
+            context, 'arq_create', obj_extarq=obj_extarq, devprof_id=devprof_id
+        )
 
     def arq_delete_by_uuid(self, context, arqs):
         """Signal to conductor service to delete accelerator requests by
@@ -116,5 +120,9 @@ class ConductorAPI:
         :param valid_fields: Dict of valid fields
         """
         cctxt = self.client.prepare(topic=self.topic)
-        return cctxt.call(context, 'arq_apply_patch', patch_list=patch_list,
-                          valid_fields=valid_fields)
+        return cctxt.call(
+            context,
+            'arq_apply_patch',
+            patch_list=patch_list,
+            valid_fields=valid_fields,
+        )

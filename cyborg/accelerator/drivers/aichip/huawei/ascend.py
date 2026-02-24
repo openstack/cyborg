@@ -24,12 +24,14 @@ from cyborg.objects.driver_objects import driver_deployable
 from cyborg.objects.driver_objects import driver_device
 import cyborg.privsep
 
-PCI_INFO_PATTERN = re.compile(r"(?P<slot>[0-9a-f]{4}:[0-9a-f]{2}:"
-                              r"[0-9a-f]{2}\.[0-9a-f]) "
-                              r"(?P<class>.*) [\[].*]: (?P<device>.*) .*"
-                              r"[\[](?P<vendor_id>[0-9a-fA-F]"
-                              r"{4}):(?P<device_id>[0-9a-fA-F]{4})].*"
-                              r"[(rev ](?P<revision>[0-9a-f]{2})")
+PCI_INFO_PATTERN = re.compile(
+    r"(?P<slot>[0-9a-f]{4}:[0-9a-f]{2}:"
+    r"[0-9a-f]{2}\.[0-9a-f]) "
+    r"(?P<class>.*) [\[].*]: (?P<device>.*) .*"
+    r"[\[](?P<vendor_id>[0-9a-fA-F]"
+    r"{4}):(?P<device_id>[0-9a-fA-F]{4})].*"
+    r"[(rev ](?P<revision>[0-9a-f]{2})"
+)
 
 
 @cyborg.privsep.sys_admin_pctxt.entrypoint
@@ -41,8 +43,9 @@ def lspci_privileged():
 class AscendDriver(GenericDriver):
     """The class for Ascend AI Chip drivers.
 
-       This is the Huawei Ascend AI Chip drivers.
+    This is the Huawei Ascend AI Chip drivers.
     """
+
     VENDOR = "huawei"
 
     # TODO(yikun): can be extracted into PCIDeviceDriver
@@ -106,8 +109,10 @@ class AscendDriver(GenericDriver):
                 device.stub = False
                 device.vendor = pci_dict["vendor_id"]
                 device.model = pci_dict.get('model', '')
-                std_board_info = {'device_id': pci_dict.get('device_id', None),
-                                  'class': pci_dict.get('class', None)}
+                std_board_info = {
+                    'device_id': pci_dict.get('device_id', None),
+                    'class': pci_dict.get('class', None),
+                }
                 device.std_board_info = jsonutils.dumps(std_board_info)
                 device.vendor_board_info = ''
                 device.type = constants.DEVICE_AICHIP

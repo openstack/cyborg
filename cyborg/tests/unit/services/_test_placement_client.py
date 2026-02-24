@@ -29,25 +29,28 @@ class PlacementAPIClientTestCase(base.DietTestCase):
     def setUp(self):
         super().setUp()
         self.mock_load_auth_p = mock.patch(
-            'keystoneauth1.loading.load_auth_from_conf_options')
+            'keystoneauth1.loading.load_auth_from_conf_options'
+        )
         self.mock_load_auth = self.mock_load_auth_p.start()
         self.mock_request_p = mock.patch(
-            'keystoneauth1.session.Session.request')
+            'keystoneauth1.session.Session.request'
+        )
         self.mock_request = self.mock_request_p.start()
         self.client = placement_client.PlacementClient()
 
     @mock.patch('keystoneauth1.session.Session')
     @mock.patch('keystoneauth1.loading.load_auth_from_conf_options')
     def test_constructor(self, load_auth_mock, ks_sess_mock):
-
         placement_client.PlacementClient()
         load_auth_mock.assert_called_once_with(cfg.CONF, 'placement')
-        ks_sess_mock.assert_called_once_with(auth=load_auth_mock.return_value,
-                                             cert=None,
-                                             collect_timing=False,
-                                             split_loggers=False,
-                                             timeout=None,
-                                             verify=True)
+        ks_sess_mock.assert_called_once_with(
+            auth=load_auth_mock.return_value,
+            cert=None,
+            collect_timing=False,
+            split_loggers=False,
+            timeout=None,
+            verify=True,
+        )
 
     @mock.patch('cyborg.common.placement_client.PlacementClient.post')
     def test_create_resource_provider(self, mock_post):
@@ -55,8 +58,11 @@ class PlacementAPIClientTestCase(base.DietTestCase):
         self.client._create_resource_provider(self.context, rp_uuid, 'test')
         expected_url = '/resource_providers'
         mock_post.assert_called_once_with(
-            expected_url, {'uuid': rp_uuid, 'name': 'test'},
-            version='1.20', global_request_id=mock.ANY)
+            expected_url,
+            {'uuid': rp_uuid, 'name': 'test'},
+            version='1.20',
+            global_request_id=mock.ANY,
+        )
 
     @mock.patch('cyborg.common.placement_client.PlacementClient.delete')
     def test_delete_resource_provider(self, mock_delete):
@@ -64,7 +70,8 @@ class PlacementAPIClientTestCase(base.DietTestCase):
         self.client.delete_provider(rp_uuid)
         expected_url = '/resource_providers/' + rp_uuid
         mock_delete.assert_called_once_with(
-            expected_url, global_request_id=mock.ANY)
+            expected_url, global_request_id=mock.ANY
+        )
 
     def test_create_inventory(self):
         expected_payload = 'fake_inventory'
@@ -72,9 +79,12 @@ class PlacementAPIClientTestCase(base.DietTestCase):
         e_filter = {'region_name': mock.ANY, 'service_type': 'placement'}
         self.client.create_inventory(rp_uuid, expected_payload)
         expected_url = '/resource_providers/%s/inventories' % rp_uuid
-        self.mock_request.assert_called_once_with(expected_url, 'POST',
-                                                  endpoint_filter=e_filter,
-                                                  json=expected_payload)
+        self.mock_request.assert_called_once_with(
+            expected_url,
+            'POST',
+            endpoint_filter=e_filter,
+            json=expected_payload,
+        )
 
     def test_get_inventory(self):
         rp_uuid = uuidutils.generate_uuid()
@@ -82,25 +92,34 @@ class PlacementAPIClientTestCase(base.DietTestCase):
         resource_class = 'fake_resource_class'
         self.client.get_inventory(rp_uuid, resource_class)
         expected_url = '/resource_providers/%s/inventories/%s' % (
-            rp_uuid, resource_class)
-        self.mock_request.assert_called_once_with(expected_url, 'GET',
-                                                  endpoint_filter=e_filter)
+            rp_uuid,
+            resource_class,
+        )
+        self.mock_request.assert_called_once_with(
+            expected_url, 'GET', endpoint_filter=e_filter
+        )
 
     def _test_get_inventory_not_found(self, details, expected_exception):
         rp_uuid = uuidutils.generate_uuid()
         resource_class = 'fake_resource_class'
         self.mock_request.side_effect = ks_exc.NotFound(details=details)
-        self.assertRaises(expected_exception, self.client.get_inventory,
-                          rp_uuid, resource_class)
+        self.assertRaises(
+            expected_exception,
+            self.client.get_inventory,
+            rp_uuid,
+            resource_class,
+        )
 
     def test_get_inventory_not_found_no_resource_provider(self):
         self._test_get_inventory_not_found(
             "No resource provider with uuid",
-            c_exc.PlacementResourceProviderNotFound)
+            c_exc.PlacementResourceProviderNotFound,
+        )
 
     def test_get_inventory_not_found_no_inventory(self):
         self._test_get_inventory_not_found(
-            "No inventory of class", c_exc.PlacementInventoryNotFound)
+            "No inventory of class", c_exc.PlacementInventoryNotFound
+        )
 
     def test_get_inventory_not_found_unknown_cause(self):
         self._test_get_inventory_not_found("Unknown cause", ks_exc.NotFound)
@@ -112,16 +131,25 @@ class PlacementAPIClientTestCase(base.DietTestCase):
         resource_class = 'fake_resource_class'
         self.client.update_inventory(rp_uuid, expected_payload, resource_class)
         expected_url = '/resource_providers/%s/inventories/%s' % (
-            rp_uuid, resource_class)
-        self.mock_request.assert_called_once_with(expected_url, 'PUT',
-                                                  endpoint_filter=e_filter,
-                                                  json=expected_payload)
+            rp_uuid,
+            resource_class,
+        )
+        self.mock_request.assert_called_once_with(
+            expected_url,
+            'PUT',
+            endpoint_filter=e_filter,
+            json=expected_payload,
+        )
 
     def test_update_inventory_conflict(self):
         rp_uuid = uuidutils.generate_uuid()
         expected_payload = 'fake_inventory'
         resource_class = 'fake_resource_class'
         self.mock_request.side_effect = ks_exc.Conflict
-        self.assertRaises(c_exc.PlacementInventoryUpdateConflict,
-                          self.client.update_inventory, rp_uuid,
-                          expected_payload, resource_class)
+        self.assertRaises(
+            c_exc.PlacementInventoryUpdateConflict,
+            self.client.update_inventory,
+            rp_uuid,
+            expected_payload,
+            resource_class,
+        )

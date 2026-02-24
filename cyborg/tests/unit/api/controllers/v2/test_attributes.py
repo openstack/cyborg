@@ -29,8 +29,9 @@ class TestAttributes(v2_test.APITestV2):
         super().setUp()
         self.headers = self.gen_headers(self.context)
         self.fake_attributes = fake_attribute.fake_db_attribute()
-        self.fake_attribute_objs = \
-            [fake_attribute.fake_attribute_obj(self.context)]
+        self.fake_attribute_objs = [
+            fake_attribute.fake_attribute_obj(self.context)
+        ]
 
     def _validate_links(self, links, attribute_uuid):
         has_self_link = False
@@ -46,8 +47,9 @@ class TestAttributes(v2_test.APITestV2):
         self.assertEqual(in_attributes['uuid'], out_attributes['uuid'])
         self.assertEqual(in_attributes['key'], out_attributes['key'])
         self.assertEqual(in_attributes['value'], out_attributes['value'])
-        self.assertEqual(in_attributes['deployable_id'],
-                         out_attributes['deployable_id'])
+        self.assertEqual(
+            in_attributes['deployable_id'], out_attributes['deployable_id']
+        )
 
         # Check that the link is properly set up
         self._validate_links(out_attributes['links'], in_attributes['uuid'])
@@ -57,8 +59,9 @@ class TestAttributes(v2_test.APITestV2):
         attribute = self.fake_attribute_objs[0]
         mock_attributes_uuid.return_value = attribute
         url = self.ATTRIBUTE_URL + '/%s'
-        out_attribute = self.get_json(url % attribute['uuid'],
-                                      headers=self.headers)
+        out_attribute = self.get_json(
+            url % attribute['uuid'], headers=self.headers
+        )
         mock_attributes_uuid.assert_called_once()
         self._validate_attributes(attribute, out_attribute)
 
@@ -79,8 +82,9 @@ class TestAttributes(v2_test.APITestV2):
         out_attributes = data['attributes']
         self.assertIsInstance(out_attributes, list)
         self.assertEqual(len(out_attributes), len(self.fake_attribute_objs))
-        for in_attribute, out_attribute in zip(self.fake_attribute_objs,
-                                               out_attributes):
+        for in_attribute, out_attribute in zip(
+            self.fake_attribute_objs, out_attributes
+        ):
             self._validate_attributes(in_attribute, out_attribute)
 
     @mock.patch('cyborg.objects.Attribute.get_by_filter')
@@ -95,8 +99,9 @@ class TestAttributes(v2_test.APITestV2):
     @mock.patch('cyborg.objects.Attribute.create')
     def test_create(self, mock_cond_attribute):
         mock_cond_attribute.return_value = self.fake_attribute_objs[0]
-        response = self.post_json(self.ATTRIBUTE_URL, self.fake_attributes,
-                                  headers=self.headers)
+        response = self.post_json(
+            self.ATTRIBUTE_URL, self.fake_attributes, headers=self.headers
+        )
         out_attribute = jsonutils.loads(response.controller_output)
         self.assertEqual(HTTPStatus.CREATED, response.status_int)
         self._validate_attributes(self.fake_attribute_objs[0], out_attribute)

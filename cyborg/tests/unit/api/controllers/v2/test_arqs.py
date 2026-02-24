@@ -28,7 +28,6 @@ from cyborg.tests.unit import fake_extarq
 
 
 class TestARQsController(v2_test.APITestV2):
-
     ARQ_URL = '/accelerator_requests'
 
     def setUp(self):
@@ -37,7 +36,8 @@ class TestARQsController(v2_test.APITestV2):
         self.fake_extarqs = fake_extarq.get_fake_extarq_objs()
         self.fake_bind_extarqs = fake_extarq.get_fake_extarq_bind_objs()
         self.fake_resolved_extarqs = (
-            fake_extarq.get_fake_extarq_resolved_objs())
+            fake_extarq.get_fake_extarq_resolved_objs()
+        )
         self.arqs_controller = arqs.ARQsController()
 
     def _validate_links(self, links, arq_uuid):
@@ -109,8 +109,9 @@ class TestARQsController(v2_test.APITestV2):
         result = isinstance(out_arqs, list)
         self.assertTrue(result)
         self.assertEqual(len(out_arqs), len(self.fake_resolved_extarqs[1:]))
-        for in_extarq, out_arq in zip(self.fake_resolved_extarqs[1:],
-                                      out_arqs):
+        for in_extarq, out_arq in zip(
+            self.fake_resolved_extarqs[1:], out_arqs
+        ):
             self._validate_arq(in_extarq.arq, out_arq)
 
     @mock.patch('cyborg.objects.ExtARQ.list')
@@ -119,7 +120,9 @@ class TestARQsController(v2_test.APITestV2):
         mock_extarqs.return_value = self.fake_bind_extarqs[:3]
         instance_uuid = self.fake_bind_extarqs[0].arq.instance_uuid
         url = '%s?instance=%s&bind_state=resolved' % (
-            self.ARQ_URL, instance_uuid)
+            self.ARQ_URL,
+            instance_uuid,
+        )
         data = self.get_json(url, headers=self.headers)
         out_arqs = data['arqs']
 
@@ -135,7 +138,9 @@ class TestARQsController(v2_test.APITestV2):
         mock_extarqs.return_value = self.fake_bind_extarqs
         instance_uuid = self.fake_bind_extarqs[0].arq.instance_uuid
         url = '%s?instance=%s&bind_state=resolved' % (
-            self.ARQ_URL, instance_uuid)
+            self.ARQ_URL,
+            instance_uuid,
+        )
         try:
             self.get_json(url, headers=self.headers)
         except Exception as e:
@@ -148,7 +153,9 @@ class TestARQsController(v2_test.APITestV2):
         mock_extarqs.return_value = self.fake_extarqs
         instance_uuid = self.fake_extarqs[0].arq.instance_uuid
         url = '%s?instance=%s&bind_state=started' % (
-            self.ARQ_URL, instance_uuid)
+            self.ARQ_URL,
+            instance_uuid,
+        )
         exc = None
         try:
             self.get_json(url, headers=self.headers)
@@ -158,7 +165,9 @@ class TestARQsController(v2_test.APITestV2):
         # use assertIn here, improve this case with assertRaises later.
         self.assertIn(
             "Bad state: started for ARQ: None. Expected state(s): "
-            "[\\\'resolved\\\']", exc.args[0])
+            "[\\'resolved\\']",
+            exc.args[0],
+        )
 
         url = '%s?bind_state=started' % (self.ARQ_URL)
         exc = None
@@ -170,7 +179,9 @@ class TestARQsController(v2_test.APITestV2):
         # use assertIn here, improve this case with assertRaises later.
         self.assertIn(
             "Bad state: started for ARQ: None. Expected state(s): "
-            "[\\\'resolved\\\']", exc.args[0])
+            "[\\'resolved\\']",
+            exc.args[0],
+        )
 
     @mock.patch('cyborg.objects.ExtARQ.list')
     def test_get_all_with_invalid_arq_state(self, mock_extarqs):
@@ -180,7 +191,9 @@ class TestARQsController(v2_test.APITestV2):
         mock_extarqs.return_value = self.fake_extarqs
         instance_uuid = self.fake_extarqs[0].arq.instance_uuid
         url = '%s?instance=%s&bind_state=resolved' % (
-            self.ARQ_URL, instance_uuid)
+            self.ARQ_URL,
+            instance_uuid,
+        )
         response = self.get_json(url, headers=self.headers, expect_errors=True)
         self.assertEqual(HTTPStatus.LOCKED, response.status_int)
 
@@ -229,7 +242,8 @@ class TestARQsController(v2_test.APITestV2):
         params = {'device_profile_name': 'wrong_device_profile_name'}
         mock_obj_dp.side_effect = exception.ResourceNotFound(
             resource='Device Profile',
-            msg='with name=%s' % params.get('device_profile_name'))
+            msg='with name=%s' % params.get('device_profile_name'),
+        )
         mock_obj_extarq.side_effect = self.fake_extarqs
         exc = None
         try:
@@ -237,12 +251,14 @@ class TestARQsController(v2_test.APITestV2):
         except Exception as e:
             exc = e
         self.assertIn(
-            "Device Profile not found with "
-            "name=wrong_device_profile_name", exc.args[0])
+            "Device Profile not found with name=wrong_device_profile_name",
+            exc.args[0],
+        )
 
     @mock.patch('cyborg.conductor.rpcapi.ConductorAPI.arq_delete_by_uuid')
-    @mock.patch('cyborg.conductor.rpcapi.ConductorAPI.'
-                'arq_delete_by_instance_uuid')
+    @mock.patch(
+        'cyborg.conductor.rpcapi.ConductorAPI.arq_delete_by_instance_uuid'
+    )
     def test_delete(self, mock_by_inst, mock_by_arq):
         url = self.ARQ_URL
         arq = self.fake_extarqs[0].arq
@@ -286,48 +302,69 @@ class TestARQsController(v2_test.APITestV2):
             arq_uuid: {
                 'hostname': obj_extarq.arq.hostname,
                 'device_rp_uuid': device_rp_uuid,
-                'instance_uuid': obj_extarq.arq.instance_uuid}
-            for arq_uuid in arq_uuids}
+                'instance_uuid': obj_extarq.arq.instance_uuid,
+            }
+            for arq_uuid in arq_uuids
+        }
 
-        self.patch_json(self.ARQ_URL, params=patch_list,
-                        headers=self.headers)
+        self.patch_json(self.ARQ_URL, params=patch_list, headers=self.headers)
 
-        mock_apply_patch.assert_called_once_with(mock.ANY, patch_list,
-                                                 valid_fields)
+        mock_apply_patch.assert_called_once_with(
+            mock.ANY, patch_list, valid_fields
+        )
         mock_check_if_bound.assert_called_once_with(mock.ANY, valid_fields)
 
     @mock.patch.object(arqs.ARQsController, '_check_if_already_bound')
     @mock.patch('cyborg.conductor.rpcapi.ConductorAPI.arq_apply_patch')
     def test_apply_patch_allow_project_id(
-            self, mock_apply_patch, mock_check_if_bound):
+        self, mock_apply_patch, mock_check_if_bound
+    ):
         patch_list, _ = fake_extarq.get_patch_list()
         for arq_uuid, patch in patch_list.items():
-            patch.append({'path': '/project_id', 'op': 'add',
-                          'value': 'b1c76756ac2e482789a8e1c5f4bf065e'})
+            patch.append(
+                {
+                    'path': '/project_id',
+                    'op': 'add',
+                    'value': 'b1c76756ac2e482789a8e1c5f4bf065e',
+                }
+            )
         arq_uuids = list(patch_list.keys())
         valid_fields = {
             arq_uuid: {
                 'hostname': 'myhost',
                 'device_rp_uuid': 'fb16c293-5739-4c84-8590-926f9ab16669',
                 'instance_uuid': '5922a70f-1e06-4cfd-88dd-a332120d7144',
-                'project_id': 'b1c76756ac2e482789a8e1c5f4bf065e'}
-            for arq_uuid in arq_uuids}
+                'project_id': 'b1c76756ac2e482789a8e1c5f4bf065e',
+            }
+            for arq_uuid in arq_uuids
+        }
 
-        self.patch_json(self.ARQ_URL, params=patch_list,
-                        headers={base.Version.current_api_version:
-                                 '2.1'})
-        mock_apply_patch.assert_called_once_with(mock.ANY, patch_list,
-                                                 valid_fields)
+        self.patch_json(
+            self.ARQ_URL,
+            params=patch_list,
+            headers={base.Version.current_api_version: '2.1'},
+        )
+        mock_apply_patch.assert_called_once_with(
+            mock.ANY, patch_list, valid_fields
+        )
         mock_check_if_bound.assert_called_once_with(mock.ANY, valid_fields)
 
     def test_apply_patch_not_allow_project_id(self):
         patch_list, _ = fake_extarq.get_patch_list()
         for arq_uuid, patch in patch_list.items():
-            patch.append({'path': '/project_id', 'op': 'add',
-                          'value': 'b1c76756ac2e482789a8e1c5f4bf065e'})
-        response = self.patch_json(self.ARQ_URL, params=patch_list,
-                                   headers=self.headers,
-                                   expect_errors=True)
+            patch.append(
+                {
+                    'path': '/project_id',
+                    'op': 'add',
+                    'value': 'b1c76756ac2e482789a8e1c5f4bf065e',
+                }
+            )
+        response = self.patch_json(
+            self.ARQ_URL,
+            params=patch_list,
+            headers=self.headers,
+            expect_errors=True,
+        )
         self.assertEqual(HTTPStatus.NOT_ACCEPTABLE, response.status_code)
         self.assertTrue(response.json['error_message'])
 
@@ -345,17 +382,20 @@ class TestARQsController(v2_test.APITestV2):
             extarq.arq['uuid']: {
                 'hostname': 'myhost',
                 'device_rp_uuid': 'fb16c293-5739-4c84-8590-926f9ab16669',
-                'instance_uuid': instance_uuid}
-            for extarq in extarqs}
+                'instance_uuid': instance_uuid,
+            }
+            for extarq in extarqs
+        }
 
         self.arqs_controller._check_if_already_bound(
-            self.context, valid_fields)
+            self.context, valid_fields
+        )
         mock_extarq_list.assert_called_once_with(self.context)
 
     @mock.patch('cyborg.objects.ExtARQ.list')
     def test_check_if_bound_exception(self, mock_extarq_list):
         """Test that an exception is raised if binding request specifies
-           an instance that already has ARQs.
+        an instance that already has ARQs.
         """
         extarqs = fake_extarq.get_fake_extarq_objs()
         mock_extarq_list.return_value = extarqs
@@ -366,13 +406,20 @@ class TestARQsController(v2_test.APITestV2):
             extarq.arq['uuid']: {
                 'hostname': 'myhost',
                 'device_rp_uuid': 'fb16c293-5739-4c84-8590-926f9ab16669',
-                'instance_uuid': instance_uuid}
-            for extarq in extarqs}
+                'instance_uuid': instance_uuid,
+            }
+            for extarq in extarqs
+        }
 
-        expected_err = ('Instance %s already has accelerator requests. '
-                        'Cannot bind additional ARQs.') % instance_uuid
+        expected_err = (
+            'Instance %s already has accelerator requests. '
+            'Cannot bind additional ARQs.'
+        ) % instance_uuid
 
         self.assertRaisesRegex(
-            exception.PatchError, expected_err,
+            exception.PatchError,
+            expected_err,
             self.arqs_controller._check_if_already_bound,
-            self.context, valid_fields)
+            self.context,
+            valid_fields,
+        )

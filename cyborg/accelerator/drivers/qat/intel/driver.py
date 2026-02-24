@@ -23,8 +23,9 @@ from cyborg.accelerator.drivers.qat.intel import sysinfo
 
 class IntelQATDriver(QATDriver):
     """Class for Intel QAT drivers.
-       Vendor should implement their specific drivers in this class.
+    Vendor should implement their specific drivers in this class.
     """
+
     VENDOR = "intel"
 
     def __init__(self, *args, **kwargs):

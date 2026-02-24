@@ -15,7 +15,6 @@ import abc
 
 
 class GenericDriver(metaclass=abc.ABCMeta):
-
     @abc.abstractmethod
     def discover(self):
         """Discover a specified accelerator.

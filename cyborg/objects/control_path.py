@@ -38,9 +38,9 @@ class ControlpathID(base.CyborgObject, object_base.VersionedObjectDictCompat):
         'uuid': object_fields.UUIDField(nullable=False),
         'device_id': object_fields.IntegerField(nullable=False),
         'cpid_type': object_fields.EnumField(
-            valid_values=constants.CPID_TYPE,
-            nullable=False),
-        'cpid_info': object_fields.StringField(nullable=False)
+            valid_values=constants.CPID_TYPE, nullable=False
+        ),
+        'cpid_info': object_fields.StringField(nullable=False),
     }
 
     @property
@@ -72,11 +72,14 @@ class ControlpathID(base.CyborgObject, object_base.VersionedObjectDictCompat):
             sort_key = filters.pop('sort_key', 'created_at')
             limit = filters.pop('limit', None)
             marker = filters.pop('marker_obj', None)
-            db_cps = cls.dbapi.control_path_get_by_filters(context, filters,
-                                                           sort_dir=sort_dir,
-                                                           sort_key=sort_key,
-                                                           limit=limit,
-                                                           marker=marker)
+            db_cps = cls.dbapi.control_path_get_by_filters(
+                context,
+                filters,
+                sort_dir=sort_dir,
+                sort_key=sort_key,
+                limit=limit,
+                marker=marker,
+            )
         else:
             db_cps = cls.dbapi.control_path_list(context)
         obj_cp_list = cls._from_db_object_list(db_cps, context)
@@ -105,8 +108,7 @@ class ControlpathID(base.CyborgObject, object_base.VersionedObjectDictCompat):
 
     @classmethod
     def get_by_device_id_cpidinfo(cls, context, device_id, cpid_info):
-        cpid_filter = {'device_id': device_id,
-                       'cpid_info': cpid_info}
+        cpid_filter = {'device_id': device_id, 'cpid_info': cpid_info}
         # the list could have one value or is empty.
         cpid_obj_list = ControlpathID.list(context, cpid_filter)
         if len(cpid_obj_list) != 0:

@@ -32,25 +32,29 @@ from cyborg.common.i18n import _
 LOG = logging.getLogger(__name__)
 
 accelerator_opts = [
-    cfg.StrOpt('spdk_conf_file',
-               default='/etc/cyborg/spdk.conf',
-               help=_('SPDK conf file to be used for the SPDK driver')),
-
-    cfg.StrOpt('accelerator_servers',
-               default=['vhost', 'nvmf', 'iscsi'],
-               help=_('A list of accelerator servers to enable by default')),
-
-    cfg.StrOpt('spdk_dir',
-               default='/home/wewe/spdk',
-               help=_('The SPDK directory is /home/{user_name}/spdk')),
-
-    cfg.StrOpt('device_type',
-               default='NVMe',
-               help=_('Backend device type is NVMe by default')),
-
-    cfg.BoolOpt('remoteable',
-                default=False,
-                help=_('Remoteable is false by default'))
+    cfg.StrOpt(
+        'spdk_conf_file',
+        default='/etc/cyborg/spdk.conf',
+        help=_('SPDK conf file to be used for the SPDK driver'),
+    ),
+    cfg.StrOpt(
+        'accelerator_servers',
+        default=['vhost', 'nvmf', 'iscsi'],
+        help=_('A list of accelerator servers to enable by default'),
+    ),
+    cfg.StrOpt(
+        'spdk_dir',
+        default='/home/wewe/spdk',
+        help=_('The SPDK directory is /home/{user_name}/spdk'),
+    ),
+    cfg.StrOpt(
+        'device_type',
+        default='NVMe',
+        help=_('Backend device type is NVMe by default'),
+    ),
+    cfg.BoolOpt(
+        'remoteable', default=False, help=_('Remoteable is false by default')
+    ),
 ]
 
 CONF = cfg.CONF
@@ -124,15 +128,9 @@ def construct_error_bdev(py, accelerator, basename):
     acc_client.construct_error_bdev(basename)
 
 
-def construct_nvme_bdev(py,
-                        accelerator,
-                        name,
-                        trtype,
-                        traddr,
-                        adrfam,
-                        trsvcid,
-                        subnqn
-                        ):
+def construct_nvme_bdev(
+    py, accelerator, name, trtype, traddr, adrfam, trsvcid, subnqn
+):
     """Add a bdev with nvme backend
 
     :param py: py_client.
@@ -148,22 +146,13 @@ def construct_nvme_bdev(py,
     :return: name.
     """
     acc_client = get_accelerator_client(py, accelerator)
-    acc_client.construct_nvme_bdev(name,
-                                   trtype,
-                                   traddr,
-                                   adrfam,
-                                   trsvcid,
-                                   subnqn
-                                   )
+    acc_client.construct_nvme_bdev(
+        name, trtype, traddr, adrfam, trsvcid, subnqn
+    )
     return name
 
 
-def construct_null_bdev(py,
-                        accelerator,
-                        name,
-                        total_size,
-                        block_size
-                        ):
+def construct_null_bdev(py, accelerator, name, total_size, block_size):
     """Add a bdev with null backend
 
     :param py: py_client.
@@ -189,7 +178,7 @@ def get_py_client(server):
         py = PySPDK(server)
         return py
     else:
-        msg = (_("Could not find %s accelerator") % server)
+        msg = _("Could not find %s accelerator") % server
         raise exception.InvalidAccelerator(msg)
 
 
@@ -204,7 +193,7 @@ def check_for_setup_error(py, server):
     if py.is_alive():
         return True
     else:
-        msg = (_("%s accelerator is down") % server)
+        msg = _("%s accelerator is down") % server
         raise exception.AcceleratorException(msg)
 
 
@@ -224,6 +213,5 @@ def get_accelerator_client(py, accelerator):
         acc_client = NvmfTgt(py)
         return acc_client
     else:
-        exc_msg = (_("accelerator_client %(acc_client) is missing")
-                   % acc_client)
+        exc_msg = _("accelerator_client %(acc_client) is missing") % acc_client
         raise exception.InvalidAccelerator(exc_msg)

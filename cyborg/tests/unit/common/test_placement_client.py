@@ -21,17 +21,19 @@ from cyborg.tests import base
 
 
 class PlacementAPITest(base.TestCase):
-
     def setUp(self):
         super().setUp()
         self.instance_uuid = '00000000-0000-0000-0000-000000000001'
 
-        self.mock_sdk = self.useFixture(fixtures.MockPatch(
-            'cyborg.common.utils.get_sdk_adapter')).mock.return_value
-        self.mock_log_info = self.useFixture(fixtures.MockPatch(
-            'cyborg.common.placement_client.LOG.info')).mock
-        self.mock_log_debug = self.useFixture(fixtures.MockPatch(
-            'cyborg.common.placement_client.LOG.debug')).mock
+        self.mock_sdk = self.useFixture(
+            fixtures.MockPatch('cyborg.common.utils.get_sdk_adapter')
+        ).mock.return_value
+        self.mock_log_info = self.useFixture(
+            fixtures.MockPatch('cyborg.common.placement_client.LOG.info')
+        ).mock
+        self.mock_log_debug = self.useFixture(
+            fixtures.MockPatch('cyborg.common.placement_client.LOG.debug')
+        ).mock
 
     def test_get(self):
         self.mock_sdk.get.return_value = mock.Mock(status_code=200)
@@ -44,8 +46,9 @@ class PlacementAPITest(base.TestCase):
         placement = placement_client.PlacementClient()
         mock_ret = mock.Mock(status_code=500)
         self.mock_sdk.get.return_value = mock_ret
-        self.assertRaises(exception.PlacementServerError,
-                          placement.get, mock.Mock())
+        self.assertRaises(
+            exception.PlacementServerError, placement.get, mock.Mock()
+        )
 
     def test_post(self):
         self.mock_sdk.post.return_value = mock.Mock(status_code=200)
@@ -58,8 +61,12 @@ class PlacementAPITest(base.TestCase):
         placement = placement_client.PlacementClient()
         mock_ret = mock.Mock(status_code=500)
         self.mock_sdk.post.return_value = mock_ret
-        self.assertRaises(exception.PlacementServerError,
-                          placement.post, mock.Mock(), mock.ANY)
+        self.assertRaises(
+            exception.PlacementServerError,
+            placement.post,
+            mock.Mock(),
+            mock.ANY,
+        )
 
     def test_put(self):
         self.mock_sdk.put.return_value = mock.Mock(status_code=200)
@@ -72,8 +79,12 @@ class PlacementAPITest(base.TestCase):
         placement = placement_client.PlacementClient()
         mock_ret = mock.Mock(status_code=500)
         self.mock_sdk.put.return_value = mock_ret
-        self.assertRaises(exception.PlacementServerError,
-                          placement.put, mock.Mock(), mock.ANY)
+        self.assertRaises(
+            exception.PlacementServerError,
+            placement.put,
+            mock.Mock(),
+            mock.ANY,
+        )
 
     def test_delete(self):
         self.mock_sdk.delete.return_value = mock.Mock(status_code=200)
@@ -86,8 +97,12 @@ class PlacementAPITest(base.TestCase):
         placement = placement_client.PlacementClient()
         mock_ret = mock.Mock(status_code=500)
         self.mock_sdk.delete.return_value = mock_ret
-        self.assertRaises(exception.PlacementServerError,
-                          placement.delete, mock.Mock(), mock.ANY)
+        self.assertRaises(
+            exception.PlacementServerError,
+            placement.delete,
+            mock.Mock(),
+            mock.ANY,
+        )
 
     def test_get_rp_traits(self):
         self.mock_sdk.get.return_value = mock.Mock(status_code=200)
@@ -100,8 +115,9 @@ class PlacementAPITest(base.TestCase):
         placement = placement_client.PlacementClient()
         mock_ret = mock.Mock(status_code=500)
         self.mock_sdk.get.return_value = mock_ret
-        self.assertRaises(exception.PlacementServerError,
-                          placement._get_rp_traits, mock.ANY)
+        self.assertRaises(
+            exception.PlacementServerError, placement._get_rp_traits, mock.ANY
+        )
 
     def test_ensure_traits(self):
         self.mock_sdk.put.return_value = mock.Mock(status_code=201)
@@ -118,11 +134,15 @@ class PlacementAPITest(base.TestCase):
         mock_ret = mock.Mock(status_code=500)
         self.mock_sdk.get.return_value = None
         self.mock_sdk.put.return_value = mock_ret
-        self.assertRaises(exception.PlacementServerError,
-                          placement._ensure_traits, [mock.ANY])
+        self.assertRaises(
+            exception.PlacementServerError,
+            placement._ensure_traits,
+            [mock.ANY],
+        )
 
-    @mock.patch('cyborg.common.placement_client.'
-                'PlacementClient.get_resource_provider')
+    @mock.patch(
+        'cyborg.common.placement_client.PlacementClient.get_resource_provider'
+    )
     def test_put_rp_traits(self, rp):
         self.mock_sdk.put.return_value = mock.Mock(status_code=200)
         placement = placement_client.PlacementClient()
@@ -131,13 +151,17 @@ class PlacementAPITest(base.TestCase):
         msg = 'Successfully update resources from placement: %s'
         self.mock_log_debug.assert_called_once_with(msg, mock.ANY)
 
-    @mock.patch('cyborg.common.placement_client.'
-                'PlacementClient.get_resource_provider')
+    @mock.patch(
+        'cyborg.common.placement_client.PlacementClient.get_resource_provider'
+    )
     def test_put_rp_traits_exception(self, rp):
         placement = placement_client.PlacementClient()
         mock_ret = mock.Mock(status_code=500)
         rp.return_value = {'status_code': 200, 'generation': 0}
         self.mock_sdk.put.return_value = mock_ret
-        self.assertRaises(exception.PlacementServerError,
-                          placement._put_rp_traits,
-                          mock.ANY, {'traits': 'fake_trait'})
+        self.assertRaises(
+            exception.PlacementServerError,
+            placement._put_rp_traits,
+            mock.ANY,
+            {'traits': 'fake_trait'},
+        )

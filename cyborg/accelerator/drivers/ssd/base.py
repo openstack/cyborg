@@ -16,6 +16,7 @@
 """
 Cyborg Generic SSD driver implementation.
 """
+
 from oslo_log import log as logging
 
 from cyborg.accelerator.common import utils as pci_utils
@@ -28,8 +29,8 @@ VENDOR_MAPS = pci_utils.get_vendor_maps()
 class SSDDriver:
     """Generic class for SSD drivers.
 
-       This is just a virtual SSD drivers interface.
-       Vendor should implement their specific drivers.
+    This is just a virtual SSD drivers interface.
+    Vendor should implement their specific drivers.
     """
 
     @classmethod

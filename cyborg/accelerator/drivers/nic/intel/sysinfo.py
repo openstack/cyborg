@@ -17,7 +17,6 @@
 Cyborg Intel NIC driver implementation.
 """
 
-
 import glob
 import os
 import socket
@@ -58,8 +57,9 @@ def _parse_config():
         return pdm, fdm
 
 
-def get_physical_network_and_traits(pci_info, physnet_device_mappings,
-                                    function_device_mappings, pf_nic=None):
+def get_physical_network_and_traits(
+    pci_info, physnet_device_mappings, function_device_mappings, pf_nic=None
+):
     traits = []
     physnet = None
     func_name = None
@@ -99,20 +99,21 @@ def read_line(filename):
 
 
 def find_nics_by_know_list():
-    return set(filter(
-        lambda p: (
-            read_line(os.path.join(p, "vendor")),
-            read_line(os.path.join(p, "device"))
-        ) in KNOWN_NICS,
-        glob.glob(PCI_DEVICES_PATH_PATTERN)))
+    return set(
+        filter(
+            lambda p: (
+                read_line(os.path.join(p, "vendor")),
+                read_line(os.path.join(p, "device")),
+            )
+            in KNOWN_NICS,
+            glob.glob(PCI_DEVICES_PATH_PATTERN),
+        )
+    )
 
 
 def pci_attributes(path):
     with open(os.path.join(path, "uevent")) as f:
-        attributes = dict(map(
-            lambda p: p.strip().split("="),
-            f.readlines()
-        ))
+        attributes = dict(map(lambda p: p.strip().split("="), f.readlines()))
 
     with open(os.path.join(path, "vendor")) as f:
         attributes["VENDOR"] = f.readline().strip()
@@ -123,8 +124,12 @@ def pci_attributes(path):
     return attributes
 
 
-def nic_gen(path, physnet_device_mappings=None, function_device_mappings=None,
-            pf_nic=None):
+def nic_gen(
+    path,
+    physnet_device_mappings=None,
+    function_device_mappings=None,
+    pf_nic=None,
+):
     pci_info = pci_attributes(path)
     nic = {
         "name": "_".join((socket.gethostname(), pci_info["PCI_SLOT_NAME"])),
@@ -134,30 +139,32 @@ def nic_gen(path, physnet_device_mappings=None, function_device_mappings=None,
         "product_id": pci_info["PRODUCT_ID"],
         "rc": "CUSTOM_NIC",
         "stub": False,
-        }
+    }
     # TODO(Xinran): need check device id and call get_traits differently.
-    updates = get_physical_network_and_traits(pci_info,
-                                              physnet_device_mappings,
-                                              function_device_mappings,
-                                              pf_nic)
+    updates = get_physical_network_and_traits(
+        pci_info, physnet_device_mappings, function_device_mappings, pf_nic
+    )
 
     nic.update(updates)
     return nic
 
 
 def all_pfs_with_vf():
-    return set(filter(
-        lambda p: glob.glob(os.path.join(p, VF)),
-        find_nics_by_know_list()))
+    return set(
+        filter(
+            lambda p: glob.glob(os.path.join(p, VF)), find_nics_by_know_list()
+        )
+    )
 
 
 def all_vfs_in_pf(pf_path):
     return map(
-        lambda p:
-        os.path.join(
+        lambda p: os.path.join(
             os.path.dirname(os.path.dirname(p)),
-            os.path.basename(os.readlink(p))),
-        glob.glob(os.path.join(pf_path, VF)))
+            os.path.basename(os.readlink(p)),
+        ),
+        glob.glob(os.path.join(pf_path, VF)),
+    )
 
 
 def nic_tree():
@@ -169,8 +176,9 @@ def nic_tree():
         if n in pfs_has_vf:
             vfs = []
             for vf in all_vfs_in_pf(n):
-                vf_nic = nic_gen(vf, physnet_device_mappings,
-                                 function_device_mappings, nic)
+                vf_nic = nic_gen(
+                    vf, physnet_device_mappings, function_device_mappings, nic
+                )
                 vfs.append(vf_nic)
             nic["vfs"] = vfs
         nics.append(_generate_driver_device(nic))
@@ -183,8 +191,8 @@ def _generate_driver_device(nic):
     driver_device_obj.stub = nic["stub"]
     driver_device_obj.model = nic.get("model", "miss_model_info")
     driver_device_obj.vendor_board_info = nic.get(
-        "vendor_board_info",
-        "miss_vb_info")
+        "vendor_board_info", "miss_vb_info"
+    )
     std_board_info = {"product_id": nic.get("product_id")}
     driver_device_obj.std_board_info = jsonutils.dumps(std_board_info)
     driver_device_obj.type = nic["type"]
@@ -206,8 +214,7 @@ def _generate_dep_list(nic):
     if "vfs" not in nic:
         driver_dep = driver_deployable.DriverDeployable()
         driver_dep.num_accelerators = 1
-        driver_dep.attach_handle_list = [
-            _generate_attach_handle(nic)]
+        driver_dep.attach_handle_list = [_generate_attach_handle(nic)]
         driver_dep.name = nic["name"]
         driver_dep.driver_name = DRIVER_NAME
         driver_dep.attribute_list = _generate_attribute_list(nic)
@@ -217,8 +224,7 @@ def _generate_dep_list(nic):
         for vf in nic["vfs"]:
             driver_dep = driver_deployable.DriverDeployable()
             driver_dep.num_accelerators = 1
-            driver_dep.attach_handle_list = [
-                _generate_attach_handle(vf)]
+            driver_dep.attach_handle_list = [_generate_attach_handle(vf)]
             driver_dep.name = vf["name"]
             driver_dep.driver_name = DRIVER_NAME
             driver_dep.attribute_list = _generate_attribute_list(vf)
@@ -229,8 +235,9 @@ def _generate_dep_list(nic):
 def _generate_attach_handle(nic):
     driver_ah = driver_attach_handle.DriverAttachHandle()
     driver_ah.attach_type = "PCI"
-    driver_ah.attach_info = utils.pci_str_to_json(nic["device"],
-                                                  nic["physical_network"])
+    driver_ah.attach_info = utils.pci_str_to_json(
+        nic["device"], nic["physical_network"]
+    )
     driver_ah.in_use = False
     return driver_ah
 

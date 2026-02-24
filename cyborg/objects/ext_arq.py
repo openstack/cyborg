@@ -39,15 +39,20 @@ LOG = logging.getLogger(__name__)
 
 
 @base.CyborgObjectRegistry.register
-class ExtARQ(base.CyborgObject, object_base.VersionedObjectDictCompat,
-             utils.FactoryMixin, ExtARQJobMixin):
+class ExtARQ(
+    base.CyborgObject,
+    object_base.VersionedObjectDictCompat,
+    utils.FactoryMixin,
+    ExtARQJobMixin,
+):
     """ExtARQ is a wrapper around ARQ with Cyborg-private fields.
-       Each ExtARQ object contains exactly one ARQ object as a field.
-       But, in the db layer, ExtARQ and ARQ are represented together
-       as a row in a single table. Both share a single UUID.
-       ExtARQ version is bumped up either if any of its fields change
-       or if the ARQ version changes.
+    Each ExtARQ object contains exactly one ARQ object as a field.
+    But, in the db layer, ExtARQ and ARQ are represented together
+    as a row in a single table. Both share a single UUID.
+    ExtARQ version is bumped up either if any of its fields change
+    or if the ARQ version changes.
     """
+
     # Version 1.0: Initial version
     # 1.1: v2 API and Nova integration
     # 1.2: Fill the value of deployable_id
@@ -62,11 +67,11 @@ class ExtARQ(base.CyborgObject, object_base.VersionedObjectDictCompat,
         # later.
         'substate': object_fields.StringField(),
         'deployable_uuid': object_fields.UUIDField(nullable=True),
-
         # The dp group is copied in to the extarq, so that any changes or
         # deletions to the device profile do not affect running VMs.
         'device_profile_group': object_fields.DictOfStringsField(
-            nullable=True),
+            nullable=True
+        ),
         # For bound ARQs, we keep the attach handle ID and deployable ID here
         # so that it is easy to deallocate on unbind or delete.
         'attach_handle_id': object_fields.IntegerField(nullable=True),
@@ -74,8 +79,7 @@ class ExtARQ(base.CyborgObject, object_base.VersionedObjectDictCompat,
     }
 
     def obj_make_compatible(self, primitive, target_version):
-        super().obj_make_compatible(
-            primitive, target_version)
+        super().obj_make_compatible(primitive, target_version)
         target_version = versionutils.convert_version_to_tuple(target_version)
         # TODO(eric): need to handle v1.1 changes
         if target_version < (1, 2) and 'deployable_id' in primitive:
@@ -90,7 +94,8 @@ class ExtARQ(base.CyborgObject, object_base.VersionedObjectDictCompat,
         if 'device_profile_name' not in self.arq and not device_profile_id:
             raise exception.ObjectActionError(
                 action='create',
-                reason='Device profile name is required in ARQ')
+                reason='Device profile name is required in ARQ',
+            )
         self.arq.state = constants.ARQ_INITIAL
         self.substate = constants.ARQ_INITIAL
         values = self.obj_get_changes()
@@ -120,8 +125,7 @@ class ExtARQ(base.CyborgObject, object_base.VersionedObjectDictCompat,
     def list(cls, context, uuid_range=None):
         """Return a list of ExtARQ objects."""
         db_extarqs = cls.dbapi.extarq_list(context, uuid_range)
-        obj_extarq_list = cls._from_db_object_list(
-            db_extarqs, context)
+        obj_extarq_list = cls._from_db_object_list(db_extarqs, context)
         return obj_extarq_list
 
     def save(self, context):
@@ -135,13 +139,17 @@ class ExtARQ(base.CyborgObject, object_base.VersionedObjectDictCompat,
         updates = self.obj_get_changes()
         updates["state"] = state
         db_extarq = self.dbapi.extarq_update(
-            context, self.arq.uuid, updates, scope)
+            context, self.arq.uuid, updates, scope
+        )
         self._from_db_object(self, db_extarq, context)
 
     def update_check_state(self, context, state, scope=None):
         if self.arq.state == state:
-            LOG.info("ExtARQ(%s) state is %s, no need to update",
-                     self.arq.uuid, state)
+            LOG.info(
+                "ExtARQ(%s) state is %s, no need to update",
+                self.arq.uuid,
+                state,
+            )
             return False
         old = self.arq.state
         scope = scope or ARQ_STATES_TRANSFORM_MATRIX[state]
@@ -150,14 +158,18 @@ class ExtARQ(base.CyborgObject, object_base.VersionedObjectDictCompat,
         if not ea:
             raise exception.ResourceNotFound(
                 resources='ExtARQ',
-                msg="Can not find ExtARQ(%s)" % self.arq.uuid)
+                msg="Can not find ExtARQ(%s)" % self.arq.uuid,
+            )
         current = ea.arq.state
         if state != current:
-            msg = ("Failed to change ARQ state from %s to %s, the current "
-                   "state is %s" % (old, state, current))
+            msg = (
+                "Failed to change ARQ state from %s to %s, the current "
+                "state is %s" % (old, state, current)
+            )
             LOG.error(msg)
             raise exception.ARQBadState(
-                state=current, uuid=self.arq.uuid, expected=list(state))
+                state=current, uuid=self.arq.uuid, expected=list(state)
+            )
         return True
 
     def destroy(self, context):
@@ -188,8 +200,8 @@ class ExtARQ(base.CyborgObject, object_base.VersionedObjectDictCompat,
         if unexisted:
             LOG.warning('There are unexisted arqs: %s', unexisted)
             raise exception.ResourceNotFound(
-                resource='ARQ',
-                msg='with uuids %s' % unexisted)
+                resource='ARQ', msg='with uuids %s' % unexisted
+            )
 
     @classmethod
     def delete_by_instance(cls, context, instance_uuid):
@@ -200,11 +212,17 @@ class ExtARQ(base.CyborgObject, object_base.VersionedObjectDictCompat,
         not raise an error on the second and later attempts even if the
         first one has deleted the ARQs.
         """
-        obj_extarqs = [extarq for extarq in objects.ExtARQ.list(context)
-                       if extarq.arq['instance_uuid'] == instance_uuid]
+        obj_extarqs = [
+            extarq
+            for extarq in objects.ExtARQ.list(context)
+            if extarq.arq['instance_uuid'] == instance_uuid
+        ]
         for obj_extarq in obj_extarqs:
-            LOG.info('Deleting obj_extarq uuid %s for instance %s',
-                     obj_extarq.arq['uuid'], obj_extarq.arq['instance_uuid'])
+            LOG.info(
+                'Deleting obj_extarq uuid %s for instance %s',
+                obj_extarq.arq['uuid'],
+                obj_extarq.arq['instance_uuid'],
+            )
             obj_extarq.unbind(context)
             obj_extarq.destroy(context)
 
@@ -224,23 +242,33 @@ class ExtARQ(base.CyborgObject, object_base.VersionedObjectDictCompat,
             if ah.attach_type == 'MDEV':
                 attach_info = json.loads(ah.attach_info)
                 pci_addr = "{}:{}:{}.{}".format(
-                    attach_info['domain'], attach_info['bus'],
-                    attach_info['device'], attach_info['function'])
+                    attach_info['domain'],
+                    attach_info['bus'],
+                    attach_info['device'],
+                    attach_info['function'],
+                )
                 hostname = self.arq.hostname
                 asked_type = attach_info['asked_type']
                 self.agent.create_vgpu_mdev(
-                    context, hostname, pci_addr, asked_type, ah.uuid)
+                    context, hostname, pci_addr, asked_type, ah.uuid
+                )
         except Exception as e:
-            LOG.error("Failed to allocate attach handle for ARQ %s"
-                      "from deployable %s. Reason: %s",
-                      self.arq.uuid, deployable.uuid, str(e))
+            LOG.error(
+                "Failed to allocate attach handle for ARQ %s"
+                "from deployable %s. Reason: %s",
+                self.arq.uuid,
+                deployable.uuid,
+                str(e),
+            )
             # TODO(Shaohe) Rollback? We have _update_placement,
             # should cancel it.
-            self.update_check_state(
-                context, constants.ARQ_BIND_FAILED)
+            self.update_check_state(context, constants.ARQ_BIND_FAILED)
             raise
-        LOG.info('Attach handle(%s) allocate for ARQ(%s) successfully.',
-                 ah.uuid, self.arq.uuid)
+        LOG.info(
+            'Attach handle(%s) allocate for ARQ(%s) successfully.',
+            ah.uuid,
+            self.arq.uuid,
+        )
 
     def bind(self, context, deployable):
         self._allocate_attach_handle(context, deployable)
@@ -248,8 +276,7 @@ class ExtARQ(base.CyborgObject, object_base.VersionedObjectDictCompat,
         self.save(context)
         # ARQ state changes get committed here
         self.update_check_state(context, constants.ARQ_BOUND)
-        LOG.info('Update ARQ %s state to "Bound" successfully.',
-                 self.arq.uuid)
+        LOG.info('Update ARQ %s state to "Bound" successfully.', self.arq.uuid)
         # TODO(Shaohe) rollback self._unbind and self._delete
         # if (self.arq.state == constants.ARQ_DELETING
         #         or self.arq.state == ARQ_UNBOUND):
@@ -260,20 +287,33 @@ class ExtARQ(base.CyborgObject, object_base.VersionedObjectDictCompat,
             if attach_handle.attach_type == 'MDEV':
                 attach_info = json.loads(attach_handle.attach_info)
                 pci_addr = "{}:{}:{}.{}".format(
-                    attach_info['domain'], attach_info['bus'],
-                    attach_info['device'], attach_info['function'])
+                    attach_info['domain'],
+                    attach_info['bus'],
+                    attach_info['device'],
+                    attach_info['function'],
+                )
                 self.agent.remove_vgpu_mdev(
-                    context, hostname, pci_addr,
-                    attach_info['asked_type'], attach_handle.uuid)
+                    context,
+                    hostname,
+                    pci_addr,
+                    attach_info['asked_type'],
+                    attach_handle.uuid,
+                )
             attach_handle.deallocate(context)
         except Exception as e:
-            LOG.error("Failed to deallocate attach handle %s for ARQ %s."
-                      "Reason: %s", ah_id, self.arq.uuid, str(e))
-            self.update_check_state(
-                context, constants.ARQ_UNBIND_FAILED)
+            LOG.error(
+                "Failed to deallocate attach handle %s for ARQ %s.Reason: %s",
+                ah_id,
+                self.arq.uuid,
+                str(e),
+            )
+            self.update_check_state(context, constants.ARQ_UNBIND_FAILED)
             raise
-        LOG.info('Attach handle(%s) deallocate for ARQ(%s) successfully.',
-                 ah_id, self.arq.uuid)
+        LOG.info(
+            'Attach handle(%s) deallocate for ARQ(%s) successfully.',
+            ah_id,
+            self.arq.uuid,
+        )
 
     def unbind(self, context):
         arq = self.arq
@@ -294,7 +334,7 @@ class ExtARQ(base.CyborgObject, object_base.VersionedObjectDictCompat,
     @classmethod
     def _fill_obj_extarq_fields(cls, context, db_extarq):
         """ExtARQ object has some fields that are not present
-           in db_extarq. We fill them out here.
+        in db_extarq. We fill them out here.
         """
         # From the 2 fields in the ExtARQ, we obtain other fields.
         devprof_id = db_extarq['device_profile_id']
@@ -307,7 +347,8 @@ class ExtARQ(base.CyborgObject, object_base.VersionedObjectDictCompat,
         db_extarq['attach_handle_info'] = ''
         if db_extarq['state'] == 'Bound':  # TODO() Do proper bind
             db_ah = cls.dbapi.attach_handle_get_by_id(
-                context, db_extarq['attach_handle_id'])
+                context, db_extarq['attach_handle_id']
+            )
             if db_ah is not None:
                 db_extarq['attach_handle_type'] = db_ah['attach_type']
                 db_extarq['attach_handle_info'] = db_ah['attach_info']
@@ -315,17 +356,22 @@ class ExtARQ(base.CyborgObject, object_base.VersionedObjectDictCompat,
             else:
                 raise exception.ResourceNotFound(
                     resource='Attach Handle',
-                    msg='with uuid=%s' % db_extarq['attach_handle_id'])
+                    msg='with uuid=%s' % db_extarq['attach_handle_id'],
+                )
 
         if db_extarq['deployable_id']:
-            dep = objects.Deployable.get_by_id(context,
-                                               db_extarq['deployable_id'])
+            dep = objects.Deployable.get_by_id(
+                context, db_extarq['deployable_id']
+            )
             db_extarq['deployable_uuid'] = dep.uuid
         else:
-            LOG.debug('Setting deployable UUID to zeroes for db_extarq %s',
-                      db_extarq['uuid'])
+            LOG.debug(
+                'Setting deployable UUID to zeroes for db_extarq %s',
+                db_extarq['uuid'],
+            )
             db_extarq['deployable_uuid'] = (
-                '00000000-0000-0000-0000-000000000000')
+                '00000000-0000-0000-0000-000000000000'
+            )
 
         groups = devprof['groups']
         db_extarq['device_profile_group'] = groups[devprof_group_id]

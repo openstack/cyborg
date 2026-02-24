@@ -61,18 +61,25 @@ class ExtARQJobMixin:
         # Check whether ARQ can be bound.
         if self.arq.state not in expected:
             raise exception.ARQBadState(
-                state=self.arq.state, uuid=self.arq.uuid, expected=expected)
+                state=self.arq.state, uuid=self.arq.uuid, expected=expected
+            )
 
         hostname = valid_fields[self.arq.uuid]['hostname']
         devrp_uuid = valid_fields[self.arq.uuid]['device_rp_uuid']
         instance_uuid = valid_fields[self.arq.uuid]['instance_uuid']
         project_id = valid_fields[self.arq.uuid].get('project_id')
-        LOG.info('[arqs:objs] bind. hostname: %(hostname)s, '
-                 'devrp_uuid: %(devrp_uuid)s, '
-                 'instance_uuid: %(instance_uuid)s, '
-                 'project_id: %(project_id)s',
-                 {'hostname': hostname, 'devrp_uuid': devrp_uuid,
-                  'instance_uuid': instance_uuid, 'project_id': project_id})
+        LOG.info(
+            '[arqs:objs] bind. hostname: %(hostname)s, '
+            'devrp_uuid: %(devrp_uuid)s, '
+            'instance_uuid: %(instance_uuid)s, '
+            'project_id: %(project_id)s',
+            {
+                'hostname': hostname,
+                'devrp_uuid': devrp_uuid,
+                'instance_uuid': instance_uuid,
+                'project_id': project_id,
+            },
+        )
 
         self.arq.hostname = hostname
         self.arq.device_rp_uuid = devrp_uuid
@@ -100,11 +107,13 @@ class ExtARQJobMixin:
             return
         th_workers = utils.ThreadWorks()
         works_generator = th_workers.get_workers_result(
-            jobs.values(), timeout=CONF.bind_timeout)
+            jobs.values(), timeout=CONF.bind_timeout
+        )
         # arq_binds, timeout=1)
         LOG.info("Check ARQ(%s) bind jobs status.", arq_uuids)
         th_workers.spawn_master(
-            cls.job_monitor, context, works_generator, arq_binds.keys())
+            cls.job_monitor, context, works_generator, arq_binds.keys()
+        )
 
     @classmethod
     def get_arq_bind_statuses(cls, arq_list):
@@ -124,7 +133,8 @@ class ExtARQJobMixin:
         for arq in arq_list:
             if arq.state not in good_states:
                 raise exception.ARQBadState(
-                    state=arq.state, uuid=arq.uuid, expected=good_states)
+                    state=arq.state, uuid=arq.uuid, expected=good_states
+                )
             arq_bind_status = (arq.uuid, state_map[arq.state])
             arq_bind_statuses.append(arq_bind_status)
         return arq_bind_statuses
@@ -158,10 +168,13 @@ class ExtARQJobMixin:
         # (not deleted) ARQs among the specified ones.
         extarqs = cls.list(context, arq_uuids)
         if len(extarqs) < len(arq_uuids):
-            LOG.error("ARQs(%s) bind status sync error, status is %s. "
-                      "For some ARQs %s are deleted.",
-                      arq_uuids, constants.ARQ_BIND_STATUS_FAILED,
-                      set(arq_uuids) - set([ea.arq.uuid for ea in extarqs]))
+            LOG.error(
+                "ARQs(%s) bind status sync error, status is %s. "
+                "For some ARQs %s are deleted.",
+                arq_uuids,
+                constants.ARQ_BIND_STATUS_FAILED,
+                set(arq_uuids) - set([ea.arq.uuid for ea in extarqs]),
+            )
             cls.bind_notify(instance_uuid, cls.get_arq_bind_statuses(arq_list))
             return
 
@@ -172,19 +185,29 @@ class ExtARQJobMixin:
             if state in constants.ARQ_PRE_BIND:
                 # OPEN ignore ARQ_OUFOF_BIND_FLOW?
                 status = constants.ARQ_BIND_STATUS_FAILED
-                LOG.error("ARQs(%s) bind has not finished, status is %s.",
-                          uuid, status)
+                LOG.error(
+                    "ARQs(%s) bind has not finished, status is %s.",
+                    uuid,
+                    status,
+                )
                 break
             elif state in constants.ARQ_OUFOF_BIND_FLOW + [
-                constants.ARQ_BIND_FAILED]:
+                constants.ARQ_BIND_FAILED
+            ]:
                 # OPEN ignore ARQ_OUFOF_BIND_FLOW?
                 status = constants.ARQ_BIND_STATUS_FAILED
-                LOG.error("ARQs(%s) bind status sync error, status is %s.",
-                          uuid, status)
+                LOG.error(
+                    "ARQs(%s) bind status sync error, status is %s.",
+                    uuid,
+                    status,
+                )
                 break
             elif state == constants.ARQ_BOUND:
-                LOG.info("ARQs(%s) bind status sync finish, status is %s.",
-                         uuid, status)
+                LOG.info(
+                    "ARQs(%s) bind status sync finish, status is %s.",
+                    uuid,
+                    status,
+                )
         if status == constants.ARQ_BIND_STATUS_FINISH:
             LOG.info('All ARQs %s async bind jobs has finished.', arq_uuids)
         cls.bind_notify(instance_uuid, cls.get_arq_bind_statuses(arq_list))
@@ -219,11 +242,14 @@ class ExtARQJobMixin:
         group = self.device_profile_group
         # example: {"resources:CUSTOM_ACCELERATOR_FPGA": "1"}
         resources = [
-            (k.lstrip(constants.RESOURCES_PREFIX), v) for k, v in group.items()
-            if k.startswith(constants.RESOURCES_PREFIX)]
+            (k.lstrip(constants.RESOURCES_PREFIX), v)
+            for k, v in group.items()
+            if k.startswith(constants.RESOURCES_PREFIX)
+        ]
         if not resources:
             raise exception.InvalidParameterValue(
-                'No resources in device_profile_group: %s' % group)
+                'No resources in device_profile_group: %s' % group
+            )
         res_type = resources[0][0]
         return res_type
 

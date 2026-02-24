@@ -22,9 +22,9 @@ from oslo_db import api as db_api
 
 
 _BACKEND_MAPPING = {'sqlalchemy': 'cyborg.db.sqlalchemy.api'}
-IMPL = db_api.DBAPI.from_config(cfg.CONF,
-                                backend_mapping=_BACKEND_MAPPING,
-                                lazy=True)
+IMPL = db_api.DBAPI.from_config(
+    cfg.CONF, backend_mapping=_BACKEND_MAPPING, lazy=True
+)
 
 
 def get_instance():
@@ -49,15 +49,22 @@ class Connection(metaclass=abc.ABCMeta):
         """Get requested device."""
 
     @abc.abstractmethod
-    def device_list(self, context, limit=None, marker=None,
-                    sort_key=None, sort_dir=None):
+    def device_list(
+        self, context, limit=None, marker=None, sort_key=None, sort_dir=None
+    ):
         """Get requested list of devices."""
 
     @abc.abstractmethod
-    def device_list_by_filters(self, context,
-                               filters, sort_key='created_at',
-                               sort_dir='desc', limit=None,
-                               marker=None, columns_to_join=None):
+    def device_list_by_filters(
+        self,
+        context,
+        filters,
+        sort_key='created_at',
+        sort_dir='desc',
+        limit=None,
+        marker=None,
+        columns_to_join=None,
+    ):
         """Get requested devices by filters."""
 
     @abc.abstractmethod
@@ -90,10 +97,16 @@ class Connection(metaclass=abc.ABCMeta):
         """Get requested list of device_profiles."""
 
     @abc.abstractmethod
-    def device_profile_list_by_filters(self, context,
-                                       filters, sort_key='created_at',
-                                       sort_dir='desc', limit=None,
-                                       marker=None, columns_to_join=None):
+    def device_profile_list_by_filters(
+        self,
+        context,
+        filters,
+        sort_key='created_at',
+        sort_dir='desc',
+        limit=None,
+        marker=None,
+        columns_to_join=None,
+    ):
         """Get requested list of device_profiles by filters."""
 
     @abc.abstractmethod
@@ -126,10 +139,16 @@ class Connection(metaclass=abc.ABCMeta):
         """Delete a deployable."""
 
     @abc.abstractmethod
-    def deployable_get_by_filters(self, context,
-                                  filters, sort_key='created_at',
-                                  sort_dir='desc', limit=None,
-                                  marker=None, columns_to_join=None):
+    def deployable_get_by_filters(
+        self,
+        context,
+        filters,
+        sort_key='created_at',
+        sort_dir='desc',
+        limit=None,
+        marker=None,
+        columns_to_join=None,
+    ):
         """Get requested deployable by filters."""
 
     @abc.abstractmethod
@@ -163,9 +182,17 @@ class Connection(metaclass=abc.ABCMeta):
 
     # quota
     @abc.abstractmethod
-    def quota_reserve(self, context, resources, deltas, expire,
-                      until_refresh, max_age, project_id=None,
-                      is_allocated_reserve=False):
+    def quota_reserve(
+        self,
+        context,
+        resources,
+        deltas,
+        expire,
+        until_refresh,
+        max_age,
+        project_id=None,
+        is_allocated_reserve=False,
+    ):
         """Check quotas and create appropriate reservations."""
 
     @abc.abstractmethod
@@ -207,10 +234,16 @@ class Connection(metaclass=abc.ABCMeta):
         """Get requested attach_handle"""
 
     @abc.abstractmethod
-    def attach_handle_get_by_filters(self, context,
-                                     filters, sort_key='created_at',
-                                     sort_dir='desc', limit=None,
-                                     marker=None, columns_to_join=None):
+    def attach_handle_get_by_filters(
+        self,
+        context,
+        filters,
+        sort_key='created_at',
+        sort_dir='desc',
+        limit=None,
+        marker=None,
+        columns_to_join=None,
+    ):
         """Get requested deployable by filters."""
 
     @abc.abstractmethod
@@ -235,10 +268,16 @@ class Connection(metaclass=abc.ABCMeta):
         """Get requested control path id"""
 
     @abc.abstractmethod
-    def control_path_get_by_filters(self, context,
-                                    filters, sort_key='created_at',
-                                    sort_dir='desc', limit=None,
-                                    marker=None, columns_to_join=None):
+    def control_path_get_by_filters(
+        self,
+        context,
+        filters,
+        sort_key='created_at',
+        sort_dir='desc',
+        limit=None,
+        marker=None,
+        columns_to_join=None,
+    ):
         """Get requested deployable by filters."""
 
     @abc.abstractmethod

@@ -24,11 +24,15 @@ def build_url(resource, resource_args, bookmark=False, base_url=None):
         base_url = pecan.request.public_url
 
     # TODO(Sundar) Return version etc. similar to other projects.
-    template = '%(url)s/accelerator/%(res)s' \
-        if bookmark else '%(url)s/accelerator/' + base.API_V2 + '/%(res)s'
+    template = (
+        '%(url)s/accelerator/%(res)s'
+        if bookmark
+        else '%(url)s/accelerator/' + base.API_V2 + '/%(res)s'
+    )
     if resource_args:
-        template += ('%(args)s' if resource_args.startswith('?')
-                     else '/%(args)s')
+        template += (
+            '%(args)s' if resource_args.startswith('?') else '/%(args)s'
+        )
     return template % {'url': base_url, 'res': resource, 'args': resource_args}
 
 
@@ -45,10 +49,17 @@ class Link(base.APIBase):
     """Indicates the type of document/link."""
 
     @staticmethod
-    def make_link(rel_name, url, resource, resource_args,
-                  bookmark=False, type=wtypes.Unset):
-        href = build_url(resource, resource_args,
-                         bookmark=bookmark, base_url=url)
+    def make_link(
+        rel_name,
+        url,
+        resource,
+        resource_args,
+        bookmark=False,
+        type=wtypes.Unset,
+    ):
+        href = build_url(
+            resource, resource_args, bookmark=bookmark, base_url=url
+        )
         return Link(href=href, rel=rel_name, type=type)
 
     @staticmethod

@@ -40,10 +40,12 @@ def setup_app(pecan_config=None, extra_hooks=None):
     if not pecan_config:
         pecan_config = get_pecan_config()
 
-    app_hooks = [hooks.ConfigHook(),
-                 hooks.ConductorAPIHook(),
-                 hooks.ContextHook(pecan_config.app.acl_public_routes),
-                 hooks.PublicUrlHook()]
+    app_hooks = [
+        hooks.ConfigHook(),
+        hooks.ConductorAPIHook(),
+        hooks.ContextHook(pecan_config.app.acl_public_routes),
+        hooks.PublicUrlHook(),
+    ]
     if extra_hooks:
         app_hooks.extend(extra_hooks)
 
@@ -53,7 +55,7 @@ def setup_app(pecan_config=None, extra_hooks=None):
         force_canonical=getattr(pecan_config.app, 'force_canonical', True),
         hooks=app_hooks,
         wrap_app=middleware.ParsableErrorMiddleware,
-        **app_conf
+        **app_conf,
     )
 
     return app

@@ -13,10 +13,10 @@
 #    under the License.
 
 """
-   See note at the start of cyborg/api/controllers/v2/device_profiles.py.
-   Device profiles have an API format (which is provided to POST to
-   create one) and an object format. The code in this file can provide
-   fake device profiles in either format.
+See note at the start of cyborg/api/controllers/v2/device_profiles.py.
+Device profiles have an API format (which is provided to POST to
+create one) and an object format. The code in this file can provide
+fake device profiles in either format.
 """
 
 import datetime
@@ -28,11 +28,11 @@ from cyborg.objects import device_profile
 
 def _get_device_profiles_as_dict():
     date1 = datetime.datetime(
-        2019, 10, 9, 6, 31, 59,
-        tzinfo=datetime.timezone.utc)
+        2019, 10, 9, 6, 31, 59, tzinfo=datetime.timezone.utc
+    )
     date2 = datetime.datetime(
-        2019, 11, 8, 5, 30, 49,
-        tzinfo=datetime.timezone.utc)
+        2019, 11, 8, 5, 30, 49, tzinfo=datetime.timezone.utc
+    )
     dp1 = {
         "id": 1,
         "uuid": "a95e10ae-b3e3-4eab-a513-1afae6f17c51",
@@ -41,14 +41,16 @@ def _get_device_profiles_as_dict():
         "created_at": date1,
         "updated_at": None,
         "groups": [
-            {"resources:FPGA": "1",
-             "trait:CUSTOM_FPGA_INTEL_PAC_ARRIA10": "required",
-             "trait:CUSTOM_FUNCTION_ID_3AFB": "required",
-             },
-            {"resources:CUSTOM_ACCELERATOR_FOO": "2",
-             "trait:CUSTOM_TRAIT_ALWAYS": "required",
-             }
-        ]
+            {
+                "resources:FPGA": "1",
+                "trait:CUSTOM_FPGA_INTEL_PAC_ARRIA10": "required",
+                "trait:CUSTOM_FUNCTION_ID_3AFB": "required",
+            },
+            {
+                "resources:CUSTOM_ACCELERATOR_FOO": "2",
+                "trait:CUSTOM_TRAIT_ALWAYS": "required",
+            },
+        ],
     }
     dp2 = {
         "id": 2,
@@ -58,11 +60,12 @@ def _get_device_profiles_as_dict():
         "updated_at": None,
         "description": "fake-dp_example_2-desc",
         "groups": [
-            {"resources:FPGA": "1",
-             "trait:CUSTOM_REGION_ID_3ACD": "required",
-             "accel:bitstream_id": "ea0d149c-8555-495b-bc79-608d7bab1260"
-             }
-        ]
+            {
+                "resources:FPGA": "1",
+                "trait:CUSTOM_REGION_ID_3ACD": "required",
+                "accel:bitstream_id": "ea0d149c-8555-495b-bc79-608d7bab1260",
+            }
+        ],
     }
     return [dp1, dp2]
 
@@ -115,14 +118,15 @@ def get_xilinx_fpga_devprof():
         "name": 'fake_xilinx_fpga_dp',
         "description": "fake_xilinx_fpga_dp-desc",
         "created_at": datetime.datetime(
-            2022, 1, 22, 10, 40, 56,
-            tzinfo=datetime.timezone.utc),
+            2022, 1, 22, 10, 40, 56, tzinfo=datetime.timezone.utc
+        ),
         "updated_at": None,
         "groups": [
-            {"resources:FPGA": "1",
-             "trait:CUSTOM_FPGA_XILINX": "required",
-             "trait:CUSTOM_FPGA_PRODUCT_ID_5000": "required",
-             },
-        ]
+            {
+                "resources:FPGA": "1",
+                "trait:CUSTOM_FPGA_XILINX": "required",
+                "trait:CUSTOM_FPGA_PRODUCT_ID_5000": "required",
+            },
+        ],
     }
     return _convert_to_obj(xilinx_fpga_dp)

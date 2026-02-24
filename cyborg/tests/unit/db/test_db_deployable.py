@@ -23,7 +23,6 @@ from cyborg.tests.unit.db import utils
 
 
 class TestDbDeployable(base.DbTestCase):
-
     def test_create(self):
         kw = {'name': 'test_create_dep'}
         created_dep = utils.create_test_deployable(self.context, **kw)
@@ -32,30 +31,31 @@ class TestDbDeployable(base.DbTestCase):
     def test_get_by_uuid(self):
         created_dep = utils.create_test_deployable(self.context)
         queried_dep = self.dbapi.deployable_get(
-            self.context, created_dep['uuid'])
+            self.context, created_dep['uuid']
+        )
         self.assertEqual(created_dep['uuid'], queried_dep['uuid'])
 
     def test_get_by_rp_uuid(self):
         created_dep = utils.create_test_deployable(self.context)
         queried_dep = self.dbapi.deployable_get_by_rp_uuid(
-            self.context, created_dep['rp_uuid'])
+            self.context, created_dep['rp_uuid']
+        )
         self.assertEqual(created_dep['uuid'], queried_dep['uuid'])
 
     def test_update(self):
         created_dep = utils.create_test_deployable(self.context)
         bit_stream_id = '10efe63d-dfea-4a37-ad94-4116fba5011'
         queried_dep = self.dbapi.deployable_update(
-            self.context, created_dep['uuid'],
-            {'bit_stream_id': bit_stream_id})
+            self.context, created_dep['uuid'], {'bit_stream_id': bit_stream_id}
+        )
         self.assertEqual(bit_stream_id, queried_dep['bit_stream_id'])
 
     def test_list(self):
         uuids = []
         for i in range(1, 4):
             dep = utils.create_test_deployable(
-                self.context,
-                id=i,
-                uuid=uuidutils.generate_uuid())
+                self.context, id=i, uuid=uuidutils.generate_uuid()
+            )
             uuids.append(dep['uuid'])
         deps = self.dbapi.deployable_list(self.context)
         dep_uuids = [item.uuid for item in deps]
@@ -64,23 +64,20 @@ class TestDbDeployable(base.DbTestCase):
     def test_delete(self):
         created_dep = utils.create_test_deployable(self.context)
         return_value = self.dbapi.deployable_delete(
-            self.context,
-            created_dep['uuid'])
+            self.context, created_dep['uuid']
+        )
         self.assertIsNone(return_value)
 
     def test_list_by_filters(self):
         dep1 = utils.create_test_deployable(
-            self.context,
-            id=1,
-            uuid=uuidutils.generate_uuid(),
-            name='mydep1')
+            self.context, id=1, uuid=uuidutils.generate_uuid(), name='mydep1'
+        )
         utils.create_test_deployable(
-            self.context,
-            id=2,
-            uuid=uuidutils.generate_uuid(),
-            name='mydep2')
+            self.context, id=2, uuid=uuidutils.generate_uuid(), name='mydep2'
+        )
         res = self.dbapi.deployable_get_by_filters(
-            self.context, filters={"name": "mydep1"})
+            self.context, filters={"name": "mydep1"}
+        )
         self.assertEqual(1, len(res))
         self.assertEqual(dep1['name'], res[0]['name'])
 
@@ -90,28 +87,35 @@ class TestDbDeployable(base.DbTestCase):
         same as the List Deployable API response.
         """
         dep1 = utils.create_test_deployable(
-            self.context,
-            id=1,
-            uuid=uuidutils.generate_uuid())
-        res = self.dbapi.deployable_get_by_filters(
-            self.context, filters=None)
+            self.context, id=1, uuid=uuidutils.generate_uuid()
+        )
+        res = self.dbapi.deployable_get_by_filters(self.context, filters=None)
         self.assertEqual(1, len(res))
         self.assertEqual(dep1['uuid'], res[0]['uuid'])
 
     def test_get_by_uuid_not_exist(self):
         random_uuid = uuidutils.generate_uuid()
-        self.assertRaises(exception.ResourceNotFound,
-                          self.dbapi.deployable_get,
-                          self.context, random_uuid)
+        self.assertRaises(
+            exception.ResourceNotFound,
+            self.dbapi.deployable_get,
+            self.context,
+            random_uuid,
+        )
 
     def test_get_by_rp_uuid_not_exist(self):
         random_uuid = uuidutils.generate_uuid()
-        self.assertRaises(exception.ResourceNotFound,
-                          self.dbapi.deployable_get_by_rp_uuid,
-                          self.context, random_uuid)
+        self.assertRaises(
+            exception.ResourceNotFound,
+            self.dbapi.deployable_get_by_rp_uuid,
+            self.context,
+            random_uuid,
+        )
 
     def test_delete_by_uuid_not_exist(self):
         random_uuid = uuidutils.generate_uuid()
-        self.assertRaises(exception.ResourceNotFound,
-                          self.dbapi.deployable_delete,
-                          self.context, random_uuid)
+        self.assertRaises(
+            exception.ResourceNotFound,
+            self.dbapi.deployable_delete,
+            self.context,
+            random_uuid,
+        )

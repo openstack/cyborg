@@ -16,6 +16,7 @@
 """
 Cyborg Xilinx FPGA driver implementation.
 """
+
 from oslo_concurrency import processutils
 
 from cyborg.accelerator.drivers.fpga.base import FPGADriver
@@ -35,8 +36,9 @@ def _fpga_program_privileged(cmd_args):
 
 class XilinxFPGADriver(FPGADriver):
     """Class for Xilinx FPGA drivers.
-       Vendor should implement their specific drivers in this class.
+    Vendor should implement their specific drivers in this class.
     """
+
     VENDOR = "xilinx"
 
     def __init__(self, *args, **kwargs):
@@ -53,15 +55,24 @@ class XilinxFPGADriver(FPGADriver):
         :returns: True on success, False on failure
         """
         if controlpath_id['cpid_type'] != "PCI":
-            raise exception.InvalidType(obj='controlpath_id',
-                                        type=controlpath_id['cpid_type'],
-                                        expected='PCI')
+            raise exception.InvalidType(
+                obj='controlpath_id',
+                type=controlpath_id['cpid_type'],
+                expected='PCI',
+            )
         cmd_args = ['program']
         cmd_args.append('--device')
         bdf_dict = controlpath_id['cpid_info']
         # BDF format: domain:bus:device:function
-        bdf = ':'.join([s for s in map(lambda x: bdf_dict[x],
-                        ['domain', 'bus', 'device', 'function'])])
+        bdf = ':'.join(
+            [
+                s
+                for s in map(
+                    lambda x: bdf_dict[x],
+                    ['domain', 'bus', 'device', 'function'],
+                )
+            ]
+        )
         cmd_args.append(bdf)
         cmd_args.append('--base')
         cmd_args.append('--image')

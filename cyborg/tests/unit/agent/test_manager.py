@@ -27,17 +27,21 @@ class TestAgentManager(base.TestCase):
 
     def setUp(self):
         super().setUp()
-        self.placement_mock = self.useFixture(fixtures.MockPatch(
-            'cyborg.agent.manager.placement.PlacementClient')
+        self.placement_mock = self.useFixture(
+            fixtures.MockPatch(
+                'cyborg.agent.manager.placement.PlacementClient'
+            )
         ).mock.return_value
 
     def _create_manager_with_mocks(self):
         """Create an AgentManager with all dependencies mocked."""
-        with mock.patch('cyborg.agent.manager.FPGADriver'), \
-                mock.patch('cyborg.agent.manager.cond_api.ConductorAPI'), \
-                mock.patch('cyborg.agent.manager.AgentAPI'), \
-                mock.patch('cyborg.agent.manager.ImageAPI'), \
-                mock.patch('cyborg.agent.manager.ResourceTracker'):
+        with (
+            mock.patch('cyborg.agent.manager.FPGADriver'),
+            mock.patch('cyborg.agent.manager.cond_api.ConductorAPI'),
+            mock.patch('cyborg.agent.manager.AgentAPI'),
+            mock.patch('cyborg.agent.manager.ImageAPI'),
+            mock.patch('cyborg.agent.manager.ResourceTracker'),
+        ):
             return manager.AgentManager('cyborg-agent-topic')
 
     @mock.patch('cyborg.agent.manager.CONF')
@@ -99,7 +103,8 @@ class TestAgentManager(base.TestCase):
 
         self.assertRaises(
             exception.PlacementResourceProviderNotFound,
-            self._create_manager_with_mocks)
+            self._create_manager_with_mocks,
+        )
 
     @mock.patch('cyborg.agent.manager.CONF')
     def test_get_resource_provider_name_config_override(self, mock_conf):
@@ -135,7 +140,8 @@ class TestAgentManager(base.TestCase):
 
         self.assertRaises(
             exception.PlacementResourceProviderNotFound,
-            self._create_manager_with_mocks)
+            self._create_manager_with_mocks,
+        )
 
         # Should only try once since hostname == CONF.host
         self.assertEqual(1, self.placement_mock.get.call_count)
@@ -143,7 +149,8 @@ class TestAgentManager(base.TestCase):
     @mock.patch('cyborg.agent.manager.time')
     @mock.patch('cyborg.agent.manager.CONF')
     def test_get_resource_provider_name_retry_succeeds(
-            self, mock_conf, mock_time):
+        self, mock_conf, mock_time
+    ):
         """Test retry succeeds on second attempt."""
         mock_conf.agent.resource_provider_name = 'compute-0.example.com'
         mock_conf.host = 'compute-0'
@@ -164,7 +171,8 @@ class TestAgentManager(base.TestCase):
     @mock.patch('cyborg.agent.manager.time')
     @mock.patch('cyborg.agent.manager.CONF')
     def test_get_resource_provider_name_retry_exhausted(
-            self, mock_conf, mock_time):
+        self, mock_conf, mock_time
+    ):
         """Test all retry attempts exhausted raises exception."""
         mock_conf.agent.resource_provider_name = 'compute-0.example.com'
         mock_conf.host = 'compute-0'
@@ -177,17 +185,19 @@ class TestAgentManager(base.TestCase):
 
         self.assertRaises(
             exception.PlacementResourceProviderNotFound,
-            self._create_manager_with_mocks)
+            self._create_manager_with_mocks,
+        )
 
         # 3 total attempts (initial + 2 retries), sleep between each
         self.assertEqual(
-            [mock.call(1), mock.call(2)],
-            mock_time.sleep.call_args_list)
+            [mock.call(1), mock.call(2)], mock_time.sleep.call_args_list
+        )
 
     @mock.patch('cyborg.agent.manager.time')
     @mock.patch('cyborg.agent.manager.CONF')
     def test_get_resource_provider_name_no_retry_when_zero(
-            self, mock_conf, mock_time):
+        self, mock_conf, mock_time
+    ):
         """Test immediate failure when retries set to 0."""
         mock_conf.agent.resource_provider_name = 'compute-0.example.com'
         mock_conf.host = 'compute-0'
@@ -199,7 +209,8 @@ class TestAgentManager(base.TestCase):
 
         self.assertRaises(
             exception.PlacementResourceProviderNotFound,
-            self._create_manager_with_mocks)
+            self._create_manager_with_mocks,
+        )
 
         mock_time.sleep.assert_not_called()
 
@@ -212,8 +223,10 @@ class TestAgentManager(base.TestCase):
 
         # Placement raises an exception for all requests
         self.placement_mock.get.side_effect = ks_exc.ConnectFailure(
-            'Placement unavailable')
+            'Placement unavailable'
+        )
 
         self.assertRaises(
             exception.PlacementResourceProviderNotFound,
-            self._create_manager_with_mocks)
+            self._create_manager_with_mocks,
+        )

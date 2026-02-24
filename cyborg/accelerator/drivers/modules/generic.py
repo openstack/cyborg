@@ -37,20 +37,22 @@ def _check_for_missing_params(info_dict, error_msg, param_prefix=''):
     if missing_info:
         exc_msg = _("%(error_msg)s. Missing are: %(missing_info)s")
         raise exception.MissingParameterValue(
-            exc_msg % {'error_msg': error_msg, 'missing_info': missing_info})
+            exc_msg % {'error_msg': error_msg, 'missing_info': missing_info}
+        )
 
 
 def _parse_driver_info(driver):
     info = driver.driver_info
     d_info = {k: info.get(k) for k in COMMON_PROPERTIES}
-    error_msg = _("Cannot validate Generic Driver. Some parameters were"
-                  " missing in the configuration file.")
+    error_msg = _(
+        "Cannot validate Generic Driver. Some parameters were"
+        " missing in the configuration file."
+    )
     _check_for_missing_params(d_info, error_msg)
     return d_info
 
 
 class GENERICDRIVER:
-
     def get_properties(self):
         """Return the properties of the generic driver.
 
@@ -59,12 +61,10 @@ class GENERICDRIVER:
         return COMMON_PROPERTIES
 
     def attach(self, accelerator, instance):
-
         def install(self, accelerator):
             pass
 
     def detach(self, accelerator, instance):
-
         def uninstall(self, accelerator):
             pass
 

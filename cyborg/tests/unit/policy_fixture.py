@@ -35,8 +35,9 @@ class PolicyFixture(fixtures.Fixture):
     def setUp(self):
         super().setUp()
         self.policy_dir = self.useFixture(fixtures.TempDir())
-        self.policy_file_name = os.path.join(self.policy_dir.path,
-                                             'policy.yaml')
+        self.policy_file_name = os.path.join(
+            self.policy_dir.path, 'policy.yaml'
+        )
         with open(self.policy_file_name, 'w') as policy_file:
             policy_file.write(policy_data)
         policy_opts.set_defaults(CONF)

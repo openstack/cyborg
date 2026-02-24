@@ -53,20 +53,22 @@ class ResourceTracker:
         if not enabled_drivers:
             enabled_drivers = CONF.agent.enabled_drivers
         valid_drivers = ExtensionManager(
-            namespace='cyborg.accelerator.driver').names()
+            namespace='cyborg.accelerator.driver'
+        ).names()
         for d in enabled_drivers:
             if d not in valid_drivers:
                 raise exception.InvalidDriver(name=d)
             acc_driver = driver.DriverManager(
-                namespace='cyborg.accelerator.driver', name=d,
-                invoke_on_load=True).driver
+                namespace='cyborg.accelerator.driver',
+                name=d,
+                invoke_on_load=True,
+            ).driver
             acc_drivers.append(acc_driver)
         self.acc_drivers = acc_drivers
 
     @utils.synchronized(AGENT_RESOURCE_SEMAPHORE)
     def update_usage(self, context):
-        """Update the resource usage periodically.
-        """
+        """Update the resource usage periodically."""
         acc_list = []
         for acc_driver in self.acc_drivers:
             acc_list.extend(acc_driver.discover())

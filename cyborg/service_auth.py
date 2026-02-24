@@ -36,19 +36,19 @@ def get_auth_plugin(context):
     if CONF.service_user.send_service_user_token:
         global _SERVICE_AUTH
         if not _SERVICE_AUTH:
-            _SERVICE_AUTH = ks_loading.\
-                load_auth_from_conf_options(CONF,
-                                            group=cyborg.
-                                            conf.service_token.
-                                            SERVICE_USER_GROUP)
+            _SERVICE_AUTH = ks_loading.load_auth_from_conf_options(
+                CONF, group=cyborg.conf.service_token.SERVICE_USER_GROUP
+            )
             if _SERVICE_AUTH is None:
                 # This indicates a misconfiguration so log a warning and
                 # return the user_auth.
-                LOG.warning('Unable to load auth from [service_user] '
-                            'configuration. Ensure "auth_type" is set.')
+                LOG.warning(
+                    'Unable to load auth from [service_user] '
+                    'configuration. Ensure "auth_type" is set.'
+                )
                 return user_auth
-        return service_token.\
-            ServiceTokenAuthWrapper(user_auth=user_auth,
-                                    service_auth=_SERVICE_AUTH)
+        return service_token.ServiceTokenAuthWrapper(
+            user_auth=user_auth, service_auth=_SERVICE_AUTH
+        )
 
     return user_auth

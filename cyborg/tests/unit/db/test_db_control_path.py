@@ -22,9 +22,11 @@ from cyborg.tests.unit.db import base
 
 
 class TestDbControlPath(base.DbTestCase):
-
     def test_get_by_uuid_not_exist(self):
         random_uuid = uuidutils.generate_uuid()
-        self.assertRaises(exception.ResourceNotFound,
-                          self.dbapi.control_path_get_by_uuid,
-                          self.context, random_uuid)
+        self.assertRaises(
+            exception.ResourceNotFound,
+            self.dbapi.control_path_get_by_uuid,
+            self.context,
+            random_uuid,
+        )

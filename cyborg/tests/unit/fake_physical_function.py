@@ -38,8 +38,8 @@ def fake_db_physical_function(**updates):
         'assignable': True,
         'instance_uuid': None,
         'availability': 'Available',
-        'accelerator_id': 1
-        }
+        'accelerator_id': 1,
+    }
 
     for name, field in physical_function.PhysicalFunction.fields.items():
         if name in db_physical_function:
@@ -49,8 +49,9 @@ def fake_db_physical_function(**updates):
         elif field.default != fields.UnspecifiedDefault:
             db_physical_function[name] = field.default
         else:
-            raise Exception('fake_db_physical_function needs help with %s'
-                            % name)
+            raise Exception(
+                'fake_db_physical_function needs help with %s' % name
+            )
 
     if updates:
         db_physical_function.update(updates)
@@ -62,9 +63,11 @@ def fake_physical_function_obj(context, obj_pf_class=None, **updates):
     if obj_pf_class is None:
         obj_pf_class = objects.VirtualFunction
     expected_attrs = updates.pop('expected_attrs', None)
-    pf = obj_pf_class._from_db_object(context,
-                                      obj_pf_class(),
-                                      fake_db_physical_function(**updates),
-                                      expected_attrs=expected_attrs)
+    pf = obj_pf_class._from_db_object(
+        context,
+        obj_pf_class(),
+        fake_db_physical_function(**updates),
+        expected_attrs=expected_attrs,
+    )
     pf.obj_reset_changes()
     return pf

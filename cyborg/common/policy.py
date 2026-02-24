@@ -15,8 +15,9 @@
 
 
 """legacy old_policies, the following old_policies will be removed once
-   new policies are implemented.
+new policies are implemented.
 """
+
 from oslo_policy import policy
 # NOTE: to follow policy-in-code spec, we define defaults for
 #       the granular policies in code, rather than in policy.yaml.
@@ -24,73 +25,103 @@ from oslo_policy import policy
 #       depend on their existence throughout the code.
 
 accelerator_request_policies = [
-    policy.RuleDefault('cyborg:arq:get_all',
-                       'rule:default',
-                       description='Retrieve accelerator request records.'),
-    policy.RuleDefault('cyborg:arq:get_one',
-                       'rule:default',
-                       description='Get an accelerator request record.'),
-    policy.RuleDefault('cyborg:arq:create',
-                       'rule:allow',
-                       description='Create accelerator request records.'),
-    policy.RuleDefault('cyborg:arq:delete',
-                       'rule:default',
-                       description='Delete accelerator request records.'),
-    policy.RuleDefault('cyborg:arq:update',
-                       'rule:default',
-                       description='Update accelerator request records.'),
+    policy.RuleDefault(
+        'cyborg:arq:get_all',
+        'rule:default',
+        description='Retrieve accelerator request records.',
+    ),
+    policy.RuleDefault(
+        'cyborg:arq:get_one',
+        'rule:default',
+        description='Get an accelerator request record.',
+    ),
+    policy.RuleDefault(
+        'cyborg:arq:create',
+        'rule:allow',
+        description='Create accelerator request records.',
+    ),
+    policy.RuleDefault(
+        'cyborg:arq:delete',
+        'rule:default',
+        description='Delete accelerator request records.',
+    ),
+    policy.RuleDefault(
+        'cyborg:arq:update',
+        'rule:default',
+        description='Update accelerator request records.',
+    ),
 ]
 
 device_policies = [
-    policy.RuleDefault('cyborg:device:get_one',
-                       'rule:allow',
-                       description='Show device detail'),
-    policy.RuleDefault('cyborg:device:get_all',
-                       'rule:allow',
-                       description='Retrieve all device records'),
-    policy.RuleDefault('cyborg:device:disable',
-                       'rule:admin_api',
-                       description='Disable a device'),
-    policy.RuleDefault('cyborg:device:enable',
-                       'rule:admin_api',
-                       description='Enable a device'),
+    policy.RuleDefault(
+        'cyborg:device:get_one', 'rule:allow', description='Show device detail'
+    ),
+    policy.RuleDefault(
+        'cyborg:device:get_all',
+        'rule:allow',
+        description='Retrieve all device records',
+    ),
+    policy.RuleDefault(
+        'cyborg:device:disable',
+        'rule:admin_api',
+        description='Disable a device',
+    ),
+    policy.RuleDefault(
+        'cyborg:device:enable', 'rule:admin_api', description='Enable a device'
+    ),
 ]
 
 deployable_policies = [
-    policy.RuleDefault('cyborg:deployable:get_one',
-                       'rule:allow',
-                       description='Show deployable detail'),
-    policy.RuleDefault('cyborg:deployable:get_all',
-                       'rule:allow',
-                       description='Retrieve all deployable records'),
-    policy.RuleDefault('cyborg:deployable:program',
-                       'rule:allow',
-                       description='FPGA programming.'),
+    policy.RuleDefault(
+        'cyborg:deployable:get_one',
+        'rule:allow',
+        description='Show deployable detail',
+    ),
+    policy.RuleDefault(
+        'cyborg:deployable:get_all',
+        'rule:allow',
+        description='Retrieve all deployable records',
+    ),
+    policy.RuleDefault(
+        'cyborg:deployable:program',
+        'rule:allow',
+        description='FPGA programming.',
+    ),
 ]
 
 attribute_policies = [
-    policy.RuleDefault('cyborg:attribute:get_one',
-                       'rule:allow',
-                       description='Show attribute detail'),
-    policy.RuleDefault('cyborg:attribute:get_all',
-                       'rule:allow',
-                       description='Retrieve all attribute records'),
-    policy.RuleDefault('cyborg:attribute:create',
-                       'rule:allow',
-                       description='Create an attribute record'),
-    policy.RuleDefault('cyborg:attribute:delete',
-                       'rule:allow',
-                       description='Delete attribute records.'),
+    policy.RuleDefault(
+        'cyborg:attribute:get_one',
+        'rule:allow',
+        description='Show attribute detail',
+    ),
+    policy.RuleDefault(
+        'cyborg:attribute:get_all',
+        'rule:allow',
+        description='Retrieve all attribute records',
+    ),
+    policy.RuleDefault(
+        'cyborg:attribute:create',
+        'rule:allow',
+        description='Create an attribute record',
+    ),
+    policy.RuleDefault(
+        'cyborg:attribute:delete',
+        'rule:allow',
+        description='Delete attribute records.',
+    ),
 ]
 
 fpga_policies = [
-    policy.RuleDefault('cyborg:fpga:get_one',
-                       'rule:allow',
-                       description='Show fpga detail'),
-    policy.RuleDefault('cyborg:fpga:get_all',
-                       'rule:allow',
-                       description='Retrieve all fpga records'),
-    policy.RuleDefault('cyborg:fpga:update',
-                       'rule:allow',
-                       description='Update fpga records'),
+    policy.RuleDefault(
+        'cyborg:fpga:get_one', 'rule:allow', description='Show fpga detail'
+    ),
+    policy.RuleDefault(
+        'cyborg:fpga:get_all',
+        'rule:allow',
+        description='Retrieve all fpga records',
+    ),
+    policy.RuleDefault(
+        'cyborg:fpga:update', 'rule:allow', description='Update fpga records'
+    ),
 ]

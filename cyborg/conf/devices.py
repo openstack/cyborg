@@ -14,42 +14,35 @@
 
 from oslo_config import cfg
 
-pci_group = cfg.OptGroup(
-    name='pci',
-    title='PCI passthrough options')
+pci_group = cfg.OptGroup(name='pci', title='PCI passthrough options')
 
-pci_opts = [
-    cfg.MultiStrOpt('passthrough_whitelist',
-                    default=[],
-                    help=" ")
-]
+pci_opts = [cfg.MultiStrOpt('passthrough_whitelist', default=[], help=" ")]
 
 nic_group = cfg.OptGroup(
     name='nic_devices',
     title='nic device ID options',
     help="""This is used to config specific nic devices.
-    """)
+    """,
+)
 
-nic_opts = [
-    cfg.ListOpt('enabled_nic_types',
-                default=[],
-                help=" ")
-]
+nic_opts = [cfg.ListOpt('enabled_nic_types', default=[], help=" ")]
 
 gpu_group = cfg.OptGroup(
     name='gpu_devices',
     title='virtual gpu options',
     help="""This is used to config vGPU types for nvidia GPU devices.
-    """)
+    """,
+)
 
 vgpu_opts = [
     # TODO(bogdando): After Cyborg ensures the safe removal of Placement
     # resource providers and deployables during upgrades and that can be tested
     # similar to Nova's test_pci_in_placement backed by the Placement
     # sqlite fixture, change this option's default to True.
-    cfg.BoolOpt('filter_sriov_vfs',
-                default=False,
-                help="""
+    cfg.BoolOpt(
+        'filter_sriov_vfs',
+        default=False,
+        help="""
 Filter out SR-IOV Virtual Function (VF) devices from GPU discovery.
 
 When enabled, the NVIDIA GPU driver will skip PCI VF devices and only
@@ -63,10 +56,12 @@ up first. Operators should ensure no instances hold VF allocations before
 enabling this option, as Cyborg does not yet have upgrade-safe protection
 equivalent to Nova's PCI tracker (which defers removal of allocated
 devices until the owning instance is deleted).
-"""),
-    cfg.ListOpt('enabled_vgpu_types',
-                default=[],
-                help="""
+""",
+    ),
+    cfg.ListOpt(
+        'enabled_vgpu_types',
+        default=[],
+        help="""
 The vGPU types enabled in the compute node.
 
 Cyborg supports multiple vGPU types in one host. Usually, a single physical
@@ -93,7 +88,8 @@ An example is as the following::
     [vgpu_nvidia-36]
     device_addresses = 0000:86:00.0
 
-""")
+""",
+    ),
 ]
 
 
@@ -113,10 +109,16 @@ def register_dynamic_opts(conf):
     the initial configuration has been loaded.
     """
     opts = [
-        cfg.ListOpt('physical_device_mappings', default=[],
-                    item_type=cfg.types.String()),
-        cfg.ListOpt('function_device_mappings', default=[],
-                    item_type=cfg.types.String()),
+        cfg.ListOpt(
+            'physical_device_mappings',
+            default=[],
+            item_type=cfg.types.String(),
+        ),
+        cfg.ListOpt(
+            'function_device_mappings',
+            default=[],
+            item_type=cfg.types.String(),
+        ),
     ]
 
     # Register the '[nic_type]/physical_device_mappings' and
@@ -126,8 +128,9 @@ def register_dynamic_opts(conf):
         conf.register_opts(opts, group=nic_type)
     # Register the '[vgpu_$(VGPU_TYPE)]/device_addresses' opts, implicitly
     # registering the '[vgpu_$(VGPU_TYPE)]' groups in the process
-    opt = cfg.ListOpt('device_addresses', default=[],
-                      item_type=cfg.types.String())
+    opt = cfg.ListOpt(
+        'device_addresses', default=[], item_type=cfg.types.String()
+    )
     for vgpu_type in conf.gpu_devices.enabled_vgpu_types:
         conf.register_opt(opt, group='vgpu_%s' % vgpu_type)
 

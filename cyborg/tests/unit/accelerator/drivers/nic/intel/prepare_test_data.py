@@ -21,9 +21,9 @@ PF0_ADDR = "0000:05:00.0"
 PF1_ADDR = "0000:06:00.0"
 VF0_ADDR = "0000:05:01.0"
 NIC_TREE = {
-    "dev.0": {"bdf": PF0_ADDR,
-              "vfs": {"dev.2": {"bdf": VF0_ADDR}}},
-    "dev.1": {"bdf": PF1_ADDR}}
+    "dev.0": {"bdf": PF0_ADDR, "vfs": {"dev.2": {"bdf": VF0_ADDR}}},
+    "dev.1": {"bdf": PF1_ADDR},
+}
 
 SYS_DEVICES = "sys/devices"
 PCI_DEVICES_PATH = "sys/bus/pci/devices"
@@ -53,7 +53,8 @@ NIC_DEVICE_COMMON_CONTENT = {
     "resource0": "",
     "subsystem_device": "0x0002",
     "subsystem_vendor": "0x8086",
-    "vendor": "0x8086"}
+    "vendor": "0x8086",
+}
 
 NIC_DEVICES_SPECIAL_COMMON_CONTENT = {
     "dev.0": {
@@ -70,7 +71,8 @@ NIC_DEVICES_SPECIAL_COMMON_CONTENT = {
             "0x00000000d1390000 0x00000000d139ffff 0x0000000000140204",
             "0x0000000000000000 0x0000000000000000 0x0000000000000000",
             "0x0000000000000000 0x0000000000000000 0x0000000000000000",
-            "0x0000000000000000 0x0000000000000000 0x0000000000000000"],
+            "0x0000000000000000 0x0000000000000000 0x0000000000000000",
+        ],
         "resource2": "",
         "resource4": "",
         "sriov_numvfs": "1",
@@ -81,7 +83,8 @@ NIC_DEVICES_SPECIAL_COMMON_CONTENT = {
             "PCI_ID=8086:37C8",
             "PCI_SUBSYS_ID=8086:0002",
             "PCI_SLOT_NAME=0000:05:00.0",
-            "MODALIAS=pci:v00008086d000037C8sv00008086sd00000002bc0Bsc40i00"],
+            "MODALIAS=pci:v00008086d000037C8sv00008086sd00000002bc0Bsc40i00",
+        ],
     },
     "dev.1": {
         "resource": [
@@ -97,7 +100,8 @@ NIC_DEVICES_SPECIAL_COMMON_CONTENT = {
             "0x0000000000000000 0x0000000000000000 0x0000000000000000",
             "0x0000000000000000 0x0000000000000000 0x0000000000000000",
             "0x0000000000000000 0x0000000000000000 0x0000000000000000",
-            "0x0000000000000000 0x0000000000000000 0x0000000000000000"],
+            "0x0000000000000000 0x0000000000000000 0x0000000000000000",
+        ],
         "resource2": "",
         "sriov_numvfs": "0",
         "sriov_totalvfs": "0",
@@ -107,7 +111,8 @@ NIC_DEVICES_SPECIAL_COMMON_CONTENT = {
             "PCI_ID=8086:37C8",
             "PCI_SUBSYS_ID=8086:0002",
             "PCI_SLOT_NAME=0000:06:00.0",
-            "MODALIAS=pci:v00008086d000037C8sv00008086sd00000002bc0Bsc40i00"],
+            "MODALIAS=pci:v00008086d000037C8sv00008086sd00000002bc0Bsc40i00",
+        ],
     },
     "dev.2": {
         "d3cold_allowed": "0",
@@ -127,21 +132,23 @@ NIC_DEVICES_SPECIAL_COMMON_CONTENT = {
             "0x0000000000000000 0x0000000000000000 0x0000000000000000",
             "0x0000000000000000 0x0000000000000000 0x0000000000000000",
             "0x0000000000000000 0x0000000000000000 0x0000000000000000",
-            "0x0000000000000000 0x0000000000000000 0x0000000000000000"],
+            "0x0000000000000000 0x0000000000000000 0x0000000000000000",
+        ],
         "uevent": [
             "DRIVER=c6xx",
             "PCI_CLASS=B4000",
             "PCI_ID=8086:37C8",
             "PCI_SUBSYS_ID=8086:0002",
             "PCI_SLOT_NAME=0000:05:01.0",
-            "MODALIAS=pci:v00008086d000037C8sv00008086sd00000002bc0Bsc40i00"],
-    }
+            "MODALIAS=pci:v00008086d000037C8sv00008086sd00000002bc0Bsc40i00",
+        ],
+    },
 }
 
 NIC_DEVICE_COMMON_SOFT_LINK = {
     "driver": "../../../../../../bus/pci/drivers/c6xx",
     "iommu": "../../../../../virtual/iommu/dmar1",
-    "subsystem": "../../../../../../bus/pci"
+    "subsystem": "../../../../../../bus/pci",
 }
 
 NIC_DEVICES_SPECIAL_SOFT_LINK = {
@@ -157,17 +164,17 @@ NIC_DEVICES_SPECIAL_SOFT_LINK = {
     "dev.2": {
         "iommu_group": "../../../../../../kernel/iommu_groups/67",
         # "physfn": "../0000:05:00.0/",
-    }
+    },
 }
 
 NIC_DEVICE_PF_SOFT_LINK = {
-    "virtfn": lambda k, v: (k + str(int(v.rsplit(".", 1)[-1])),
-                            "/".join(["..", v]))
+    "virtfn": lambda k, v: (
+        k + str(int(v.rsplit(".", 1)[-1])),
+        "/".join(["..", v]),
+    )
 }
 
-NIC_DEVICE_VF_SOFT_LINK = {
-    "physfn": lambda k, v: (k, "/".join(["..", v]))
-}
+NIC_DEVICE_VF_SOFT_LINK = {"physfn": lambda k, v: (k, "/".join(["..", v]))}
 
 
 def gen_nic_content(path, dev):
@@ -225,15 +232,16 @@ def create_devices_path_and_files(tree, device_path, vf=False, pfinfo=None):
             gen_nic_vf_soft_link(bdf_path, pfinfo["bdf"])
         pfinfo = {"path": bdf_path, "bdf": bdf}
         if "vfs" in v:
-            create_devices_path_and_files(
-                v["vfs"], device_path, True, pfinfo)
+            create_devices_path_and_files(v["vfs"], device_path, True, pfinfo)
         os.symlink("../../../" + bdf, os.path.join(dev_path, "device"))
-        pci_dev = os.path.join(device_path.split(SYS_DEVICES)[0],
-                               PCI_DEVICES_PATH)
+        pci_dev = os.path.join(
+            device_path.split(SYS_DEVICES)[0], PCI_DEVICES_PATH
+        )
         if not os.path.exists(pci_dev):
             os.makedirs(pci_dev)
-        os.symlink("../../.." + bdf_path.split("sys")[-1],
-                   os.path.join(pci_dev, bdf))
+        os.symlink(
+            "../../.." + bdf_path.split("sys")[-1], os.path.join(pci_dev, bdf)
+        )
 
 
 def create_fake_sysfs(prefix=""):

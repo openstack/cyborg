@@ -17,7 +17,6 @@
 Cyborg Intel FPGA driver implementation.
 """
 
-
 import glob
 import os
 import re
@@ -44,10 +43,10 @@ DEVICE = "device"
 PF = "physfn"
 VF = "virtfn*"
 BDF_PATTERN = re.compile(
-    r"^[a-fA-F\d]{4}:[a-fA-F\d]{2}:[a-fA-F\d]{2}\.[a-fA-F\d]$")
+    r"^[a-fA-F\d]{4}:[a-fA-F\d]{2}:[a-fA-F\d]{2}\.[a-fA-F\d]$"
+)
 
-DEVICE_FILE_MAP = {"vendor": "vendor",
-                   "device": "product_id"}
+DEVICE_FILE_MAP = {"vendor": "vendor", "device": "product_id"}
 DEVICE_FILE_HANDLER = {}
 DEVICE_EXPOSED = ["vendor", "device"]
 
@@ -62,15 +61,16 @@ def read_line(filename):
 
 
 def is_fpga(p):
-    infos = (read_line(os.path.join(p, "vendor")),
-             read_line(os.path.join(p, "device")))
+    infos = (
+        read_line(os.path.join(p, "vendor")),
+        read_line(os.path.join(p, "device")),
+    )
     if infos in KNOWN_FPGAS:
         return os.path.realpath(p)
 
 
 def link_real_path(p):
-    return os.path.realpath(
-        os.path.join(os.path.dirname(p), os.readlink(p)))
+    return os.path.realpath(os.path.join(os.path.dirname(p), os.readlink(p)))
 
 
 # TODO(s_shogo) This function name should be reconsidered in py3
@@ -79,34 +79,43 @@ def find_fpgas_by_know_list():
     return filter(
         lambda p: (
             read_line(os.path.join(p, "vendor")),
-            read_line(os.path.join(p, "device"))
-        ) in KNOWN_FPGAS,
-        glob.glob(PCI_DEVICES_PATH_PATTERN))
+            read_line(os.path.join(p, "device")),
+        )
+        in KNOWN_FPGAS,
+        glob.glob(PCI_DEVICES_PATH_PATTERN),
+    )
 
 
 def get_link_targets(links):
     return map(
-        lambda p:
-            os.path.realpath(
-                os.path.join(os.path.dirname(p), os.readlink(p))),
-        links)
+        lambda p: os.path.realpath(
+            os.path.join(os.path.dirname(p), os.readlink(p))
+        ),
+        links,
+    )
 
 
 def all_fpgas():
     # glob.glob("/sys/class/fpga", "*")
     return set(get_link_targets(find_fpgas_by_know_list())) | set(
-        map(lambda p: p.rsplit("/", 2)[0],
-            get_link_targets(glob.glob(os.path.join(SYS_FPGA, "*")))))
+        map(
+            lambda p: p.rsplit("/", 2)[0],
+            get_link_targets(glob.glob(os.path.join(SYS_FPGA, "*"))),
+        )
+    )
 
 
 def all_vf_fpgas():
-    return [dev.rsplit("/", 2)[0] for dev in
-            glob.glob(os.path.join(SYS_FPGA, "*/device/physfn"))]
+    return [
+        dev.rsplit("/", 2)[0]
+        for dev in glob.glob(os.path.join(SYS_FPGA, "*/device/physfn"))
+    ]
 
 
 def all_pfs_have_vf():
-    return list(filter(lambda p: glob.glob(os.path.join(p, "virtfn0")),
-                all_fpgas()))
+    return list(
+        filter(lambda p: glob.glob(os.path.join(p, "virtfn0")), all_fpgas())
+    )
 
 
 def target_symbolic_map():
@@ -121,13 +130,13 @@ def bdf_path_map():
 
 
 def all_vfs_in_pf_fpgas(pf_path):
-    return get_link_targets(
-        glob.glob(os.path.join(pf_path, "virtfn*")))
+    return get_link_targets(glob.glob(os.path.join(pf_path, "virtfn*")))
 
 
 def all_pf_fpgas():
-    return filter(lambda p: glob.glob(os.path.join(p, "sriov_totalvfs")),
-                  all_fpgas())
+    return filter(
+        lambda p: glob.glob(os.path.join(p, "sriov_totalvfs")), all_fpgas()
+    )
 
 
 def is_bdf(bdf):
@@ -146,9 +155,13 @@ def get_afu_ids(device_name):
         read_line,
         glob.glob(
             os.path.join(
-                PCI_DEVICES_PATH_PATTERN, "fpga",
-                device_name, "intel-fpga-port.*", "afu_id")
-        )
+                PCI_DEVICES_PATH_PATTERN,
+                "fpga",
+                device_name,
+                "intel-fpga-port.*",
+                "afu_id",
+            )
+        ),
     )
 
 
@@ -157,9 +170,9 @@ def get_region_ids(device_name):
         read_line,
         glob.glob(
             os.path.join(
-                SYS_FPGA, device_name,
-                "intel-fpga-fme.*", "pr/interface_id")
-        )
+                SYS_FPGA, device_name, "intel-fpga-fme.*", "pr/interface_id"
+            )
+        ),
     )
 
 
@@ -187,14 +200,16 @@ def fpga_device(path):
     infos = {}
 
     # NOTE "In 3.x, os.path.walk is removed in favor of os.walk."
-    for (dirpath, dirnames, filenames) in os.walk(path):
+    for dirpath, dirnames, filenames in os.walk(path):
         for filename in filenames:
             if filename in DEVICE_EXPOSED:
                 key = DEVICE_FILE_MAP.get(filename) or filename
                 if key in DEVICE_FILE_HANDLER and callable(
-                        DEVICE_FILE_HANDLER(key)):
+                    DEVICE_FILE_HANDLER(key)
+                ):
                     infos[key] = DEVICE_FILE_HANDLER(key)(
-                        os.path.join(dirpath, filename))
+                        os.path.join(dirpath, filename)
+                    )
                 else:
                     infos[key] = read_line(os.path.join(dirpath, filename))
     return infos
@@ -204,9 +219,12 @@ def fpga_tree():
     def gen_fpga_infos(path, vf=True):
         bdf = get_bdf_by_path(path)
         names = glob.glob1(os.path.join(path, "fpga"), "*")
-        fpga = {"type": constants.DEVICE_FPGA,
-                "devices": bdf, "stub": True,
-                "name": "_".join((socket.gethostname(), bdf))}
+        fpga = {
+            "type": constants.DEVICE_FPGA,
+            "devices": bdf,
+            "stub": True,
+            "name": "_".join((socket.gethostname(), bdf)),
+        }
         d_info = fpga_device(path)
         fpga.update(d_info)
         if names:
@@ -238,8 +256,9 @@ def _generate_driver_device(fpga, pf_has_vf):
     driver_device_obj.vendor = fpga["vendor"]
     driver_device_obj.stub = fpga["stub"]
     driver_device_obj.model = fpga.get('model', "miss_model_info")
-    driver_device_obj.vendor_board_info = fpga.get('vendor_board_info',
-                                                   "miss_vb_info")
+    driver_device_obj.vendor_board_info = fpga.get(
+        'vendor_board_info', "miss_vb_info"
+    )
     std_board_info = {'product_id': fpga.get('product_id')}
     driver_device_obj.std_board_info = jsonutils.dumps(std_board_info)
     driver_device_obj.type = fpga["type"]
@@ -262,8 +281,7 @@ def _generate_dep_list(fpga, pf_has_vf):
     # pf without sriov enabled.
     if not pf_has_vf:
         driver_dep.num_accelerators = 1
-        driver_dep.attach_handle_list = \
-            [_generate_attach_handle(fpga)]
+        driver_dep.attach_handle_list = [_generate_attach_handle(fpga)]
         driver_dep.name = fpga["name"]
         driver_dep.driver_name = DRIVER_NAME
     # pf with sriov enabled, may have several regions and several vfs.
@@ -272,8 +290,7 @@ def _generate_dep_list(fpga, pf_has_vf):
         driver_dep.num_accelerators = len(fpga["regions"])
         for vf in fpga["regions"]:
             # Only vfs in regions can be attach, no pf.
-            driver_dep.attach_handle_list.append(
-                _generate_attach_handle(vf))
+            driver_dep.attach_handle_list.append(_generate_attach_handle(vf))
             driver_dep.name = vf["name"]
             driver_dep.driver_name = DRIVER_NAME
     return [driver_dep]

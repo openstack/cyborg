@@ -23,9 +23,13 @@ MAX_VER = versions.max_version_string()
 
 
 class TestMicroversions(api_base.BaseApiTest):
-
     controller_list_response = [
-        'id', 'links', 'max_version', 'min_version', 'status']
+        'id',
+        'links',
+        'max_version',
+        'min_version',
+        'status',
+    ]
 
     def setUp(self):
         super().setUp()
@@ -34,11 +38,12 @@ class TestMicroversions(api_base.BaseApiTest):
         response = self.get_json(
             '/v2',
             headers={'OpenStack-API-Version': '10'},
-            expect_errors=True, return_json=False)
+            expect_errors=True,
+            return_json=False,
+        )
         self.assertEqual('application/json', response.content_type)
         self.assertEqual(406, response.status_int)
-        expected_error_msg = ('Invalid value for'
-                              ' OpenStack-API-Version header')
+        expected_error_msg = 'Invalid value for OpenStack-API-Version header'
         self.assertTrue(response.json['error_message'])
         self.assertIn(expected_error_msg, response.json['error_message'])
 
@@ -50,43 +55,57 @@ class TestMicroversions(api_base.BaseApiTest):
         self.assertEqual(response.headers[H_MIN_VER], MIN_VER)
         self.assertEqual(response.headers[H_MAX_VER], MAX_VER)
         self.assertEqual(response.headers[H_RESP_VER], MIN_VER)
-        self.assertTrue(all(x in response.json.keys() for x in
-                            self.controller_list_response))
+        self.assertTrue(
+            all(
+                x in response.json.keys()
+                for x in self.controller_list_response
+            )
+        )
 
     def test_new_client_new_api(self):
         response = self.get_json(
-            '/v2',
-            headers={'OpenStack-API-Version': '2.0'},
-            return_json=False)
+            '/v2', headers={'OpenStack-API-Version': '2.0'}, return_json=False
+        )
         self.assertEqual(response.headers[H_MIN_VER], MIN_VER)
         self.assertEqual(response.headers[H_MAX_VER], MAX_VER)
         self.assertEqual(response.headers[H_RESP_VER], '2.0')
-        self.assertTrue(all(x in response.json.keys() for x in
-                            self.controller_list_response))
+        self.assertTrue(
+            all(
+                x in response.json.keys()
+                for x in self.controller_list_response
+            )
+        )
 
     def test_latest_microversion(self):
         response = self.get_json(
             '/v2',
             headers={'OpenStack-API-Version': 'latest'},
-            return_json=False)
+            return_json=False,
+        )
         self.assertEqual(response.headers[H_MIN_VER], MIN_VER)
         self.assertEqual(response.headers[H_MAX_VER], MAX_VER)
         self.assertEqual(response.headers[H_RESP_VER], MAX_VER)
-        self.assertTrue(all(x in response.json.keys() for x in
-                            self.controller_list_response))
+        self.assertTrue(
+            all(
+                x in response.json.keys()
+                for x in self.controller_list_response
+            )
+        )
 
     def test_unsupported_version(self):
         unsupported_version = str(float(MAX_VER) + 0.1)
         response = self.get_json(
             '/v2',
             headers={'OpenStack-API-Version': unsupported_version},
-            expect_errors=True)
+            expect_errors=True,
+        )
         self.assertEqual(406, response.status_int)
         self.assertEqual(response.headers[H_MIN_VER], MIN_VER)
         self.assertEqual(response.headers[H_MAX_VER], MAX_VER)
-        expected_error_msg = ('Version %s was requested but the minor '
-                              'version is not supported by this service. '
-                              'The supported version range is' %
-                              unsupported_version)
+        expected_error_msg = (
+            'Version %s was requested but the minor '
+            'version is not supported by this service. '
+            'The supported version range is' % unsupported_version
+        )
         self.assertTrue(response.json['error_message'])
         self.assertIn(expected_error_msg, response.json['error_message'])

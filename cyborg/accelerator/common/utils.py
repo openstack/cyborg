@@ -21,9 +21,9 @@ from oslo_serialization import jsonutils
 from cyborg.common import exception
 
 
-_PCI_ADDRESS_PATTERN = ("^(hex{4}):(hex{2}):(hex{2}).(oct{1})$".
-                        replace("hex", r"[\da-fA-F]").
-                        replace("oct", "[0-7]"))
+_PCI_ADDRESS_PATTERN = "^(hex{4}):(hex{2}):(hex{2}).(oct{1})$".replace(
+    "hex", r"[\da-fA-F]"
+).replace("oct", "[0-7]")
 _PCI_ADDRESS_REGEX = re.compile(_PCI_ADDRESS_PATTERN)
 
 
@@ -93,11 +93,18 @@ def parse_mappings(mapping_list):
             raise ValueError(("Missing key in mapping: '%s'") % dev_mapping)
         if physnet_or_function in mapping:
             raise ValueError(
-                ("Key %(physnet_or_function)s in mapping: %(mapping)s "
-                 "not unique") % {'physnet_or_function': physnet_or_function,
-                                  'mapping': dev_mapping})
-        mapping[physnet_or_function] = set(dev.strip() for dev in
-                                           devices.split("|") if dev.strip())
+                (
+                    "Key %(physnet_or_function)s in mapping: %(mapping)s "
+                    "not unique"
+                )
+                % {
+                    'physnet_or_function': physnet_or_function,
+                    'mapping': dev_mapping,
+                }
+            )
+        mapping[physnet_or_function] = set(
+            dev.strip() for dev in devices.split("|") if dev.strip()
+        )
     return mapping
 
 
@@ -106,13 +113,14 @@ def get_vendor_maps():
 
     :return: vendor maps dict
     """
-    return {"10de": "nvidia",
-            "102b": "matrox",
-            "1bd4": "inspur",
-            "8086": "intel",
-            "1099": "samsung",
-            "1cf2": "zte"
-            }
+    return {
+        "10de": "nvidia",
+        "102b": "matrox",
+        "1bd4": "inspur",
+        "8086": "intel",
+        "1099": "samsung",
+        "1cf2": "zte",
+    }
 
 
 def mdev_str_to_json(pci_address, asked_type, vgpu_mark):

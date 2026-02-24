@@ -37,7 +37,7 @@ class Attribute(base.CyborgObject, object_base.VersionedObjectDictCompat):
         'uuid': object_fields.UUIDField(nullable=False),
         'deployable_id': object_fields.IntegerField(nullable=False),
         'key': object_fields.StringField(nullable=False),
-        'value': object_fields.StringField(nullable=False)
+        'value': object_fields.StringField(nullable=False),
     }
 
     def create(self, context):
@@ -46,8 +46,7 @@ class Attribute(base.CyborgObject, object_base.VersionedObjectDictCompat):
             raise exception.AttributeInvalid()
 
         values = self.obj_get_changes()
-        db_attr = self.dbapi.attribute_create(context,
-                                              values)
+        db_attr = self.dbapi.attribute_create(context, values)
         return self._from_db_object(self, db_attr)
 
     @classmethod
@@ -60,8 +59,9 @@ class Attribute(base.CyborgObject, object_base.VersionedObjectDictCompat):
     @classmethod
     def get_by_deployable_id(cls, context, deployable_id):
         """Get an attribute by deployable_id"""
-        db_attr = cls.dbapi.attribute_get_by_deployable_id(context,
-                                                           deployable_id)
+        db_attr = cls.dbapi.attribute_get_by_deployable_id(
+            context, deployable_id
+        )
         return cls._from_db_object_list(db_attr, context)
 
     @classmethod
@@ -72,10 +72,9 @@ class Attribute(base.CyborgObject, object_base.VersionedObjectDictCompat):
 
     def save(self, context):
         """Update an attribute record in the DB."""
-        db_attr = self.dbapi.attribute_update(context,
-                                              self.uuid,
-                                              self.key,
-                                              self.value)
+        db_attr = self.dbapi.attribute_update(
+            context, self.uuid, self.key, self.value
+        )
         self._from_db_object(self, db_attr)
 
     def destroy(self, context):

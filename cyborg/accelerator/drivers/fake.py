@@ -29,8 +29,9 @@ from cyborg.objects.driver_objects import driver_device
 class FakeDriver(GenericDriver):
     """Base class for Fake drivers.
 
-       This is just a Fake drivers interface.
+    This is just a Fake drivers interface.
     """
+
     VENDOR = "fake"
     NUM_ACCELERATORS = 16
 
@@ -76,7 +77,8 @@ class FakeDriver(GenericDriver):
     def _generate_dep_list(self, pci):
         driver_dep = driver_deployable.DriverDeployable()
         driver_dep.attach_handle_list = self._generate_attach_handles(
-            pci, self.NUM_ACCELERATORS)
+            pci, self.NUM_ACCELERATORS
+        )
         # NOTE(sean-k-mooney): we need to prepend the host name to the
         # device name as this is used to generate the RP name and uuid in
         # the cyborg conductor when updating placement. As such this needs
@@ -95,17 +97,19 @@ class FakeDriver(GenericDriver):
         fpga_list = []
         pci_addr = '{"domain":"0000","bus":"0c","device":"00","function":"0"}'
         pci_dict = {
-            'slot': pci_addr,                    # PCI slot address
-            'device': 'FakeDevice',              # Name of the device
-            'vendor_id': '0xABCD',                 # ID of the vendor
-            'class': 'Fake class',               # Name of the class
-            'device_id': '0xabcd'                 # ID of the device
+            'slot': pci_addr,  # PCI slot address
+            'device': 'FakeDevice',  # Name of the device
+            'vendor_id': '0xABCD',  # ID of the vendor
+            'class': 'Fake class',  # Name of the class
+            'device_id': '0xabcd',  # ID of the device
         }
         device = driver_device.DriverDevice()
         device.vendor = pci_dict["vendor_id"]
         device.model = pci_dict.get('model', 'miss model info')
-        std_board_info = {'device_id': pci_dict.get('device_id'),
-                          'class': pci_dict.get('class')}
+        std_board_info = {
+            'device_id': pci_dict.get('device_id'),
+            'class': pci_dict.get('class'),
+        }
         device.std_board_info = jsonutils.dumps(std_board_info)
         device.vendor_board_info = 'fake_vendor_info'
         device.type = constants.DEVICE_FPGA

@@ -26,8 +26,8 @@ def get_fake_devices_as_dict():
         "vendor_board_info": "fake_vendor_info",
         "model": "miss model info",
         "type": "FPGA",
-        "std_board_info": "{'class': 'Fake class', 'device_id': '0xabcd'}"
-        }
+        "std_board_info": "{'class': 'Fake class', 'device_id': '0xabcd'}",
+    }
     device2 = {
         "id": 2,
         "vendor": "0xDCBA",
@@ -36,8 +36,8 @@ def get_fake_devices_as_dict():
         "vendor_board_info": "fake_vendor_info",
         "model": "miss model info",
         "type": "GPU",
-        "std_board_info": "{'class': 'Fake class', 'device_id': '0xdcba'}"
-        }
+        "std_board_info": "{'class': 'Fake class', 'device_id': '0xdcba'}",
+    }
     return [device1, device2]
 
 

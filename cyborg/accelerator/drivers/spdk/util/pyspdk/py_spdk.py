@@ -24,7 +24,6 @@ LOG = logging.getLogger(__name__)
 
 
 class PySPDK:
-
     def __init__(self, pname):
         super().__init__()
         self.pid = None

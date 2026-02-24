@@ -49,16 +49,24 @@ def safe_rstrip(value, chars=None):
 
     """
     if not isinstance(value, str):
-        LOG.warning("Failed to remove trailing character. Returning "
-                    "original object. Supplied object is not a string: "
-                    "%s,", value)
+        LOG.warning(
+            "Failed to remove trailing character. Returning "
+            "original object. Supplied object is not a string: "
+            "%s,",
+            value,
+        )
         return value
 
     return value.rstrip(chars) or value
 
 
-def get_ksa_adapter(service_type, ksa_auth=None, ksa_session=None,
-                    min_version=None, max_version=None):
+def get_ksa_adapter(
+    service_type,
+    ksa_auth=None,
+    ksa_session=None,
+    min_version=None,
+    max_version=None,
+):
     """Construct a keystoneauth1 Adapter for a given service type.
 
     We expect to find a conf group whose name corresponds to the service_type's
@@ -109,11 +117,17 @@ def get_ksa_adapter(service_type, ksa_auth=None, ksa_session=None,
 
     if not ksa_session:
         ksa_session = ks_loading.load_session_from_conf_options(
-            CONF, confgrp, auth=ksa_auth)
+            CONF, confgrp, auth=ksa_auth
+        )
 
     return ks_loading.load_adapter_from_conf_options(
-        CONF, confgrp, session=ksa_session, auth=ksa_auth,
-        min_version=min_version, max_version=max_version)
+        CONF,
+        confgrp,
+        session=ksa_session,
+        auth=ksa_auth,
+        min_version=min_version,
+        max_version=max_version,
+    )
 
 
 def _get_conf_group(service_type):
@@ -127,7 +141,8 @@ def _get_conf_group(service_type):
 def _get_auth_and_session(confgrp):
     ksa_auth = ks_loading.load_auth_from_conf_options(CONF, confgrp)
     return ks_loading.load_session_from_conf_options(
-        CONF, confgrp, auth=ksa_auth)
+        CONF, confgrp, auth=ksa_auth
+    )
 
 
 def get_sdk_adapter(service_type, check_service=False):
@@ -148,12 +163,16 @@ def get_sdk_adapter(service_type, check_service=False):
     sess = _get_auth_and_session(confgrp)
     try:
         conn = connection.Connection(
-            session=sess, oslo_conf=CONF, service_types={service_type},
-            strict_proxies=check_service)
+            session=sess,
+            oslo_conf=CONF,
+            service_types={service_type},
+            strict_proxies=check_service,
+        )
     except sdk_exc.ServiceDiscoveryException as e:
         raise exception.ServiceUnavailable(
-            _("The %(service_type)s service is unavailable: %(error)s") %
-            {'service_type': service_type, 'error': str(e)})
+            _("The %(service_type)s service is unavailable: %(error)s")
+            % {'service_type': service_type, 'error': str(e)}
+        )
     return getattr(conn, service_type)
 
 
@@ -195,7 +214,8 @@ def get_endpoint(ksa_adapter):
             pass
     raise ks_exc.EndpointNotFound(
         "Could not find requested endpoint for any of the following "
-        "interfaces: %s" % interfaces)
+        "interfaces: %s" % interfaces
+    )
 
 
 class _Singleton(type):
@@ -205,8 +225,9 @@ class _Singleton(type):
 
     def __call__(cls, *args, **kwargs):
         ins = cls._instances.get(cls)
-        if not ins or (hasattr(ins, "_reset")
-                       and isinstance(ins, cls) and ins._reset()):
+        if not ins or (
+            hasattr(ins, "_reset") and isinstance(ins, cls) and ins._reset()
+        ):
             cls._instances[cls] = super().__call__(*args, **kwargs)
 
         return cls._instances[cls]
@@ -233,8 +254,13 @@ class ThreadWorks(Singleton):
 
     def spawn(self, func, *args, **kwargs):
         """Put a job in thread pool."""
-        LOG.debug("Add an async jobs. func: %s is with parameters args: %s, "
-                  "kwargs: %s", func, args, kwargs)
+        LOG.debug(
+            "Add an async jobs. func: %s is with parameters args: %s, "
+            "kwargs: %s",
+            func,
+            args,
+            kwargs,
+        )
         future = self.executor.submit(func, *args, **kwargs)
         return future
 
@@ -243,8 +269,13 @@ class ThreadWorks(Singleton):
         executor = futures.ThreadPoolExecutor()
         # TODO(Shaohe) every submit func should be wrapped with exception catch
         job = executor.submit(func, *args, **kwargs)
-        LOG.debug("Spawn master job. func: %s is with parameters args: %s, "
-                  "kwargs: %s", func, args, kwargs)
+        LOG.debug(
+            "Spawn master job. func: %s is with parameters args: %s, "
+            "kwargs: %s",
+            func,
+            args,
+            kwargs,
+        )
         # NOTE(Shaohe) shutdown should be after job submit
         executor.shutdown(wait=False)
         # TODO(Shaohe) we need to consider resource collection such as the
@@ -302,17 +333,28 @@ class ThreadWorks(Singleton):
                         yield f.result(), f.exception(), f._state, None
                     else:
                         f = fs.pop()
-                        yield (f.result(end_time - time.time()),
-                               f.exception(), f._state, None)
+                        yield (
+                            f.result(end_time - time.time()),
+                            f.exception(),
+                            f._state,
+                            None,
+                        )
             except Exception as e:
                 err = traceback.format_exc()
-                LOG.error("Error during check the worker status. Exception "
-                          "info: %s", err)
+                LOG.error(
+                    "Error during check the worker status. Exception info: %s",
+                    err,
+                )
                 if f:
-                    LOG.error("Error during check the worker status. "
-                              "Exception info: %s, result: %s, state: %s. "
-                              "Reason %s", f.exception(), f._result,
-                              f._state, str(e))
+                    LOG.error(
+                        "Error during check the worker status. "
+                        "Exception info: %s, result: %s, state: %s. "
+                        "Reason %s",
+                        f.exception(),
+                        f._result,
+                        f._state,
+                        str(e),
+                    )
                     yield f._result, f.exception(), f._state, err
             finally:
                 # Do best to cancel remain jobs.
@@ -351,6 +393,7 @@ def format_tb(tb, limit=None):
 
 def wrap_job_tb(msg="Reason: %s"):
     """Wrap a function with a is_job tag added, and catch Exception."""
+
     def _wrap_job_tb(method):
         @wraps(method)
         def _impl(self, *args, **kwargs):
@@ -361,13 +404,16 @@ def wrap_job_tb(msg="Reason: %s"):
                 LOG.error(traceback.format_exc())
                 raise
             return output
+
         setattr(_impl, "is_job", True)
         return _impl
+
     return _wrap_job_tb
 
 
 def factory_register(SuperClass, ClassName):
     """Register an concrete class to a factory Class."""
+
     def decorator(Class):
         # return Class
         if not hasattr(SuperClass, "_factory"):
@@ -375,6 +421,7 @@ def factory_register(SuperClass, ClassName):
         SuperClass._factory[ClassName] = Class
         setattr(Class, "_factory_type", ClassName)
         return Class
+
     return decorator
 
 
@@ -387,16 +434,23 @@ class FactoryMixin:
         f = getattr(cls, "_factory", {})
         sclass = f.get(typ, None)
         if sclass:
-            LOG.info("Find %s of concrete %s by %s.",
-                     sclass.__name__, cls.__name__, typ)
+            LOG.info(
+                "Find %s of concrete %s by %s.",
+                sclass.__name__,
+                cls.__name__,
+                typ,
+            )
             return sclass
         for sclass in cls.__subclasses__():
             if typ == getattr(cls, "_factory_type", None):
                 return sclass
         else:
             return cls
-            LOG.info("Use default %s, do not find concrete class"
-                     "by %s.", cls.__name__, typ)
+            LOG.info(
+                "Use default %s, do not find concrete classby %s.",
+                cls.__name__,
+                typ,
+            )
 
 
 def strtime(at):

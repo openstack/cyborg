@@ -139,8 +139,9 @@ class Configuration:
         """
         self.config_group = config_group
         if config_group:
-            self.conf = BackendGroupConfiguration(accelerator_opts,
-                                                  config_group)
+            self.conf = BackendGroupConfiguration(
+                accelerator_opts, config_group
+            )
         else:
             self.conf = DefaultGroupConfiguration()
 

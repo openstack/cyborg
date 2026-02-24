@@ -19,8 +19,7 @@ Cyborg Pci driver implementation.
 
 
 class PciDriver:
-    """Base class for Pci drivers.
-    """
+    """Base class for Pci drivers."""
 
     def __init__(self, *args, **kwargs):
         pass

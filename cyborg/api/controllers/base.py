@@ -37,12 +37,14 @@ class APIBase(wtypes.Base):
 
     def as_dict(self):
         """Render this object as a dict of its fields."""
-        return {k: getattr(self, k) for k in self.fields
-                if hasattr(self, k) and getattr(self, k) != wsme.Unset}
+        return {
+            k: getattr(self, k)
+            for k in self.fields
+            if hasattr(self, k) and getattr(self, k) != wsme.Unset
+        }
 
 
 class CyborgController(rest.RestController):
-
     def _handle_patch(self, method, remainder, request=None):
         """Routes ``PATCH`` _custom_actions."""
         # route to a patch_all or get if no additional parts are available
@@ -91,7 +93,8 @@ class Version:
 
         """
         (self.major, self.minor) = Version.parse_headers(
-            headers, default_version, latest_version)
+            headers, default_version, latest_version
+        )
 
     def __repr__(self):
         return '%s.%s' % (self.major, self.minor)
@@ -127,7 +130,8 @@ class Version:
 
         if len(version) != 2:
             raise exc.HTTPNotAcceptable(
-                "Invalid value for %s header" % Version.current_api_version)
+                "Invalid value for %s header" % Version.current_api_version
+            )
         return version
 
     def __gt__(self, other):

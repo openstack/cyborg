@@ -28,7 +28,7 @@ def get_fake_driver_devices_as_dict():
         "std_board_info": "{'class': 'Fake class', 'device_id': '0xabcd'}",
         "stub": False,
         "controlpath_id": get_fake_driver_controlpath_objs()[0],
-        "deployable_list": get_fake_driver_deployable_objs()[:1]
+        "deployable_list": get_fake_driver_deployable_objs()[:1],
     }
     driver_device2 = {
         "vendor": "0xDCBA",
@@ -38,7 +38,7 @@ def get_fake_driver_devices_as_dict():
         "std_board_info": "{'class': 'Fake class', 'device_id': '0xdcba'}",
         "stub": False,
         "controlpath_id": get_fake_driver_controlpath_objs()[1],
-        "deployable_list": get_fake_driver_deployable_objs()[1:]
+        "deployable_list": get_fake_driver_deployable_objs()[1:],
     }
     return [driver_device1, driver_device2]
 
@@ -57,11 +57,11 @@ def get_fake_driver_devices_objs():
 def get_fake_driver_controlpath_as_dict():
     driver_controlpath1 = {
         "cpid_info": '{"bus": "af", "device":00, "domain":0000, "function":0}',
-        "cpid_type": "PCI"
+        "cpid_type": "PCI",
     }
     driver_controlpath2 = {
         "cpid_info": '{"bus": "db", "device":00, "domain":0000, "function":0}',
-        "cpid_type": "PCI"
+        "cpid_type": "PCI",
     }
     return [driver_controlpath1, driver_controlpath2]
 
@@ -108,16 +108,14 @@ def get_fake_driver_deployable_objs():
 
 def get_fake_driver_attach_handles_as_dict():
     driver_attach_handle1 = {
-        "attach_info":
-            '{"bus": "af", "device":00, "domain":0000, "function":0}',
+        "attach_info": '{"bus": "af", "device":00, "domain":0000, "function":0}',
         "attach_type": "PCI",
-        "in_use": 0
+        "in_use": 0,
     }
     driver_attach_handle2 = {
-        "attach_info":
-            '{"bus": "db", "device":00, "domain":0000, "function":0}',
+        "attach_info": '{"bus": "db", "device":00, "domain":0000, "function":0}',
         "attach_type": "PCI",
-        "in_use": 0
+        "in_use": 0,
     }
     return [driver_attach_handle1, driver_attach_handle2]
 
@@ -134,18 +132,12 @@ def get_fake_driver_attach_handle_objs():
 
 
 def get_fake_driver_attributes_as_dict():
-    driver_attribute1 = {
-        "key": "trait0",
-        "value": "CUSTOM_GPU_NVIDIA"
-    }
+    driver_attribute1 = {"key": "trait0", "value": "CUSTOM_GPU_NVIDIA"}
     driver_attribute2 = {
         "key": "trait1",
-        "value": "CUSTOM_GPU_PRODUCT_ID_1DB6"
+        "value": "CUSTOM_GPU_PRODUCT_ID_1DB6",
     }
-    driver_attribute3 = {
-        "key": "rc",
-        "value": "PGPU"
-    }
+    driver_attribute3 = {"key": "rc", "value": "PGPU"}
     return [driver_attribute1, driver_attribute2, driver_attribute3]
 
 

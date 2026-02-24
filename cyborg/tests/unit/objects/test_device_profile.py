@@ -21,15 +21,15 @@ from cyborg.tests.unit import fake_device_profile
 
 
 class TestDeviceProfileObject(base.DbTestCase):
-
     def setUp(self):
         super().setUp()
         self.fake_device_profile = utils.get_test_device_profile()
 
     def test_get_by_name(self):
         name = self.fake_device_profile['name']
-        with mock.patch.object(self.dbapi, 'device_profile_get',
-                               autospec=True) as mock_db_devprof_get:
+        with mock.patch.object(
+            self.dbapi, 'device_profile_get', autospec=True
+        ) as mock_db_devprof_get:
             mock_db_devprof_get.return_value = self.fake_device_profile
             obj_devprof = objects.DeviceProfile.get_by_name(self.context, name)
             mock_db_devprof_get.assert_called_once_with(self.context, name)
@@ -39,8 +39,9 @@ class TestDeviceProfileObject(base.DbTestCase):
 
     def test_get_by_uuid(self):
         uuid = self.fake_device_profile['uuid']
-        with mock.patch.object(self.dbapi, 'device_profile_get_by_uuid',
-                               autospec=True) as mock_db_devprof_get:
+        with mock.patch.object(
+            self.dbapi, 'device_profile_get_by_uuid', autospec=True
+        ) as mock_db_devprof_get:
             mock_db_devprof_get.return_value = self.fake_device_profile
             obj_devprof = objects.DeviceProfile.get_by_uuid(self.context, uuid)
             mock_db_devprof_get.assert_called_once_with(self.context, uuid)
@@ -49,42 +50,51 @@ class TestDeviceProfileObject(base.DbTestCase):
             self.assertIn('description', obj_devprof)
 
     def test_list(self):
-        with mock.patch.object(self.dbapi, 'device_profile_list',
-                               autospec=True) as mock_db_devprof_list:
+        with mock.patch.object(
+            self.dbapi, 'device_profile_list', autospec=True
+        ) as mock_db_devprof_list:
             mock_db_devprof_list.return_value = [self.fake_device_profile]
             obj_devprofs = objects.DeviceProfile.list(self.context)
             self.assertEqual(1, mock_db_devprof_list.call_count)
             self.assertEqual(1, len(obj_devprofs))
             self.assertIsInstance(obj_devprofs[0], objects.DeviceProfile)
             self.assertEqual(self.context, obj_devprofs[0]._context)
-            self.assertEqual(self.fake_device_profile['name'],
-                             obj_devprofs[0].name)
-            self.assertEqual(self.fake_device_profile['description'],
-                             obj_devprofs[0].description)
+            self.assertEqual(
+                self.fake_device_profile['name'], obj_devprofs[0].name
+            )
+            self.assertEqual(
+                self.fake_device_profile['description'],
+                obj_devprofs[0].description,
+            )
 
     def test_create(self):
         api_devprofs = fake_device_profile.get_api_devprofs()
         api_devprof = api_devprofs[0]
         db_devprofs = fake_device_profile.get_db_devprofs()
         db_devprof = db_devprofs[0]
-        with mock.patch.object(self.dbapi, 'device_profile_create',
-                               autospec=True) as mock_db_devprof_create:
+        with mock.patch.object(
+            self.dbapi, 'device_profile_create', autospec=True
+        ) as mock_db_devprof_create:
             mock_db_devprof_create.return_value = self.fake_device_profile
             obj_devprof = objects.DeviceProfile(**api_devprof)
             obj_devprof.create(self.context)
             mock_db_devprof_create.assert_called_once_with(
-                self.context, db_devprof)
+                self.context, db_devprof
+            )
 
     def test_destroy(self):
         uuid = self.fake_device_profile['uuid']
-        with mock.patch.object(self.dbapi, 'device_profile_get_by_uuid',
-                               autospec=True) as mock_dp_get:
+        with mock.patch.object(
+            self.dbapi, 'device_profile_get_by_uuid', autospec=True
+        ) as mock_dp_get:
             mock_dp_get.return_value = self.fake_device_profile
-            with mock.patch.object(self.dbapi, 'device_profile_delete',
-                                   autospec=True) as m_dp_delete:
+            with mock.patch.object(
+                self.dbapi, 'device_profile_delete', autospec=True
+            ) as m_dp_delete:
                 m_dp_delete.return_value = None
                 obj_devprof = objects.DeviceProfile.get_by_uuid(
-                    self.context, uuid)
+                    self.context, uuid
+                )
                 obj_devprof.destroy(self.context)
                 m_dp_delete.assert_called_once_with(self.context, uuid)
                 self.assertEqual(self.context, obj_devprof._context)
@@ -95,8 +105,9 @@ class TestDeviceProfileObject(base.DbTestCase):
         db_devprof = fake_db_devprofs[0]
         db_devprof['created_at'] = None
         db_devprof['updated_at'] = None
-        with mock.patch.object(self.dbapi, 'device_profile_get_by_uuid',
-                               autospec=True) as mock_dp_get:
+        with mock.patch.object(
+            self.dbapi, 'device_profile_get_by_uuid', autospec=True
+        ) as mock_dp_get:
             mock_dp_get.return_value = db_devprof
             uuid = fake_db_devprofs[0]['uuid']
             # Start with db_devprofs[0], corr. to fake_obj_devprofs[0]
@@ -104,8 +115,9 @@ class TestDeviceProfileObject(base.DbTestCase):
             # Change contents to fake_obj_devprofs[1] except uuid
             obj_devprof = fake_obj_devprofs[1]
             obj_devprof['uuid'] = uuid
-            with mock.patch.object(self.dbapi, 'device_profile_update',
-                                   autospec=True) as mock_dp_update:
+            with mock.patch.object(
+                self.dbapi, 'device_profile_update', autospec=True
+            ) as mock_dp_update:
                 mock_dp_update.return_value = db_devprof
                 obj_devprof.save(self.context)
                 mock_dp_get.assert_called_once_with(self.context, uuid)

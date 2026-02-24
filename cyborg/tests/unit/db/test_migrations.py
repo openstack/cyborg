@@ -35,8 +35,7 @@ MIGRATIONS_TIMEOUT = 300
 
 @contextlib.contextmanager
 def patch_with_engine(engine):
-    with mock.patch.object(enginefacade.writer,
-                           'get_engine') as patch_engine:
+    with mock.patch.object(enginefacade.writer, 'get_engine') as patch_engine:
         patch_engine.return_value = engine
         yield
 
@@ -57,8 +56,9 @@ class WalkVersionsMixin:
             versions = [ver for ver in script_directory.walk_revisions()]
 
             for version in reversed(versions):
-                self._migrate_up(engine, alembic_cfg,
-                                 version.revision, with_data=True)
+                self._migrate_up(
+                    engine, alembic_cfg, version.revision, with_data=True
+                )
 
     def _skippable_migrations(self):
         # Some db scripts are not necessary to check
@@ -80,7 +80,8 @@ class WalkVersionsMixin:
                 self.assertIsNotNone(
                     check,
                     f'DB Migration {version} does not have '
-                    'a test. Please add one!')
+                    'a test. Please add one!',
+                )
 
 
 class TestWalkVersions(base.TestCase, WalkVersionsMixin):
@@ -94,20 +95,19 @@ class TestWalkVersions(base.TestCase, WalkVersionsMixin):
     def test_migrate_up(self):
         self.migration_api.version.return_value = '6a7f90fc3s8c'
         self._migrate_up(self.engine, self.config, '6a7f90fc3s8c')
-        self.migration_api.upgrade.assert_called_with('6a7f90fc3s8c',
-                                                      config=self.config)
+        self.migration_api.upgrade.assert_called_with(
+            '6a7f90fc3s8c', config=self.config
+        )
         self.migration_api.version.assert_called_with(self.config)
 
 
 class CyborgMigrationsCheckers:
-
     def setUp(self):
         super().setUp()
         self.engine = enginefacade.writer.get_engine()
         self.config = migration._alembic_config()
         self.migration_api = migration
-        self.useFixture(fixtures.Timeout(MIGRATIONS_TIMEOUT,
-                                         gentle=True)),
+        (self.useFixture(fixtures.Timeout(MIGRATIONS_TIMEOUT, gentle=True)),)
 
     def test_walk_versions(self):
         self._walk_versions(self.engine, self.config)
@@ -116,8 +116,7 @@ class CyborgMigrationsCheckers:
         devices = db_utils.get_table(engine, 'devices')
         col_names = [column.name for column in devices.c]
         self.assertIn('type', col_names)
-        self.assertIsInstance(devices.c.type.type,
-                              sqlalchemy.types.Enum)
+        self.assertIsInstance(devices.c.type.type, sqlalchemy.types.Enum)
 
     def test_upgrade_and_version(self):
         with patch_with_engine(self.engine):
@@ -132,8 +131,9 @@ class CyborgMigrationsCheckers:
     def test_upgrade_and_create_schema(self):
         with patch_with_engine(self.engine):
             self.migration_api.upgrade('ede4e3f1a232')
-            self.assertRaises(db_exc.DBMigrationError,
-                              self.migration_api.create_schema)
+            self.assertRaises(
+                db_exc.DBMigrationError, self.migration_api.create_schema
+            )
 
     def test_upgrade_twice(self):
         with patch_with_engine(self.engine):
@@ -144,15 +144,19 @@ class CyborgMigrationsCheckers:
             self.assertNotEqual(v1, v2)
 
 
-class TestCyborgMigrationsMySQL(CyborgMigrationsCheckers,
-                                WalkVersionsMixin,
-                                test_fixtures.OpportunisticDBTestMixin,
-                                test_base.BaseTestCase):
+class TestCyborgMigrationsMySQL(
+    CyborgMigrationsCheckers,
+    WalkVersionsMixin,
+    test_fixtures.OpportunisticDBTestMixin,
+    test_base.BaseTestCase,
+):
     FIXTURE = test_fixtures.MySQLOpportunisticFixture
 
 
-class TestMigrationsPostgreSQL(CyborgMigrationsCheckers,
-                               WalkVersionsMixin,
-                               test_fixtures.OpportunisticDBTestMixin,
-                               test_base.BaseTestCase):
+class TestMigrationsPostgreSQL(
+    CyborgMigrationsCheckers,
+    WalkVersionsMixin,
+    test_fixtures.OpportunisticDBTestMixin,
+    test_base.BaseTestCase,
+):
     FIXTURE = test_fixtures.PostgresqlOpportunisticFixture

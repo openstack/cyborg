@@ -38,7 +38,8 @@ class PublicUrlHook(hooks.PecanHook):
 
     def before(self, state):
         state.request.public_url = (
-            cfg.CONF.api.public_endpoint or state.request.host_url)
+            cfg.CONF.api.public_endpoint or state.request.host_url
+        )
 
 
 class ConductorAPIHook(hooks.PecanHook):
@@ -92,10 +93,11 @@ class ContextHook(hooks.PecanHook):
         user_auth_plugin = req.environ.get('keystone.token_auth')
 
         roles = req.headers.get('X-Roles', '').split(',')
-        is_admin = ('admin' in roles or 'administrator' in roles)
+        is_admin = 'admin' in roles or 'administrator' in roles
 
         state.request.context = context.RequestContext.from_environ(
             req.environ,
             user_auth_plugin=user_auth_plugin,
             is_admin=is_admin,
-            service_catalog=service_catalog)
+            service_catalog=service_catalog,
+        )

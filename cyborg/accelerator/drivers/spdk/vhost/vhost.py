@@ -28,7 +28,7 @@ LOG = logging.getLogger(__name__)
 class VHOSTDRIVER(SPDKDRIVER):
     """VHOSTDRIVER class.
 
-       vhost server app should be able to implement this driver.
+    vhost server app should be able to implement this driver.
     """
 
     SERVER = 'vhost'
@@ -57,7 +57,7 @@ class VHOSTDRIVER(SPDKDRIVER):
             'bdevs': bdevs,
             'scsi_devices': scsi_devices,
             'luns': luns,
-            'interfaces': interfaces
+            'interfaces': interfaces,
         }
         return accelerator_obj
 

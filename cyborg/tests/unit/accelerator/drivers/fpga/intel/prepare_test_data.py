@@ -22,9 +22,9 @@ PF0_ADDR = "0000:5e:00.0"
 PF1_ADDR = "0000:be:00.0"
 VF0_ADDR = "0000:5e:00.1"
 FPGA_TREE = {
-    "dev.0": {"bdf": PF0_ADDR,
-              "regions": {"dev.2": {"bdf": VF0_ADDR}}},
-    "dev.1": {"bdf": PF1_ADDR}}
+    "dev.0": {"bdf": PF0_ADDR, "regions": {"dev.2": {"bdf": VF0_ADDR}}},
+    "dev.1": {"bdf": PF1_ADDR},
+}
 
 SYS_DEVICES = "sys/devices"
 PCI_DEVICES_PATH = "sys/bus/pci/devices"
@@ -47,8 +47,8 @@ PGFA_DEVICE_COMMON_CONTENT = {
     "irq": "16",
     "local_cpulist": "0-111",
     "local_cpus": "00000000,00000000,00000000,00000000,00000000,"
-                  "00000000,00000000,00000000,00000000,00000000,"
-                  "0000ffff,ffffffff,ffffffff,ffffffff",
+    "00000000,00000000,00000000,00000000,00000000,"
+    "0000ffff,ffffffff,ffffffff,ffffffff",
     "modalias": "pci:v00008086d0000BCC0sv00000000sd00000000bc12sc00i00",
     "msi_bus": "",
     "numa_node": "-1",
@@ -65,7 +65,8 @@ PGFA_DEVICE_COMMON_CONTENT = {
         "0x0000000000000000 0x0000000000000000 0x0000000000000000",
         "0x0000000000000000 0x0000000000000000 0x0000000000000000",
         "0x0000000000000000 0x0000000000000000 0x0000000000000000",
-        "0x0000000000000000 0x0000000000000000 0x0000000000000000"],
+        "0x0000000000000000 0x0000000000000000 0x0000000000000000",
+    ],
     "resource0": "",
     "resource0_wc": "",
     "subsystem_device": "0x0000",
@@ -76,8 +77,10 @@ PGFA_DEVICE_COMMON_CONTENT = {
         "PCI_ID=8086:BCC0",
         "PCI_SUBSYS_ID=0000:0000",
         "PCI_SLOT_NAME=0000:5e:00.0",
-        "MODALIAS=pci:v00008086d0000BCC0sv00000000sd00000000bc12sc00i00"],
-    "vendor": "0x8086"}
+        "MODALIAS=pci:v00008086d0000BCC0sv00000000sd00000000bc12sc00i00",
+    ],
+    "vendor": "0x8086",
+}
 
 PGFA_DEVICES_SPECIAL_COMMON_CONTENT = {
     "dev.0": {
@@ -100,7 +103,8 @@ PGFA_DEVICES_SPECIAL_COMMON_CONTENT = {
             "0x0000000000000000 0x0000000000000000 0x0000000000000000",
             "0x0000000000000000 0x0000000000000000 0x0000000000000000",
             "0x0000000000000000 0x0000000000000000 0x0000000000000000",
-            "0x0000000000000000 0x0000000000000000 0x0000000000000000"],
+            "0x0000000000000000 0x0000000000000000 0x0000000000000000",
+        ],
         "resource2": "",
         "resource2_wc": "",
         "sriov_numvfs": "0",
@@ -111,7 +115,8 @@ PGFA_DEVICES_SPECIAL_COMMON_CONTENT = {
             "PCI_ID=8086:BCC0",
             "PCI_SUBSYS_ID=0000:0000",
             "PCI_SLOT_NAME=0000:be:00.0",
-            "MODALIAS=pci:v00008086d0000BCC0sv00000000sd00000000bc12sc00i00"],
+            "MODALIAS=pci:v00008086d0000BCC0sv00000000sd00000000bc12sc00i00",
+        ],
     },
     "dev.2": {
         "d3cold_allowed": "0",
@@ -131,22 +136,24 @@ PGFA_DEVICES_SPECIAL_COMMON_CONTENT = {
             "0x0000000000000000 0x0000000000000000 0x0000000000000000",
             "0x0000000000000000 0x0000000000000000 0x0000000000000000",
             "0x0000000000000000 0x0000000000000000 0x0000000000000000",
-            "0x0000000000000000 0x0000000000000000 0x0000000000000000"],
+            "0x0000000000000000 0x0000000000000000 0x0000000000000000",
+        ],
         "uevent": [
             "DRIVER=intel-fpga-pci",
             "PCI_CLASS=120000",
             "PCI_ID=8086:BCC1",
             "PCI_SUBSYS_ID=0000:0000",
             "PCI_SLOT_NAME=0000:5e:00.1",
-            "MODALIAS=pci:v00008086d0000BCC1sv00000000sd00000000bc12sc00i00"],
-    }
+            "MODALIAS=pci:v00008086d0000BCC1sv00000000sd00000000bc12sc00i00",
+        ],
+    },
 }
 
 PGFA_DEVICE_COMMON_SOFT_LINK = {
     "driver": "../../../bus/pci/drivers/intel-fpga-pci",
     "iommu": "../../virtual/iommu/dmar8",
     "iommu_group": "../../../kernel/iommu_groups/75",
-    "subsystem": "../../../bus/pci"
+    "subsystem": "../../../bus/pci",
 }
 
 PGFA_DEVICES_SPECIAL_SOFT_LINK = {
@@ -161,7 +168,7 @@ PGFA_DEVICES_SPECIAL_SOFT_LINK = {
     "dev.2": {
         "iommu": "../../virtual/iommu/dmar9",
         "iommu_group": "../../../kernel/iommu_groups/81",
-    }
+    },
 }
 PGFA_DEVICES_SPECIAL_SOFT_LINK = {
     "dev.0": {
@@ -175,17 +182,17 @@ PGFA_DEVICES_SPECIAL_SOFT_LINK = {
     "dev.2": {
         "iommu": "../../virtual/iommu/dmar9",
         "iommu_group": "../../../kernel/iommu_groups/81",
-    }
+    },
 }
 
 PGFA_DEVICE_PF_SOFT_LINK = {
-    "virtfn": lambda k, v: (k + str(int(v.rsplit(".", 1)[-1]) - 1),
-                            "/".join(["..", v]))
+    "virtfn": lambda k, v: (
+        k + str(int(v.rsplit(".", 1)[-1]) - 1),
+        "/".join(["..", v]),
+    )
 }
 
-PGFA_DEVICE_VF_SOFT_LINK = {
-    "physfn": lambda k, v: (k, "/".join(["..", v]))
-}
+PGFA_DEVICE_VF_SOFT_LINK = {"physfn": lambda k, v: (k, "/".join(["..", v]))}
 
 
 def gen_fpga_content(path, dev):
@@ -228,8 +235,9 @@ def gen_fpga_vf_soft_link(path, bdf):
         os.symlink(v, os.path.join(path, k))
 
 
-def create_devices_path_and_files(tree, device_path, class_fpga_path,
-                                  vf=False, pfinfo=None):
+def create_devices_path_and_files(
+    tree, device_path, class_fpga_path, vf=False, pfinfo=None
+):
     for k, v in tree.items():
         bdf = v["bdf"]
         pci_path = "pci" + bdf.rsplit(":", 1)[0]
@@ -245,16 +253,19 @@ def create_devices_path_and_files(tree, device_path, class_fpga_path,
         pfinfo = {"path": bdf_path, "bdf": bdf}
         if "regions" in v:
             create_devices_path_and_files(
-                v["regions"], device_path, class_fpga_path, True, pfinfo)
+                v["regions"], device_path, class_fpga_path, True, pfinfo
+            )
         source = dev_path.split("sys")[-1]
         os.symlink("../.." + source, os.path.join(class_fpga_path, ln))
         os.symlink("../../../" + bdf, os.path.join(dev_path, "device"))
-        pci_dev = os.path.join(device_path.split(SYS_DEVICES)[0],
-                               PCI_DEVICES_PATH)
+        pci_dev = os.path.join(
+            device_path.split(SYS_DEVICES)[0], PCI_DEVICES_PATH
+        )
         if not os.path.exists(pci_dev):
             os.makedirs(pci_dev)
-        os.symlink("../../.." + bdf_path.split("sys")[-1],
-                   os.path.join(pci_dev, bdf))
+        os.symlink(
+            "../../.." + bdf_path.split("sys")[-1], os.path.join(pci_dev, bdf)
+        )
 
 
 def create_devices_soft_link(class_fpga_path):
@@ -263,7 +274,8 @@ def create_devices_soft_link(class_fpga_path):
         path = os.path.realpath("%s/%s/device" % (class_fpga_path, dev))
         softlinks = copy.copy(PGFA_DEVICE_COMMON_SOFT_LINK)
         softlinks.update(
-            PGFA_DEVICES_SPECIAL_SOFT_LINK[dev.rsplit("-", 1)[-1]])
+            PGFA_DEVICES_SPECIAL_SOFT_LINK[dev.rsplit("-", 1)[-1]]
+        )
         for k, v in softlinks.items():
             source = os.path.normpath(os.path.join(path, v))
             if not os.path.exists(source):

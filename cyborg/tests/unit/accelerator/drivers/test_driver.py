@@ -32,10 +32,8 @@ class NotCompleteDriver(GenericDriver):
 
 
 class TestGenericDriver(base.TestCase):
-
     def test_generic_driver(self):
         # Can't instantiate abstract class NotCompleteDriver with
         # abstract methods get_stats, update
         result = self.assertRaises(TypeError, NotCompleteDriver)
-        self.assertIn("Can't instantiate abstract class",
-                      str(result))
+        self.assertIn("Can't instantiate abstract class", str(result))

@@ -31,7 +31,7 @@ def fake_db_deployable(**updates):
         'driver_name': "fake-driver-name",
         'rp_uuid': None,
         'bitstream_id': None,
-        }
+    }
 
     for name, field in objects.Deployable.fields.items():
         if name in db_deployable:
@@ -52,7 +52,8 @@ def fake_db_deployable(**updates):
 def fake_deployable_obj(context, obj_dpl_class=None, **updates):
     if obj_dpl_class is None:
         obj_dpl_class = objects.Deployable
-    deploy = obj_dpl_class._from_db_object(obj_dpl_class(),
-                                           fake_db_deployable(**updates))
+    deploy = obj_dpl_class._from_db_object(
+        obj_dpl_class(), fake_db_deployable(**updates)
+    )
     deploy.obj_reset_changes()
     return deploy

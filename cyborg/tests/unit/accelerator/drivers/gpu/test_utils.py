@@ -26,24 +26,45 @@ from cyborg.tests import base
 
 CONF = cyborg.conf.CONF
 
-NVIDIA_GPU_INFO = "0000:00:06.0 3D controller [0302]: NVIDIA Corporation " \
-                  "GP100GL [Tesla P100 PCIe 12GB] [10de:15f7] (rev a1)"
+NVIDIA_GPU_INFO = (
+    "0000:00:06.0 3D controller [0302]: NVIDIA Corporation "
+    "GP100GL [Tesla P100 PCIe 12GB] [10de:15f7] (rev a1)"
+)
 
-NVIDIA_T4_GPU_INFO = "0000:af:00.0 3D controller [0302]: NVIDIA Corporation "\
-                     "TU104GL [Tesla T4] [10de:1eb8] (rev a1)"
+NVIDIA_T4_GPU_INFO = (
+    "0000:af:00.0 3D controller [0302]: NVIDIA Corporation "
+    "TU104GL [Tesla T4] [10de:1eb8] (rev a1)"
+)
 
-NVIDIA_A100_PF_INFO = "0000:3b:00.0 3D controller [0302]: NVIDIA Corporation "\
-                      "GA100 [A100 PCIe 40GB] [10de:20f1] (rev a1)"
+NVIDIA_A100_PF_INFO = (
+    "0000:3b:00.0 3D controller [0302]: NVIDIA Corporation "
+    "GA100 [A100 PCIe 40GB] [10de:20f1] (rev a1)"
+)
 
-NVIDIA_A100_VF_INFO = "0000:3b:00.4 3D controller [0302]: NVIDIA Corporation "\
-                      "GA100 [A100 PCIe 40GB] [10de:20f1] (rev a1)"
+NVIDIA_A100_VF_INFO = (
+    "0000:3b:00.4 3D controller [0302]: NVIDIA Corporation "
+    "GA100 [A100 PCIe 40GB] [10de:20f1] (rev a1)"
+)
 
-NVIDIA_T4_SUPPORTED_MDEV_TYPES = ['nvidia-222', 'nvidia-223', 'nvidia-224',
-                                  'nvidia-225', 'nvidia-226', 'nvidia-227',
-                                  'nvidia-228', 'nvidia-229', 'nvidia-230',
-                                  'nvidia-231', 'nvidia-232', 'nvidia-233',
-                                  'nvidia-234', 'nvidia-252', 'nvidia-319',
-                                  'nvidia-320', 'nvidia-321']
+NVIDIA_T4_SUPPORTED_MDEV_TYPES = [
+    'nvidia-222',
+    'nvidia-223',
+    'nvidia-224',
+    'nvidia-225',
+    'nvidia-226',
+    'nvidia-227',
+    'nvidia-228',
+    'nvidia-229',
+    'nvidia-230',
+    'nvidia-231',
+    'nvidia-232',
+    'nvidia-233',
+    'nvidia-234',
+    'nvidia-252',
+    'nvidia-319',
+    'nvidia-320',
+    'nvidia-321',
+]
 
 BUILTIN = '__builtin__' if (sys.version_info[0] < 3) else '__builtins__'
 
@@ -68,7 +89,6 @@ class p:
 
 
 class TestGPUDriverUtils(base.TestCase):
-
     def setUp(self):
         super().setUp()
         self.p = p()
@@ -90,12 +110,14 @@ class TestGPUDriverUtils(base.TestCase):
 
         self.assertEqual(1, len(gpu_list))
         attach_handle_list = [
-            {'attach_type': 'PCI',
-             'attach_info': '{"bus": "00", '
-                            '"device": "06", '
-                            '"domain": "0000", '
-                            '"function": "0"}',
-             'in_use': False}
+            {
+                'attach_type': 'PCI',
+                'attach_info': '{"bus": "00", '
+                '"device": "06", '
+                '"domain": "0000", '
+                '"function": "0"}',
+                'in_use': False,
+            }
         ]
         attribute_list = [
             {'key': 'rc', 'value': 'PGPU'},
@@ -106,64 +128,85 @@ class TestGPUDriverUtils(base.TestCase):
             'vendor': '10de',
             'type': 'GPU',
             'model': 'NVIDIA Corporation GP100GL [Tesla P100 PCIe 12GB]',
-            'std_board_info':
-                {"controller": "3D controller", "product_id": "15f7"},
+            'std_board_info': {
+                "controller": "3D controller",
+                "product_id": "15f7",
+            },
             'vendor_board_info': {"vendor_info": "gpu_vb_info"},
-            'deployable_list':
-                [
-                    {
-                        'num_accelerators': 1,
-                        'driver_name': 'NVIDIA',
-                        'name': 'host-192-168-32-195_0000:00:06.0',
-                        'attach_handle_list': attach_handle_list,
-                        'attribute_list': attribute_list
-                    },
-                ],
-            'controlpath_id': {'cpid_info': '{"bus": "00", '
-                                            '"device": "06", '
-                                            '"domain": "0000", '
-                                            '"function": "0"}',
-                               'cpid_type': 'PCI'}
-            }
+            'deployable_list': [
+                {
+                    'num_accelerators': 1,
+                    'driver_name': 'NVIDIA',
+                    'name': 'host-192-168-32-195_0000:00:06.0',
+                    'attach_handle_list': attach_handle_list,
+                    'attribute_list': attribute_list,
+                },
+            ],
+            'controlpath_id': {
+                'cpid_info': '{"bus": "00", '
+                '"device": "06", '
+                '"domain": "0000", '
+                '"function": "0"}',
+                'cpid_type': 'PCI',
+            },
+        }
         gpu_obj = gpu_list[0]
         gpu_dict = gpu_obj.as_dict()
         gpu_dep_list = gpu_dict['deployable_list']
-        gpu_attach_handle_list = \
-            gpu_dep_list[0].as_dict()['attach_handle_list']
-        gpu_attribute_list = \
-            gpu_dep_list[0].as_dict()['attribute_list']
+        gpu_attach_handle_list = gpu_dep_list[0].as_dict()[
+            'attach_handle_list'
+        ]
+        gpu_attribute_list = gpu_dep_list[0].as_dict()['attribute_list']
         attri_obj_data = []
         [attri_obj_data.append(attr.as_dict()) for attr in gpu_attribute_list]
         attribute_actual_data = sorted(attri_obj_data, key=lambda i: i['key'])
         self.assertEqual(expected['vendor'], gpu_dict['vendor'])
         self.assertEqual(expected['model'], gpu_dict['model'])
-        self.assertEqual(expected['controlpath_id'],
-                         gpu_dict['controlpath_id'])
-        self.assertEqual(expected['std_board_info'],
-                         jsonutils.loads(gpu_dict['std_board_info']))
-        self.assertEqual(expected['vendor_board_info'],
-                         jsonutils.loads(gpu_dict['vendor_board_info']))
-        self.assertEqual(expected['deployable_list'][0]['num_accelerators'],
-                         gpu_dep_list[0].as_dict()['num_accelerators'])
-        self.assertEqual(expected['deployable_list'][0]['name'],
-                         gpu_dep_list[0].as_dict()['name'])
-        self.assertEqual(expected['deployable_list'][0]['driver_name'],
-                         gpu_dep_list[0].as_dict()['driver_name'])
-        self.assertEqual(attach_handle_list[0],
-                         gpu_attach_handle_list[0].as_dict())
+        self.assertEqual(
+            expected['controlpath_id'], gpu_dict['controlpath_id']
+        )
+        self.assertEqual(
+            expected['std_board_info'],
+            jsonutils.loads(gpu_dict['std_board_info']),
+        )
+        self.assertEqual(
+            expected['vendor_board_info'],
+            jsonutils.loads(gpu_dict['vendor_board_info']),
+        )
+        self.assertEqual(
+            expected['deployable_list'][0]['num_accelerators'],
+            gpu_dep_list[0].as_dict()['num_accelerators'],
+        )
+        self.assertEqual(
+            expected['deployable_list'][0]['name'],
+            gpu_dep_list[0].as_dict()['name'],
+        )
+        self.assertEqual(
+            expected['deployable_list'][0]['driver_name'],
+            gpu_dep_list[0].as_dict()['driver_name'],
+        )
+        self.assertEqual(
+            attach_handle_list[0], gpu_attach_handle_list[0].as_dict()
+        )
         self.assertEqual(attribute_list, attribute_actual_data)
 
-    @mock.patch('cyborg.accelerator.drivers.gpu.nvidia.sysinfo._is_vf',
-                return_value=False, autospec=True)
+    @mock.patch(
+        'cyborg.accelerator.drivers.gpu.nvidia.sysinfo._is_vf',
+        return_value=False,
+        autospec=True,
+    )
     @mock.patch('builtins.open')
     @mock.patch('os.listdir')
     @mock.patch('os.path.exists')
     @mock.patch('cyborg.accelerator.drivers.gpu.utils.lspci_privileged')
-    def test_discover_gpus_report_vGPU(self, mock_devices_for_vendor,
-                                       mock_path_exists,
-                                       mock_supported_mdev_types,
-                                       mock_open,
-                                       mock_is_vf):
+    def test_discover_gpus_report_vGPU(
+        self,
+        mock_devices_for_vendor,
+        mock_path_exists,
+        mock_supported_mdev_types,
+        mock_open,
+        mock_is_vf,
+    ):
         """test nvidia vGPU discover"""
         mock_devices_for_vendor.return_value = self.p.stdout.readlines_T4()
         mock_path_exists.return_value = True
@@ -174,20 +217,23 @@ class TestGPUDriverUtils(base.TestCase):
         self.set_defaults(enabled_vgpu_types='nvidia-223', group='gpu_devices')
         cyborg.conf.devices.register_dynamic_opts(CONF)
         self.set_defaults(
-            device_addresses=['0000:af:00.0'], group='vgpu_nvidia-223')
+            device_addresses=['0000:af:00.0'], group='vgpu_nvidia-223'
+        )
         nvidia = NVIDIAGPUDriver()
         gpu_list = nvidia.discover()
 
         self.assertEqual(1, len(gpu_list))
         attach_handle_list = [
-            {'attach_type': 'MDEV',
-             'attach_info': '{"asked_type": "nvidia-223", '
-                            '"bus": "af", '
-                            '"device": "00", '
-                            '"domain": "0000", '
-                            '"function": "0", '
-                            '"vgpu_mark": "nvidia-223_0"}',
-             'in_use': False}
+            {
+                'attach_type': 'MDEV',
+                'attach_info': '{"asked_type": "nvidia-223", '
+                '"bus": "af", '
+                '"device": "00", '
+                '"domain": "0000", '
+                '"function": "0", '
+                '"vgpu_mark": "nvidia-223_0"}',
+                'in_use': False,
+            }
         ] * 8
         attribute_list = [
             {'key': 'rc', 'value': 'VGPU'},
@@ -197,58 +243,74 @@ class TestGPUDriverUtils(base.TestCase):
         expected = {
             'vendor': '10de',
             'type': 'GPU',
-            'std_board_info':
-                {"controller": "3D controller", "product_id": "1eb8"},
+            'std_board_info': {
+                "controller": "3D controller",
+                "product_id": "1eb8",
+            },
             'vendor_board_info': {"vendor_info": "gpu_vb_info"},
-            'deployable_list':
-                [
-                    {
-                        'num_accelerators': 18,
-                        'driver_name': 'NVIDIA',
-                        'name': 'host-192-168-32-195_0000:af:00.0',
-                        'attach_handle_list': attach_handle_list,
-                        'attribute_list': attribute_list
-                    },
-                ],
-            'controlpath_id': {'cpid_info': '{"bus": "af", '
-                                            '"device": "00", '
-                                            '"domain": "0000", '
-                                            '"function": "0"}',
-                               'cpid_type': 'PCI'}
-            }
+            'deployable_list': [
+                {
+                    'num_accelerators': 18,
+                    'driver_name': 'NVIDIA',
+                    'name': 'host-192-168-32-195_0000:af:00.0',
+                    'attach_handle_list': attach_handle_list,
+                    'attribute_list': attribute_list,
+                },
+            ],
+            'controlpath_id': {
+                'cpid_info': '{"bus": "af", '
+                '"device": "00", '
+                '"domain": "0000", '
+                '"function": "0"}',
+                'cpid_type': 'PCI',
+            },
+        }
         gpu_obj = gpu_list[0]
         gpu_dict = gpu_obj.as_dict()
         gpu_dep_list = gpu_dict['deployable_list']
         gpu_attach_handle_list = gpu_dep_list[0].as_dict()[
-            'attach_handle_list']
+            'attach_handle_list'
+        ]
         gpu_attribute_list = gpu_dep_list[0].as_dict()['attribute_list']
         attri_obj_data = []
         [attri_obj_data.append(attr.as_dict()) for attr in gpu_attribute_list]
         attribute_actual_data = sorted(attri_obj_data, key=lambda i: i['key'])
         self.assertEqual(expected['vendor'], gpu_dict['vendor'])
-        self.assertEqual(expected['controlpath_id'],
-                         gpu_dict['controlpath_id'])
-        self.assertEqual(expected['std_board_info'],
-                         jsonutils.loads(gpu_dict['std_board_info']))
-        self.assertEqual(expected['vendor_board_info'],
-                         jsonutils.loads(gpu_dict['vendor_board_info']))
-        self.assertEqual(expected['deployable_list'][0]['num_accelerators'],
-                         gpu_dep_list[0].as_dict()['num_accelerators'])
-        self.assertEqual(expected['deployable_list'][0]['name'],
-                         gpu_dep_list[0].as_dict()['name'])
-        self.assertEqual(expected['deployable_list'][0]['driver_name'],
-                         gpu_dep_list[0].as_dict()['driver_name'])
-        self.assertEqual(attach_handle_list[0],
-                         gpu_attach_handle_list[0].as_dict())
+        self.assertEqual(
+            expected['controlpath_id'], gpu_dict['controlpath_id']
+        )
+        self.assertEqual(
+            expected['std_board_info'],
+            jsonutils.loads(gpu_dict['std_board_info']),
+        )
+        self.assertEqual(
+            expected['vendor_board_info'],
+            jsonutils.loads(gpu_dict['vendor_board_info']),
+        )
+        self.assertEqual(
+            expected['deployable_list'][0]['num_accelerators'],
+            gpu_dep_list[0].as_dict()['num_accelerators'],
+        )
+        self.assertEqual(
+            expected['deployable_list'][0]['name'],
+            gpu_dep_list[0].as_dict()['name'],
+        )
+        self.assertEqual(
+            expected['deployable_list'][0]['driver_name'],
+            gpu_dep_list[0].as_dict()['driver_name'],
+        )
+        self.assertEqual(
+            attach_handle_list[0], gpu_attach_handle_list[0].as_dict()
+        )
         self.assertEqual(attribute_list, attribute_actual_data)
 
     @mock.patch('cyborg.accelerator.drivers.gpu.nvidia.sysinfo._is_vf')
     @mock.patch('cyborg.accelerator.drivers.gpu.utils.lspci_privileged')
-    def test_discover_gpus_filters_vf_devices(self, mock_devices_for_vendor,
-                                              mock_is_vf):
+    def test_discover_gpus_filters_vf_devices(
+        self, mock_devices_for_vendor, mock_is_vf
+    ):
         """Test that VF devices are filtered when filter_sriov_vfs=True."""
-        mock_devices_for_vendor.return_value = (
-            self.p.stdout.readlines_A100())
+        mock_devices_for_vendor.return_value = self.p.stdout.readlines_A100()
         mock_is_vf.side_effect = lambda addr: addr == '0000:3b:00.4'
         self.set_defaults(host='host-192-168-32-195', debug=True)
         self.set_defaults(filter_sriov_vfs=True, group='gpu_devices')
@@ -264,10 +326,10 @@ class TestGPUDriverUtils(base.TestCase):
     @mock.patch('cyborg.accelerator.drivers.gpu.nvidia.sysinfo._is_vf')
     @mock.patch('cyborg.accelerator.drivers.gpu.utils.lspci_privileged')
     def test_discover_gpus_vf_not_filtered_by_default(
-            self, mock_devices_for_vendor, mock_is_vf):
+        self, mock_devices_for_vendor, mock_is_vf
+    ):
         """Test that VFs are reported when filter_sriov_vfs=False (default)."""
-        mock_devices_for_vendor.return_value = (
-            self.p.stdout.readlines_A100())
+        mock_devices_for_vendor.return_value = self.p.stdout.readlines_A100()
         mock_is_vf.side_effect = lambda addr: addr == '0000:3b:00.4'
         self.set_defaults(host='host-192-168-32-195', debug=True)
 
@@ -280,14 +342,13 @@ class TestGPUDriverUtils(base.TestCase):
     @mock.patch('cyborg.accelerator.drivers.gpu.nvidia.sysinfo._is_vf')
     @mock.patch('cyborg.accelerator.drivers.gpu.utils.lspci_privileged')
     def test_discover_gpus_continues_on_is_vf_oserror(
-            self, mock_devices_for_vendor, mock_is_vf):
+        self, mock_devices_for_vendor, mock_is_vf
+    ):
         """Test discovery continues when _is_vf raises OSError."""
-        mock_devices_for_vendor.return_value = (
-            self.p.stdout.readlines_A100())
+        mock_devices_for_vendor.return_value = self.p.stdout.readlines_A100()
         mock_is_vf.side_effect = OSError('device busy')
         self.set_defaults(host='host-192-168-32-195', debug=True)
-        self.set_defaults(
-            filter_sriov_vfs=True, group='gpu_devices')
+        self.set_defaults(filter_sriov_vfs=True, group='gpu_devices')
 
         nvidia = NVIDIAGPUDriver()
         gpu_list = nvidia.discover()
@@ -297,24 +358,26 @@ class TestGPUDriverUtils(base.TestCase):
 
 
 class TestIsVf(base.TestCase):
-
     @mock.patch('os.path.exists', return_value=True)
     def test_is_vf_returns_true_when_physfn_exists(self, mock_exists):
         self.assertTrue(sysinfo._is_vf('0000:3b:00.4'))
         mock_exists.assert_called_once_with(
-            '/sys/bus/pci/devices/0000:3b:00.4/physfn')
+            '/sys/bus/pci/devices/0000:3b:00.4/physfn'
+        )
 
     @mock.patch('os.path.exists', return_value=False)
     def test_is_vf_returns_false_for_pf(self, mock_exists):
         self.assertFalse(sysinfo._is_vf('0000:3b:00.0'))
         mock_exists.assert_called_once_with(
-            '/sys/bus/pci/devices/0000:3b:00.0/physfn')
+            '/sys/bus/pci/devices/0000:3b:00.0/physfn'
+        )
 
     @mock.patch('os.path.exists', side_effect=OSError('device busy'))
     def test_is_vf_returns_false_on_oserror(self, mock_exists):
         self.assertFalse(sysinfo._is_vf('0000:3b:00.4'))
         mock_exists.assert_called_once_with(
-            '/sys/bus/pci/devices/0000:3b:00.4/physfn')
+            '/sys/bus/pci/devices/0000:3b:00.4/physfn'
+        )
 
 
 def multi_mock_open(*file_contents):
@@ -328,8 +391,9 @@ def multi_mock_open(*file_contents):
     """
 
     mock_files = [
-        mock.mock_open(read_data=content).return_value for content in
-        file_contents]
+        mock.mock_open(read_data=content).return_value
+        for content in file_contents
+    ]
     mock_opener = mock.mock_open()
     mock_opener.side_effect = mock_files
     return mock_opener

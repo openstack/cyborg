@@ -22,7 +22,6 @@ from cyborg.tests import base
 
 
 class TestVHOSTDRIVER(base.TestCase):
-
     def setUp(self):
         super().setUp()
         self.vhost_driver = VHOSTDRIVER()
@@ -35,17 +34,18 @@ class TestVHOSTDRIVER(base.TestCase):
     def test_discover_accelerator(self, mock_get_one_accelerator):
         expect_accelerator = {
             'server': 'vhost',
-            'bdevs': [{"num_blocks": 131072,
-                       "name": "nvme1",
-                       "block_size": 512
-                       }],
+            'bdevs': [
+                {"num_blocks": 131072, "name": "nvme1", "block_size": 512}
+            ],
             'scsi_devices': [],
-            'luns': [{"claimed": True,
-                      "name": "Malloc0"}],
-            'interfaces': [{"core": 0,
-                            "nqn": "nqn.2018-01.org.nvmexpress.discovery",
-                            "hosts": []
-                            }]
+            'luns': [{"claimed": True, "name": "Malloc0"}],
+            'interfaces': [
+                {
+                    "core": 0,
+                    "nqn": "nqn.2018-01.org.nvmexpress.discovery",
+                    "hosts": [],
+                }
+            ],
         }
         alive = mock.Mock(return_value=True)
         self.vhost_driver.py.is_alive = alive
@@ -53,27 +53,27 @@ class TestVHOSTDRIVER(base.TestCase):
         common_fun.check_for_setup_error = check_error
         self.assertFalse(
             mock_get_one_accelerator.called,
-            "Failed to discover_accelerator if py not alive."
+            "Failed to discover_accelerator if py not alive.",
         )
         acce_client = VhostTgt(self.vhost_driver.py)
-        bdevs_fake = [{"num_blocks": 131072,
-                       "name": "nvme1",
-                       "block_size": 512
-                       }]
+        bdevs_fake = [
+            {"num_blocks": 131072, "name": "nvme1", "block_size": 512}
+        ]
         bdev_list = mock.Mock(return_value=bdevs_fake)
         acce_client.get_bdevs = bdev_list
         scsi_devices_fake = []
         scsi_device_list = mock.Mock(return_value=scsi_devices_fake)
         acce_client.get_scsi_devices = scsi_device_list
-        luns_fake = [{"claimed": True,
-                      "name": "Malloc0"}]
+        luns_fake = [{"claimed": True, "name": "Malloc0"}]
         lun_list = mock.Mock(return_value=luns_fake)
         acce_client.get_luns = lun_list
-        interfaces_fake = \
-            [{"core": 0,
-              "nqn": "nqn.2018-01.org.nvmexpress.discovery",
-              "hosts": []
-              }]
+        interfaces_fake = [
+            {
+                "core": 0,
+                "nqn": "nqn.2018-01.org.nvmexpress.discovery",
+                "hosts": [],
+            }
+        ]
         interface_list = mock.Mock(return_value=interfaces_fake)
         acce_client.get_interfaces = interface_list
         accelerator_fake = {
@@ -81,7 +81,7 @@ class TestVHOSTDRIVER(base.TestCase):
             'bdevs': acce_client.get_bdevs(),
             'scsi_devices': acce_client.get_scsi_devices(),
             'luns': acce_client.get_luns(),
-            'interfaces': acce_client.get_interfaces()
+            'interfaces': acce_client.get_interfaces(),
         }
         success_send = mock.Mock(return_value=accelerator_fake)
         self.vhost_driver.get_one_accelerator = success_send
@@ -89,39 +89,43 @@ class TestVHOSTDRIVER(base.TestCase):
         self.assertEqual(accelerator, expect_accelerator)
 
     def test_accelerator_list(self):
-        expect_accelerators = [{
-            'server': 'vhost',
-            'bdevs': [{"num_blocks": 131072,
-                       "name": "nvme1",
-                       "block_size": 512
-                       }],
-            'scsi_devices': [],
-            'luns': [{"claimed": True,
-                      "name": "Malloc0"}],
-            'interfaces': [{"core": 0,
-                            "nqn": "nqn.2018-01.org.nvmexpress.discovery",
-                            "hosts": []
-                            }]
-        },
+        expect_accelerators = [
+            {
+                'server': 'vhost',
+                'bdevs': [
+                    {"num_blocks": 131072, "name": "nvme1", "block_size": 512}
+                ],
+                'scsi_devices': [],
+                'luns': [{"claimed": True, "name": "Malloc0"}],
+                'interfaces': [
+                    {
+                        "core": 0,
+                        "nqn": "nqn.2018-01.org.nvmexpress.discovery",
+                        "hosts": [],
+                    }
+                ],
+            },
             {
                 'server': 'vhost_tgt',
-                'bdevs': [{"num_blocks": 131072,
-                           "name": "nvme1",
-                           "block_size": 512
-                           }],
+                'bdevs': [
+                    {"num_blocks": 131072, "name": "nvme1", "block_size": 512}
+                ],
                 'scsi_devices': [],
-                'luns': [{"claimed": True,
-                          "name": "Malloc0"}],
-                'interfaces': [{"core": 0,
-                                "nqn": "nqn.2018-01.org.nvmexpress.discovery",
-                                "hosts": []
-                                }]
-            }
+                'luns': [{"claimed": True, "name": "Malloc0"}],
+                'interfaces': [
+                    {
+                        "core": 0,
+                        "nqn": "nqn.2018-01.org.nvmexpress.discovery",
+                        "hosts": [],
+                    }
+                ],
+            },
         ]
         success_send = mock.Mock(return_value=expect_accelerators)
         self.vhost_driver.get_all_accelerators = success_send
-        self.assertEqual(self.vhost_driver.accelerator_list(),
-                         expect_accelerators)
+        self.assertEqual(
+            self.vhost_driver.accelerator_list(), expect_accelerators
+        )
 
     def test_install_accelerator(self):
         pass

@@ -21,14 +21,15 @@ from cyborg.objects import fields as object_fields
 
 
 @base.CyborgObjectRegistry.register
-class DriverAttribute(base.DriverObjectBase,
-                      object_base.VersionedObjectDictCompat):
+class DriverAttribute(
+    base.DriverObjectBase, object_base.VersionedObjectDictCompat
+):
     # Version 1.0: Initial version
     VERSION = '1.0'
 
     fields = {
         'key': object_fields.StringField(nullable=False),
-        'value': object_fields.StringField(nullable=False)
+        'value': object_fields.StringField(nullable=False),
     }
 
     def create(self, context, deployable_id):
@@ -61,8 +62,8 @@ class DriverAttribute(base.DriverObjectBase,
         attr_obj_list = Attribute.get_by_deployable_id(context, deployable_id)
         driver_attr_obj_list = []
         for attr_obj in attr_obj_list:
-            driver_attr_obj = cls(context=context,
-                                  key=attr_obj.key,
-                                  value=attr_obj.value)
+            driver_attr_obj = cls(
+                context=context, key=attr_obj.key, value=attr_obj.value
+            )
             driver_attr_obj_list.append(driver_attr_obj)
         return driver_attr_obj_list

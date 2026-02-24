@@ -21,12 +21,13 @@ from cyborg.accelerator.drivers.ssd.inspur.driver import InspurNVMeSSDDriver
 from cyborg.accelerator.drivers.ssd import utils
 from cyborg.tests import base
 
-NVME_SSD_INFO = \
-    "0000:db:00.0 Non-Volatile memory controller [0108]: Inspur " \
-    "Electronic Information Industry Co., Ltd. Device [1bd4:1001]" \
-    " (rev 02)\n0000:db:01.0 Non-Volatile memory controller " \
-    "[0108]: Inspur Electronic Information Industry Co., Ltd. " \
+NVME_SSD_INFO = (
+    "0000:db:00.0 Non-Volatile memory controller [0108]: Inspur "
+    "Electronic Information Industry Co., Ltd. Device [1bd4:1001]"
+    " (rev 02)\n0000:db:01.0 Non-Volatile memory controller "
+    "[0108]: Inspur Electronic Information Industry Co., Ltd. "
     "Device [1bd4:1001] (rev 02)"
+)
 
 
 class stdout:
@@ -43,7 +44,6 @@ class p:
 
 
 class TestSSDDriverUtils(base.TestCase):
-
     def setUp(self):
         super().setUp()
         self.p = p()
@@ -62,12 +62,14 @@ class TestSSDDriverUtils(base.TestCase):
         ssd_list = InspurNVMeSSDDriver.discover(vendor_id)
         self.assertEqual(2, len(ssd_list))
         attach_handle_list = [
-            {'attach_type': 'PCI',
-             'attach_info': '{"bus": "db", '
-                            '"device": "00", '
-                            '"domain": "0000", '
-                            '"function": "0"}',
-             'in_use': False}
+            {
+                'attach_type': 'PCI',
+                'attach_info': '{"bus": "db", '
+                '"device": "00", '
+                '"domain": "0000", '
+                '"function": "0"}',
+                'in_use': False,
+            }
         ]
         attribute_list = [
             {'key': 'rc', 'value': 'CUSTOM_SSD'},
@@ -77,51 +79,65 @@ class TestSSDDriverUtils(base.TestCase):
         expected = {
             'vendor': '1bd4',
             'type': 'SSD',
-            'std_board_info':
-                {"controller": "Non-Volatile memory controller",
-                 "product_id": "1001"},
+            'std_board_info': {
+                "controller": "Non-Volatile memory controller",
+                "product_id": "1001",
+            },
             'vendor_board_info': {"vendor_info": "ssd_vb_info"},
-            'deployable_list':
-                [
-                    {
-                        'num_accelerators': 1,
-                        'driver_name': 'INSPUR',
-                        'name': 'host-192-168-32-195_0000:db:00.0',
-                        'attach_handle_list': attach_handle_list,
-                        'attribute_list': attribute_list
-                    },
-                ],
-            'controlpath_id': {'cpid_info': '{"bus": "db", '
-                                            '"device": "00", '
-                                            '"domain": "0000", '
-                                            '"function": "0"}',
-                               'cpid_type': 'PCI'}
+            'deployable_list': [
+                {
+                    'num_accelerators': 1,
+                    'driver_name': 'INSPUR',
+                    'name': 'host-192-168-32-195_0000:db:00.0',
+                    'attach_handle_list': attach_handle_list,
+                    'attribute_list': attribute_list,
+                },
+            ],
+            'controlpath_id': {
+                'cpid_info': '{"bus": "db", '
+                '"device": "00", '
+                '"domain": "0000", '
+                '"function": "0"}',
+                'cpid_type': 'PCI',
+            },
         }
         ssd_obj = ssd_list[0]
         ssd_dict = ssd_obj.as_dict()
         ssd_dep_list = ssd_dict['deployable_list']
-        ssd_attach_handle_list = \
-            ssd_dep_list[0].as_dict()['attach_handle_list']
-        ssd_attribute_list = \
-            ssd_dep_list[0].as_dict()['attribute_list']
+        ssd_attach_handle_list = ssd_dep_list[0].as_dict()[
+            'attach_handle_list'
+        ]
+        ssd_attribute_list = ssd_dep_list[0].as_dict()['attribute_list']
         attri_obj_data = []
         [attri_obj_data.append(attr.as_dict()) for attr in ssd_attribute_list]
         attribute_actual_data = sorted(attri_obj_data, key=lambda i: i['key'])
         self.assertEqual(expected['vendor'], ssd_dict['vendor'])
-        self.assertEqual(expected['controlpath_id'],
-                         ssd_dict['controlpath_id'])
-        self.assertEqual(expected['std_board_info'],
-                         jsonutils.loads(ssd_dict['std_board_info']))
-        self.assertEqual(expected['vendor_board_info'],
-                         jsonutils.loads(ssd_dict['vendor_board_info']))
-        self.assertEqual(expected['deployable_list'][0]['num_accelerators'],
-                         ssd_dep_list[0].as_dict()['num_accelerators'])
-        self.assertEqual(expected['deployable_list'][0]['name'],
-                         ssd_dep_list[0].as_dict()['name'])
-        self.assertEqual(expected['deployable_list'][0]['driver_name'],
-                         ssd_dep_list[0].as_dict()['driver_name'])
-        self.assertEqual(attach_handle_list[0],
-                         ssd_attach_handle_list[0].as_dict())
+        self.assertEqual(
+            expected['controlpath_id'], ssd_dict['controlpath_id']
+        )
+        self.assertEqual(
+            expected['std_board_info'],
+            jsonutils.loads(ssd_dict['std_board_info']),
+        )
+        self.assertEqual(
+            expected['vendor_board_info'],
+            jsonutils.loads(ssd_dict['vendor_board_info']),
+        )
+        self.assertEqual(
+            expected['deployable_list'][0]['num_accelerators'],
+            ssd_dep_list[0].as_dict()['num_accelerators'],
+        )
+        self.assertEqual(
+            expected['deployable_list'][0]['name'],
+            ssd_dep_list[0].as_dict()['name'],
+        )
+        self.assertEqual(
+            expected['deployable_list'][0]['driver_name'],
+            ssd_dep_list[0].as_dict()['driver_name'],
+        )
+        self.assertEqual(
+            attach_handle_list[0], ssd_attach_handle_list[0].as_dict()
+        )
         self.assertEqual(attribute_list, attribute_actual_data)
 
     @mock.patch('cyborg.accelerator.drivers.ssd.utils.lspci_privileged')
@@ -130,8 +146,12 @@ class TestSSDDriverUtils(base.TestCase):
         with self.assertLogs(None, level='INFO') as cm:
             d = SSDDriver.create()
             ssd_list = d.discover()
-        self.assertEqual(cm.output,
-                         ['INFO:cyborg.accelerator.drivers.ssd.base:The '
-                          'method "discover" is called in generic.SSDDriver'])
+        self.assertEqual(
+            cm.output,
+            [
+                'INFO:cyborg.accelerator.drivers.ssd.base:The '
+                'method "discover" is called in generic.SSDDriver'
+            ],
+        )
         self.assertEqual(2, len(ssd_list))
         self.assertEqual("1bd4", ssd_list[1].as_dict()['vendor'])

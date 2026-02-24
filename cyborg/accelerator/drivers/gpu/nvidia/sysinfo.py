@@ -17,6 +17,7 @@
 """
 Cyborg NVIDIA GPU driver implementation.
 """
+
 from oslo_log import log as logging
 from oslo_serialization import jsonutils
 
@@ -52,8 +53,12 @@ def _get_traits(vendor_id, product_id, vgpu_type_name=None):
     traits = ["OWNER_CYBORG"]
     # PGPU trait
     gpu_trait = "_".join(
-        ('CUSTOM', gpu_utils.VENDOR_MAPS.get(vendor_id, "").upper(),
-         product_id.upper()))
+        (
+            'CUSTOM',
+            gpu_utils.VENDOR_MAPS.get(vendor_id, "").upper(),
+            product_id.upper(),
+        )
+    )
     # VGPU trait
     if vgpu_type_name:
         gpu_trait = "_".join((gpu_trait, vgpu_type_name.upper()))
@@ -73,7 +78,8 @@ def _generate_attribute_list(gpu):
             values = gpu.get(k, [])
             for val in values:
                 driver_attr = driver_attribute.DriverAttribute(
-                    key="trait" + str(index), value=val)
+                    key="trait" + str(index), value=val
+                )
                 index = index + 1
                 attr_list.append(driver_attr)
     return attr_list
@@ -89,7 +95,8 @@ def _generate_attach_handle(gpu, num=None):
         vgpu_mark = gpu["vGPU_type"] + '_' + str(num)
         driver_ah.attach_type = constants.AH_TYPE_MDEV
         driver_ah.attach_info = utils.mdev_str_to_json(
-            gpu["devices"], gpu["vGPU_type"], vgpu_mark)
+            gpu["devices"], gpu["vGPU_type"], vgpu_mark
+        )
     return driver_ah
 
 
@@ -103,19 +110,21 @@ def _generate_dep_list(gpu):
     # NOTE(yumeng) Since Wallaby release, the deplpyable_name is named as
     # <Compute_hostname>_<Device_address>
     driver_dep.name = gpu.get('hostname', '') + '_' + gpu["devices"]
-    driver_dep.driver_name = \
-        gpu_utils.VENDOR_MAPS.get(gpu["vendor_id"], '').upper()
+    driver_dep.driver_name = gpu_utils.VENDOR_MAPS.get(
+        gpu["vendor_id"], ''
+    ).upper()
     # if is pGPU, num_accelerators = 1
     if gpu["rc"] == "PGPU":
         driver_dep.num_accelerators = 1
-        driver_dep.attach_handle_list = \
-            [_generate_attach_handle(gpu)]
+        driver_dep.attach_handle_list = [_generate_attach_handle(gpu)]
     else:
         # if is vGPU, num_accelerators is the total vGPU capability of
         # the asked vGPU type
         vGPU_path = os.path.expandvars(
-            '/sys/bus/pci/devices/{}/mdev_supported_types/{}/'
-            .format(gpu["devices"], gpu["vGPU_type"]))
+            '/sys/bus/pci/devices/{}/mdev_supported_types/{}/'.format(
+                gpu["devices"], gpu["vGPU_type"]
+            )
+        )
         num_available = 0
         with open(vGPU_path + 'available_instances') as f:
             num_available = int(f.read().strip())
@@ -128,7 +137,8 @@ def _generate_dep_list(gpu):
         # example: echo "attach_handle_uuid" > nvidia-223/create
         for num in range(driver_dep.num_accelerators):
             driver_dep.attach_handle_list.append(
-                _generate_attach_handle(gpu, num))
+                _generate_attach_handle(gpu, num)
+            )
     return [driver_dep]
 
 
@@ -143,13 +153,13 @@ def _generate_driver_device(gpu):
     driver_device_obj = driver_device.DriverDevice()
     driver_device_obj.vendor = gpu['vendor_id']
     driver_device_obj.model = gpu.get('model', 'miss model info')
-    std_board_info = {'product_id': gpu.get('product_id'),
-                      'controller': gpu.get('controller'), }
-    vendor_board_info = {'vendor_info': gpu.get('vendor_info',
-                         'gpu_vb_info')}
+    std_board_info = {
+        'product_id': gpu.get('product_id'),
+        'controller': gpu.get('controller'),
+    }
+    vendor_board_info = {'vendor_info': gpu.get('vendor_info', 'gpu_vb_info')}
     driver_device_obj.std_board_info = jsonutils.dumps(std_board_info)
-    driver_device_obj.vendor_board_info = jsonutils.dumps(
-        vendor_board_info)
+    driver_device_obj.vendor_board_info = jsonutils.dumps(vendor_board_info)
     driver_device_obj.type = constants.DEVICE_GPU
     driver_device_obj.stub = gpu.get('stub', False)
     driver_device_obj.controlpath_id = _generate_controlpath_id(gpu)
@@ -204,8 +214,9 @@ def _get_supported_vgpu_types():
     return CONF.gpu_devices.enabled_vgpu_types, pgpu_type_mapping
 
 
-def _get_vgpu_type_per_pgpu(device_address, supported_vgpu_types,
-                            pgpu_type_mapping):
+def _get_vgpu_type_per_pgpu(
+    device_address, supported_vgpu_types, pgpu_type_mapping
+):
     """Provides the vGPU type the pGPU supports.
 
     :param device_address: the PCI device address in config,
@@ -214,9 +225,11 @@ def _get_vgpu_type_per_pgpu(device_address, supported_vgpu_types,
     supported_vgpu_types, pgpu_type_mapping = _get_supported_vgpu_types()
     # Bail out quickly if we don't support vGPUs
     if not supported_vgpu_types:
-        LOG.warning('Unable to load vGPU_type from [gpu_devices] '
-                    'Ensure "enabled_vgpu_types" is set if the gpu'
-                    'is virtualized.')
+        LOG.warning(
+            'Unable to load vGPU_type from [gpu_devices] '
+            'Ensure "enabled_vgpu_types" is set if the gpu'
+            'is virtualized.'
+        )
         return
 
     try:
@@ -224,8 +237,10 @@ def _get_vgpu_type_per_pgpu(device_address, supported_vgpu_types,
         utils.parse_address(device_address)
     except (exception.PciDeviceWrongAddressFormat, IndexError):
         # this is not a valid PCI address
-        LOG.warning("The PCI address %s was invalid for getting the"
-                    "related vGPU type", device_address)
+        LOG.warning(
+            "The PCI address %s was invalid for getting therelated vGPU type",
+            device_address,
+        )
         return
     return pgpu_type_mapping.get(device_address)
 
@@ -240,14 +255,17 @@ def _is_vf(pci_address):
     try:
         return os.path.exists(physfn_path)
     except OSError:
-        LOG.warning('Failed to check VF status for device %s via %s, '
-                    'assuming it is not a VF.', pci_address, physfn_path)
+        LOG.warning(
+            'Failed to check VF status for device %s via %s, '
+            'assuming it is not a VF.',
+            pci_address,
+            physfn_path,
+        )
         return False
 
 
 def _discover_gpus(vendor_id):
-    """param: vendor_id=VENDOR_ID means only discover Nvidia GPU on the host
-    """
+    """param: vendor_id=VENDOR_ID means only discover Nvidia GPU on the host"""
     # init vGPU conf
     cyborg.conf.devices.register_dynamic_opts(CONF)
     supported_vgpu_types, pgpu_type_mapping = _get_supported_vgpu_types()
@@ -280,46 +298,56 @@ def _discover_gpus(vendor_id):
                     LOG.warning(
                         'Unable to determine VF status for '
                         'device %s, assuming it is not a VF.',
-                        gpu_dict["devices"])
+                        gpu_dict["devices"],
+                    )
                     is_vf = False
                 if is_vf:
                     LOG.info(
                         'Skipping VF device %s, only PFs and'
                         ' mediated devices are reported.',
-                        gpu_dict["devices"])
+                        gpu_dict["devices"],
+                    )
                     continue
             # get hostname for deployable_name usage
             gpu_dict['hostname'] = CONF.host
             # get vgpu_type from cyborg.conf, otherwise vgpu_type=None
             vgpu_type = _get_vgpu_type_per_pgpu(
-                gpu_dict["devices"], supported_vgpu_types, pgpu_type_mapping)
+                gpu_dict["devices"], supported_vgpu_types, pgpu_type_mapping
+            )
             # generate rc and trait for pGPU
             if not vgpu_type:
                 gpu_dict["rc"] = constants.RESOURCES["PGPU"]
-                traits = _get_traits(gpu_dict["vendor_id"],
-                                     gpu_dict["product_id"])
+                traits = _get_traits(
+                    gpu_dict["vendor_id"], gpu_dict["product_id"]
+                )
             # generate rc and trait for vGPU
             else:
                 # get rc
                 gpu_dict["rc"] = constants.RESOURCES["VGPU"]
                 mdev_path = os.path.expandvars(
-                    '/sys/bus/pci/devices/{}/mdev_supported_types'.
-                    format(gpu_dict["devices"]))
+                    '/sys/bus/pci/devices/{}/mdev_supported_types'.format(
+                        gpu_dict["devices"]
+                    )
+                )
                 valid_types = os.listdir(mdev_path)
                 if vgpu_type not in valid_types:
                     raise exception.InvalidVGPUType(name=vgpu_type)
                 gpu_dict["vGPU_type"] = vgpu_type
                 vGPU_path = os.path.expandvars(
-                    '/sys/bus/pci/devices/{}/mdev_supported_types/{}/'
-                    .format(gpu_dict["devices"], gpu_dict["vGPU_type"]))
+                    '/sys/bus/pci/devices/{}/mdev_supported_types/{}/'.format(
+                        gpu_dict["devices"], gpu_dict["vGPU_type"]
+                    )
+                )
                 # transfer vgpu_type to vgpu_type_name.
                 # eg. transfer 'nvidia-223' to 'T4_1B'
                 with open(vGPU_path + 'name') as f:
                     name = f.read().strip()
                 vgpu_type_name = name.split(' ')[1].replace('-', '_')
-                traits = _get_traits(gpu_dict["vendor_id"],
-                                     gpu_dict["product_id"],
-                                     vgpu_type_name)
+                traits = _get_traits(
+                    gpu_dict["vendor_id"],
+                    gpu_dict["product_id"],
+                    vgpu_type_name,
+                )
             gpu_dict.update(traits)
             gpu_list.append(_generate_driver_device(gpu_dict))
     return gpu_list

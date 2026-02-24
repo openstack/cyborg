@@ -25,7 +25,6 @@ LOG = logging.getLogger(__name__)
 
 
 class BasePolicyTest(v2_test.APITestV2):
-
     def setUp(self):
         super().setUp()
         self.policy = self.useFixture(policy_fixture.PolicyFixture())
@@ -37,54 +36,70 @@ class BasePolicyTest(v2_test.APITestV2):
 
         # legacy default role: "default:admin_or_owner"
         self.legacy_admin_context = cyborg_context.RequestContext(
-            user_id="legacy_admin", project_id=self.admin_project_id,
-            roles='admin')
+            user_id="legacy_admin",
+            project_id=self.admin_project_id,
+            roles='admin',
+        )
         self.legacy_owner_context = cyborg_context.RequestContext(
-            user_id="legacy_owner", project_id=self.admin_project_id,
-            roles='member')
+            user_id="legacy_owner",
+            project_id=self.admin_project_id,
+            roles='member',
+        )
 
         # system scoped users
         self.system_admin_context = cyborg_context.RequestContext(
-            user_id="sys_admin",
-            roles='admin', system_scope='all')
+            user_id="sys_admin", roles='admin', system_scope='all'
+        )
 
         self.system_member_context = cyborg_context.RequestContext(
-            user_id="sys_member",
-            roles='member', system_scope='all')
+            user_id="sys_member", roles='member', system_scope='all'
+        )
 
         self.system_reader_context = cyborg_context.RequestContext(
-            user_id="sys_reader", roles='reader', system_scope='all')
+            user_id="sys_reader", roles='reader', system_scope='all'
+        )
 
         self.system_foo_context = cyborg_context.RequestContext(
-            user_id="sys_foo", roles='foo', system_scope='all')
+            user_id="sys_foo", roles='foo', system_scope='all'
+        )
 
         # project scoped users
         self.project_admin_context = cyborg_context.RequestContext(
-            user_id="project_admin", project_id=self.project_id,
-            roles='admin')
+            user_id="project_admin", project_id=self.project_id, roles='admin'
+        )
 
         self.project_member_context = cyborg_context.RequestContext(
-            user_id="project_member", project_id=self.project_id,
-            roles='member')
+            user_id="project_member",
+            project_id=self.project_id,
+            roles='member',
+        )
 
         self.project_reader_context = cyborg_context.RequestContext(
-            user_id="project_reader", project_id=self.project_id,
-            roles='reader')
+            user_id="project_reader",
+            project_id=self.project_id,
+            roles='reader',
+        )
 
         self.project_foo_context = cyborg_context.RequestContext(
-            user_id="project_foo", project_id=self.project_id,
-            roles='foo')
+            user_id="project_foo", project_id=self.project_id, roles='foo'
+        )
 
         self.other_project_member_context = cyborg_context.RequestContext(
             user_id="other_project_member",
             project_id=self.project_id_other,
-            roles='member')
+            roles='member',
+        )
 
         self.all_contexts = [
-            self.legacy_admin_context, self.legacy_owner_context,
-            self.system_admin_context, self.system_member_context,
-            self.system_reader_context, self.system_foo_context,
-            self.project_admin_context, self.project_member_context,
-            self.project_reader_context, self.other_project_member_context,
+            self.legacy_admin_context,
+            self.legacy_owner_context,
+            self.system_admin_context,
+            self.system_member_context,
+            self.system_reader_context,
+            self.system_foo_context,
+            self.project_admin_context,
+            self.project_member_context,
+            self.project_reader_context,
+            self.other_project_member_context,
             self.project_foo_context,
         ]

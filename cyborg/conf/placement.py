@@ -22,7 +22,8 @@ DEFAULT_SERVICE_TYPE = 'placement'
 placement_group = cfg.OptGroup(
     PLACEMENT_CONF_SECTION,
     title='Placement Service Options',
-    help="Configuration options for connecting to the placement API service")
+    help="Configuration options for connecting to the placement API service",
+)
 
 
 def register_opts(conf):
@@ -33,10 +34,11 @@ def register_opts(conf):
 def list_opts():
     return {
         PLACEMENT_CONF_SECTION: (
-            ks_loading.get_session_conf_options() +
-            ks_loading.get_auth_common_conf_options() +
-            ks_loading.get_auth_plugin_conf_options('password') +
-            ks_loading.get_auth_plugin_conf_options('v2password') +
-            ks_loading.get_auth_plugin_conf_options('v3password') +
-            confutils.get_ksa_adapter_opts(DEFAULT_SERVICE_TYPE))
+            ks_loading.get_session_conf_options()
+            + ks_loading.get_auth_common_conf_options()
+            + ks_loading.get_auth_plugin_conf_options('password')
+            + ks_loading.get_auth_plugin_conf_options('v2password')
+            + ks_loading.get_auth_plugin_conf_options('v3password')
+            + confutils.get_ksa_adapter_opts(DEFAULT_SERVICE_TYPE)
+        )
     }

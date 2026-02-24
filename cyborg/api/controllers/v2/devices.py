@@ -41,6 +41,7 @@ class Device(base.APIBase):
     This class enforces type checking and value constraints, and converts
     between the internal object model and the API representation.
     """
+
     uuid = types.uuid
     """The UUID of the device"""
 
@@ -82,9 +83,10 @@ class Device(base.APIBase):
         if not api.request.version.minor >= versions.MINOR_3_DEVICE_STATUS:
             delattr(api_device, 'status')
         api_device.links = [
-            link.Link.make_link('self', pecan.request.public_url,
-                                'devices', api_device.uuid)
-            ]
+            link.Link.make_link(
+                'self', pecan.request.public_url, 'devices', api_device.uuid
+            )
+        ]
         return api_device
 
 
@@ -97,8 +99,9 @@ class DeviceCollection(base.APIBase):
     @classmethod
     def convert_with_links(cls, devices):
         collection = cls()
-        collection.devices = [Device.convert_with_links(device)
-                              for device in devices]
+        collection.devices = [
+            Device.convert_with_links(device) for device in devices
+        ]
         return collection
 
 
@@ -118,8 +121,13 @@ class DevicesController(base.CyborgController):
         return Device.convert_with_links(device)
 
     @authorize_wsgi.authorize_wsgi("cyborg:device", "get_all", False)
-    @expose.expose(DeviceCollection, wtypes.text, wtypes.text, wtypes.text,
-                   wtypes.ArrayType(types.FilterType))
+    @expose.expose(
+        DeviceCollection,
+        wtypes.text,
+        wtypes.text,
+        wtypes.text,
+        wtypes.ArrayType(types.FilterType),
+    )
     def get_all(self, type=None, vendor=None, hostname=None, filters=None):
         """Retrieve a list of devices.
         :param type: type of a device.
@@ -144,8 +152,7 @@ class DevicesController(base.CyborgController):
         return DeviceCollection.convert_with_links(obj_devices)
 
     @authorize_wsgi.authorize_wsgi("cyborg:device", "disable")
-    @expose.expose(None, wtypes.text, types.uuid,
-                   status_code=HTTPStatus.OK)
+    @expose.expose(None, wtypes.text, types.uuid, status_code=HTTPStatus.OK)
     def disable(self, uuid):
         context = pecan.request.context
         device = objects.Device.get(context, uuid)
@@ -161,15 +168,17 @@ class DevicesController(base.CyborgController):
         else:
             raise exception.ResourceNotFound(
                 resource='Attribute',
-                msg='with deployable_id=%s,key=%s' % (deployable.id, 'rc'))
+                msg='with deployable_id=%s,key=%s' % (deployable.id, 'rc'),
+            )
         client.update_rp_inventory_reserved(
-            deployable.rp_uuid, att_type,
+            deployable.rp_uuid,
+            att_type,
             deployable.num_accelerators,
-            deployable.num_accelerators)
+            deployable.num_accelerators,
+        )
 
     @authorize_wsgi.authorize_wsgi("cyborg:device", "enable")
-    @expose.expose(None, wtypes.text, types.uuid,
-                   status_code=HTTPStatus.OK)
+    @expose.expose(None, wtypes.text, types.uuid, status_code=HTTPStatus.OK)
     def enable(self, uuid):
         context = pecan.request.context
         device = objects.Device.get(context, uuid)
@@ -185,8 +194,8 @@ class DevicesController(base.CyborgController):
         else:
             raise exception.ResourceNotFound(
                 resource='Attribute',
-                msg='with deployable_id=%s,key=%s' % (deployable.id, 'rc'))
+                msg='with deployable_id=%s,key=%s' % (deployable.id, 'rc'),
+            )
         client.update_rp_inventory_reserved(
-            deployable.rp_uuid, att_type,
-            deployable.num_accelerators,
-            0)
+            deployable.rp_uuid, att_type, deployable.num_accelerators, 0
+        )

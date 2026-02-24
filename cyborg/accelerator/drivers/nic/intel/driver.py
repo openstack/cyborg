@@ -23,8 +23,9 @@ from cyborg.accelerator.drivers.nic.intel import sysinfo
 
 class IntelNICDriver(NICDriver):
     """Class for Intel NIC drivers.
-       Vendor should implement their specific drivers in this class.
+    Vendor should implement their specific drivers in this class.
     """
+
     VENDOR = "intel"
 
     def __init__(self, *args, **kwargs):

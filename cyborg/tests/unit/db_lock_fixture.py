@@ -36,8 +36,7 @@ class DatabaseWriteLock(fixtures.Fixture):
     """
 
     def _setUp(self):
-        original = (
-            enginefacade._TransactionContextManager._transaction_scope)
+        original = enginefacade._TransactionContextManager._transaction_scope
 
         @contextlib.contextmanager
         def _locked_scope(tcm_self, context):
@@ -52,7 +51,10 @@ class DatabaseWriteLock(fixtures.Fixture):
                 with original(tcm_self, context) as resource:
                     yield resource
 
-        self.useFixture(fixtures.MockPatchObject(
-            enginefacade._TransactionContextManager,
-            '_transaction_scope',
-            _locked_scope))
+        self.useFixture(
+            fixtures.MockPatchObject(
+                enginefacade._TransactionContextManager,
+                '_transaction_scope',
+                _locked_scope,
+            )
+        )

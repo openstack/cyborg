@@ -45,8 +45,9 @@ def _fpga_program_privileged(cmd_args):
 
 class IntelFPGADriver(FPGADriver):
     """Class for Intel FPGA drivers.
-       Vendor should implement their specific drivers in this class.
+    Vendor should implement their specific drivers in this class.
     """
+
     VENDOR = "intel"
 
     def __init__(self, *args, **kwargs):
@@ -58,23 +59,27 @@ class IntelFPGADriver(FPGADriver):
     def program(self, controlpath_id, image_file_path):
         """Program the FPGA with the provided bitstream image.
 
-           TODO(Sundar): Need to handle retries.
+        TODO(Sundar): Need to handle retries.
 
-           :param: controlpath_id
-               Controlpath_id OVO
-           :param: image_file_path
-               String with the file path
-           :returns: True on success, False on failure
+        :param: controlpath_id
+            Controlpath_id OVO
+        :param: image_file_path
+            String with the file path
+        :returns: True on success, False on failure
         """
         if controlpath_id['cpid_type'] != "PCI":
-            raise exception.InvalidType(obj='controlpath_id',
-                                        type=controlpath_id['cpid_type'],
-                                        expected='PCI')
+            raise exception.InvalidType(
+                obj='controlpath_id',
+                type=controlpath_id['cpid_type'],
+                expected='PCI',
+            )
         cmd_args = []
         bdf_dict = controlpath_id['cpid_info']
         # fitting format to the OPAE command.
-        bdf = ['0x' + s for s in map(lambda x: bdf_dict[x],
-               ["bus", "device", "function"])]
+        bdf = [
+            '0x' + s
+            for s in map(lambda x: bdf_dict[x], ["bus", "device", "function"])
+        ]
         for i in zip(["--bus", "--device", "--function"], bdf):
             cmd_args.extend(i)
         cmd_args.append(image_file_path)

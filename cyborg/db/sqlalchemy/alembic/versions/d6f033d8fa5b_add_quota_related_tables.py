@@ -39,12 +39,17 @@ def upgrade():
         sa.Column('in_use', sa.Integer(), nullable=False),
         sa.Column('reserved', sa.Integer(), nullable=False),
         sa.Column('until_refresh', sa.Integer(), nullable=True),
-        sa.PrimaryKeyConstraint('id')
+        sa.PrimaryKeyConstraint('id'),
     )
-    op.create_index('ix_quota_usages_project_id', 'quota_usages',
-                    ['project_id'], unique=False)
-    op.create_index('ix_quota_usages_user_id', 'quota_usages', ['user_id'],
-                    unique=False)
+    op.create_index(
+        'ix_quota_usages_project_id',
+        'quota_usages',
+        ['project_id'],
+        unique=False,
+    )
+    op.create_index(
+        'ix_quota_usages_user_id', 'quota_usages', ['user_id'], unique=False
+    )
 
     op.create_table(
         'reservations',
@@ -58,13 +63,22 @@ def upgrade():
         sa.Column('resource', sa.String(length=255), nullable=True),
         sa.Column('delta', sa.Integer(), nullable=False),
         sa.Column('expire', sa.DateTime(), nullable=True),
-        sa.ForeignKeyConstraint(['usage_id'], ['quota_usages.id'], ),
-        sa.PrimaryKeyConstraint('id')
+        sa.ForeignKeyConstraint(
+            ['usage_id'],
+            ['quota_usages.id'],
+        ),
+        sa.PrimaryKeyConstraint('id'),
     )
-    op.create_index('ix_reservations_project_id', 'reservations',
-                    ['project_id'], unique=False)
-    op.create_index('ix_reservations_user_id', 'reservations', ['user_id'],
-                    unique=False)
-    op.create_index('reservations_uuid_idx', 'reservations', ['uuid'],
-                    unique=False)
+    op.create_index(
+        'ix_reservations_project_id',
+        'reservations',
+        ['project_id'],
+        unique=False,
+    )
+    op.create_index(
+        'ix_reservations_user_id', 'reservations', ['user_id'], unique=False
+    )
+    op.create_index(
+        'reservations_uuid_idx', 'reservations', ['uuid'], unique=False
+    )
     # ### end Alembic commands ###

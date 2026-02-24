@@ -7,8 +7,7 @@ Before you commit your code run tox against your patch using the command.
 
     tox .
 
-If any of the tests fail correct the error and try again. If your code is valid
-Python but not valid pep8 you may find autopep8 from pip useful.
+If any of the tests fail correct the error and try again.
 
 Once you submit a patch integration tests will run and those may fail,
 -1'ing your patch you can make a gerrit comment 'recheck ci' if you have

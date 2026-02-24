@@ -32,14 +32,17 @@ from cyborg.objects.driver_objects import driver_deployable
 from cyborg.objects.driver_objects import driver_device
 import cyborg.privsep
 
-INSPUR_FPGA_FLAGS = ["Inspur Electronic Information Industry Co., Ltd.",
-                     "Processing accelerators"]
+INSPUR_FPGA_FLAGS = [
+    "Inspur Electronic Information Industry Co., Ltd.",
+    "Processing accelerators",
+]
 INSPUR_FPGA_INFO_PATTERN = re.compile(
     r"(?P<devices>[0-9a-fA-F]{4}:[0-9a-fA-F]{2}:"
     r"[0-9a-fA-F]{2}\.[0-9a-fA-F]) "
     r"(?P<controller>.*) [\[].*]: (?P<model>.*) .*"
     r"[\[](?P<vendor_id>[0-9a-fA-F]"
-    r"{4}):(?P<product_id>[0-9a-fA-F]{4})].*")
+    r"{4}):(?P<product_id>[0-9a-fA-F]{4})].*"
+)
 
 VENDOR_ID = "1bd4"
 VENDOR_MAPS = {"1bd4": "inspur"}
@@ -88,7 +91,8 @@ def fpga_tree():
             fpga_dict = m.groupdict()
             # generate traits info
             traits = get_traits(
-                fpga_dict["vendor_id"], fpga_dict["product_id"])
+                fpga_dict["vendor_id"], fpga_dict["product_id"]
+            )
             fpga_dict["rc"] = constants.RESOURCES["FPGA"]
             fpga_dict.update(traits)
             fpga_list.append(_generate_driver_device(fpga_dict))
@@ -99,10 +103,13 @@ def _generate_driver_device(fpga):
     driver_device_obj = driver_device.DriverDevice()
     driver_device_obj.vendor = fpga["vendor_id"]
     driver_device_obj.model = fpga.get('model', 'miss model info')
-    std_board_info = {'product_id': fpga.get('product_id'),
-                      'controller': fpga.get('controller')}
+    std_board_info = {
+        'product_id': fpga.get('product_id'),
+        'controller': fpga.get('controller'),
+    }
     vendor_board_info = {
-        'vendor_info': fpga.get('vendor_info', 'fpga_vb_info')}
+        'vendor_info': fpga.get('vendor_info', 'fpga_vb_info')
+    }
     driver_device_obj.std_board_info = jsonutils.dumps(std_board_info)
     driver_device_obj.vendor_board_info = jsonutils.dumps(vendor_board_info)
     driver_device_obj.type = constants.DEVICE_FPGA
@@ -143,7 +150,8 @@ def _generate_attribute_list(fpga):
         if k == "traits":
             for index, val in enumerate(v):
                 driver_attr = driver_attribute.DriverAttribute(
-                    key="trait" + str(index), value=val)
+                    key="trait" + str(index), value=val
+                )
                 attr_list.append(driver_attr)
     return attr_list
 

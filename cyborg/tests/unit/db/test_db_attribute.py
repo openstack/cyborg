@@ -22,15 +22,20 @@ from cyborg.tests.unit.db import base
 
 
 class TestDbAttributeTestCase(base.DbTestCase):
-
     def test_get_by_uuid_not_exist(self):
         random_uuid = uuidutils.generate_uuid()
-        self.assertRaises(exception.ResourceNotFound,
-                          self.dbapi.attribute_get,
-                          self.context, random_uuid)
+        self.assertRaises(
+            exception.ResourceNotFound,
+            self.dbapi.attribute_get,
+            self.context,
+            random_uuid,
+        )
 
     def test_delete_by_uuid_not_exist(self):
         random_uuid = uuidutils.generate_uuid()
-        self.assertRaises(exception.ResourceNotFound,
-                          self.dbapi.attribute_delete,
-                          self.context, random_uuid)
+        self.assertRaises(
+            exception.ResourceNotFound,
+            self.dbapi.attribute_delete,
+            self.context,
+            random_uuid,
+        )

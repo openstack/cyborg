@@ -29,53 +29,71 @@ def _get_arqs_as_dict():
             "bus": "1",
             "device": "0",
             "domain": "0",
-            "function": "0"
+            "function": "0",
         },
         "device_profile_group": {
             "trait:CUSTOM_FPGA_INTEL": "required",
             "resources:FPGA": "1",
-            "accel:bitstream_id": "b069d97a-010a-4057-b70d-eca2b337fc9c"}
+            "accel:bitstream_id": "b069d97a-010a-4057-b70d-eca2b337fc9c",
+        },
     }
     dp_groups = [
         {"device_profile_group": {"resources:GPU": "1"}},
-        {"device_profile_group": {
-            "trait:CUSTOM_FPGA_INTEL": "required",
-            "resources:FPGA": "1"}},
-        {"device_profile_group": {
-            "trait:CUSTOM_FPGA_INTEL": "required",
-            "resources:FPGA": "1",
-            "accel:bitstream_id": "b069d97a-010a-4057-b70d-eca2b337fc9c"}},
-        {"device_profile_group": {
-            "trait:CUSTOM_FPGA_INTEL": "required",
-            "resources:FPGA": "1",
-            "accel:function_id": "25453786-03e0-4ee7-a640-969eb5a5aa44"}},
-        {"device_profile_group": {
-            "trait:CUSTOM_FPGA_INTEL": "required",
-            "resources:FPGA": "1",
-            "accel:bitstream_id": "b069d97a-010a-4057-b70d-eca2b337fc9c",
-            "accel:function_id": "25453786-03e0-4ee7-a640-969eb5a5aa44"}},
+        {
+            "device_profile_group": {
+                "trait:CUSTOM_FPGA_INTEL": "required",
+                "resources:FPGA": "1",
+            }
+        },
+        {
+            "device_profile_group": {
+                "trait:CUSTOM_FPGA_INTEL": "required",
+                "resources:FPGA": "1",
+                "accel:bitstream_id": "b069d97a-010a-4057-b70d-eca2b337fc9c",
+            }
+        },
+        {
+            "device_profile_group": {
+                "trait:CUSTOM_FPGA_INTEL": "required",
+                "resources:FPGA": "1",
+                "accel:function_id": "25453786-03e0-4ee7-a640-969eb5a5aa44",
+            }
+        },
+        {
+            "device_profile_group": {
+                "trait:CUSTOM_FPGA_INTEL": "required",
+                "resources:FPGA": "1",
+                "accel:bitstream_id": "b069d97a-010a-4057-b70d-eca2b337fc9c",
+                "accel:function_id": "25453786-03e0-4ee7-a640-969eb5a5aa44",
+            }
+        },
     ]
     arqs = [  # Corresponds to 1st device profile in fake_device)profile.py
-        {"uuid": "a097fefa-da62-4630-8e8b-424c0e3426dc",
-         "device_profile_group_id": 0,
-         "device_rp_uuid": "8787595e-9954-49f8-b5c1-cdb55b59062f",
-         },
-        {"uuid": "aa140114-4869-45ea-8213-45f530804b0f",
-         "device_profile_group_id": 1,
-         "device_rp_uuid": "a1ec17f2-0051-4737-bac4-f074d8a01a9c",
-         },
-        {"uuid": "292b2fa2-0831-484c-aeac-09c794428a5d",
-         "device_profile_group_id": 2,
-         "device_rp_uuid": "a1ec17f2-0051-4737-bac4-f074d8a01a9c",
-         },
-        {"uuid": "3049ad04-a2b1-40a3-b9c8-480a5e661645",
-         "device_profile_group_id": 3,
-         "device_rp_uuid": "57455a49-bde4-490e-9179-9aa84a3870bb",
-         },
-        {"uuid": "3a9a07e7-d126-47a5-bf11-dcc04f9e60ff",
-         "device_profile_group_id": 4,
-         "device_rp_uuid": "fbd485e1-40b1-4a7e-84b9-f6b6959114a4",
-         },
+        {
+            "uuid": "a097fefa-da62-4630-8e8b-424c0e3426dc",
+            "device_profile_group_id": 0,
+            "device_rp_uuid": "8787595e-9954-49f8-b5c1-cdb55b59062f",
+        },
+        {
+            "uuid": "aa140114-4869-45ea-8213-45f530804b0f",
+            "device_profile_group_id": 1,
+            "device_rp_uuid": "a1ec17f2-0051-4737-bac4-f074d8a01a9c",
+        },
+        {
+            "uuid": "292b2fa2-0831-484c-aeac-09c794428a5d",
+            "device_profile_group_id": 2,
+            "device_rp_uuid": "a1ec17f2-0051-4737-bac4-f074d8a01a9c",
+        },
+        {
+            "uuid": "3049ad04-a2b1-40a3-b9c8-480a5e661645",
+            "device_profile_group_id": 3,
+            "device_rp_uuid": "57455a49-bde4-490e-9179-9aa84a3870bb",
+        },
+        {
+            "uuid": "3a9a07e7-d126-47a5-bf11-dcc04f9e60ff",
+            "device_profile_group_id": 4,
+            "device_rp_uuid": "fbd485e1-40b1-4a7e-84b9-f6b6959114a4",
+        },
     ]
     new_arqs = []
     for idx, new_arq in enumerate(arqs):
@@ -88,38 +106,41 @@ def _get_arqs_as_dict():
 
 def _get_arqs_resloved_as_dict():
     arqs = [  # Corresponds to 1st device profile in fake_device)profile.py
-        {"uuid": 'a097fefa-da62-4630-8e8b-424c0e3426dd',
-         "device_profile_group_id": 0,
-         "state": "Initial",
-         "device_profile_name": "dp_example_1",
-         "device_rp_uuid": None,
-         "hostname": None,
-         "instance_uuid": None,
-         "attach_handle_type": None,
-         # attach_handle info should vary across ARQs but ignored for testing
-         "attach_handle_info": {},
-         "device_profile_group": {}
-         },
-        {"uuid": 'aa140114-4869-45ea-8213-45f530804b0e',
-         "device_profile_group_id": 1,
-         "device_rp_uuid": "fbd485e1-40b1-4a7e-84b9-f6b6959114a5",
-         "state": "Bound",
-         "device_profile_name": "dp_example_1",
-         "hostname": "myhost",
-         "instance_uuid": "5922a70f-1e06-4cfd-88dd-a332120d7144",
-         "attach_handle_type": "PCI",
-         # attach_handle info should vary across ARQs but ignored for testing
-         "attach_handle_info": {
-             "bus": "1",
-             "device": "0",
-             "domain": "0",
-             "function": "0"
-         },
-         "device_profile_group": {
-             "trait:CUSTOM_FPGA_INTEL": "required",
-             "resources:FPGA": "1",
-             "accel:bitstream_id": "b069d97a-010a-4057-b70d-eca2b337fc9c"}
-         },
+        {
+            "uuid": 'a097fefa-da62-4630-8e8b-424c0e3426dd',
+            "device_profile_group_id": 0,
+            "state": "Initial",
+            "device_profile_name": "dp_example_1",
+            "device_rp_uuid": None,
+            "hostname": None,
+            "instance_uuid": None,
+            "attach_handle_type": None,
+            # attach_handle info should vary across ARQs but ignored for testing
+            "attach_handle_info": {},
+            "device_profile_group": {},
+        },
+        {
+            "uuid": 'aa140114-4869-45ea-8213-45f530804b0e',
+            "device_profile_group_id": 1,
+            "device_rp_uuid": "fbd485e1-40b1-4a7e-84b9-f6b6959114a5",
+            "state": "Bound",
+            "device_profile_name": "dp_example_1",
+            "hostname": "myhost",
+            "instance_uuid": "5922a70f-1e06-4cfd-88dd-a332120d7144",
+            "attach_handle_type": "PCI",
+            # attach_handle info should vary across ARQs but ignored for testing
+            "attach_handle_info": {
+                "bus": "1",
+                "device": "0",
+                "domain": "0",
+                "function": "0",
+            },
+            "device_profile_group": {
+                "trait:CUSTOM_FPGA_INTEL": "required",
+                "resources:FPGA": "1",
+                "accel:bitstream_id": "b069d97a-010a-4057-b70d-eca2b337fc9c",
+            },
+        },
     ]
     new_arqs = []
     for idx, new_arq in enumerate(arqs):
@@ -142,10 +163,11 @@ def _get_arqs_bind_as_dict():
                 "bus": "1",
                 "device": "0",
                 "domain": "0",
-                "function": "0"
+                "function": "0",
             },
-            "device_profile_group": {"resources:GPU": "1"}
-        }, {
+            "device_profile_group": {"resources:GPU": "1"},
+        },
+        {
             "state": "Deleting",
             "device_profile_name": "dp_example_2",
             "hostname": "myhost1",
@@ -157,12 +179,14 @@ def _get_arqs_bind_as_dict():
                 "bus": "2",
                 "device": "0",
                 "domain": "0",
-                "function": "0"
+                "function": "0",
             },
             "device_profile_group": {
                 "trait:CUSTOM_FPGA_INTEL": "required",
-                "resources:FPGA": "1"}
-        }, {
+                "resources:FPGA": "1",
+            },
+        },
+        {
             "state": "Deleting",
             "device_profile_name": "dp_example_3",
             "hostname": "myhost3",
@@ -174,13 +198,15 @@ def _get_arqs_bind_as_dict():
                 "bus": "3",
                 "device": "0",
                 "domain": "0",
-                "function": "0"
+                "function": "0",
             },
             "device_profile_group": {
                 "trait:CUSTOM_FPGA_INTEL": "required",
                 "resources:FPGA": "1",
-                "accel:bitstream_id": "b069d97a-010a-4057-b70d-eca2b337fc9e"}
-        }, {
+                "accel:bitstream_id": "b069d97a-010a-4057-b70d-eca2b337fc9e",
+            },
+        },
+        {
             "state": "Unbound",
             "device_profile_name": "dp_example_2",
             "hostname": "myhost1",
@@ -192,30 +218,35 @@ def _get_arqs_bind_as_dict():
                 "bus": "2",
                 "device": "0",
                 "domain": "0",
-                "function": "0"
+                "function": "0",
             },
             "device_profile_group": {
                 "trait:CUSTOM_FPGA_INTEL": "required",
-                "resources:FPGA": "1"}
+                "resources:FPGA": "1",
+            },
         },
     ]
     arqs = [  # Corresponds to 1st device profile in fake_device)profile.py
-        {"uuid": "a097fefa-da62-4630-8e8b-424c0e3426de",
-         "device_profile_group_id": 0,
-         "device_rp_uuid": "8787595e-9954-49f8-b5c1-cdb55b59062e",
-         },
-        {"uuid": "aa140114-4869-45ea-8213-45f530804b0d",
-         "device_profile_group_id": 0,
-         "device_rp_uuid": "a1ec17f2-0051-4737-bac4-f074d8a01a9d",
-         },
-        {"uuid": "292b2fa2-0831-484c-aeac-09c794428a5e",
-         "device_profile_group_id": 0,
-         "device_rp_uuid": "57455a49-bde4-490e-9179-9aa84a3870bb",
-         },
-        {"uuid": "292b2fa2-0831-484c-aeac-09c794428a5d",
-         "device_profile_group_id": 0,
-         "device_rp_uuid": "57455a49-bde4-490e-9179-9aa84a3870bc",
-         }
+        {
+            "uuid": "a097fefa-da62-4630-8e8b-424c0e3426de",
+            "device_profile_group_id": 0,
+            "device_rp_uuid": "8787595e-9954-49f8-b5c1-cdb55b59062e",
+        },
+        {
+            "uuid": "aa140114-4869-45ea-8213-45f530804b0d",
+            "device_profile_group_id": 0,
+            "device_rp_uuid": "a1ec17f2-0051-4737-bac4-f074d8a01a9d",
+        },
+        {
+            "uuid": "292b2fa2-0831-484c-aeac-09c794428a5e",
+            "device_profile_group_id": 0,
+            "device_rp_uuid": "57455a49-bde4-490e-9179-9aa84a3870bb",
+        },
+        {
+            "uuid": "292b2fa2-0831-484c-aeac-09c794428a5d",
+            "device_profile_group_id": 0,
+            "device_rp_uuid": "57455a49-bde4-490e-9179-9aa84a3870bc",
+        },
     ]
     new_arqs = []
     for idx, new_arq in enumerate(arqs):
@@ -288,59 +319,72 @@ def get_patch_list(same_device=True):
         must be for the same device.
     """
     arqs = _get_arqs_as_dict()
-    host_binding = {'path': '/hostname', 'op': 'add',
-                    'value': arqs[0]['hostname']}
-    inst_binding = {'path': '/instance_uuid', 'op': 'add',
-                    'value': arqs[0]['instance_uuid']}
+    host_binding = {
+        'path': '/hostname',
+        'op': 'add',
+        'value': arqs[0]['hostname'],
+    }
+    inst_binding = {
+        'path': '/instance_uuid',
+        'op': 'add',
+        'value': arqs[0]['instance_uuid'],
+    }
     device_rp_uuid = 'fb16c293-5739-4c84-8590-926f9ab16669'
     patch_list = {}
     for newarq in arqs:
         dev_uuid = device_rp_uuid if same_device else newarq['device_rp_uuid']
-        dev_binding = {'path': '/device_rp_uuid', 'op': 'add',
-                       'value': dev_uuid}
+        dev_binding = {
+            'path': '/device_rp_uuid',
+            'op': 'add',
+            'value': dev_uuid,
+        }
         patch_list[newarq['uuid']] = [host_binding, inst_binding, dev_binding]
     return patch_list, device_rp_uuid
 
 
 def get_fake_xilinx_fpga_extarq_objs():
     arqs = [
-        {"uuid": 'b8c19eb2-e03c-47b4-b7cf-ced6086b2d11',
-         "device_profile_group_id": 0,
-         "state": "Initial",
-         "device_profile_name": "fake_xilinx_fpga_dp",
-         "hostname": "myhost",
-         "instance_uuid": "5922a70f-1e06-4cfd-88dd-a332120d7144",
-         "attach_handle_type": "PCI",
-         # attach_handle info should vary across ARQs but ignored for testing
-         "attach_handle_info": {
-             "bus": "3b",
-             "device": "00",
-             "domain": "0000",
-             "function": "0"
-         },
-         "device_profile_group": {
-             "trait:CUSTOM_FPGA_XILINX": "required",
-             "resources:FPGA": "1",
-             "trait:CUSTOM_FPGA_PRODUCT_ID_5000": "required"}
-         },
-        {"uuid": '012955c7-90f9-45a9-bb7d-7c2907d8997f',
-         "device_profile_group_id": 1,
-         "state": "Initial",
-         "device_profile_name": "fake_xilinx_fpga_dp",
-         "hostname": "myhost",
-         "instance_uuid": "5922a70f-1e06-4cfd-88dd-a332120d7144",
-         "attach_handle_type": "PCI",
-         # attach_handle info should vary across ARQs but ignored for testing
-         "attach_handle_info": {
-             "bus": "3b",
-             "device": "00",
-             "domain": "0000",
-             "function": "1"
-         },
-         "device_profile_group": {
-             "trait:CUSTOM_FPGA_XILINX": "required",
-             "resources:FPGA": "1",
-             "trait:CUSTOM_FPGA_PRODUCT_ID_5000": "required"}
-         },
+        {
+            "uuid": 'b8c19eb2-e03c-47b4-b7cf-ced6086b2d11',
+            "device_profile_group_id": 0,
+            "state": "Initial",
+            "device_profile_name": "fake_xilinx_fpga_dp",
+            "hostname": "myhost",
+            "instance_uuid": "5922a70f-1e06-4cfd-88dd-a332120d7144",
+            "attach_handle_type": "PCI",
+            # attach_handle info should vary across ARQs but ignored for testing
+            "attach_handle_info": {
+                "bus": "3b",
+                "device": "00",
+                "domain": "0000",
+                "function": "0",
+            },
+            "device_profile_group": {
+                "trait:CUSTOM_FPGA_XILINX": "required",
+                "resources:FPGA": "1",
+                "trait:CUSTOM_FPGA_PRODUCT_ID_5000": "required",
+            },
+        },
+        {
+            "uuid": '012955c7-90f9-45a9-bb7d-7c2907d8997f',
+            "device_profile_group_id": 1,
+            "state": "Initial",
+            "device_profile_name": "fake_xilinx_fpga_dp",
+            "hostname": "myhost",
+            "instance_uuid": "5922a70f-1e06-4cfd-88dd-a332120d7144",
+            "attach_handle_type": "PCI",
+            # attach_handle info should vary across ARQs but ignored for testing
+            "attach_handle_info": {
+                "bus": "3b",
+                "device": "00",
+                "domain": "0000",
+                "function": "1",
+            },
+            "device_profile_group": {
+                "trait:CUSTOM_FPGA_XILINX": "required",
+                "resources:FPGA": "1",
+                "trait:CUSTOM_FPGA_PRODUCT_ID_5000": "required",
+            },
+        },
     ]
     return list(map(_convert_from_dict_to_obj, arqs))

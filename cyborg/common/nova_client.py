@@ -26,11 +26,15 @@ class NovaAPI:
         self.nova_client.default_microversion = '2.82'
 
     def _get_acc_changed_events(self, instance_uuid, arq_bind_statuses):
-        return [{'name': 'accelerator-request-bound',
-                 'server_uuid': instance_uuid,
-                 'tag': arq_uuid,
-                 'status': arq_bind_status,
-                 } for (arq_uuid, arq_bind_status) in arq_bind_statuses]
+        return [
+            {
+                'name': 'accelerator-request-bound',
+                'server_uuid': instance_uuid,
+                'tag': arq_uuid,
+                'status': arq_bind_status,
+            }
+            for (arq_uuid, arq_bind_status) in arq_bind_statuses
+        ]
 
     def _send_events(self, events):
         """Send events to Nova external events API.
@@ -44,8 +48,10 @@ class NovaAPI:
         # NOTE(Sundar): Response status should always be 200/207. See
         # https://review.opendev.org/#/c/698037/
         if response.status_code == 200:
-            LOG.info("Successfully sent events to Nova, events: %(events)s",
-                     {"events": events})
+            LOG.info(
+                "Successfully sent events to Nova, events: %(events)s",
+                {"events": events},
+            )
         elif response.status_code == 207:
             # NOTE(Sundar): If Nova returns per-event code of 422, that
             # is due to a race condition where Nova has not associated
@@ -55,30 +61,42 @@ class NovaAPI:
             event_codes = {ev['code'] for ev in events}
             if len(event_codes) == 1:  # all events have same event code
                 if event_codes == {422}:
-                    LOG.info('Ignoring Nova notification error that the '
-                             'instance %s is not yet associated with a host.',
-                             events[0]['server_uuid'])
+                    LOG.info(
+                        'Ignoring Nova notification error that the '
+                        'instance %s is not yet associated with a host.',
+                        events[0]['server_uuid'],
+                    )
                 else:
-                    msg = _('Unexpected event code %(code)s '
-                            'for instance %(inst)s')
-                    msg = msg % {'code': event_codes.pop(),
-                                 'inst': events[0]["server_uuid"]}
+                    msg = _(
+                        'Unexpected event code %(code)s for instance %(inst)s'
+                    )
+                    msg = msg % {
+                        'code': event_codes.pop(),
+                        'inst': events[0]["server_uuid"],
+                    }
                     raise exception.InvalidAPIResponse(
-                        service='Nova', api=url[1:], msg=msg)
+                        service='Nova', api=url[1:], msg=msg
+                    )
             else:
-                msg = _('All event responses are expected to '
-                        'have the same event code. Instance: %(inst)s')
+                msg = _(
+                    'All event responses are expected to '
+                    'have the same event code. Instance: %(inst)s'
+                )
                 msg = msg % {'inst': events[0]['server_uuid']}
                 raise exception.InvalidAPIResponse(
-                    service='Nova', api=url[1:], msg=msg)
+                    service='Nova', api=url[1:], msg=msg
+                )
         else:
             # Unexpected return code from Nova
             msg = _('Failed to send events %(ev)s: HTTP %(code)s: %(txt)s')
-            msg = msg % {'ev': events,
-                         'code': response.status_code,
-                         'txt': response.text}
+            msg = msg % {
+                'ev': events,
+                'code': response.status_code,
+                'txt': response.text,
+            }
             raise exception.InvalidAPIResponse(
-                service='Nova', api=url[1:], msg=msg)
+                service='Nova', api=url[1:], msg=msg
+            )
 
     def notify_binding(self, instance_uuid, arq_bind_statuses):
         """Notify Nova that ARQ bindings are resolved for a given instance.

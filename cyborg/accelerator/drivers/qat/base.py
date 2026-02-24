@@ -23,8 +23,8 @@ VENDOR_MAPS = {"0x8086": "intel"}
 class QATDriver:
     """Base class for QAT drivers.
 
-       This is just a virtual QAT drivers interface.
-       Vendor should implement their specific drivers.
+    This is just a virtual QAT drivers interface.
+    Vendor should implement their specific drivers.
     """
 
     @classmethod

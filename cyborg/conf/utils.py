@@ -15,6 +15,7 @@
 
 This module does not provide any actual conf options.
 """
+
 from keystoneauth1 import loading as ks_loading
 from oslo_config import cfg
 
@@ -33,8 +34,9 @@ def get_ksa_adapter_opts(default_service_type, deprecated_opts=None):
                     keystoneauth1.loading.session.Session.register_conf_options
     :return: List of cfg.Opts.
     """
-    opts = ks_loading.get_adapter_conf_options(include_deprecated=False,
-                                               deprecated_opts=deprecated_opts)
+    opts = ks_loading.get_adapter_conf_options(
+        include_deprecated=False, deprecated_opts=deprecated_opts
+    )
 
     for opt in opts[:]:
         # Remove version-related opts.  Required/supported versions are
@@ -43,9 +45,11 @@ def get_ksa_adapter_opts(default_service_type, deprecated_opts=None):
             opts.remove(opt)
 
     # Override defaults that make sense for nova
-    cfg.set_defaults(opts,
-                     valid_interfaces=['internal', 'public'],
-                     service_type=default_service_type)
+    cfg.set_defaults(
+        opts,
+        valid_interfaces=['internal', 'public'],
+        service_type=default_service_type,
+    )
     return opts
 
 
@@ -55,8 +59,9 @@ def _dummy_opt(name):
     return cfg.Opt(name, type=lambda x: None)
 
 
-def register_ksa_opts(conf, group, default_service_type, include_auth=True,
-                      deprecated_opts=None):
+def register_ksa_opts(
+    conf, group, default_service_type, include_auth=True, deprecated_opts=None
+):
     """Register keystoneauth auth, Session, and Adapter opts.
 
     :param conf: oslo_config.cfg.CONF in which to register the options
@@ -76,11 +81,16 @@ def register_ksa_opts(conf, group, default_service_type, include_auth=True,
     # ksa register methods need the group name as a string.  oslo doesn't care.
     group = getattr(group, 'name', group)
     ks_loading.register_session_conf_options(
-        conf, group, deprecated_opts=deprecated_opts)
+        conf, group, deprecated_opts=deprecated_opts
+    )
     if include_auth:
         ks_loading.register_auth_conf_options(conf, group)
-    conf.register_opts(get_ksa_adapter_opts(
-        default_service_type, deprecated_opts=deprecated_opts), group=group)
+    conf.register_opts(
+        get_ksa_adapter_opts(
+            default_service_type, deprecated_opts=deprecated_opts
+        ),
+        group=group,
+    )
     # Have to register dummies for the version-related opts we removed
     for name in _ADAPTER_VERSION_OPTS:
         conf.register_opt(_dummy_opt(name), group=group)

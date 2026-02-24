@@ -16,6 +16,7 @@
 """
 Cyborg GPU driver implementation.
 """
+
 from oslo_log import log as logging
 
 from cyborg.accelerator.drivers.gpu import utils
@@ -29,8 +30,8 @@ VENDOR_MAPS = {"10de": "nvidia", "102b": "matrox"}
 class GPUDriver:
     """Base class for GPU drivers.
 
-       This is just a virtual GPU drivers interface.
-       Vendor should implement their specific drivers.
+    This is just a virtual GPU drivers interface.
+    Vendor should implement their specific drivers.
     """
 
     @classmethod

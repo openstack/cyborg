@@ -20,7 +20,6 @@ from cyborg.tests.unit import fake_device
 
 
 class TestDevicesController(v2_test.APITestV2):
-
     DEVICE_URL = '/devices'
 
     def setUp(self):
@@ -74,7 +73,8 @@ class TestDevicesController(v2_test.APITestV2):
         mock_devices.return_value = in_devices[:1]
         data = self.get_json(
             self.DEVICE_URL + "?filters.field=limit&filters.value=1",
-            headers=self.headers)
+            headers=self.headers,
+        )
         out_devices = data['devices']
         mock_devices.assert_called_once_with(mock.ANY, filters={"limit": "1"})
         for in_device, out_device in zip(self.fake_devices, out_devices):
@@ -85,11 +85,12 @@ class TestDevicesController(v2_test.APITestV2):
         in_devices = self.fake_devices
         mock_devices.return_value = [in_devices[0]]
         data = self.get_json(
-            self.DEVICE_URL + "?type=FPGA",
-            headers=self.headers)
+            self.DEVICE_URL + "?type=FPGA", headers=self.headers
+        )
         out_devices = data['devices']
-        mock_devices.assert_called_once_with(mock.ANY,
-                                             filters={"type": "FPGA"})
+        mock_devices.assert_called_once_with(
+            mock.ANY, filters={"type": "FPGA"}
+        )
         for in_device, out_device in zip(self.fake_devices, out_devices):
             self._validate_device(in_device, out_device)
 
@@ -98,11 +99,12 @@ class TestDevicesController(v2_test.APITestV2):
         in_devices = self.fake_devices
         mock_devices.return_value = [in_devices[0]]
         data = self.get_json(
-            self.DEVICE_URL + "?vendor=0xABCD",
-            headers=self.headers)
+            self.DEVICE_URL + "?vendor=0xABCD", headers=self.headers
+        )
         out_devices = data['devices']
-        mock_devices.assert_called_once_with(mock.ANY,
-                                             filters={"vendor": "0xABCD"})
+        mock_devices.assert_called_once_with(
+            mock.ANY, filters={"vendor": "0xABCD"}
+        )
         for in_device, out_device in zip(self.fake_devices, out_devices):
             self._validate_device(in_device, out_device)
 
@@ -111,10 +113,11 @@ class TestDevicesController(v2_test.APITestV2):
         in_devices = self.fake_devices
         mock_devices.return_value = [in_devices[0]]
         data = self.get_json(
-            self.DEVICE_URL + "?hostname=test-node-1",
-            headers=self.headers)
+            self.DEVICE_URL + "?hostname=test-node-1", headers=self.headers
+        )
         out_devices = data['devices']
         mock_devices.assert_called_once_with(
-            mock.ANY, filters={"hostname": "test-node-1"})
+            mock.ANY, filters={"hostname": "test-node-1"}
+        )
         for in_device, out_device in zip(self.fake_devices, out_devices):
             self._validate_device(in_device, out_device)

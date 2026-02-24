@@ -37,15 +37,12 @@ class ARQ(base.CyborgObject, object_base.VersionedObjectDictCompat):
         'uuid': object_fields.UUIDField(nullable=False),
         'state': object_fields.ARQStateField(nullable=False),
         'device_profile_name': object_fields.StringField(nullable=False),
-        'device_profile_group_id':
-            object_fields.IntegerField(nullable=False),
-
+        'device_profile_group_id': object_fields.IntegerField(nullable=False),
         # Fields populated by Nova after scheduling for binding
         'hostname': object_fields.StringField(nullable=True),
         'device_rp_uuid': object_fields.StringField(nullable=True),
         'instance_uuid': object_fields.StringField(nullable=True),
         'project_id': object_fields.StringField(nullable=True),
-
         # Fields populated by Cyborg after binding
         'attach_handle_type': object_fields.StringField(nullable=True),
         'attach_handle_uuid': object_fields.StringField(nullable=True),

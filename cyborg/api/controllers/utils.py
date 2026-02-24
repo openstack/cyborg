@@ -20,16 +20,20 @@ import wsme
 from cyborg.common.i18n import _
 
 
-JSONPATCH_EXCEPTIONS = (jsonpatch.JsonPatchException,
-                        jsonpatch.JsonPointerException,
-                        KeyError)
+JSONPATCH_EXCEPTIONS = (
+    jsonpatch.JsonPatchException,
+    jsonpatch.JsonPointerException,
+    KeyError,
+)
 
 
 def apply_jsonpatch(doc, patch):
     for p in patch:
         if p['op'] == 'add' and p['path'].count('/') == 1:
             if p['path'].lstrip('/') not in doc:
-                msg = _('Adding a new attribute (%s) to the root of '
-                        ' the resource is not allowed')
+                msg = _(
+                    'Adding a new attribute (%s) to the root of '
+                    ' the resource is not allowed'
+                )
                 raise wsme.exc.ClientSideError(msg % p['path'])
     return jsonpatch.apply_patch(doc, jsonpatch.JsonPatch(patch))

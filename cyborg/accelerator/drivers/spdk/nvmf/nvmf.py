@@ -52,7 +52,7 @@ class NVMFDRIVER(SPDKDRIVER):
         accelerator_obj = {
             'server': self.SERVER,
             'bdevs': bdevs,
-            'subsystems': subsystems
+            'subsystems': subsystems,
         }
         return accelerator_obj
 
@@ -95,13 +95,9 @@ class NVMFDRIVER(SPDKDRIVER):
         else:
             raise exception.Invalid('Delete nvmf subsystem failed.')
 
-    def construct_subsystem(self,
-                            nqn,
-                            listen,
-                            hosts,
-                            serial_number,
-                            namespaces
-                            ):
+    def construct_subsystem(
+        self, nqn, listen, hosts, serial_number, namespaces
+    ):
         """Add a nvmf subsystem
 
         :param nqn: Target nqn(ASCII).
@@ -117,14 +113,13 @@ class NVMFDRIVER(SPDKDRIVER):
         :param namespaces: Whitespace-separated list of namespaces.
         :raise exception: Invalid
         """
-        if ((namespaces != '' and listen != '') and
-                (hosts != '' and serial_number != '')) and nqn != '':
+        if (
+            (namespaces != '' and listen != '')
+            and (hosts != '' and serial_number != '')
+        ) and nqn != '':
             acc_client = NvmfTgt(self.py)
-            acc_client.construct_nvmf_subsystem(nqn,
-                                                listen,
-                                                hosts,
-                                                serial_number,
-                                                namespaces
-                                                )
+            acc_client.construct_nvmf_subsystem(
+                nqn, listen, hosts, serial_number, namespaces
+            )
         else:
             raise exception.Invalid('Construct nvmf subsystem failed.')

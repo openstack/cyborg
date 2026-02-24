@@ -42,15 +42,18 @@ class ParsableErrorMiddleware:
             except (ValueError, TypeError):  # pragma: nocover
                 raise Exception(
                     'ParsableErrorMiddleware received an invalid '
-                    'status %s' % status)
+                    'status %s' % status
+                )
 
             if (state['status_code'] // 100) not in (2, 3):
                 # Remove some headers so we can replace them later
                 # when we have the full error message and can
                 # compute the length.
                 headers = [
-                    (h, v) for (h, v) in headers
-                    if h not in ('Content-Length', 'Content-Type')]
+                    (h, v)
+                    for (h, v) in headers
+                    if h not in ('Content-Length', 'Content-Type')
+                ]
 
             # Save the headers in case we need to modify them.
             state['headers'] = headers
