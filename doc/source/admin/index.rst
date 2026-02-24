@@ -56,7 +56,7 @@ User Requests
 The user request for accelerators is encapsulated in a device profile,
 which is created and managed by the admin via the Cyborg API.
 
-The structure overview of a `device_profile` is like this:
+The structure overview of a ``device_profile`` is like this:
 
 .. code:: json
 
@@ -184,11 +184,12 @@ conductor and scheduler are together represented as the Nova controller.
 A Cyborg client module is added to nova (cyborg-client-module). All Cyborg API
 calls are routed through that.
 
-1. The Nova API server receives a `POST /servers` API request with a flavor
+1. The Nova API server receives a ``POST /servers`` API request with a flavor
    that includes a device profile name.
 
 2. The Nova API server calls the Cyborg API
-   `GET /v2/device_profiles?name=$device_profile_name` and gets back the device
+   ``GET /v2/device_profiles?name=$device_profile_name`` and gets back
+   the device
    profile. The request groups in that device profile are added to the request
    spec.
 
@@ -197,7 +198,8 @@ calls are routed through that.
    Placement. The Nova conductor then sends a RPC message
    build_and_run_instances to the Nova compute manager.
 
-4. Nova conductor manager calls the Cyborg API `POST /v2/accelerator_requests`
+4. Nova conductor manager calls the Cyborg API
+   ``POST /v2/accelerator_requests``
    with the device profile name. Cyborg creates a set of unbound ARQs for that
    device profile and returns them to Nova.
 
@@ -205,12 +207,12 @@ calls are routed through that.
    for that accelerator.
 
 6. The Nova compute manager calls the Cyborg API
-   `PATCH /v2/accelerator_requests` to bind the ARQ with the host name,
+   ``PATCH /v2/accelerator_requests`` to bind the ARQ with the host name,
    device’s RP UUID and instance UUID. This is an asynchronous call which
    prepares or reconfigures the device in the background.
 
 7. Cyborg, on completion of the bindings (successfully or otherwise),
-   calls Nova’s `POST /os-server-external-events` API with:
+   calls Nova’s ``POST /os-server-external-events`` API with:
 
 .. code::
 
@@ -227,7 +229,7 @@ calls are routed through that.
 
 8. The Nova compute manager waits for the notification, subject to the timeout
    mentioned in Section Other deployer impact. It then calls the Cyborg REST
-   API `GET /v2/accelerator_requests?instance=<uuid>&bind_state=resolved` to
+   API ``GET /v2/accelerator_requests?instance=<uuid>&bind_state=resolved`` to
    get the arqs in status ['Bound', 'BindFailed', 'Deleting'].
 
 9. The Nova virt driver uses the bound arqs returned from the Cyborg call

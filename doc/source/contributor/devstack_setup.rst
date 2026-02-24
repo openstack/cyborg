@@ -36,12 +36,12 @@ Download DevStack
 
    $ cd devstack
 
-The `devstack` repo contains a script that installs OpenStack.
+The ``devstack`` repo contains a script that installs OpenStack.
 
 Create local.conf file
 ----------------------
 
-Create a `local.conf` file at the root of the devstack git repo.
+Create a ``local.conf`` file at the root of the devstack git repo.
 
 Host settings
 >>>>>>>>>>>>>
@@ -111,7 +111,7 @@ Enable services
 
 .. note::
 
-  If you got version conflicts, please set `PIP_UPGRADE` to `True` in local.conf
+  If you got version conflicts, please set ``PIP_UPGRADE`` to ``True`` in local.conf
 
 
 Multi-Node Lab
@@ -179,8 +179,8 @@ Use OpenStack
 Command line
 >>>>>>>>>>>>
 
-You can `source openrc YOUR_USER YOUR_USER (e.g. source openrc admin admin)` in
-your shell, and then use the `openstack` command line tool to manage your
+You can ``source openrc YOUR_USER YOUR_USER (e.g. source openrc admin admin)``
+in your shell, and then use the ``openstack`` command line tool to manage your
 devstack.
 
 Horizon
