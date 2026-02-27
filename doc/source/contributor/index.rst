@@ -2,7 +2,7 @@
 Contributor Documentation
 =========================
 
-Contributing to Cybrog gives you the power to help add features, fix bugs,
+Contributing to Cyborg gives you the power to help add features, fix bugs,
 enhance documentation, and increase testing. Contributions of any type are
 valuable, and part of what keeps the project going. Here are a list of
 resources to get your started.
@@ -30,6 +30,8 @@ Reviewing
 * :doc:`/contributor/driver-development-guide`: Get your driver development
   guide to contribute
 
+* :doc:`/contributor/release-guide`: Chronological guide for release liaisons
+
 .. # NOTE: toctree needs to be placed at the end of the secion to
    # keep the document structure in the PDF doc.
 .. toctree::
@@ -39,3 +41,4 @@ Reviewing
    releasenotes
    devstack_setup
    driver-development-guide
+   release-guide
