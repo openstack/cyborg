@@ -6,23 +6,36 @@ repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v6.0.0
     hooks:
+       # whitespace
       - id: trailing-whitespace
       - id: mixed-line-ending
         args: ['--fix', 'lf']
         exclude: '.*\.(svg)$'
       - id: fix-byte-order-marker
+      # file format and permissions
       - id: check-executables-have-shebangs
-      - id: check-merge-conflict
+      - id: check-shebang-scripts-are-executable
       - id: debug-statements
       - id: check-yaml
         files: .*\.(yaml|yml)$
-  - repo: local
+      - id: check-json
+        files: .*\.json$
+        exclude: .*-curl.*\.json$
+      - id: check-ast
+      # git
+      - id: check-added-large-files
+      - id: check-case-conflict
+      - id: detect-private-key
+      - id: check-merge-conflict
+        exclude: '.*\.(rst|inc)$'
+  - repo: https://github.com/hhatto/autopep8
+    rev: v2.3.2
     hooks:
-      - id: flake8
-        name: flake8
-        additional_dependencies:
-          - hacking>=3.0.1,<3.1.0
-        language: python
-        entry: flake8
+      - id: autopep8
         files: '^.*\.py$'
+  - repo: https://opendev.org/openstack/hacking
+    rev: 7.0.0
+    hooks:
+      - id: hacking
+        additional_dependencies: []
         exclude: '^(doc|releasenotes|tools)/.*$'

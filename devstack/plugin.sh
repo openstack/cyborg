@@ -1,4 +1,3 @@
-#!/bin/bash
 # plugin.sh - devstack plugin for cyborg
 
 # devstack plugin contract defined at:

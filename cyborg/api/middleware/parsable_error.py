@@ -25,6 +25,7 @@ from oslo_serialization import jsonutils
 
 class ParsableErrorMiddleware(object):
     """Replace error body with something the client can parse."""
+
     def __init__(self, app):
         self.app = app
 

@@ -71,6 +71,7 @@ class PhysicalPciAddress(PciAddressSpec):
     This function class will validate the address fields for a single
     PCI device.
     """
+
     def __init__(self, pci_addr):
         try:
             if isinstance(pci_addr, dict):
@@ -147,6 +148,7 @@ class PciAddressRegexSpec(PciAddressSpec):
     The validation includes check for all PCI address attributes and validate
     their regex.
     """
+
     def __init__(self, pci_addr):
         try:
             self.domain = pci_addr.get('domain', REGEX_ANY)
@@ -188,6 +190,7 @@ class WhitelistPciAddress(object):
         | passthrough_whitelist = {"vendor_id":"1137","product_id":"0071"}
 
     """
+
     def __init__(self, pci_addr, is_physical_function):
         self.is_physical_function = is_physical_function
         self._init_address_fields(pci_addr)
