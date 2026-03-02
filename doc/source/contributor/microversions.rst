@@ -17,7 +17,7 @@ The full form of the header takes the form::
     OpenStack-API-Version: accelerator 2.0
 
 If a user makes a request without specifying a version, they will get the
-``_MIN_VERSION_STRING``(defined in ``cyborg/api/controllers/v2/versions.py``)
+``_MIN_VERSION_STRING`` (defined in ``cyborg/api/controllers/v2/versions.py``)
 as the default version. This value is currently ``2.0`` and is expected to
 remain so for quite a long time.
 
@@ -237,7 +237,7 @@ In ``cyborg/api/controllers/v2/versions.py`` we define some constants below:
 In ``cyborg/api/controllers/v2/utils.py``, we define the check function of
 microversion.
 
-    For the example of `allow_project_id()` function, we compare the request
+    For the example of ``allow_project_id()`` function, we compare the request
     version and the defined ``MINOR_1_PROJECT_ID`` to check whether the
     request is allowed. If the user's request with the version which is lower
     than ``MINOR_1_PROJECT_ID``, we will raise "Request not acceptable."
@@ -294,7 +294,7 @@ necessary to add changes to other places which describe your change:
   files to enable the newly added microversion API.
 
 * Update the `API Reference`_ documentation as appropriate. The source
-  is located under `api-ref/source/`.
+  is located under ``api-ref/source/``.
 
 .. _`API Reference`: https://docs.openstack.org/api-ref/accelerator/v2/index.html
 

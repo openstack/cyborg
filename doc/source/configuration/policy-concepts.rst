@@ -265,7 +265,7 @@ Here is step wise guide for migration:
 
 #. Enable new defaults
 
-   The `oslo_policy.enforce_new_defaults` flag switches
+   The ``oslo_policy.enforce_new_defaults`` flag switches
    the policy to new defaults-only. This flag controls whether or not to use
    old deprecated defaults when evaluating policies. If True, the old
    deprecated defaults are not evaluated. This means if any existing
