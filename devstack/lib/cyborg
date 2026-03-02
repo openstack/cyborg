@@ -191,7 +191,7 @@ function configure_cyborg_conductor {
 
     # NOTE(sean-k-mooney) it is not obvious why this is in the conductor
     # section or what sets is_deployed_by_agent so this should either be
-    # documented, removed or moved to the correct locaiton.
+    # documented, removed or moved to the correct location.
     if is_deployed_by_agent; then
         iniset $CYBORG_CONF_FILE api ramdisk_heartbeat_timeout 30
     fi

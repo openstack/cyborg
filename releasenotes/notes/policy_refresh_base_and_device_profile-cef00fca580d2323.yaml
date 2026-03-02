@@ -29,7 +29,7 @@ features:
       - New Defaults Configuration
 
       Policies are default to Admin, Member and Reader roles. Old roles
-      are also supproted. You can switch to new defaults via config option
+      are also supported. You can switch to new defaults via config option
       ``[oslo_policy]enforce_new_defaults`` in ``cyborg.conf`` file.
 
     - New Base policy roles

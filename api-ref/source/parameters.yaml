@@ -183,7 +183,7 @@ deployable_num_accelerators:
   description: |
     Number of accelerators spawned by this deployable.
   in: body
-  requied: true
+  required: true
   type: integer
 deployable_parent_id:
   description: |

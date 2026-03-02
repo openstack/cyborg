@@ -14,7 +14,7 @@ List Deployables
 
 .. rest_method:: GET /v2/deployables
 
-Lists UUIDs, names, attribute list and more informations for all deployables.
+Lists UUIDs, names, attribute list and more information for all deployables.
 
 Normal response codes: 200
 
@@ -55,7 +55,7 @@ Get One Deployable
 
 .. rest_method:: GET /v2/deployables/{deployable_uuid}
 
-Gets the UUID, name, attribute list and more informations for one deployable with the specified UUID.
+Gets the UUID, name, attribute list and more information for one deployable with the specified UUID.
 
 Normal response codes: 200
 

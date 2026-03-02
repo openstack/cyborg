@@ -55,7 +55,7 @@ multiple vGPU types.
 If more than one single vGPU type are provided, then for each
 *vGPU type*, you must add an additional section ``[vgpu_$(VGPU_TYPE)]`` with
 a single configuration option ``device_addresses`` to assign this type to
-the target physical GPU(s). PGPUs should be configured explictly now, we will
+the target physical GPU(s). PGPUs should be configured explicitly now, we will
 improve this after we implement the enable/disable interface.
 
 If the same PCI address is provided for two different types, cyborg-agent will

@@ -98,7 +98,7 @@ def _generate_dep_list(gpu):
     driver_dep.attribute_list = _generate_attribute_list(gpu)
     driver_dep.attach_handle_list = []
     # NOTE(wangzhh): The name of deployable should be unique, its format is
-    # under disscussion, may looks like
+    # under discussion, may looks like
     # <ComputeNodeName>_<NumaNodeName>_<CyborgName>_<NumInHost>
     # NOTE(yumeng) Since Wallaby release, the deplpyable_name is named as
     # <Compute_hostname>_<Device_address>
@@ -178,7 +178,7 @@ def _get_supported_vgpu_types():
     for vgpu_type in CONF.gpu_devices.enabled_vgpu_types:
         group = getattr(CONF, 'vgpu_%s' % vgpu_type, None)
         if group is None or not group.device_addresses:
-            # Device addresses must be configured explictly now for every
+            # Device addresses must be configured explicitly now for every
             # enabled vgpu type. Will improve after the disable and enable
             # devices interfaces implemented.
             raise exception.InvalidvGPUConfig(

@@ -87,7 +87,7 @@ class NVMFDRIVER(SPDKDRIVER):
         """Delete a nvmf subsystem
 
         :param nqn: Target nqn(ASCII).
-        :raise exception: Invaid
+        :raise exception: Invalid
         """
         if nqn == "":
             acc_client = NvmfTgt(self.py)
@@ -115,7 +115,7 @@ class NVMFDRIVER(SPDKDRIVER):
         :param hosts: Whitespace-separated list of host nqn list.
         :param serial_number: Example: 'SPDK00000000000001.
         :param namespaces: Whitespace-separated list of namespaces.
-        :raise exception: Invaid
+        :raise exception: Invalid
         """
         if ((namespaces != '' and listen != '') and
                 (hosts != '' and serial_number != '')) and nqn != '':

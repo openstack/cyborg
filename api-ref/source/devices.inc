@@ -13,7 +13,7 @@ List Devices
 
 .. rest_method:: GET /v2/devices
 
-Lists UUIDs, names, type and more informations for all devices.
+Lists UUIDs, names, type and more information for all devices.
 
 Normal response codes: 200
 
@@ -55,7 +55,7 @@ Get One Device
 
 .. rest_method:: GET /v2/devices/{device_uuid}
 
-Gets the UUID, name, type and more informations for one device with the specified UUID.
+Gets the UUID, name, type and more information for one device with the specified UUID.
 
 Normal response codes: 200
 

@@ -1,5 +1,5 @@
 ---
 features:
   - |
-    Add ``ARQ_UNBIND_FAILED`` status for Accelerator Requests (arq) unbind process. Nowdays the status is
+    Add ``ARQ_UNBIND_FAILED`` status for Accelerator Requests (arq) unbind process. Nowadays the status is
     needed to accurate record the arq status.

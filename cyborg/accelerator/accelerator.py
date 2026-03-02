@@ -19,7 +19,7 @@ from sqlalchemy.ext.declarative import declarative_base
 Base = declarative_base()
 
 
-# A common internal acclerator object for internal use.
+# A common internal accelerator object for internal use.
 class Accelerator(Base):
     __tablename__ = 'accelerators'
     accelerator_id = Column(String, primary_key=True)

@@ -794,7 +794,7 @@ class Connection(api.Connection):
         return query_prefix.all()
 
     # def _exact_attribute_by_filter(self, query, filters):
-    #     """Applies exact match filtering to a atrtribute query.
+    #     """Applies exact match filtering to a attribute query.
     #     Returns the updated query.
     #     :param filters: The filters specified by a dict of kv pairs
     #     """
@@ -1064,7 +1064,7 @@ class Connection(api.Connection):
         return reservations
 
     def _sync_acc_res(self, context, resource, project_id):
-        """Quota sync funciton"""
+        """Quota sync function"""
         res_in_use = self._device_data_get_for_project(context, resource,
                                                        project_id)
         return {resource: res_in_use}

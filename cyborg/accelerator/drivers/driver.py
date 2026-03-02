@@ -40,7 +40,7 @@ class GenericDriver(object, metaclass=abc.ABCMeta):
         """Collects device stats.
 
         It is used to collect information from the device about the device
-        capabilities. Such as performance info like temprature, power, volt,
+        capabilities. Such as performance info like temperature, power, volt,
         packet_count info.
 
         :return: The stats info of the device. The format should follow the

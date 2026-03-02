@@ -32,7 +32,7 @@ Reviewing
 
 * :doc:`/contributor/release-guide`: Chronological guide for release liaisons
 
-.. # NOTE: toctree needs to be placed at the end of the secion to
+.. # NOTE: toctree needs to be placed at the end of the section to
    # keep the document structure in the PDF doc.
 .. toctree::
    :hidden:

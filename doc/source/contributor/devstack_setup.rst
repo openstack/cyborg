@@ -142,7 +142,7 @@ Testing with unmerged changes
 >>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
 To test with changes that have not been merged, the enable_plugin
-line can be modifed to specify the branch/reference to be cloned.
+line can be modified to specify the branch/reference to be cloned.
 
 ::
 

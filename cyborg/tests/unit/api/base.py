@@ -121,7 +121,7 @@ class BaseApiTest(base.DbTestCase):
         """Generate a header for a simulated HTTP request to Pecan test app.
 
         :param context: context that store the client user information.
-        :param kw: key word aguments, used to overwrite the context attribute.
+        :param kw: key word arguments, used to overwrite the context attribute.
 
         note: "is_public_api" is not in headers, it should be in environ
         variables to send along with the request. We can pass it by

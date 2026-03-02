@@ -96,7 +96,7 @@ class DriverDeployable(base.DriverObjectBase,
         for dep_obj in dep_obj_list:
             # get driver_ah_obj_list for this dep_obj
             driver_ah_obj_list = DriverAttachHandle.list(context, dep_obj.id)
-            # get driver_attr_obj_list fro this dep_obj
+            # get driver_attr_obj_list for this dep_obj
             driver_attr_obj_list = DriverAttribute.list(context, dep_obj.id)
             driver_dep_obj = cls(context=context,
                                  name=dep_obj.name,
@@ -112,7 +112,7 @@ class DriverDeployable(base.DriverObjectBase,
         # get deployable_obj_list for one device_id
         dep_obj = Deployable.get_by_name(context, name)
         driver_ah_obj_list = DriverAttachHandle.list(context, dep_obj.id)
-        # get driver_attr_obj_list fro this dep_obj
+        # get driver_attr_obj_list for this dep_obj
         driver_attr_obj_list = DriverAttribute.list(context, dep_obj.id)
         driver_dep_obj = cls(context=context, name=dep_obj.name,
                              num_accelerators=dep_obj.num_accelerators,
