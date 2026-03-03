@@ -43,6 +43,27 @@ gpu_group = cfg.OptGroup(
     """)
 
 vgpu_opts = [
+    # TODO(bogdando): After Cyborg ensures the safe removal of Placement
+    # resource providers and deployables during upgrades and that can be tested
+    # similar to Nova's test_pci_in_placement backed by the Placement
+    # sqlite fixture, change this option's default to True.
+    cfg.BoolOpt('filter_sriov_vfs',
+                default=False,
+                help="""
+Filter out SR-IOV Virtual Function (VF) devices from GPU discovery.
+
+When enabled, the NVIDIA GPU driver will skip PCI VF devices and only
+report Physical Functions (PFs) and mediated devices. Cards like the
+A100 expose VFs when SR-IOV is enabled, but these should not be reported
+as standalone GPU accelerators.
+
+This option defaults to False because enabling it may cause existing
+VF-backed allocations to disappear from Placement without being cleaned
+up first. Operators should ensure no instances hold VF allocations before
+enabling this option, as Cyborg does not yet have upgrade-safe protection
+equivalent to Nova's PCI tracker (which defers removal of allocated
+devices until the owning instance is deleted).
+"""),
     cfg.ListOpt('enabled_vgpu_types',
                 default=[],
                 help="""

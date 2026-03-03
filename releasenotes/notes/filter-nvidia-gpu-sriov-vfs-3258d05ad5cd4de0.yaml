@@ -1,0 +1,12 @@
+---
+fixes:
+  - |
+    NVIDIA GPU cards such as the A100 expose SR-IOV Virtual Functions (VFs)
+    when virtualized. The NVIDIA GPU driver was incorrectly reporting these
+    VFs as standalone GPU accelerators. A new ``[gpu_devices]/filter_sriov_vfs``
+    configuration option (default ``False``) allows operators to filter out
+    VF devices so that only Physical Functions and mediated devices are
+    reported. The option defaults to ``False`` because enabling it may remove
+    VF-backed resources from Placement without cleaning up existing
+    allocations first. Operators should ensure no instances hold VF
+    allocations before enabling this option.

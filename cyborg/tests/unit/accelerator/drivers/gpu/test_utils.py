@@ -19,6 +19,7 @@ from oslo_serialization import jsonutils
 
 import cyborg
 from cyborg.accelerator.drivers.gpu.nvidia.driver import NVIDIAGPUDriver
+from cyborg.accelerator.drivers.gpu.nvidia import sysinfo
 from cyborg.accelerator.drivers.gpu import utils
 from cyborg.tests import base
 
@@ -30,6 +31,12 @@ NVIDIA_GPU_INFO = "0000:00:06.0 3D controller [0302]: NVIDIA Corporation " \
 
 NVIDIA_T4_GPU_INFO = "0000:af:00.0 3D controller [0302]: NVIDIA Corporation "\
                      "TU104GL [Tesla T4] [10de:1eb8] (rev a1)"
+
+NVIDIA_A100_PF_INFO = "0000:3b:00.0 3D controller [0302]: NVIDIA Corporation "\
+                      "GA100 [A100 PCIe 40GB] [10de:20f1] (rev a1)"
+
+NVIDIA_A100_VF_INFO = "0000:3b:00.4 3D controller [0302]: NVIDIA Corporation "\
+                      "GA100 [A100 PCIe 40GB] [10de:20f1] (rev a1)"
 
 NVIDIA_T4_SUPPORTED_MDEV_TYPES = ['nvidia-222', 'nvidia-223', 'nvidia-224',
                                   'nvidia-225', 'nvidia-226', 'nvidia-227',
@@ -47,6 +54,9 @@ class stdout(object):
 
     def readlines_T4(self):
         return [NVIDIA_T4_GPU_INFO]
+
+    def readlines_A100(self):
+        return [NVIDIA_A100_PF_INFO + '\n' + NVIDIA_A100_VF_INFO]
 
 
 class p(object):
@@ -143,6 +153,8 @@ class TestGPUDriverUtils(base.TestCase):
                          gpu_attach_handle_list[0].as_dict())
         self.assertEqual(attribute_list, attribute_actual_data)
 
+    @mock.patch('cyborg.accelerator.drivers.gpu.nvidia.sysinfo._is_vf',
+                return_value=False, autospec=True)
     @mock.patch('builtins.open')
     @mock.patch('os.listdir')
     @mock.patch('os.path.exists')
@@ -150,7 +162,8 @@ class TestGPUDriverUtils(base.TestCase):
     def test_discover_gpus_report_vGPU(self, mock_devices_for_vendor,
                                        mock_path_exists,
                                        mock_supported_mdev_types,
-                                       mock_open):
+                                       mock_open,
+                                       mock_is_vf):
         """test nvidia vGPU discover"""
         mock_devices_for_vendor.return_value = self.p.stdout.readlines_T4()
         mock_path_exists.return_value = True
@@ -228,6 +241,80 @@ class TestGPUDriverUtils(base.TestCase):
         self.assertEqual(attach_handle_list[0],
                          gpu_attach_handle_list[0].as_dict())
         self.assertEqual(attribute_list, attribute_actual_data)
+
+    @mock.patch('cyborg.accelerator.drivers.gpu.nvidia.sysinfo._is_vf')
+    @mock.patch('cyborg.accelerator.drivers.gpu.utils.lspci_privileged')
+    def test_discover_gpus_filters_vf_devices(self, mock_devices_for_vendor,
+                                              mock_is_vf):
+        """Test that VF devices are filtered when filter_sriov_vfs=True."""
+        mock_devices_for_vendor.return_value = (
+            self.p.stdout.readlines_A100())
+        mock_is_vf.side_effect = lambda addr: addr == '0000:3b:00.4'
+        self.set_defaults(host='host-192-168-32-195', debug=True)
+        self.set_defaults(filter_sriov_vfs=True, group='gpu_devices')
+
+        nvidia = NVIDIAGPUDriver()
+        gpu_list = nvidia.discover()
+
+        self.assertEqual(1, len(gpu_list))
+        gpu_dict = gpu_list[0].as_dict()
+        dep_name = gpu_dict['deployable_list'][0].as_dict()['name']
+        self.assertIn('0000:3b:00.0', dep_name)
+
+    @mock.patch('cyborg.accelerator.drivers.gpu.nvidia.sysinfo._is_vf')
+    @mock.patch('cyborg.accelerator.drivers.gpu.utils.lspci_privileged')
+    def test_discover_gpus_vf_not_filtered_by_default(
+            self, mock_devices_for_vendor, mock_is_vf):
+        """Test that VFs are reported when filter_sriov_vfs=False (default)."""
+        mock_devices_for_vendor.return_value = (
+            self.p.stdout.readlines_A100())
+        mock_is_vf.side_effect = lambda addr: addr == '0000:3b:00.4'
+        self.set_defaults(host='host-192-168-32-195', debug=True)
+
+        nvidia = NVIDIAGPUDriver()
+        gpu_list = nvidia.discover()
+
+        self.assertEqual(2, len(gpu_list))
+        mock_is_vf.assert_not_called()
+
+    @mock.patch('cyborg.accelerator.drivers.gpu.nvidia.sysinfo._is_vf')
+    @mock.patch('cyborg.accelerator.drivers.gpu.utils.lspci_privileged')
+    def test_discover_gpus_continues_on_is_vf_oserror(
+            self, mock_devices_for_vendor, mock_is_vf):
+        """Test discovery continues when _is_vf raises OSError."""
+        mock_devices_for_vendor.return_value = (
+            self.p.stdout.readlines_A100())
+        mock_is_vf.side_effect = OSError('device busy')
+        self.set_defaults(host='host-192-168-32-195', debug=True)
+        self.set_defaults(
+            filter_sriov_vfs=True, group='gpu_devices')
+
+        nvidia = NVIDIAGPUDriver()
+        gpu_list = nvidia.discover()
+
+        self.assertEqual(2, len(gpu_list))
+        self.assertEqual(2, mock_is_vf.call_count)
+
+
+class TestIsVf(base.TestCase):
+
+    @mock.patch('os.path.exists', return_value=True)
+    def test_is_vf_returns_true_when_physfn_exists(self, mock_exists):
+        self.assertTrue(sysinfo._is_vf('0000:3b:00.4'))
+        mock_exists.assert_called_once_with(
+            '/sys/bus/pci/devices/0000:3b:00.4/physfn')
+
+    @mock.patch('os.path.exists', return_value=False)
+    def test_is_vf_returns_false_for_pf(self, mock_exists):
+        self.assertFalse(sysinfo._is_vf('0000:3b:00.0'))
+        mock_exists.assert_called_once_with(
+            '/sys/bus/pci/devices/0000:3b:00.0/physfn')
+
+    @mock.patch('os.path.exists', side_effect=OSError('device busy'))
+    def test_is_vf_returns_false_on_oserror(self, mock_exists):
+        self.assertFalse(sysinfo._is_vf('0000:3b:00.4'))
+        mock_exists.assert_called_once_with(
+            '/sys/bus/pci/devices/0000:3b:00.4/physfn')
 
 
 def multi_mock_open(*file_contents):

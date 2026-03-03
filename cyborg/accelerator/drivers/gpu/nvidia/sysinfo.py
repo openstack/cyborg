@@ -230,6 +230,21 @@ def _get_vgpu_type_per_pgpu(device_address, supported_vgpu_types,
     return pgpu_type_mapping.get(device_address)
 
 
+def _is_vf(pci_address):
+    """Check if a PCI device is a Virtual Function (VF).
+
+    A VF has a 'physfn' symlink in its sysfs directory pointing to its
+    parent PF (Physical Function).
+    """
+    physfn_path = '/sys/bus/pci/devices/%s/physfn' % pci_address
+    try:
+        return os.path.exists(physfn_path)
+    except OSError:
+        LOG.warning('Failed to check VF status for device %s via %s, '
+                    'assuming it is not a VF.', pci_address, physfn_path)
+        return False
+
+
 def _discover_gpus(vendor_id):
     """param: vendor_id=VENDOR_ID means only discover Nvidia GPU on the host
     """
@@ -244,6 +259,35 @@ def _discover_gpus(vendor_id):
         m = gpu_utils.GPU_INFO_PATTERN.match(gpu)
         if m:
             gpu_dict = m.groupdict()
+            # NOTE(bogdando): bug 1987380: Filter out SR-IOV VF
+            # devices. Cards like the A100 expose VFs when virtualized,
+            # but the NVIDIA driver should only report PFs or mediated devices.
+            # To support VFs we need to modify nova and cyborg to pass
+            # managed=false for the attach handle and propagate that in
+            # libvirt XML. It is unsafe to assign a MIG VF directly to a guest
+            # otherwise. We also do not support MIG without vfio-mdev today in
+            # cyborg, so this will be addressed as part of that effort as well.
+            #
+            # Gated behind [gpu_devices]filter_sriov_vfs (default False)
+            # because removing a VF that has an existing allocation in
+            # Placement would leave orphaned resources. Cyborg does not
+            # yet have upgrade-safe deferred-removal logic like Nova's
+            # PCI tracker (see nova/pci/manager.py _set_hvdevs).
+            if CONF.gpu_devices.filter_sriov_vfs:
+                try:
+                    is_vf = _is_vf(gpu_dict["devices"])
+                except Exception:
+                    LOG.warning(
+                        'Unable to determine VF status for '
+                        'device %s, assuming it is not a VF.',
+                        gpu_dict["devices"])
+                    is_vf = False
+                if is_vf:
+                    LOG.info(
+                        'Skipping VF device %s, only PFs and'
+                        ' mediated devices are reported.',
+                        gpu_dict["devices"])
+                    continue
             # get hostname for deployable_name usage
             gpu_dict['hostname'] = CONF.host
             # get vgpu_type from cyborg.conf, otherwise vgpu_type=None
