@@ -12,8 +12,9 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
-import fixtures
 from unittest import mock
+
+import fixtures
 
 from cyborg.common import exception
 from cyborg.common import placement_client

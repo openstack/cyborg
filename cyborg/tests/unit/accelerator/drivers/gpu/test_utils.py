@@ -13,14 +13,16 @@
 # under the License.
 
 import sys
+
 from unittest import mock
 
 from oslo_serialization import jsonutils
 
 import cyborg
-from cyborg.accelerator.drivers.gpu.nvidia.driver import NVIDIAGPUDriver
-from cyborg.accelerator.drivers.gpu.nvidia import sysinfo
+
 from cyborg.accelerator.drivers.gpu import utils
+from cyborg.accelerator.drivers.gpu.nvidia import sysinfo
+from cyborg.accelerator.drivers.gpu.nvidia.driver import NVIDIAGPUDriver
 from cyborg.tests import base
 
 

@@ -16,9 +16,10 @@
 from oslo_log import log as logging
 from oslo_versionedobjects import base as object_base
 
-from cyborg.objects.attach_handle import AttachHandle
 from cyborg.objects import base
 from cyborg.objects import fields as object_fields
+from cyborg.objects.attach_handle import AttachHandle
+
 
 LOG = logging.getLogger(__name__)
 

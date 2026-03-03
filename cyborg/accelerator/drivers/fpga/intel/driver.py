@@ -20,10 +20,12 @@ Cyborg Intel FPGA driver implementation.
 from oslo_concurrency import processutils
 from oslo_log import log as logging
 
+import cyborg.privsep
+
 from cyborg.accelerator.drivers.fpga.base import FPGADriver
 from cyborg.accelerator.drivers.fpga.intel import sysinfo
 from cyborg.common import exception
-import cyborg.privsep
+
 
 LOG = logging.getLogger(__name__)
 

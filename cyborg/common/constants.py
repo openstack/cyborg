@@ -14,6 +14,7 @@
 #    under the License.
 import os_resource_classes as orc
 
+
 CONDUCTOR_TOPIC = 'cyborg-conductor'
 AGENT_TOPIC = 'cyborg-agent'
 DEVICE_GPU = 'GPU'

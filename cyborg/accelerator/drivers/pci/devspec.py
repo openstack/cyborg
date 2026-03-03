@@ -15,10 +15,10 @@ import abc
 import re
 import string
 
-
 from cyborg.accelerator.drivers.pci import utils
 from cyborg.common import exception
 from cyborg.common.i18n import _
+
 
 MAX_VENDOR_ID = 0xFFFF
 MAX_PRODUCT_ID = 0xFFFF

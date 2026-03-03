@@ -20,8 +20,9 @@ Script for running cyborg-api under Apache2.
 
 import sys
 
-from oslo_config import cfg
 import oslo_i18n as i18n
+
+from oslo_config import cfg
 from oslo_log import log
 
 from cyborg.api import app

@@ -15,7 +15,9 @@
 """Accelerator base exception handling."""
 
 import collections
+
 from http import HTTPStatus
+
 from oslo_log import log as logging
 from oslo_serialization import jsonutils
 

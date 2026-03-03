@@ -14,6 +14,7 @@
 import re
 
 import os_resource_classes as orc
+
 from oslo_serialization import jsonutils
 
 from cyborg.accelerator.drivers.driver import GenericDriver

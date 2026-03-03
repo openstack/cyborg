@@ -16,6 +16,7 @@
 import os
 
 import fixtures
+
 from oslo_config import cfg
 from oslo_policy import opts as policy_opts
 

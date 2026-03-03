@@ -14,14 +14,16 @@
 #    under the License.
 
 import importlib
+
 import pecan
+
 from pecan import rest
 from wsme import types as wtypes
 
+from cyborg.api import expose
 from cyborg.api.controllers import base
 from cyborg.api.controllers import link
 from cyborg.api.controllers import v2
-from cyborg.api import expose
 
 
 class APIStatus:

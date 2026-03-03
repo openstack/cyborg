@@ -12,15 +12,16 @@
 
 """Cyborg agent rpcapi test cases."""
 
+from unittest import mock
+
 import oslo_messaging as messaging
 
+from cyborg import context as cyborg_context
 from cyborg.agent.rpcapi import AgentAPI
 from cyborg.common import constants
 from cyborg.common import rpc
-from cyborg import context as cyborg_context
 from cyborg.objects import base as objects_base
 from cyborg.tests import base
-from unittest import mock
 
 
 class TestRPCAPI(base.TestCase):

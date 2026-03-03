@@ -21,7 +21,6 @@ from openstack import connection
 from oslo_log import log as logging
 from oslo_serialization import jsonutils
 
-
 from cyborg.agent.rpcapi import AgentAPI
 from cyborg.common import constants
 from cyborg.common import exception

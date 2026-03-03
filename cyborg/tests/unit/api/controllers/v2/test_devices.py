@@ -15,8 +15,8 @@
 
 from unittest import mock
 
-from cyborg.tests.unit.api.controllers.v2 import base as v2_test
 from cyborg.tests.unit import fake_device
+from cyborg.tests.unit.api.controllers.v2 import base as v2_test
 
 
 class TestDevicesController(v2_test.APITestV2):

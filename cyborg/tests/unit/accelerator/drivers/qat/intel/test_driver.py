@@ -12,13 +12,12 @@
 
 import os
 
-from cyborg.accelerator.drivers.qat.intel import sysinfo
+import fixtures
 
+from cyborg.accelerator.drivers.qat.intel import sysinfo
 from cyborg.accelerator.drivers.qat.intel.driver import IntelQATDriver
 from cyborg.tests import base
 from cyborg.tests.unit.accelerator.drivers.qat.intel import prepare_test_data
-
-import fixtures
 
 
 class TestIntelQATDriver(base.TestCase):

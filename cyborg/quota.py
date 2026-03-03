@@ -13,12 +13,14 @@
 # under the License.
 
 import datetime
+
 from oslo_config import cfg
 from oslo_log import log as logging
 from oslo_utils import timeutils
 
-from cyborg.common import exception
 from cyborg import db as db_api
+from cyborg.common import exception
+
 
 LOG = logging.getLogger(__name__)
 

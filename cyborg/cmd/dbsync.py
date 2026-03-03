@@ -21,8 +21,8 @@ import sys
 
 from oslo_config import cfg
 
-from cyborg.common.i18n import _
 from cyborg.common import service
+from cyborg.common.i18n import _
 from cyborg.conf import CONF
 from cyborg.db import migration
 

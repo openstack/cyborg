@@ -13,12 +13,14 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from cyborg.common import exception
-from cyborg.common import utils
-from keystoneauth1 import exceptions as ks_exc
 import os_resource_classes as orc
+
+from keystoneauth1 import exceptions as ks_exc
 from oslo_log import log as logging
 from oslo_middleware import request_id
+
+from cyborg.common import exception
+from cyborg.common import utils
 
 
 LOG = logging.getLogger(__name__)

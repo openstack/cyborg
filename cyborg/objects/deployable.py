@@ -20,6 +20,7 @@ from cyborg.db import api as dbapi
 from cyborg.objects import base
 from cyborg.objects import fields as object_fields
 
+
 LOG = logging.getLogger(__name__)
 
 

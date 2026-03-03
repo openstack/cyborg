@@ -19,8 +19,10 @@ import re
 from oslo_concurrency import processutils
 from oslo_log import log as logging
 
-from cyborg.common import exception
 import cyborg.privsep
+
+from cyborg.common import exception
+
 
 LOG = logging.getLogger(__name__)
 

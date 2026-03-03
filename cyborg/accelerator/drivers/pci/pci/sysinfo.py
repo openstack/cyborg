@@ -22,16 +22,18 @@ import re
 from oslo_log import log as logging
 from oslo_serialization import jsonutils
 
+import cyborg.conf
+
 from cyborg.accelerator.common import utils
 from cyborg.accelerator.drivers.pci import utils as pci_utils
 from cyborg.accelerator.drivers.pci import whitelist
 from cyborg.common import constants
-import cyborg.conf
 from cyborg.objects.driver_objects import driver_attach_handle
 from cyborg.objects.driver_objects import driver_attribute
 from cyborg.objects.driver_objects import driver_controlpath_id
 from cyborg.objects.driver_objects import driver_deployable
 from cyborg.objects.driver_objects import driver_device
+
 
 LOG = logging.getLogger(__name__)
 CONF = cyborg.conf.CONF

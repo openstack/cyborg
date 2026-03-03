@@ -12,9 +12,10 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import fixtures
 import os
 import tempfile
+
+import fixtures
 import yaml
 
 from oslo_config import cfg

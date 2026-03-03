@@ -15,6 +15,7 @@ from logging import config as log_config
 from alembic import context
 from oslo_db.sqlalchemy import enginefacade
 
+
 try:
     # NOTE(whaom): This is to register the DB2 alembic code which
     # is an optional runtime dependency.
@@ -23,6 +24,7 @@ except ImportError:
     pass
 
 from cyborg.db.sqlalchemy import models
+
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.

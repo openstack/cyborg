@@ -17,6 +17,7 @@ from oslo_versionedobjects import fields as object_fields
 
 from cyborg.common import constants
 
+
 # Import fields from oslo_versionedobjects
 EnumField = object_fields.EnumField
 IntegerField = object_fields.IntegerField

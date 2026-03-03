@@ -19,8 +19,8 @@ from keystonemiddleware import auth_token
 from oslo_log import log
 
 from cyborg.common import exception
-from cyborg.common.i18n import _
 from cyborg.common import utils
+from cyborg.common.i18n import _
 
 
 LOG = log.getLogger(__name__)

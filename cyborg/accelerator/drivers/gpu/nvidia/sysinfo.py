@@ -18,11 +18,11 @@
 Cyborg NVIDIA GPU driver implementation.
 """
 
-from oslo_log import log as logging
-from oslo_serialization import jsonutils
-
 import collections
 import os
+
+from oslo_log import log as logging
+from oslo_serialization import jsonutils
 
 import cyborg.conf
 
@@ -36,6 +36,7 @@ from cyborg.objects.driver_objects import driver_attribute
 from cyborg.objects.driver_objects import driver_controlpath_id
 from cyborg.objects.driver_objects import driver_deployable
 from cyborg.objects.driver_objects import driver_device
+
 
 LOG = logging.getLogger(__name__)
 

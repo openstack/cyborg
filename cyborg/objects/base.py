@@ -16,6 +16,7 @@
 """Cyborg common internal object model"""
 
 import netaddr
+
 from oslo_log import log as logging
 from oslo_utils import versionutils
 from oslo_versionedobjects import base as object_base

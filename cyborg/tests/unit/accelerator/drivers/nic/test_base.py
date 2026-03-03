@@ -13,7 +13,6 @@
 
 from cyborg.accelerator.drivers.nic.base import NICDriver
 from cyborg.accelerator.drivers.nic.intel.driver import IntelNICDriver  # noqa
-
 from cyborg.tests import base
 
 

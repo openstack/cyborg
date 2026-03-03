@@ -15,14 +15,15 @@
 Utils for GPU driver.
 """
 
+import re
+
 from oslo_concurrency import processutils
 from oslo_log import log as logging
-
-import re
 
 import cyborg.common.exception as exception
 import cyborg.conf
 import cyborg.privsep
+
 
 LOG = logging.getLogger(__name__)
 

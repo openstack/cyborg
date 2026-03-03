@@ -14,10 +14,10 @@
 
 from unittest import mock
 
-from cyborg.common import exception
 from cyborg import objects
-from cyborg.tests.unit.db import base
+from cyborg.common import exception
 from cyborg.tests.unit import fake_device
+from cyborg.tests.unit.db import base
 
 
 class TestDeviceObject(base.DbTestCase):

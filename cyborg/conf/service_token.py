@@ -13,6 +13,7 @@
 from keystoneauth1 import loading as ks_loading
 from oslo_config import cfg
 
+
 SERVICE_USER_GROUP = 'service_user'
 
 service_user = cfg.OptGroup(

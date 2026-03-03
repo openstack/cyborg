@@ -14,6 +14,7 @@
 
 from oslo_config import cfg
 
+
 pci_group = cfg.OptGroup(name='pci', title='PCI passthrough options')
 
 pci_opts = [cfg.MultiStrOpt('passthrough_whitelist', default=[], help=" ")]

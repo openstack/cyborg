@@ -15,12 +15,14 @@
 
 """Base classes for API tests."""
 
-from oslo_config import cfg
 import pecan
 import pecan.testing
 
+from oslo_config import cfg
+
 from cyborg import context as cyborg_context
 from cyborg.tests.unit.db import base
+
 
 cfg.CONF.import_group('keystone_authtoken', 'keystonemiddleware.auth_token')
 

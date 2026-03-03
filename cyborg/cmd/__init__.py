@@ -23,5 +23,6 @@ so this module runs before any service code.
 import oslo_i18n as i18n
 import oslo_service.backend as service
 
+
 service.init_backend(service.BackendType.THREADING)
 i18n.install('cyborg')

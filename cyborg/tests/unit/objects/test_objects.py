@@ -16,11 +16,10 @@ import datetime
 
 from oslo_log import log
 
-
 from cyborg import context as cyborg_context
+from cyborg import tests as test
 from cyborg.objects import base
 from cyborg.objects import fields
-from cyborg import tests as test
 
 
 LOG = log.getLogger(__name__)

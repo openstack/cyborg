@@ -15,8 +15,9 @@
 
 """Client side of the conductor RPC API."""
 
-from oslo_config import cfg
 import oslo_messaging as messaging
+
+from oslo_config import cfg
 
 from cyborg.common import constants
 from cyborg.common import rpc

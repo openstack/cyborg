@@ -15,14 +15,15 @@
 
 import datetime
 import functools
-
 import inspect
 
 import pecan
+import wsme
+
 from pecan import rest
 from webob import exc
-import wsme
 from wsme import types as wtypes
+
 
 API_V2 = 'v2'
 # name of attribute to keep version method information

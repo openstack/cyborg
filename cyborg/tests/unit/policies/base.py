@@ -17,8 +17,8 @@ from oslo_log import log as logging
 from oslo_utils.fixture import uuidsentinel as uuids
 
 from cyborg import context as cyborg_context
-from cyborg.tests.unit.api.controllers.v2 import base as v2_test
 from cyborg.tests.unit import policy_fixture
+from cyborg.tests.unit.api.controllers.v2 import base as v2_test
 
 
 LOG = logging.getLogger(__name__)

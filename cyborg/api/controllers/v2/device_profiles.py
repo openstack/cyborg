@@ -31,26 +31,29 @@ The objects layer does the conversion.
 """
 
 import copy
-from http import HTTPStatus
-import pecan
 import re
+
+from http import HTTPStatus
+
+import pecan
 import wsme
-from wsme import types as wtypes
 
 from oslo_log import log
 from oslo_utils import uuidutils
+from wsme import types as wtypes
 
 from cyborg import api
+from cyborg import objects
+from cyborg.api import expose
 from cyborg.api.controllers import base
 from cyborg.api.controllers import link
 from cyborg.api.controllers import types
 from cyborg.api.controllers.v2 import versions
-from cyborg.api import expose
 from cyborg.common import authorize_wsgi
 from cyborg.common import constants
 from cyborg.common import exception
 from cyborg.common.i18n import _
-from cyborg import objects
+
 
 LOG = log.getLogger(__name__)
 

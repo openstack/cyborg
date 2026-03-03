@@ -24,10 +24,11 @@ import sys
 import time
 
 import cryptography
-from cursive import exception as cursive_exception
-from cursive import signature_utils
 import glanceclient
 import glanceclient.exc
+
+from cursive import exception as cursive_exception
+from cursive import signature_utils
 from glanceclient.v2 import schemas
 from keystoneauth1 import loading as ks_loading
 from oslo_log import log as logging
@@ -35,11 +36,12 @@ from oslo_serialization import jsonutils
 from oslo_utils import excutils
 from oslo_utils import timeutils
 
-from cyborg.common import exception
-from cyborg.common import utils
 import cyborg.conf
+
 from cyborg import objects
 from cyborg import service_auth
+from cyborg.common import exception
+from cyborg.common import utils
 
 
 LOG = logging.getLogger(__name__)

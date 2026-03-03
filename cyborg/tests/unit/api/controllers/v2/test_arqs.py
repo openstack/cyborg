@@ -13,8 +13,9 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from http import HTTPStatus
 import unittest
+
+from http import HTTPStatus
 from unittest import mock
 
 from oslo_serialization import jsonutils
@@ -22,9 +23,9 @@ from oslo_serialization import jsonutils
 from cyborg.api.controllers import base
 from cyborg.api.controllers.v2 import arqs
 from cyborg.common import exception
-from cyborg.tests.unit.api.controllers.v2 import base as v2_test
 from cyborg.tests.unit import fake_device_profile
 from cyborg.tests.unit import fake_extarq
+from cyborg.tests.unit.api.controllers.v2 import base as v2_test
 
 
 class TestARQsController(v2_test.APITestV2):

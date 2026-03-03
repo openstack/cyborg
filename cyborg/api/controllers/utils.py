@@ -16,7 +16,6 @@
 import jsonpatch
 import wsme
 
-
 from cyborg.common.i18n import _
 
 

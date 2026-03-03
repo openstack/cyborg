@@ -19,10 +19,11 @@ Cyborg Xilinx FPGA driver implementation.
 
 from oslo_concurrency import processutils
 
+import cyborg.privsep
+
 from cyborg.accelerator.drivers.fpga.base import FPGADriver
 from cyborg.accelerator.drivers.fpga.xilinx import sysinfo
 from cyborg.common import exception
-import cyborg.privsep
 
 
 @cyborg.privsep.sys_admin_pctxt.entrypoint

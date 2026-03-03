@@ -15,8 +15,10 @@ Main abstraction layer for retrieving and storing information about accelerator
 images used by the cyborg agent layer.
 """
 
-from cyborg.image import glance
 from oslo_log import log
+
+from cyborg.image import glance
+
 
 LOG = log.getLogger(__name__)
 

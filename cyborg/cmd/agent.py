@@ -23,6 +23,7 @@ from oslo_service import service
 from cyborg.common import constants
 from cyborg.common import service as cyborg_service
 
+
 CONF = cfg.CONF
 
 

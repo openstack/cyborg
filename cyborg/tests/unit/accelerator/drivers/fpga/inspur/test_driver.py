@@ -12,12 +12,14 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from oslo_serialization import jsonutils
 from unittest import mock
 
-from cyborg.accelerator.drivers.fpga.inspur.driver import InspurFPGADriver
+from oslo_serialization import jsonutils
+
 from cyborg.accelerator.drivers.fpga.inspur import sysinfo
+from cyborg.accelerator.drivers.fpga.inspur.driver import InspurFPGADriver
 from cyborg.tests import base
+
 
 INSPUR_FPGA_INFO = (
     "0000:86:00.0 Processing accelerators [1200]: "

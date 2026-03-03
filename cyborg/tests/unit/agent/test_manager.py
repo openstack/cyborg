@@ -12,8 +12,9 @@
 
 """Cyborg agent manager test cases."""
 
-import fixtures
 from unittest import mock
+
+import fixtures
 
 from keystoneauth1 import exceptions as ks_exc
 

@@ -18,8 +18,8 @@ from unittest import mock
 
 from oslo_serialization import jsonutils
 
-from cyborg.tests.unit.api.controllers.v2 import base as v2_test
 from cyborg.tests.unit import fake_attribute
+from cyborg.tests.unit.api.controllers.v2 import base as v2_test
 
 
 class TestAttributes(v2_test.APITestV2):

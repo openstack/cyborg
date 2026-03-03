@@ -13,9 +13,15 @@
 # under the License.
 
 from cyborg.accelerator.drivers.fpga.base import FPGADriver
-from cyborg.accelerator.drivers.fpga.intel.driver import IntelFPGADriver  # noqa
-from cyborg.accelerator.drivers.fpga.inspur.driver import InspurFPGADriver  # noqa
-from cyborg.accelerator.drivers.fpga.xilinx.driver import XilinxFPGADriver  # noqa
+from cyborg.accelerator.drivers.fpga.inspur.driver import (
+    InspurFPGADriver,  # noqa
+)
+from cyborg.accelerator.drivers.fpga.intel.driver import (
+    IntelFPGADriver,  # noqa
+)
+from cyborg.accelerator.drivers.fpga.xilinx.driver import (
+    XilinxFPGADriver,  # noqa
+)
 from cyborg.tests import base
 
 

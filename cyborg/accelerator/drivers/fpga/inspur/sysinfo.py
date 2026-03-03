@@ -22,6 +22,8 @@ import re
 from oslo_concurrency import processutils
 from oslo_serialization import jsonutils
 
+import cyborg.privsep
+
 from cyborg.accelerator.common import utils
 from cyborg.common import constants
 from cyborg.conf import CONF
@@ -30,7 +32,7 @@ from cyborg.objects.driver_objects import driver_attribute
 from cyborg.objects.driver_objects import driver_controlpath_id
 from cyborg.objects.driver_objects import driver_deployable
 from cyborg.objects.driver_objects import driver_device
-import cyborg.privsep
+
 
 INSPUR_FPGA_FLAGS = [
     "Inspur Electronic Information Industry Co., Ltd.",

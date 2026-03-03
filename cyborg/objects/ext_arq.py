@@ -20,19 +20,19 @@ from oslo_log import log as logging
 from oslo_utils import versionutils
 from oslo_versionedobjects import base as object_base
 
+from cyborg import objects
 from cyborg.agent.rpcapi import AgentAPI
 from cyborg.common import constants
-from cyborg.common.constants import ARQ_STATES_TRANSFORM_MATRIX
 from cyborg.common import exception
 from cyborg.common import utils
+from cyborg.common.constants import ARQ_STATES_TRANSFORM_MATRIX
 from cyborg.conf import CONF
 from cyborg.db import api as dbapi
-from cyborg import objects
-from cyborg.objects.attach_handle import AttachHandle
 from cyborg.objects import base
+from cyborg.objects import fields as object_fields
+from cyborg.objects.attach_handle import AttachHandle
 from cyborg.objects.device_profile import DeviceProfile
 from cyborg.objects.extarq.ext_arq_job import ExtARQJobMixin
-from cyborg.objects import fields as object_fields
 
 
 LOG = logging.getLogger(__name__)

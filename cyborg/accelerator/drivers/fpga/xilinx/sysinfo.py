@@ -32,6 +32,7 @@ from cyborg.objects.driver_objects import driver_deployable
 from cyborg.objects.driver_objects import driver_device
 from cyborg.privsep import sys_admin_pctxt
 
+
 LOG = logging.getLogger(__name__)
 
 XILINX_FPGA_FLAGS = ["Xilinx Corporation Device", "Processing accelerators"]

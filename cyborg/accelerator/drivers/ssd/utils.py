@@ -17,11 +17,13 @@
 Utils for SSD driver.
 """
 
+import re
+
 from oslo_concurrency import processutils
 from oslo_log import log as logging
 from oslo_serialization import jsonutils
 
-import re
+import cyborg.privsep
 
 from cyborg.accelerator.common import utils
 from cyborg.common import constants
@@ -31,7 +33,7 @@ from cyborg.objects.driver_objects import driver_attribute
 from cyborg.objects.driver_objects import driver_controlpath_id
 from cyborg.objects.driver_objects import driver_deployable
 from cyborg.objects.driver_objects import driver_device
-import cyborg.privsep
+
 
 LOG = logging.getLogger(__name__)
 

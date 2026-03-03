@@ -14,6 +14,7 @@
 from oslo_log import log as logging
 from oslo_serialization import jsonutils
 
+
 LOG = logging.getLogger(__name__)
 
 

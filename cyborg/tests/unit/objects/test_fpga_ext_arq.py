@@ -13,21 +13,23 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from io import BytesIO
 import json
-import requests
-from requests import structures
-from requests import utils
+
+from io import BytesIO
 from unittest import mock
 
+import requests
+
+from requests import structures
+from requests import utils
 from testtools.matchers import HasLength
 
+from cyborg import objects
 from cyborg.common import constants
 from cyborg.common import exception
-from cyborg import objects
-from cyborg.tests.unit.db import base
 from cyborg.tests.unit import fake_deployable
 from cyborg.tests.unit import fake_extarq
+from cyborg.tests.unit.db import base
 
 
 class TestFPGAExtARQObject(base.DbTestCase):

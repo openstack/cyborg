@@ -14,6 +14,7 @@
 #    under the License.
 
 import pecan
+
 from wsme import types as wtypes
 
 from cyborg.api.controllers import base

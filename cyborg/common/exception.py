@@ -20,6 +20,7 @@ SHOULD include dedicated exception logging.
 """
 
 from http import HTTPStatus
+
 from oslo_log import log
 
 from cyborg.common.i18n import _

@@ -13,21 +13,22 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import oslo_messaging as messaging
+
 from oslo_concurrency import processutils
 from oslo_log import log
-import oslo_messaging as messaging
 from oslo_service import service
 from oslo_service import wsgi
 from oslo_utils import importutils
 
+from cyborg import context
+from cyborg import objects
 from cyborg.api import app
 from cyborg.common import config
 from cyborg.common import exception
-from cyborg.common.i18n import _
 from cyborg.common import rpc
+from cyborg.common.i18n import _
 from cyborg.conf import CONF
-from cyborg import context
-from cyborg import objects
 from cyborg.objects import base as objects_base
 
 

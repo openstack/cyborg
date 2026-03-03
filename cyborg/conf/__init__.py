@@ -26,6 +26,7 @@ from cyborg.conf import nova
 from cyborg.conf import placement
 from cyborg.conf import service_token
 
+
 CONF = cfg.CONF
 
 api.register_opts(CONF)

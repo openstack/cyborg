@@ -15,18 +15,18 @@
 
 import pecan
 import wsme
-from wsme import types as wtypes
 
 from oslo_serialization import jsonutils
+from wsme import types as wtypes
 
+from cyborg import objects
 from cyborg.agent.rpcapi import AgentAPI
+from cyborg.api import expose
 from cyborg.api.controllers import base
 from cyborg.api.controllers import link
 from cyborg.api.controllers import types
-from cyborg.api import expose
 from cyborg.common import authorize_wsgi
 from cyborg.common import exception as exc
-from cyborg import objects
 
 
 class Deployable(base.APIBase):

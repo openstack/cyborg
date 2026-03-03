@@ -16,12 +16,12 @@
 """Version 2 of the Cyborg API"""
 
 import pecan
+
 from pecan import rest
 from webob import exc
 from wsme import types as wtypes
 
 from cyborg.api import expose
-
 from cyborg.api.controllers import base
 from cyborg.api.controllers import link
 from cyborg.api.controllers.v2 import arqs
@@ -29,7 +29,6 @@ from cyborg.api.controllers.v2 import attributes
 from cyborg.api.controllers.v2 import deployables
 from cyborg.api.controllers.v2 import device_profiles
 from cyborg.api.controllers.v2 import devices
-
 from cyborg.api.controllers.v2 import versions
 
 

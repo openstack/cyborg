@@ -15,9 +15,9 @@
 from unittest import mock
 
 from cyborg import objects
+from cyborg.tests.unit import fake_device_profile
 from cyborg.tests.unit.db import base
 from cyborg.tests.unit.db import utils
-from cyborg.tests.unit import fake_device_profile
 
 
 class TestDeviceProfileObject(base.DbTestCase):

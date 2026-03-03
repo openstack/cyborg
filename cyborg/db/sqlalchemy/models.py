@@ -15,6 +15,8 @@
 
 """SQLAlchemy models for accelerator service."""
 
+import urllib.parse as urlparse
+
 from oslo_db import options as db_options
 from oslo_db.sqlalchemy import models
 from oslo_utils import timeutils
@@ -22,15 +24,14 @@ from sqlalchemy import Boolean
 from sqlalchemy import Column
 from sqlalchemy import DateTime
 from sqlalchemy import Enum
-from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import ForeignKey
 from sqlalchemy import Index
 from sqlalchemy import Integer
-from sqlalchemy import orm
-from sqlalchemy import schema
 from sqlalchemy import String
 from sqlalchemy import Text
-import urllib.parse as urlparse
+from sqlalchemy import orm
+from sqlalchemy import schema
+from sqlalchemy.ext.declarative import declarative_base
 
 from cyborg.common import constants
 from cyborg.common import paths

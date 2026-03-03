@@ -14,12 +14,12 @@
 #    under the License.
 
 from http import HTTPStatus
-from oslo_log import log as logging
-from oslo_serialization import jsonutils
 from unittest import mock
 
-from cyborg.api.controllers.v2 import device_profiles
+from oslo_log import log as logging
+from oslo_serialization import jsonutils
 
+from cyborg.api.controllers.v2 import device_profiles
 from cyborg.tests.unit import fake_device_profile
 from cyborg.tests.unit.policies import base
 

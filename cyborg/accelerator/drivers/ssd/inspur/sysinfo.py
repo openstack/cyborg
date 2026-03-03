@@ -19,6 +19,7 @@ Cyborg Inspur NVMe SSD driver implementation.
 
 from cyborg.accelerator.drivers.ssd import utils
 
+
 VENDOR_ID = '1bd4'
 
 

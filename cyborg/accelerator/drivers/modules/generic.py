@@ -17,9 +17,11 @@
 Cyborg Generic driver modules implementation.
 """
 
+from oslo_log import log as logging
+
 from cyborg.accelerator.common import exception
 from cyborg.common.i18n import _
-from oslo_log import log as logging
+
 
 LOG = logging.getLogger(__name__)
 

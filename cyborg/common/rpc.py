@@ -13,12 +13,13 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from oslo_config import cfg
 import oslo_messaging as messaging
+
+from oslo_config import cfg
 from oslo_messaging.rpc import dispatcher
 
-from cyborg.common import exception
 from cyborg import context as cyborg_context
+from cyborg.common import exception
 
 
 CONF = cfg.CONF

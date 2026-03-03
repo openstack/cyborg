@@ -16,12 +16,12 @@
 from oslo_versionedobjects import base as object_base
 
 from cyborg.objects import base
+from cyborg.objects import fields as object_fields
 from cyborg.objects.deployable import Deployable
 from cyborg.objects.driver_objects.driver_attach_handle import (
     DriverAttachHandle,
 )
 from cyborg.objects.driver_objects.driver_attribute import DriverAttribute
-from cyborg.objects import fields as object_fields
 
 
 @base.CyborgObjectRegistry.register

@@ -22,6 +22,7 @@ from oslo_log import log as logging
 from cyborg.accelerator.drivers.fpga.base import FPGADriver
 from cyborg.accelerator.drivers.fpga.inspur import sysinfo
 
+
 LOG = logging.getLogger(__name__)
 
 

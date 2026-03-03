@@ -17,11 +17,11 @@ from unittest import mock
 
 from oslo_db import exception as db_exc
 
-from cyborg.common import exception
 from cyborg import objects
-from cyborg.tests.unit.db.base import DbTestCase
+from cyborg.common import exception
 from cyborg.tests.unit import fake_deployable
 from cyborg.tests.unit import fake_device
+from cyborg.tests.unit.db.base import DbTestCase
 from cyborg.tests.unit.objects import test_objects
 
 

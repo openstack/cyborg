@@ -25,6 +25,7 @@ import oslo_service.backend as service
 
 from cyborg import objects
 
+
 service.init_backend(service.BackendType.THREADING)
 
 # Make sure we have all of the objects loaded. We do this

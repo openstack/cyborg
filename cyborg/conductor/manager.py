@@ -13,9 +13,11 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from oslo_log import log as logging
-import oslo_messaging as messaging
 import uuid
+
+import oslo_messaging as messaging
+
+from oslo_log import log as logging
 
 from cyborg.common import exception
 from cyborg.common import placement_client
@@ -28,6 +30,7 @@ from cyborg.objects.device import Device
 from cyborg.objects.driver_objects.driver_device import DriverDeployable
 from cyborg.objects.driver_objects.driver_device import DriverDevice
 from cyborg.objects.ext_arq import ExtARQ
+
 
 LOG = logging.getLogger(__name__)
 

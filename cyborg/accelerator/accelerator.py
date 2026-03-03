@@ -12,8 +12,11 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from sqlalchemy import Column, Integer, String
+from sqlalchemy import Column
+from sqlalchemy import Integer
+from sqlalchemy import String
 from sqlalchemy.ext.declarative import declarative_base
+
 
 Base = declarative_base()
 

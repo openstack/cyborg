@@ -20,8 +20,9 @@ import sqlite3
 import tempfile
 
 import alembic.migration as alembic_migration
-from alembic.script import ScriptDirectory
 import fixtures
+
+from alembic.script import ScriptDirectory
 from oslo_config import cfg
 from oslo_db.sqlalchemy import enginefacade
 from oslo_db.sqlalchemy import test_fixtures

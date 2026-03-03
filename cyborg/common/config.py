@@ -15,8 +15,8 @@
 
 from oslo_config import cfg
 
-from cyborg.common import rpc
 from cyborg import version
+from cyborg.common import rpc
 
 
 def parse_args(argv, default_config_files=None):

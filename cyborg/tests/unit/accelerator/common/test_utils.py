@@ -14,8 +14,9 @@
 #    under the License.
 
 
-from cyborg.accelerator.common import utils
 import unittest
+
+from cyborg.accelerator.common import utils
 
 
 class TestUtils(unittest.TestCase):

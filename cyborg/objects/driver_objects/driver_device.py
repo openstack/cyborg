@@ -16,13 +16,13 @@
 from oslo_versionedobjects import base as object_base
 
 from cyborg.objects import base
+from cyborg.objects import fields as object_fields
 from cyborg.objects.control_path import ControlpathID
 from cyborg.objects.device import Device
 from cyborg.objects.driver_objects.driver_controlpath_id import (
     DriverControlPathID,
 )
 from cyborg.objects.driver_objects.driver_deployable import DriverDeployable
-from cyborg.objects import fields as object_fields
 
 
 @base.CyborgObjectRegistry.register

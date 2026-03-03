@@ -14,11 +14,11 @@
 
 from unittest import mock
 
+from oslo_serialization import jsonutils
+
 from cyborg import objects
 from cyborg.tests.unit.db import base
 from cyborg.tests.unit.db import utils
-
-from oslo_serialization import jsonutils
 
 
 class TestControlpathIDObject(base.DbTestCase):

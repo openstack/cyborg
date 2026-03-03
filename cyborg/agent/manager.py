@@ -16,9 +16,10 @@ import tempfile
 import time
 import urllib.parse
 
+import oslo_messaging as messaging
+
 from keystoneauth1 import exceptions as ks_exc
 from oslo_log import log as logging
-import oslo_messaging as messaging
 from oslo_service import periodic_task
 from oslo_utils import uuidutils
 

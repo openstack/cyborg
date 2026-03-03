@@ -11,15 +11,15 @@
 # under the License.
 
 import os
+
 from unittest import mock
 
-from cyborg.accelerator.drivers.nic.intel import sysinfo
+import fixtures
 
+from cyborg.accelerator.drivers.nic.intel import sysinfo
 from cyborg.accelerator.drivers.nic.intel.driver import IntelNICDriver
 from cyborg.tests import base
 from cyborg.tests.unit.accelerator.drivers.nic.intel import prepare_test_data
-
-import fixtures
 
 
 class TestIntelNICDriver(base.TestCase):

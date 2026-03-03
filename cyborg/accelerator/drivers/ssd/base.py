@@ -22,6 +22,7 @@ from oslo_log import log as logging
 from cyborg.accelerator.common import utils as pci_utils
 from cyborg.accelerator.drivers.ssd import utils
 
+
 LOG = logging.getLogger(__name__)
 VENDOR_MAPS = pci_utils.get_vendor_maps()
 

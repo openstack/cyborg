@@ -15,9 +15,9 @@
 
 from oslo_versionedobjects import base as object_base
 
-from cyborg.objects.attribute import Attribute
 from cyborg.objects import base
 from cyborg.objects import fields as object_fields
+from cyborg.objects.attribute import Attribute
 
 
 @base.CyborgObjectRegistry.register

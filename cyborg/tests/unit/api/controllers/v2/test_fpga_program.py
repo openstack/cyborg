@@ -11,13 +11,14 @@
 #    under the License.
 
 from http import HTTPStatus
-from oslo_serialization import jsonutils
 from unittest import mock
 
+from oslo_serialization import jsonutils
+
 from cyborg.common import exception
-from cyborg.tests.unit.api.controllers.v2 import base as v2_test
 from cyborg.tests.unit import fake_deployable
 from cyborg.tests.unit import fake_device
+from cyborg.tests.unit.api.controllers.v2 import base as v2_test
 
 
 class TestFPGAProgramController(v2_test.APITestV2):

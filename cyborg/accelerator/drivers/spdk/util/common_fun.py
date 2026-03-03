@@ -22,12 +22,13 @@ import re
 from oslo_config import cfg
 from oslo_log import log as logging
 
-from cyborg.accelerator.common import exception
 from cyborg.accelerator import configuration
+from cyborg.accelerator.common import exception
 from cyborg.accelerator.drivers.spdk.util.pyspdk.nvmf_client import NvmfTgt
 from cyborg.accelerator.drivers.spdk.util.pyspdk.py_spdk import PySPDK
 from cyborg.accelerator.drivers.spdk.util.pyspdk.vhost_client import VhostTgt
 from cyborg.common.i18n import _
+
 
 LOG = logging.getLogger(__name__)
 

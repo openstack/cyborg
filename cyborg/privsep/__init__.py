@@ -16,6 +16,7 @@
 from oslo_privsep import capabilities
 from oslo_privsep import priv_context
 
+
 sys_admin_pctxt = priv_context.PrivContext(
     'cyborg',
     cfg_section='cyborg_sys_admin',

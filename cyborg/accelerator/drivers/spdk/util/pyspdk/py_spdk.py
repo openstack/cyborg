@@ -12,13 +12,15 @@
 #    under the License.
 
 import os
-import psutil
 import re
+
+import psutil
 
 from oslo_concurrency import processutils
 from oslo_log import log as logging
 
 import cyborg.privsep
+
 
 LOG = logging.getLogger(__name__)
 

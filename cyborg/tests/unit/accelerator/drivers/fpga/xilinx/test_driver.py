@@ -12,11 +12,13 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from oslo_serialization import jsonutils
 from unittest import mock
+
+from oslo_serialization import jsonutils
 
 from cyborg.accelerator.drivers.fpga.xilinx.driver import XilinxFPGADriver
 from cyborg.tests import base
+
 
 XILINX_FPGA_INFO = [
     "0000:3b:00.0 Processing accelerators [1200]: "

@@ -14,22 +14,23 @@
 #    under the License.
 
 from http import HTTPStatus
+
 import pecan
 import wsme
-from wsme import types as wtypes
 
 from oslo_log import log
+from wsme import types as wtypes
 
-from cyborg.accelerator.common import exception
 from cyborg import api
+from cyborg import objects
+from cyborg.accelerator.common import exception
+from cyborg.api import expose
 from cyborg.api.controllers import base
 from cyborg.api.controllers import link
 from cyborg.api.controllers import types
 from cyborg.api.controllers.v2 import versions
-from cyborg.api import expose
 from cyborg.common import authorize_wsgi
 from cyborg.common import placement_client
-from cyborg import objects
 
 
 LOG = log.getLogger(__name__)

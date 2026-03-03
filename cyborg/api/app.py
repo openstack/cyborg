@@ -14,16 +14,18 @@
 #    under the License.
 
 import os
+
 import pecan
 
 from oslo_config import cfg
 from oslo_log import log
 from paste import deploy
 
+import cyborg.conf
+
 from cyborg.api import config
 from cyborg.api import hooks
 from cyborg.api import middleware
-import cyborg.conf
 
 
 CONF = cyborg.conf.CONF

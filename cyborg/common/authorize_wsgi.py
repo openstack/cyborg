@@ -14,16 +14,17 @@
 import functools
 import sys
 
+import pecan
+import wsme
+
 from oslo_concurrency import lockutils
 from oslo_config import cfg
 from oslo_log import log
 from oslo_policy import policy
 from oslo_versionedobjects import base as object_base
-import pecan
-import wsme
 
-from cyborg.common import exception
 from cyborg import policies
+from cyborg.common import exception
 
 
 _ENFORCER = None

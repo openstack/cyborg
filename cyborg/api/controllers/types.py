@@ -15,10 +15,11 @@
 
 import inspect
 
+import wsme
+
 from oslo_serialization import jsonutils
 from oslo_utils import strutils
 from oslo_utils import uuidutils
-import wsme
 from wsme import types as wtypes
 
 from cyborg.common import exception

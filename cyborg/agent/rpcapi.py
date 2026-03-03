@@ -13,14 +13,15 @@
 
 """Client side of the Agent RPC API."""
 
-from oslo_config import cfg
 import oslo_messaging as messaging
+
+from oslo_config import cfg
+from oslo_log import log
 
 from cyborg.common import constants
 from cyborg.common import rpc
 from cyborg.objects import base as objects_base
 
-from oslo_log import log
 
 LOG = log.getLogger(__name__)
 

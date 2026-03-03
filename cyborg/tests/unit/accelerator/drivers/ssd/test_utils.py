@@ -16,10 +16,11 @@ from unittest import mock
 
 from oslo_serialization import jsonutils
 
+from cyborg.accelerator.drivers.ssd import utils
 from cyborg.accelerator.drivers.ssd.base import SSDDriver
 from cyborg.accelerator.drivers.ssd.inspur.driver import InspurNVMeSSDDriver
-from cyborg.accelerator.drivers.ssd import utils
 from cyborg.tests import base
+
 
 NVME_SSD_INFO = (
     "0000:db:00.0 Non-Volatile memory controller [0108]: Inspur "

@@ -15,13 +15,14 @@
 
 from http import HTTPStatus
 from unittest import mock
+
 import webtest
 
 from oslo_serialization import jsonutils
 
 from cyborg.api.controllers import base
-from cyborg.tests.unit.api.controllers.v2 import base as v2_test
 from cyborg.tests.unit import fake_device_profile
+from cyborg.tests.unit.api.controllers.v2 import base as v2_test
 
 
 class TestDeviceProfileController(v2_test.APITestV2):

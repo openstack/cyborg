@@ -15,13 +15,13 @@
 
 from oslo_log import log as logging
 
+from cyborg import objects
 from cyborg.common import constants
-from cyborg.common.constants import ARQ_STATES_TRANSFORM_MATRIX
 from cyborg.common import exception
 from cyborg.common import nova_client
 from cyborg.common import utils
+from cyborg.common.constants import ARQ_STATES_TRANSFORM_MATRIX
 from cyborg.conf import CONF
-from cyborg import objects
 
 
 LOG = logging.getLogger(__name__)

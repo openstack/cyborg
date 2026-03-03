@@ -10,10 +10,12 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import re
+
 from oslo_concurrency import processutils
 from oslo_serialization import jsonutils
 
-import re
+import cyborg.privsep
 
 from cyborg.accelerator.common import utils
 from cyborg.accelerator.drivers.driver import GenericDriver
@@ -22,7 +24,7 @@ from cyborg.objects.driver_objects import driver_attach_handle
 from cyborg.objects.driver_objects import driver_controlpath_id
 from cyborg.objects.driver_objects import driver_deployable
 from cyborg.objects.driver_objects import driver_device
-import cyborg.privsep
+
 
 PCI_INFO_PATTERN = re.compile(
     r"(?P<slot>[0-9a-f]{4}:[0-9a-f]{2}:"

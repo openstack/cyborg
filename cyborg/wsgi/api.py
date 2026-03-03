@@ -15,6 +15,7 @@ import threading
 
 from cyborg.api import wsgi_app
 
+
 application = None
 lock = threading.Lock()
 with lock:

@@ -25,14 +25,15 @@ from oslo_config import cfg
 from oslo_log import log as logging
 from oslo_serialization import jsonutils
 
-from cyborg.accelerator.common import utils
 import cyborg.conf
 
+from cyborg.accelerator.common import utils
 from cyborg.objects.driver_objects import driver_attach_handle
 from cyborg.objects.driver_objects import driver_attribute
 from cyborg.objects.driver_objects import driver_controlpath_id
 from cyborg.objects.driver_objects import driver_deployable
 from cyborg.objects.driver_objects import driver_device
+
 
 LOG = logging.getLogger(__name__)
 

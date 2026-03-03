@@ -10,12 +10,14 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from alembic import script
 import contextlib
-import fixtures
-import sqlalchemy
+
 from unittest import mock
 
+import fixtures
+import sqlalchemy
+
+from alembic import script
 from oslo_db import exception as db_exc
 from oslo_db.sqlalchemy import enginefacade
 from oslo_db.sqlalchemy import test_fixtures
@@ -25,6 +27,7 @@ from oslotest import base as test_base
 
 from cyborg.db.sqlalchemy import migration
 from cyborg.tests import base
+
 
 LOG = logging.getLogger(__name__)
 

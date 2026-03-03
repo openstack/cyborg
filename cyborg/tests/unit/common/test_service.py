@@ -10,8 +10,9 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import fixtures
 from unittest import mock
+
+import fixtures
 
 from cyborg.common import service as cyborg_service
 from cyborg.conf import CONF

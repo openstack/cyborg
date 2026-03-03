@@ -13,10 +13,12 @@
 from unittest import mock
 
 import cyborg
-from cyborg.accelerator.drivers.pci.pci.driver import PCIDriver
+
 from cyborg.accelerator.drivers.pci.pci import sysinfo
+from cyborg.accelerator.drivers.pci.pci.driver import PCIDriver
 from cyborg.common import constants
 from cyborg.tests import base
+
 
 CONF = cyborg.conf.CONF
 

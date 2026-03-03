@@ -12,10 +12,12 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from cyborg.common import exception
-from cyborg.common.i18n import _
-from cyborg.common import utils
 from oslo_log import log as logging
+
+from cyborg.common import exception
+from cyborg.common import utils
+from cyborg.common.i18n import _
+
 
 LOG = logging.getLogger(__name__)
 

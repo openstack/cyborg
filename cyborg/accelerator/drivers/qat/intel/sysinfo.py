@@ -21,6 +21,8 @@ import glob
 import os
 import socket
 
+from oslo_serialization import jsonutils
+
 from cyborg.accelerator.common import utils
 from cyborg.common import constants
 from cyborg.objects.driver_objects import driver_attach_handle
@@ -28,8 +30,6 @@ from cyborg.objects.driver_objects import driver_attribute
 from cyborg.objects.driver_objects import driver_controlpath_id
 from cyborg.objects.driver_objects import driver_deployable
 from cyborg.objects.driver_objects import driver_device
-
-from oslo_serialization import jsonutils
 
 
 PCI_DEVICES_PATH = "/sys/bus/pci/devices"

@@ -26,13 +26,14 @@ from oslo_log import log
 from oslo_utils import strutils
 from oslo_utils import timeutils
 from oslo_utils import uuidutils
-from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.orm import load_only
+from sqlalchemy.orm.exc import NoResultFound
 
 from cyborg.common import exception
 from cyborg.common.i18n import _
 from cyborg.db import api
 from cyborg.db.sqlalchemy import models
+
 
 LOG = log.getLogger(__name__)
 

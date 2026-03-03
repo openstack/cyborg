@@ -17,9 +17,9 @@ from oslo_config import cfg
 from oslo_serialization import jsonutils
 from pecan import hooks
 
+from cyborg import context
 from cyborg.common import exception
 from cyborg.conductor import rpcapi
-from cyborg import context
 
 
 class ConfigHook(hooks.PecanHook):

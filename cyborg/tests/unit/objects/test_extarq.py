@@ -17,14 +17,14 @@ from unittest import mock
 
 from testtools.matchers import HasLength
 
+from cyborg import objects
 from cyborg.common import constants
 from cyborg.common import exception
-from cyborg import objects
-from cyborg.tests.unit.db import base
 from cyborg.tests.unit import fake_attach_handle
 from cyborg.tests.unit import fake_deployable
 from cyborg.tests.unit import fake_device_profile
 from cyborg.tests.unit import fake_extarq
+from cyborg.tests.unit.db import base
 
 
 class TestExtARQObject(base.DbTestCase):
