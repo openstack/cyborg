@@ -31,99 +31,105 @@ accelerator_request_policies = [
         'cyborg:arq:get_all',
         'rule:default',
         description='Retrieve accelerator request records.',
+        scope_types=['project'],
     ),
     policy.RuleDefault(
         'cyborg:arq:get_one',
         'rule:default',
         description='Get an accelerator request record.',
+        scope_types=['project'],
     ),
     policy.RuleDefault(
         'cyborg:arq:create',
-        'rule:allow',
+        'rule:project_member_or_admin',
         description='Create accelerator request records.',
+        scope_types=['project'],
     ),
     policy.RuleDefault(
         'cyborg:arq:delete',
         'rule:default',
         description='Delete accelerator request records.',
+        scope_types=['project'],
     ),
     policy.RuleDefault(
         'cyborg:arq:update',
         'rule:default',
         description='Update accelerator request records.',
+        scope_types=['project'],
     ),
 ]
 
 device_policies = [
     policy.RuleDefault(
-        'cyborg:device:get_one', 'rule:allow', description='Show device detail'
+        'cyborg:device:get_one',
+        'rule:admin_api',
+        description='Show device detail',
+        scope_types=['project'],
     ),
     policy.RuleDefault(
         'cyborg:device:get_all',
-        'rule:allow',
+        'rule:admin_api',
         description='Retrieve all device records',
+        scope_types=['project'],
     ),
     policy.RuleDefault(
         'cyborg:device:disable',
         'rule:admin_api',
         description='Disable a device',
+        scope_types=['project'],
     ),
     policy.RuleDefault(
-        'cyborg:device:enable', 'rule:admin_api', description='Enable a device'
+        'cyborg:device:enable',
+        'rule:admin_api',
+        description='Enable a device',
+        scope_types=['project'],
     ),
 ]
 
 deployable_policies = [
     policy.RuleDefault(
         'cyborg:deployable:get_one',
-        'rule:allow',
+        'rule:admin_api',
         description='Show deployable detail',
+        scope_types=['project'],
     ),
     policy.RuleDefault(
         'cyborg:deployable:get_all',
-        'rule:allow',
+        'rule:admin_api',
         description='Retrieve all deployable records',
+        scope_types=['project'],
     ),
     policy.RuleDefault(
         'cyborg:deployable:program',
-        'rule:allow',
+        'rule:admin_api',
         description='FPGA programming.',
+        scope_types=['project'],
     ),
 ]
 
 attribute_policies = [
     policy.RuleDefault(
         'cyborg:attribute:get_one',
-        'rule:allow',
+        'rule:admin_api',
         description='Show attribute detail',
+        scope_types=['project'],
     ),
     policy.RuleDefault(
         'cyborg:attribute:get_all',
-        'rule:allow',
+        'rule:admin_api',
         description='Retrieve all attribute records',
+        scope_types=['project'],
     ),
     policy.RuleDefault(
         'cyborg:attribute:create',
-        'rule:allow',
+        'rule:admin_api',
         description='Create an attribute record',
+        scope_types=['project'],
     ),
     policy.RuleDefault(
         'cyborg:attribute:delete',
-        'rule:allow',
+        'rule:admin_api',
         description='Delete attribute records.',
-    ),
-]
-
-fpga_policies = [
-    policy.RuleDefault(
-        'cyborg:fpga:get_one', 'rule:allow', description='Show fpga detail'
-    ),
-    policy.RuleDefault(
-        'cyborg:fpga:get_all',
-        'rule:allow',
-        description='Retrieve all fpga records',
-    ),
-    policy.RuleDefault(
-        'cyborg:fpga:update', 'rule:allow', description='Update fpga records'
+        scope_types=['project'],
     ),
 ]
