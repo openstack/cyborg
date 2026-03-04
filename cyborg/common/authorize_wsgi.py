@@ -71,6 +71,14 @@ def init_enforcer(
     if suppress_deprecation_warnings:
         _ENFORCER.suppress_deprecation_warnings = True
     _ENFORCER.register_defaults(policies.list_policies())
+    if not CONF.oslo_policy.enforce_scope:
+        LOG.warning(
+            'oslo_policy.enforce_scope is disabled. System-scoped tokens '
+            'will be accepted by Cyborg APIs, bypassing project-level '
+            'isolation. This is a security risk. Operators should carefully '
+            'review their security posture before disabling scope '
+            'enforcement.'
+        )
 
 
 def get_enforcer():
@@ -97,6 +105,8 @@ def authorize(rule, target, creds, do_raise=False, *args, **kwargs):
         return enforcer.authorize(
             rule, target, creds, do_raise=do_raise, *args, **kwargs
         )
+    except policy.InvalidScope:
+        raise exception.HTTPForbidden(resource=rule)
     except policy.PolicyNotAuthorized:
         raise exception.HTTPForbidden(resource=rule)
 
@@ -143,8 +153,6 @@ def authorize_wsgi(api_name, act=None, need_target=True):
             context = pecan.request.context
             credentials = context.to_policy_values()
             credentials['is_admin'] = context.is_admin
-            if context.system_scope == 'all':
-                credentials['system'] = True
             target = {}
             # maybe we can pass "_get_resource" to authorize_wsgi
             if need_target and hasattr(self, "_get_resource"):

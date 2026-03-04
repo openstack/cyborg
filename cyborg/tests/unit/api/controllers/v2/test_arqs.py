@@ -295,7 +295,7 @@ class TestARQsController(v2_test.APITestV2):
     @mock.patch.object(arqs.ARQsController, '_check_if_already_bound')
     @mock.patch('cyborg.conductor.rpcapi.ConductorAPI.arq_apply_patch')
     def test_apply_patch(self, mock_apply_patch, mock_check_if_bound):
-        """Test the happy path."""
+        """Test the happy path for ARQ bind (patch)."""
         patch_list, device_rp_uuid = fake_extarq.get_patch_list()
         arq_uuids = list(patch_list.keys())
         obj_extarq = self.fake_extarqs[0]
