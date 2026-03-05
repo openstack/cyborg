@@ -32,14 +32,14 @@ from cyborg.objects.ext_arq import ExtARQ
 LOG = logging.getLogger(__name__)
 
 
-class ConductorManager(object):
+class ConductorManager:
     """Cyborg Conductor manager main class."""
 
     RPC_API_VERSION = '1.0'
     target = messaging.Target(version=RPC_API_VERSION)
 
     def __init__(self, topic, host=None):
-        super(ConductorManager, self).__init__()
+        super().__init__()
         self.topic = topic
         self.host = host or CONF.host
         self.placement_client = placement_client.PlacementClient()

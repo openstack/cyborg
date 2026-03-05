@@ -20,7 +20,7 @@ from oslo_log import log as logging
 LOG = logging.getLogger(__name__)
 
 
-class NovaAPI(object):
+class NovaAPI:
     def __init__(self):
         self.nova_client = utils.get_sdk_adapter('compute')
         self.nova_client.default_microversion = '2.82'

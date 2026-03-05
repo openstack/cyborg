@@ -83,14 +83,14 @@ class MyObj(base.CyborgPersistentObject, base.CyborgObject,
         self.rel_object = MyOwnedObject(baz=42)
 
     def obj_make_compatible(self, primitive, target_version):
-        super(MyObj, self).obj_make_compatible(primitive, target_version)
+        super().obj_make_compatible(primitive, target_version)
         # NOTE(danms): Simulate an older version that had a different
         # format for the 'bar' attribute
         if target_version == '1.1' and 'bar' in primitive:
             primitive['bar'] = 'old%s' % primitive['bar']
 
 
-class RandomMixInWithNoFields(object):
+class RandomMixInWithNoFields:
     """Used to test object inheritance using a mixin that has no fields."""
     pass
 
@@ -108,7 +108,7 @@ class TestObjToPrimitive(test.base.TestCase):
             fields = {'foo': fields.IntegerField()}
 
             def __init__(self, foo):
-                super(MyObjElement, self).__init__()
+                super().__init__()
                 self.foo = foo
 
         @base.CyborgObjectRegistry.register_if(False)
@@ -189,7 +189,7 @@ def compare_obj(test, obj, db_obj, subs=None, allow_missing=None,
 
 class _BaseTestCase(test.base.TestCase):
     def setUp(self):
-        super(_BaseTestCase, self).setUp()
+        super().setUp()
         self.user_id = 'fake-user'
         self.project_id = 'fake-project'
         self.context = cyborg_context.RequestContext(self.user_id,
@@ -212,4 +212,4 @@ class _BaseTestCase(test.base.TestCase):
 
 class _LocalTest(_BaseTestCase):
     def setUp(self):
-        super(_LocalTest, self).setUp()
+        super().setUp()

@@ -67,7 +67,7 @@ class ARQ(base.APIBase):
     """A list containing a self link"""
 
     def __init__(self, **kwargs):
-        super(ARQ, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         self.fields = []
         for field in objects.ARQ.fields:
             self.fields.append(field)

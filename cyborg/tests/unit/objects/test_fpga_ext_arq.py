@@ -33,7 +33,7 @@ from cyborg.tests.unit import fake_extarq
 class TestFPGAExtARQObject(base.DbTestCase):
 
     def setUp(self):
-        super(TestFPGAExtARQObject, self).setUp()
+        super().setUp()
         self.fake_fpga_db_extarqs = fake_extarq.get_fake_fpga_db_extarqs()
         self.fake_obj_fpga_extarqs = fake_extarq.get_fake_fpga_extarq_objs()
         classes = ["no_program", "bitstream_program",
@@ -69,7 +69,7 @@ class TestFPGAExtARQObject(base.DbTestCase):
                  reason=None, elapsed=0, request=None, stream=False):
         res = requests.Response()
         res.status_code = status_code
-        if isinstance(content, (dict, list)):
+        if isinstance(content, dict | list):
             content = json.dumps(content).encode('utf-8')
         if isinstance(content, str):
             content = content.encode('utf-8')

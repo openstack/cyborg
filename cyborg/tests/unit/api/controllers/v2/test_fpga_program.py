@@ -23,7 +23,7 @@ from cyborg.tests.unit import fake_device
 class TestFPGAProgramController(v2_test.APITestV2):
 
     def setUp(self):
-        super(TestFPGAProgramController, self).setUp()
+        super().setUp()
         self.headers = self.gen_headers(self.context)
         self.deployable_uuids = ['0acbf8d6-e02a-4394-aae3-57557d209498']
         self.existent_image_uuid = "9a17439a-85d0-4c53-a3d3-0f68a2eac896"

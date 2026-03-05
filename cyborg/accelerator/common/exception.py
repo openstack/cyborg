@@ -103,7 +103,7 @@ class AcceleratorException(Exception):
             else:
                 message = self._msg_fmt
 
-        super(AcceleratorException, self).__init__(message)
+        super().__init__(message)
 
 
 class Invalid(AcceleratorException):

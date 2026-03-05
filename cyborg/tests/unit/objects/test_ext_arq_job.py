@@ -32,7 +32,7 @@ from cyborg.tests.unit import fake_extarq
 class TestExtARQJobMixin(base.DbTestCase):
 
     def setUp(self):
-        super(TestExtARQJobMixin, self).setUp()
+        super().setUp()
         self.fake_db_extarqs = fake_extarq.get_fake_db_extarqs()
         self.fake_obj_extarqs = fake_extarq.get_fake_extarq_objs()
         self.fake_obj_fpga_extarqs = fake_extarq.get_fake_fpga_extarq_objs()

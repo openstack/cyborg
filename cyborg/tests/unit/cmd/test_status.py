@@ -29,7 +29,7 @@ from cyborg.tests import base
 class TestUpgradeCheckPolicyJSON(base.TestCase):
 
     def setUp(self):
-        super(TestUpgradeCheckPolicyJSON, self).setUp()
+        super().setUp()
         self.cmd = status.UpgradeCommands()
         authorize_wsgi.CONF.clear_override('policy_file', group='oslo_policy')
         self.data = {

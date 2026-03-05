@@ -129,7 +129,7 @@ def get_function_by_ifname(ifname):
                 sriov_totalvfs = int(fd.read())
                 return (os.readlink(dev_path).strip("./"),
                         sriov_totalvfs > 0)
-        except (IOError, ValueError):
+        except (OSError, ValueError):
             return os.readlink(dev_path).strip("./"), False
     return None, False
 
@@ -142,7 +142,7 @@ def is_physical_function(domain, bus, slot, function):
             with open(dev_path + _SRIOV_TOTALVFS) as fd:
                 sriov_totalvfs = int(fd.read())
                 return sriov_totalvfs > 0
-        except (IOError, ValueError):
+        except (OSError, ValueError):
             pass
     return False
 
@@ -184,7 +184,7 @@ def get_mac_by_pci_address(pci_addr, pf_interface=False):
         with open(addr_file) as f:
             mac = next(f).strip()
             return mac
-    except (IOError, StopIteration) as e:
+    except (OSError, StopIteration) as e:
         LOG.warning("Could not find the expected sysfs file for "
                     "determining the MAC address of the PCI device "
                     "%(addr)s. May not be a NIC. Error: %(e)s",

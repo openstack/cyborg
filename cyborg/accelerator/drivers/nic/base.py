@@ -20,7 +20,7 @@ Cyborg NIC driver implementation.
 VENDOR_MAPS = {"0x8086": "intel"}
 
 
-class NICDriver(object):
+class NICDriver:
     """Base class for Nic drivers.
 
        This is just a virtual NIC drivers interface.

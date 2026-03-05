@@ -24,7 +24,7 @@ class TestDevicesController(v2_test.APITestV2):
     DEVICE_URL = '/devices'
 
     def setUp(self):
-        super(TestDevicesController, self).setUp()
+        super().setUp()
         self.headers = self.gen_headers(self.context)
         self.fake_devices = fake_device.get_fake_devices_objs()
 

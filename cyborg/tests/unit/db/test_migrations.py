@@ -41,7 +41,7 @@ def patch_with_engine(engine):
         yield
 
 
-class WalkVersionsMixin(object):
+class WalkVersionsMixin:
     def _walk_versions(self, engine=None, alembic_cfg=None):
         # Determine latest version script from the repo, then
         # upgrade from 1 through to the latest, with no data
@@ -75,15 +75,17 @@ class WalkVersionsMixin(object):
         self.migration_api.upgrade(version, config=config)
         self.assertEqual(version, self.migration_api.version(config))
         if with_data:
-            check = getattr(self, "_check_%s" % version, None)
+            check = getattr(self, f"_check_{version}", None)
             if version not in self._skippable_migrations():
-                self.assertIsNotNone(check, ('DB Migration %i does not have '
-                                     'a test. Please add one!') % version)
+                self.assertIsNotNone(
+                    check,
+                    f'DB Migration {version} does not have '
+                    'a test. Please add one!')
 
 
 class TestWalkVersions(base.TestCase, WalkVersionsMixin):
     def setUp(self):
-        super(TestWalkVersions, self).setUp()
+        super().setUp()
         self.migration_api = mock.MagicMock()
         self.engine = mock.MagicMock()
         self.config = mock.MagicMock()
@@ -97,10 +99,10 @@ class TestWalkVersions(base.TestCase, WalkVersionsMixin):
         self.migration_api.version.assert_called_with(self.config)
 
 
-class CyborgMigrationsCheckers(object):
+class CyborgMigrationsCheckers:
 
     def setUp(self):
-        super(CyborgMigrationsCheckers, self).setUp()
+        super().setUp()
         self.engine = enginefacade.writer.get_engine()
         self.config = migration._alembic_config()
         self.migration_api = migration

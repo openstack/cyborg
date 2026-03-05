@@ -15,7 +15,6 @@ repos:
       # file format and permissions
       - id: check-executables-have-shebangs
       - id: check-shebang-scripts-are-executable
-      - id: debug-statements
       - id: check-yaml
         files: .*\.(yaml|yml)$
       - id: check-json
@@ -28,6 +27,14 @@ repos:
       - id: detect-private-key
       - id: check-merge-conflict
         exclude: '.*\.(rst|inc)$'
+      # python
+      - id: debug-statements
+      - id: check-docstring-first
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.12.1
+    hooks:
+      - id: ruff-check
+        args: ['--fix', '--unsafe-fixes']
   - repo: https://github.com/hhatto/autopep8
     rev: v2.3.2
     hooks:

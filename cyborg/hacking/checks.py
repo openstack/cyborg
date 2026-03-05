@@ -13,10 +13,6 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import re
-
-from hacking import core
-
 """
 Guidelines for writing new hacking checks
 
@@ -31,6 +27,10 @@ Guidelines for writing new hacking checks
  - Add test cases for each new rule to magnum/tests/unit/test_hacking.py
 
 """
+
+import re
+
+from hacking import core
 UNDERSCORE_IMPORT_FILES = []
 
 mutable_default_args = re.compile(r"^\s*def .+\((.+=\{\}|.+=\[\])")
@@ -67,7 +67,7 @@ def use_timeutils_utcnow(logical_line, filename):
     msg = "M310: timeutils.utcnow() must be used instead of datetime.%s()"
     datetime_funcs = ['now', 'utcnow']
     for f in datetime_funcs:
-        pos = logical_line.find('datetime.%s' % f)
+        pos = logical_line.find(f'datetime.{f}')
         if pos != -1:
             yield (pos, msg % f)
 

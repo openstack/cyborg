@@ -17,10 +17,10 @@ from oslo_serialization import jsonutils
 LOG = logging.getLogger(__name__)
 
 
-class NvmfTgt(object):
+class NvmfTgt:
 
     def __init__(self, py):
-        super(NvmfTgt, self).__init__()
+        super().__init__()
         self.py = py
 
     def get_rpc_methods(self):

@@ -21,7 +21,7 @@ from oslo_log import log
 LOG = log.getLogger(__name__)
 
 
-class API(object):
+class API:
 
     """Responsible for exposing a relatively stable internal API for other
     modules in Cyborg to retrieve information about accelerator images.

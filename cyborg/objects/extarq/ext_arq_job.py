@@ -27,7 +27,7 @@ from cyborg import objects
 LOG = logging.getLogger(__name__)
 
 
-class ExtARQJobMixin(object):
+class ExtARQJobMixin:
     """Mixin Class for ExtARQ async job management."""
 
     def _bind_job(self, context, deployable):

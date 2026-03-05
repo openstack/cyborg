@@ -74,7 +74,7 @@ class ContextHook(hooks.PecanHook):
 
     def __init__(self, public_api_routes):
         self.public_api_routes = public_api_routes
-        super(ContextHook, self).__init__()
+        super().__init__()
 
     def before(self, state):
         req = state.request

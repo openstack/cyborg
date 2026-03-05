@@ -19,7 +19,7 @@ from cyborg.common import exception
 from cyborg.common.i18n import _
 
 
-class Whitelist(object):
+class Whitelist:
     """White list class to represent assignable pci devices.
 
     Not all devices on a compute node can be assigned to a guest. The cloud

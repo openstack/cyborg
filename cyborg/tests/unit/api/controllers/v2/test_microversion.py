@@ -28,7 +28,7 @@ class TestMicroversions(api_base.BaseApiTest):
         'id', 'links', 'max_version', 'min_version', 'status']
 
     def setUp(self):
-        super(TestMicroversions, self).setUp()
+        super().setUp()
 
     def test_wrong_major_version(self):
         response = self.get_json(

@@ -128,7 +128,7 @@ class TestDiscoverPcis(base.TestCase):
     """Integration tests for _discover_pcis() / discover()."""
 
     def setUp(self):
-        super(TestDiscoverPcis, self).setUp()
+        super().setUp()
         self.set_defaults(host='fake-pci-host', debug=True)
 
     def _set_whitelist(self, specs):

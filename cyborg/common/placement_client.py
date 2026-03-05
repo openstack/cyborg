@@ -27,7 +27,7 @@ POST_RPS_RETURNS_PAYLOAD_API_VERSION = '1.20'
 PLACEMENT_CLIENT_SEMAPHORE = 'placement_client'
 
 
-class PlacementClient(object):
+class PlacementClient:
     """Client class for reporting to placement."""
 
     def __init__(self):
@@ -74,30 +74,30 @@ class PlacementClient(object):
         return res
 
     def _get_rp_traits(self, rp_uuid):
-        resp = self.get("/resource_providers/%s/traits" % rp_uuid,
+        resp = self.get(f"/resource_providers/{rp_uuid}/traits",
                         version='1.6')
         if resp.status_code != 200:
             raise Exception(
-                "Failed to get traits for rp %s: HTTP %d: %s" %
-                (rp_uuid, resp.status_code, resp.text))
+                f"Failed to get traits for rp {rp_uuid}:"
+                f" HTTP {resp.status_code}: {resp.text}")
         return resp.json()
 
     def _ensure_traits(self, trait_names):
         # TODO(Xinran): maintain a reference count of how many RPs use
         # this trait and do the deletion only when the last RP is deleted.
         for trait_name in trait_names:
-            trait = self.get("/traits/%s" % trait_name, version='1.6')
+            trait = self.get(f"/traits/{trait_name}", version='1.6')
             if trait:
                 LOG.info("Trait %(trait)s already existed",
                          {"trait": trait_name})
                 continue
-            resp = self.put("/traits/%s" % trait_name, None, version='1.6')
+            resp = self.put(f"/traits/{trait_name}", None, version='1.6')
             if resp.status_code == 201:
                 LOG.info("Created trait %(trait)s", {"trait": trait_name})
             else:
                 raise Exception(
-                    "Failed to create trait %s: HTTP %d: %s" %
-                    (trait_name, resp.status_code, resp.text))
+                    f"Failed to create trait {trait_name}:"
+                    f" HTTP {resp.status_code}: {resp.text}")
 
     def _put_rp_traits(self, rp_uuid, traits_json):
         generation = self.get_resource_provider(
@@ -107,11 +107,11 @@ class PlacementClient(object):
             'traits': traits_json["traits"],
         }
         resp = self.put(
-            "/resource_providers/%s/traits" % rp_uuid, payload, version='1.6')
+            f"/resource_providers/{rp_uuid}/traits", payload, version='1.6')
         if resp.status_code != 200:
             raise Exception(
-                "Failed to set traits to %s for rp %s: HTTP %d: %s" %
-                (traits_json, rp_uuid, resp.status_code, resp.text))
+                f"Failed to set traits to {traits_json} for rp {rp_uuid}:"
+                f" HTTP {resp.status_code}: {resp.text}")
 
     def add_traits_to_rp(self, rp_uuid, trait_names):
         self._ensure_traits(trait_names)
@@ -152,7 +152,7 @@ class PlacementClient(object):
         if resource_provider_generation is None:
             resource_provider_generation = self.get_resource_provider(
                 resource_provider_uuid=resource_provider_uuid)['generation']
-        url = '/resource_providers/%s/inventories' % resource_provider_uuid
+        url = f'/resource_providers/{resource_provider_uuid}/inventories'
         body = {
             'resource_provider_generation': resource_provider_generation,
             'inventories': inventories
@@ -170,7 +170,7 @@ class PlacementClient(object):
         :raises PlacementResourceProviderNotFound: For failure to find resource
         :returns: The Resource Provider matching the UUID.
         """
-        url = '/resource_providers/%s' % resource_provider_uuid
+        url = f'/resource_providers/{resource_provider_uuid}'
         try:
             return self.get(url).json()
         except ks_exc.NotFound:
@@ -220,7 +220,7 @@ class PlacementClient(object):
 
     def ensure_resource_provider(self, context, uuid, name=None,
                                  parent_provider_uuid=None):
-        resp = self.get("/resource_providers/%s" % uuid, version='1.6')
+        resp = self.get(f"/resource_providers/{uuid}", version='1.6')
         if resp.status_code == 200:
             LOG.info("Resource Provider %(uuid)s already exists",
                      {"uuid": uuid})
@@ -245,7 +245,7 @@ class PlacementClient(object):
             if name in orc.STANDARDS:
                 return
             resp = self.put(
-                "/resource_classes/%s" % name, None, version=version,
+                f"/resource_classes/{name}", None, version=version,
                 global_request_id=context.global_id)
             if not resp:
                 msg = ("Failed to ensure resource class record with placement "
@@ -275,7 +275,7 @@ class PlacementClient(object):
                  empty if no provider exists with the specified UUID.
         :raise: ResourceProviderRetrievalFailed on error.
         """
-        resp = self.get("/resource_providers?in_tree=%s" % uuid,
+        resp = self.get(f"/resource_providers?in_tree={uuid}",
                         version=NESTED_PROVIDER_API_VERSION,
                         global_request_id=context.global_id)
 
@@ -297,7 +297,7 @@ class PlacementClient(object):
         raise exception.ResourceProviderRetrievalFailed(uuid=uuid)
 
     def delete_provider(self, rp_uuid, global_request_id=None):
-        resp = self.delete('/resource_providers/%s' % rp_uuid,
+        resp = self.delete(f'/resource_providers/{rp_uuid}',
                            global_request_id=global_request_id)
         # Check for 404 since we don't need to warn/raise if we tried to delete
         # something which doesn"t actually exist.
@@ -325,7 +325,7 @@ class PlacementClient(object):
     def delete_rc_by_name(self, context, name):
         """Delete resource class from placement by name."""
         resp = self.delete(
-            "/resource_classes/%s" % name, global_request_id=context.global_id)
+            f"/resource_classes/{name}", global_request_id=context.global_id)
         if not resp:
             msg = ("Failed to delete resource class record with placement "
                    "API for resource class %(rc_name)s. Got "
@@ -343,7 +343,7 @@ class PlacementClient(object):
     def _delete_trait(self, context, name):
         """Delete trait from placement by name."""
         version = '1.6'
-        resp = self.delete("/traits/%s" % name, version=version,
+        resp = self.delete(f"/traits/{name}", version=version,
                            global_request_id=context.global_id)
         if not resp:
             msg = ("Failed to delete trait record with placement "

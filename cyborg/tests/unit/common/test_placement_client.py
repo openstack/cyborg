@@ -23,7 +23,7 @@ from cyborg.tests import base
 class PlacementAPITest(base.TestCase):
 
     def setUp(self):
-        super(PlacementAPITest, self).setUp()
+        super().setUp()
         self.instance_uuid = '00000000-0000-0000-0000-000000000001'
 
         self.mock_sdk = self.useFixture(fixtures.MockPatch(

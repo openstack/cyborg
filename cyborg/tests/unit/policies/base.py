@@ -27,7 +27,7 @@ LOG = logging.getLogger(__name__)
 class BasePolicyTest(v2_test.APITestV2):
 
     def setUp(self):
-        super(BasePolicyTest, self).setUp()
+        super().setUp()
         self.policy = self.useFixture(policy_fixture.PolicyFixture())
 
         self.admin_project_id = uuids.admin_project_id

@@ -26,7 +26,7 @@ class TestAttributes(v2_test.APITestV2):
     ATTRIBUTE_URL = '/attributes'
 
     def setUp(self):
-        super(TestAttributes, self).setUp()
+        super().setUp()
         self.headers = self.gen_headers(self.context)
         self.fake_attributes = fake_attribute.fake_db_attribute()
         self.fake_attribute_objs = \

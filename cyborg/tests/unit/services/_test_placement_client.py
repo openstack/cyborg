@@ -27,7 +27,7 @@ class PlacementAPIClientTestCase(base.DietTestCase):
     """Test the Placement API client."""
 
     def setUp(self):
-        super(PlacementAPIClientTestCase, self).setUp()
+        super().setUp()
         self.mock_load_auth_p = mock.patch(
             'keystoneauth1.loading.load_auth_from_conf_options')
         self.mock_load_auth = self.mock_load_auth_p.start()

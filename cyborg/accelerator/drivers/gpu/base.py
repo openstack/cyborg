@@ -26,7 +26,7 @@ LOG = logging.getLogger(__name__)
 VENDOR_MAPS = {"10de": "nvidia", "102b": "matrox"}
 
 
-class GPUDriver(object):
+class GPUDriver:
     """Base class for GPU drivers.
 
        This is just a virtual GPU drivers interface.

@@ -24,7 +24,7 @@ from cyborg.api.controllers import v2
 from cyborg.api import expose
 
 
-class APIStatus(object):
+class APIStatus:
     CURRENT = "CURRENT"
     SUPPORTED = "SUPPORTED"
     DEPRECATED = "DEPRECATED"
@@ -116,4 +116,4 @@ class RootController(rest.RestController):
 
         if args[0] and args[0] not in self._versions:
             args = [self._default_version] + args
-        return super(RootController, self)._route(args)
+        return super()._route(args)

@@ -36,7 +36,7 @@ class BaseApiTest(base.DbTestCase):
     PATH_PREFIX = ''
 
     def setUp(self):
-        super(BaseApiTest, self).setUp()
+        super().setUp()
         cfg.CONF.set_override("auth_version", "v3",
                               group='keystone_authtoken')
         cfg.CONF.set_override("admin_user", "admin",

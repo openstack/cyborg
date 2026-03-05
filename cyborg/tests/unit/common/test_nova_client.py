@@ -25,7 +25,7 @@ class NovaAPITest(base.TestCase):
     wsgi_api_version = '2.82'
 
     def setUp(self):
-        super(NovaAPITest, self).setUp()
+        super().setUp()
         self.instance_uuid = '00000000-0000-0000-0000-000000000001'
         template = {'name': 'accelerator-request-bound',
                     'server_uuid': self.instance_uuid,

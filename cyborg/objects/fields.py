@@ -39,7 +39,7 @@ class ARQState(object_fields.Enum):
     ALL = constants.ARQ_STATES
 
     def __init__(self):
-        super(ARQState, self).__init__(valid_values=ARQState.ALL)
+        super().__init__(valid_values=ARQState.ALL)
 
 
 class ARQStateField(object_fields.BaseEnumField):

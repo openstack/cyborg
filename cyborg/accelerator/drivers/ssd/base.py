@@ -25,7 +25,7 @@ LOG = logging.getLogger(__name__)
 VENDOR_MAPS = pci_utils.get_vendor_maps()
 
 
-class SSDDriver(object):
+class SSDDriver:
     """Generic class for SSD drivers.
 
        This is just a virtual SSD drivers interface.

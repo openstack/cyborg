@@ -20,7 +20,7 @@ from cyborg.tests.unit.api.controllers.v2 import base as v2_test
 class TestAPI(v2_test.APITestV2):
 
     def setUp(self):
-        super(TestAPI, self).setUp()
+        super().setUp()
         self.headers = self.gen_headers(self.context)
 
     def test_get_api_v2(self):

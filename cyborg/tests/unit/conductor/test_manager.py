@@ -22,7 +22,7 @@ from cyborg.tests.unit import fake_driver_device
 
 class ConductorManagerTest(base.TestCase):
     def setUp(self):
-        super(ConductorManagerTest, self).setUp()
+        super().setUp()
         self.placement_mock = self.useFixture(fixtures.MockPatch(
             'cyborg.common.placement_client.PlacementClient')
         ).mock.return_value

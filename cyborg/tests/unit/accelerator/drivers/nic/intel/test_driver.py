@@ -24,7 +24,7 @@ import fixtures
 
 class TestIntelNICDriver(base.TestCase):
     def setUp(self):
-        super(TestIntelNICDriver, self).setUp()
+        super().setUp()
         self.pcipath = sysinfo.PCI_DEVICES_PATH_PATTERN
         tmp_sys_dir = self.useFixture(fixtures.TempDir())
         prepare_test_data.create_fake_sysfs(tmp_sys_dir.path)
@@ -33,7 +33,7 @@ class TestIntelNICDriver(base.TestCase):
             tmp_path, sysinfo.PCI_DEVICES_PATH_PATTERN.split("/", 1)[-1])
 
     def tearDown(self):
-        super(TestIntelNICDriver, self).tearDown()
+        super().tearDown()
         sysinfo.PCI_DEVICES_PATH = self.pcipath
 
     @mock.patch("cyborg.accelerator.common.utils.get_ifname_by_pci_address")

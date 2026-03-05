@@ -14,7 +14,7 @@
 import abc
 
 
-class GenericDriver(object, metaclass=abc.ABCMeta):
+class GenericDriver(metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     def discover(self):

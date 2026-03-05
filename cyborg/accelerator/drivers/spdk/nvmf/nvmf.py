@@ -35,7 +35,7 @@ class NVMFDRIVER(SPDKDRIVER):
     SERVER = 'nvmf'
 
     def __init__(self, *args, **kwargs):
-        super(NVMFDRIVER, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.servers = common_fun.discover_servers()
         self.py = common_fun.get_py_client(self.SERVER)
 

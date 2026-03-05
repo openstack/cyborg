@@ -86,7 +86,7 @@ class DBAPIReservationTestCase(base.DbTestCase):
     """Tests for db.api.reservation_* methods."""
 
     def setUp(self):
-        super(DBAPIReservationTestCase, self).setUp()
+        super().setUp()
         self.values = {
             'uuid': 'sample-uuid',
             'project_id': 'project1',

@@ -24,7 +24,7 @@ class TestDeployablesController(v2_test.APITestV2):
     DEPLOYABLE_URL = '/deployables'
 
     def setUp(self):
-        super(TestDeployablesController, self).setUp()
+        super().setUp()
         self.headers = self.gen_headers(self.context)
         self.fake_deployable = fake_deployable.fake_deployable_obj(
             self.context)

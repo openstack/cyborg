@@ -43,7 +43,7 @@ class TestCase(base.BaseTestCase):
     """Test case base class for all unit tests."""
 
     def setUp(self):
-        super(TestCase, self).setUp()
+        super().setUp()
         self.context = cyborg_context.get_admin_context()
         self._set_config()
         self.policy = self.useFixture(policy_fixture.PolicyFixture())
@@ -93,7 +93,7 @@ class DietTestCase(base.BaseTestCase):
     """
 
     def setUp(self):
-        super(DietTestCase, self).setUp()
+        super().setUp()
         self.context = cyborg_context.get_admin_context()
 
         options.set_defaults(cfg.CONF, connection='sqlite://')
@@ -119,7 +119,7 @@ class DietTestCase(base.BaseTestCase):
                                    testtools.content.TracebackContent(
                                        (ctx.type_, ctx.value, ctx.tb), self))
 
-        return super(DietTestCase, self).addOnException(safe_handler)
+        return super().addOnException(safe_handler)
 
     def check_for_systemexit(self, exc_info):
         if isinstance(exc_info[1], SystemExit):

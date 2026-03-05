@@ -33,7 +33,7 @@ LOG = logging.getLogger(__name__)
 AGENT_RESOURCE_SEMAPHORE = "agent_resources"
 
 
-class ResourceTracker(object):
+class ResourceTracker:
     """Agent helper class for keeping track of resource usage as instances
     are built and destroyed.
     """

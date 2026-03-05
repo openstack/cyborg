@@ -21,7 +21,7 @@ from cyborg.tests import base
 class TestRPCService(base.TestCase):
 
     def setUp(self):
-        super(TestRPCService, self).setUp()
+        super().setUp()
         self.topic = 'cyborg-conductor'
         self.host = 'test-host'
         self.manager_module = 'cyborg.conductor.manager'

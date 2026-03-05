@@ -24,7 +24,7 @@ from oslo_serialization import jsonutils
 class TestControlpathIDObject(base.DbTestCase):
 
     def setUp(self):
-        super(TestControlpathIDObject, self).setUp()
+        super().setUp()
         self.fake_control_path = utils.get_test_control_path()
 
     def test_get(self):

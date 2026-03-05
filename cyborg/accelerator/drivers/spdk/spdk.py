@@ -19,7 +19,7 @@ from oslo_log import log as logging
 LOG = logging.getLogger(__name__)
 
 
-class SPDKDRIVER(object):
+class SPDKDRIVER:
     """SPDKDRIVER
 
         This is just a virtual SPDK drivers interface.
@@ -33,7 +33,7 @@ class SPDKDRIVER(object):
         raise LookupError("Could not find the driver for server %s" % server)
 
     def __init__(self, *args, **kwargs):
-        super(SPDKDRIVER, self).__init__()
+        super().__init__()
 
     def discover_accelerator(self):
         """Discover a backend accelerator
