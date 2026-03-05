@@ -1,0 +1,9 @@
+---
+upgrade:
+  - |
+    The ``cyborg-wsgi-api`` ``wsgi_scripts`` entry point has been removed.
+    This setuptools-specific mechanism for installing a WSGI script was
+    deprecated in the 2025.1 cycle. Deployments using mod_wsgi or uWSGI
+    should reference the WSGI application directly via
+    ``cyborg.wsgi.api:application`` as described in the WSGI deployment
+    documentation.
