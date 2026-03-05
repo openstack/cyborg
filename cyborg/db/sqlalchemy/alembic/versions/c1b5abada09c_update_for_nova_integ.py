@@ -19,14 +19,14 @@ Create Date: 2019-07-11 22:13:45.773499
 
 """
 
-# revision identifiers, used by Alembic.
-revision = 'c1b5abada09c'
-down_revision = '589ff20545b7'
-
 from alembic import op
 import sqlalchemy as sa
 
 from cyborg.common import constants
+
+# revision identifiers, used by Alembic.
+revision = 'c1b5abada09c'
+down_revision = '589ff20545b7'
 
 
 def upgrade():
