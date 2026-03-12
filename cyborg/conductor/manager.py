@@ -19,6 +19,7 @@ import oslo_messaging as messaging
 
 from oslo_log import log as logging
 
+from cyborg.common import data_migrations
 from cyborg.common import exception
 from cyborg.common import placement_client
 from cyborg.conf import CONF
@@ -46,6 +47,20 @@ class ConductorManager:
         self.topic = topic
         self.host = host or CONF.host
         self.placement_client = placement_client.PlacementClient()
+
+    def init_host(self):
+        """Hook called on service startup. Heals NULL project_id ARQs."""
+        try:
+            count = data_migrations.heal_arq_project_ids()
+            if count:
+                LOG.info(
+                    'Conductor startup: healed project_id on %d ARQ(s).', count
+                )
+        except Exception:
+            LOG.exception(
+                'Conductor startup: failed to heal ARQ project_ids. '
+                'Run cyborg-dbsync online_data_migrations manually.'
+            )
 
     def periodic_tasks(self, context, raise_on_error=False):
         pass

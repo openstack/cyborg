@@ -1,0 +1,20 @@
+---
+upgrade:
+  - |
+    A new ``cyborg-dbsync online_data_migrations`` subcommand backfills the
+    ``project_id`` column on existing accelerator requests (ARQs). Expected
+    operator order:
+
+    1. Upgrade the ``cyborg-dbsync`` package (and related shared code) so
+       ``cyborg-dbsync upgrade`` can apply pending schema migrations.
+    2. Run ``cyborg-dbsync online_data_migrations`` to backfill ``project_id``
+       on existing ARQ rows using Nova instance data.
+    3. Upgrade Cyborg services, starting with **conductor** and **API**, then
+       **agents**.
+
+    The cyborg-conductor service also heals remaining NULL ``project_id``
+    values on startup as a safety net.
+
+    Nova ``GET /servers/{id}`` calls for this migration pass microversion
+    ``2.82`` explicitly so the ``tenant_id`` field shape used for backfill
+    stays consistent.
