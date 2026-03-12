@@ -19,7 +19,9 @@ from http import HTTPStatus
 from unittest import mock
 
 from oslo_serialization import jsonutils
+from oslo_utils.fixture import uuidsentinel as uuids
 
+from cyborg import context as cyborg_context
 from cyborg.api.controllers import base
 from cyborg.api.controllers.v2 import arqs
 from cyborg.common import exception
@@ -33,6 +35,7 @@ class TestARQsController(v2_test.APITestV2):
 
     def setUp(self):
         super().setUp()
+        self.context.project_id = str(uuids.project_id)
         self.headers = self.gen_headers(self.context)
         self.fake_extarqs = fake_extarq.get_fake_extarq_objs()
         self.fake_bind_extarqs = fake_extarq.get_fake_extarq_bind_objs()
@@ -304,6 +307,7 @@ class TestARQsController(v2_test.APITestV2):
                 'hostname': obj_extarq.arq.hostname,
                 'device_rp_uuid': device_rp_uuid,
                 'instance_uuid': obj_extarq.arq.instance_uuid,
+                'project_id': self.context.project_id,
             }
             for arq_uuid in arq_uuids
         }
@@ -321,12 +325,13 @@ class TestARQsController(v2_test.APITestV2):
         self, mock_apply_patch, mock_check_if_bound
     ):
         patch_list, _ = fake_extarq.get_patch_list()
+        explicit_pid = str(uuids.explicit_project)
         for arq_uuid, patch in patch_list.items():
             patch.append(
                 {
                     'path': '/project_id',
                     'op': 'add',
-                    'value': 'b1c76756ac2e482789a8e1c5f4bf065e',
+                    'value': explicit_pid,
                 }
             )
         arq_uuids = list(patch_list.keys())
@@ -335,15 +340,19 @@ class TestARQsController(v2_test.APITestV2):
                 'hostname': 'myhost',
                 'device_rp_uuid': 'fb16c293-5739-4c84-8590-926f9ab16669',
                 'instance_uuid': '5922a70f-1e06-4cfd-88dd-a332120d7144',
-                'project_id': 'b1c76756ac2e482789a8e1c5f4bf065e',
+                'project_id': explicit_pid,
             }
             for arq_uuid in arq_uuids
         }
 
+        # Admin headers with v2.1 microversion to allow
+        # setting a different project_id
+        headers = self.gen_headers(self.context)
+        headers[base.Version.current_api_version] = '2.1'
         self.patch_json(
             self.ARQ_URL,
             params=patch_list,
-            headers={base.Version.current_api_version: '2.1'},
+            headers=headers,
         )
         mock_apply_patch.assert_called_once_with(
             mock.ANY, patch_list, valid_fields
@@ -424,3 +433,172 @@ class TestARQsController(v2_test.APITestV2):
             self.context,
             valid_fields,
         )
+
+
+class TestARQProjectIdOnCreate(v2_test.APITestV2):
+    """Tests for Bug #2144056: project_id must be set from context."""
+
+    ARQ_URL = '/accelerator_requests'
+
+    def setUp(self):
+        super().setUp()
+        self.fake_extarqs = fake_extarq.get_fake_extarq_objs()
+
+    def _make_member_context(self, project_id=None):
+        pid = project_id or str(uuids.member_project)
+        return cyborg_context.RequestContext(
+            user_id=str(uuids.member_user),
+            project_id=pid,
+            is_admin=False,
+        )
+
+    def _make_admin_context(self, project_id=None):
+        pid = project_id or str(uuids.admin_project)
+        return cyborg_context.RequestContext(
+            user_id=str(uuids.admin_user),
+            project_id=pid,
+            is_admin=True,
+        )
+
+    def _make_bind_patch(self, extra_entries=None):
+        """Build a standard bind patch list."""
+        patch = [
+            {'path': '/hostname', 'op': 'add', 'value': 'host1'},
+            {
+                'path': '/device_rp_uuid',
+                'op': 'add',
+                'value': str(uuids.device_rp),
+            },
+            {
+                'path': '/instance_uuid',
+                'op': 'add',
+                'value': str(uuids.instance),
+            },
+        ]
+        if extra_entries:
+            patch.extend(extra_entries)
+        return patch
+
+    @mock.patch('cyborg.objects.DeviceProfile.get_by_name')
+    @mock.patch('cyborg.conductor.rpcapi.ConductorAPI.arq_create')
+    def test_post_sets_project_id_from_context(
+        self, mock_arq_create, mock_get_dp
+    ):
+        dp_list = fake_device_profile.get_obj_devprofs()
+        mock_get_dp.return_value = dp_list[0]
+        mock_arq_create.side_effect = self.fake_extarqs
+
+        member_ctx = self._make_member_context()
+        headers = self.gen_headers(member_ctx)
+        headers['X-Roles'] = 'member'
+        params = {'device_profile_name': dp_list[0]['name']}
+        self.post_json(self.ARQ_URL, params, headers=headers)
+
+        for call_args in mock_arq_create.call_args_list:
+            obj_extarq = call_args[0][1]
+            self.assertEqual(member_ctx.project_id, obj_extarq.arq.project_id)
+
+    @mock.patch('cyborg.api.controllers.v2.utils.allow_project_id')
+    def test_validate_arq_patch_defaults_project_id_v20(self, mock_allow):
+        """At API v2.0, project_id is always set from context."""
+        mock_allow.return_value = False
+        controller = arqs.ARQsController()
+        member_ctx = self._make_member_context()
+        mock_request = mock.MagicMock()
+        mock_request.context = member_ctx
+        mock_request.version.minor = 0
+        with mock.patch.object(arqs, 'pecan') as mock_pecan:
+            mock_pecan.request = mock_request
+            result = controller._validate_arq_patch(self._make_bind_patch())
+        self.assertEqual(member_ctx.project_id, result['project_id'])
+
+    @mock.patch('cyborg.api.controllers.v2.utils.allow_project_id')
+    def test_validate_arq_patch_defaults_project_id_v21_no_explicit(
+        self, mock_allow
+    ):
+        """At API v2.1, project_id defaults to context when absent."""
+        mock_allow.return_value = True
+        controller = arqs.ARQsController()
+        member_ctx = self._make_member_context()
+        mock_request = mock.MagicMock()
+        mock_request.context = member_ctx
+        mock_request.version.minor = 1
+        with mock.patch.object(arqs, 'pecan') as mock_pecan:
+            mock_pecan.request = mock_request
+            result = controller._validate_arq_patch(self._make_bind_patch())
+        self.assertEqual(member_ctx.project_id, result['project_id'])
+
+    @mock.patch('cyborg.api.controllers.v2.utils.allow_project_id')
+    def test_validate_arq_patch_v21_admin_can_set_different_project_id(
+        self, mock_allow
+    ):
+        """Admin can set a project_id that differs from token."""
+        mock_allow.return_value = True
+        controller = arqs.ARQsController()
+        other_project = str(uuids.other_project)
+        patch = self._make_bind_patch(
+            [
+                {'path': '/project_id', 'op': 'add', 'value': other_project},
+            ]
+        )
+        admin_ctx = self._make_admin_context()
+        mock_request = mock.MagicMock()
+        mock_request.context = admin_ctx
+        mock_request.version.minor = 1
+        with mock.patch.object(arqs, 'pecan') as mock_pecan:
+            mock_pecan.request = mock_request
+            result = controller._validate_arq_patch(patch)
+        self.assertEqual(other_project, result['project_id'])
+
+    @mock.patch('cyborg.api.controllers.v2.utils.allow_project_id')
+    def test_validate_arq_patch_v21_non_admin_cannot_spoof_project_id(
+        self, mock_allow
+    ):
+        """Non-admin cannot set a different project_id (spoofing)."""
+        mock_allow.return_value = True
+        controller = arqs.ARQsController()
+        other_project = str(uuids.other_project)
+        patch = self._make_bind_patch(
+            [
+                {'path': '/project_id', 'op': 'add', 'value': other_project},
+            ]
+        )
+        member_ctx = self._make_member_context()
+        mock_request = mock.MagicMock()
+        mock_request.context = member_ctx
+        mock_request.version.minor = 1
+        with mock.patch.object(arqs, 'pecan') as mock_pecan:
+            mock_pecan.request = mock_request
+            self.assertRaises(
+                exception.HTTPForbidden,
+                controller._validate_arq_patch,
+                patch,
+            )
+
+    @mock.patch('cyborg.api.controllers.v2.utils.allow_project_id')
+    def test_validate_arq_patch_v21_non_admin_cannot_set_project_id_even_when_matching(
+        self, mock_allow
+    ):
+        """Non-admin cannot include project_id in a patch, even if equal to token."""
+        mock_allow.return_value = True
+        controller = arqs.ARQsController()
+        member_ctx = self._make_member_context()
+        patch = self._make_bind_patch(
+            [
+                {
+                    'path': '/project_id',
+                    'op': 'add',
+                    'value': member_ctx.project_id,
+                },
+            ]
+        )
+        mock_request = mock.MagicMock()
+        mock_request.context = member_ctx
+        mock_request.version.minor = 1
+        with mock.patch.object(arqs, 'pecan') as mock_pecan:
+            mock_pecan.request = mock_request
+            self.assertRaises(
+                exception.HTTPForbidden,
+                controller._validate_arq_patch,
+                patch,
+            )

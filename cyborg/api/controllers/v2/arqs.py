@@ -166,6 +166,7 @@ class ARQsController(base.CyborgController):
             arq_fields = {
                 'device_profile_name': devprof.name,
                 'device_profile_group_id': group_id,
+                'project_id': context.project_id,
             }
             for i in range(num_accels):
                 obj_arq = objects.ARQ(context, **arq_fields)
@@ -280,6 +281,7 @@ class ARQsController(base.CyborgController):
             value field of arq_uuid in patch() method below.
         :returns: dict of valid fields
         """
+        context = pecan.request.context
         valid_fields = {
             'hostname': None,
             'device_rp_uuid': None,
@@ -294,24 +296,39 @@ class ARQsController(base.CyborgController):
 
         for p in patch:
             path = p['path'].lstrip('/')
-            if path == 'project_id' and not utils.allow_project_id():
-                raise exception.NotAcceptable(
-                    _(
-                        "Request not acceptable. The minimal required API "
-                        "version should be %(base)s.%(opr)s"
+            if path == 'project_id':
+                if not utils.allow_project_id():
+                    raise exception.NotAcceptable(
+                        _(
+                            "Request not acceptable. The minimal required API "
+                            "version should be %(base)s.%(opr)s"
+                        )
+                        % {
+                            'base': versions.BASE_VERSION,
+                            'opr': versions.MINOR_1_PROJECT_ID,
+                        }
                     )
-                    % {
-                        'base': versions.BASE_VERSION,
-                        'opr': versions.MINOR_1_PROJECT_ID,
-                    }
-                )
+                # Only cloud admins may set or change project_id in a patch;
+                # other callers get ownership from the request context below.
+                if not context.is_admin:
+                    raise exception.HTTPForbidden(resource='cyborg:arq:update')
             if path not in valid_fields.keys():
                 reason = 'Invalid path in patch {}'.format(p['path'])
                 raise exception.PatchError(reason=reason)
             if p['op'] == 'add':
                 valid_fields[path] = p['value']
+
+        if patch[0]['op'] == 'add':
+            provided_pid = valid_fields.get('project_id')
+            # Always set project_id from context when not explicitly provided
+            # by an admin, or when using API < 2.1 (no project_id in patch).
+            if not provided_pid:
+                valid_fields['project_id'] = context.project_id
+
         not_found = [
-            field for field, value in valid_fields.items() if value is None
+            field
+            for field, value in valid_fields.items()
+            if value is None and field != 'project_id'
         ]
         if patch[0]['op'] == 'add' and len(not_found) > 0:
             msg = ','.join(not_found)
@@ -355,8 +372,9 @@ class ARQsController(base.CyborgController):
                ],
              "$arq_uuid": [...]
             }
-            In particular, all and only these 4 fields must be present,
-            and only 'add' or 'remove' ops are allowed.
+            In particular, all required bind fields must be present; at API
+            v2.1+ an optional ``/project_id`` may be set only by administrators.
+            Only 'add' or 'remove' ops are allowed.
         """
         LOG.info('[arqs] patch. list=(%s)', patch_list)
         context = pecan.request.context
