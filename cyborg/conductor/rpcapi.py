@@ -93,6 +93,11 @@ class ConductorAPI:
             context, 'arq_create', obj_extarq=obj_extarq, devprof_id=devprof_id
         )
 
+    # TODO(sean-k-mooney): Remove arq_delete_by_uuid and
+    # arq_delete_by_instance_uuid in RPC API v2 (after 2027.1). ARQ
+    # deletion is now performed directly in the API layer to enforce
+    # service token checks, but these endpoints must remain for RPC
+    # version compatibility during rolling upgrades.
     def arq_delete_by_uuid(self, context, arqs):
         """Signal to conductor service to delete accelerator requests by
         ARQ UUIDs.
