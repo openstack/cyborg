@@ -31,6 +31,7 @@ from cyborg.api.controllers.v2 import versions
 from cyborg.common import authorize_wsgi
 from cyborg.common import constants
 from cyborg.common import exception
+from cyborg.common import service_token_utils
 from cyborg.common.i18n import _
 
 
@@ -103,6 +104,39 @@ class ARQCollection(base.APIBase):
             ARQ.convert_with_links(obj_arq) for obj_arq in obj_arqs
         ]
         return collection
+
+
+def _require_service_token(context, action):
+    """Raise if the request does not carry a valid service token.
+
+    Used for operations that must only be performed by Nova on
+    behalf of a user (bind, unbind, delete-by-instance).
+    """
+    if not service_token_utils.is_service_request(context):
+        raise exception.Forbidden(
+            message=_(
+                'This operation requires a service token. '
+                'Use the Compute API to manage instance accelerators.'
+            )
+        )
+
+
+def _check_bound_arq_service_token(context, extarq, action):
+    """Reject direct user operations on bound ARQs.
+
+    Once an ARQ has instance_uuid set, only Nova (identified
+    by a service token) may modify or delete it.
+    """
+    if extarq.arq.instance_uuid and not service_token_utils.is_service_request(
+        context
+    ):
+        raise exception.Forbidden(
+            message=_(
+                'ARQ %(arq)s is bound to instance %(instance)s. '
+                'Use the Compute API to manage instance accelerators.'
+            )
+            % {'arq': extarq.arq.uuid, 'instance': extarq.arq.instance_uuid}
+        )
 
 
 class ARQsController(base.CyborgController):
@@ -266,12 +300,15 @@ class ARQsController(base.CyborgController):
             )
         elif arqs:
             LOG.info("[arqs] delete. arqs=(%s)", arqs)
-            pecan.request.conductor_api.arq_delete_by_uuid(context, arqs)
+            arqlist = arqs.split(',')
+            for arq_uuid in arqlist:
+                extarq = objects.ExtARQ.get(context, arq_uuid)
+                _check_bound_arq_service_token(context, extarq, 'delete')
+            objects.ExtARQ.delete_by_uuid(context, arqlist)
         else:  # instance is not None
             LOG.info("[arqs] delete. instance=(%s)", instance)
-            pecan.request.conductor_api.arq_delete_by_instance_uuid(
-                context, instance
-            )
+            _require_service_token(context, 'delete')
+            objects.ExtARQ.delete_by_instance(context, instance)
 
     def _validate_arq_patch(self, patch):
         """Validate a single patch for an ARQ.
@@ -393,7 +430,10 @@ class ARQsController(base.CyborgController):
         # associated with the instance specified in the binding.
         patch = list(patch_list.values())[0]
         if patch[0]['op'] == 'add':
+            _require_service_token(context, 'update')
             self._check_if_already_bound(context, valid_fields)
+        elif patch[0]['op'] == 'remove':
+            _require_service_token(context, 'update')
 
         pecan.request.conductor_api.arq_apply_patch(
             context, patch_list, valid_fields
