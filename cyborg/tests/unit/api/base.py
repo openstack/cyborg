@@ -50,12 +50,6 @@ class BaseApiTest(base.DbTestCase):
 
         self.addCleanup(reset_pecan)
 
-    def flags(self, **kw):
-        """Override flag variables for a test."""
-        group = kw.pop('group', None)
-        for k, v in kw.items():
-            cfg.CONF.set_override(k, v, group)
-
     def _make_app(self):
         # Determine where we are so we can set up paths in the config
         root_dir = self.get_path()
