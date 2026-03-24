@@ -31,6 +31,7 @@ class TestUpgradeCheckPolicyJSON(base.TestCase):
     def setUp(self):
         super().setUp()
         self.cmd = status.Checks()
+        cfg.CONF.clear_override('policy_file', group='oslo_policy')
         self.data = {'rule_admin': 'True', 'rule_admin2': 'is_admin:True'}
         self.temp_dir = self.useFixture(fixtures.TempDir())
         fd, self.json_file = tempfile.mkstemp(dir=self.temp_dir.path)
