@@ -14,12 +14,12 @@ if [ $parent_number -eq 2 ]; then
     commit_hash=$(git show --format='%P' --quiet | awk '{print $NF}')
 fi
 
-if git show --format='%aE' --quiet "${commit_hash}" | grep -qxi 'infra-root@openstack.org'; then
+if git show --format='%aE' --quiet ${commit_hash} | grep -qi 'infra-root@openstack.org'; then
     echo 'Bot generated change; ignoring'
     exit 0
 fi
 
-hashes=$(git show --format='%b' --quiet "${commit_hash}" | sed -nr 's/^.cherry picked from commit (.*).$/\1/p')
+hashes=$(git show --format='%b' --quiet ${commit_hash} | sed -nr 's/^.cherry picked from commit (.*).$/\1/p')
 checked=0
 branches+=""
 for hash in $hashes; do
@@ -40,7 +40,7 @@ if [ $checked -eq 0 ]; then
         echo "Checked $checked cherry-pick hashes: OK"
         exit 0
     else
-        if ! git show --format='%B' --quiet "${commit_hash}" | grep -qi 'stable.*only'; then
+        if ! git show --format='%B' --quiet ${commit_hash} | grep -qi 'stable.*only'; then
             echo 'Stable branch requires either cherry-pick -x headers or [stable-only] tag!'
             exit 1
         fi
