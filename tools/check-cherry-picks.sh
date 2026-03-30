@@ -1,13 +1,8 @@
-#!/bin/sh
+#!/bin/bash
 #
 # A tool to check the cherry-pick hashes from the current git commit message
-# to verify that they're all on either master or stable/ branches
+# to verify that they're all on either master, stable/ or unmaintained/ branches
 #
-
-# Allow this script to be disabled by a simple env var
-if [ ${DISABLE_CHERRY_PICK_CHECK:-0} -eq 1 ]; then
-    exit 0
-fi
 
 commit_hash=""
 
@@ -19,25 +14,33 @@ if [ $parent_number -eq 2 ]; then
     commit_hash=$(git show --format='%P' --quiet | awk '{print $NF}')
 fi
 
-hashes=$(git show --format='%b' --quiet $commit_hash | sed -nr 's/^.cherry picked from commit (.*).$/\1/p')
+if git show --format='%aE' --quiet ${commit_hash} | grep -qi 'infra-root@openstack.org'; then
+    echo 'Bot generated change; ignoring'
+    exit 0
+fi
+
+hashes=$(git show --format='%b' --quiet ${commit_hash} | sed -nr 's/^.cherry picked from commit (.*).$/\1/p')
 checked=0
 branches+=""
 for hash in $hashes; do
-    branch=$(git branch -a --contains "$hash" 2>/dev/null| grep -oE '(master|stable/[a-z]+)')
+    branch=$(git branch -a --contains "$hash" 2>/dev/null| grep -oE '(master|stable/[a-z0-9.]+|unmaintained/[a-z0-9.]+)')
     if [ $? -ne 0 ]; then
-        echo "Cherry pick hash $hash not on any master or stable branches"
-        exit 1
+        branch=$(git tag --contains "$hash" 2>/dev/null| grep -oE '([0-9.]+-eol)')
+        if [ $? -ne 0 ]; then
+            echo "Cherry pick hash $hash not on any master, stable, unmaintained or EOL'd branches"
+            exit 1
+        fi
     fi
     branches+=" $branch"
     checked=$(($checked + 1))
 done
 
 if [ $checked -eq 0 ]; then
-    if ! grep -q '^defaultbranch=stable/' .gitreview; then
+    if ! grep -qE '^defaultbranch=(stable|unmaintained)/' .gitreview; then
         echo "Checked $checked cherry-pick hashes: OK"
         exit 0
     else
-        if ! git show --format='%B' --quiet $commit_hash | grep -qi 'stable.*only'; then
+        if ! git show --format='%B' --quiet ${commit_hash} | grep -qi 'stable.*only'; then
             echo 'Stable branch requires either cherry-pick -x headers or [stable-only] tag!'
             exit 1
         fi
