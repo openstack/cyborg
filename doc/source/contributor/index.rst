@@ -25,6 +25,10 @@ Contributing
 
 * :doc:`/contributor/nvme-driver`: Cyborg NVMe driver development environment
 
+* :doc:`/contributor/tempest-testing`: Running Cyborg tempest plugin tests
+
+* :doc:`/contributor/grenade-upgrade`: Upgrade testing using grenade
+
 * :doc:`/user/using-cyborg`: Using Cyborg with instances
 
 Reviewing
@@ -52,5 +56,7 @@ Reviewing
    devstack_setup
    vm-setup
    nvme-driver
+   tempest-testing
+   grenade-upgrade
    driver-development-guide
    release-guide
