@@ -1,0 +1,45 @@
+# Sample ``local.conf`` for cyborg development
+# NOTE: Copy this file to the root DevStack directory for it to work properly.
+
+[[local|localrc]]
+
+# Passwords
+# ---------
+ADMIN_PASSWORD=password
+DATABASE_PASSWORD=$ADMIN_PASSWORD
+RABBIT_PASSWORD=$ADMIN_PASSWORD
+SERVICE_PASSWORD=$ADMIN_PASSWORD
+
+# Host
+# ----
+HOST_IP=$(hostname -I | awk '{print $1}')
+
+# Logging
+# -------
+LOGFILE=$DEST/logs/stack.sh.log
+LOGDAYS=2
+
+# Disable services not needed for Cyborg development
+# ---------------------------------------------------
+# Swift is unused by Cyborg
+disable_service swift
+# etcd is only needed by cinder backup
+disable_service etcd
+# Cinder is not required for basic Cyborg testing;
+disable_service cinder
+# Horizon is not required for Cyborg
+disable_service horizon
+
+# Enable Cyborg
+# -------------
+enable_plugin cyborg https://opendev.org/openstack/cyborg
+
+# Enable fake driver (enabled by default by cyborg plugin)
+# --------------------------------------------------------
+# CYBORG_ENABLED_DRIVERS=fake_driver
+
+# Host tuning (optional, helps on memory-constrained VMs)
+# -------------------------------------------------------
+ENABLE_SYSCTL_MEM_TUNING="True"
+ENABLE_SYSCTL_NET_TUNING="True"
+ENABLE_ZSWAP="True"

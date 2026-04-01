@@ -1,198 +1,179 @@
-====================
-DevStack Quick Start
-====================
+==============================
+DevStack Setup for Development
+==============================
 
-Create stack user (optional)
-----------------------------
+Overview
+========
 
-Devstack should be run as a non-root user with sudo enabled (standard logins to
-cloud images such as “ubuntu” or “cloud-user” are usually fine).
+This guide provides instructions for setting up a development environment for
+Cyborg using DevStack. DevStack is a set of scripts used to quickly bring up
+a complete OpenStack environment for development and testing purposes.
 
-You can quickly create a separate stack user to run DevStack with.
-
-.. code-block:: console
-
-   $ sudo useradd -s /bin/bash -d /opt/stack -m stack
-
-Since this user will be making many changes to your system, it should have sudo
-privileges:
-
-.. code-block:: console
-
-   $ echo "stack ALL=(ALL) NOPASSWD: ALL" | sudo tee /etc/sudoers.d/stack
-
-.. code-block:: console
-
-   $ sudo su - stack
+This guide covers the basic DevStack setup with the Cyborg plugin enabled.
+For advanced driver configuration and device testing, refer to the
+driver-specific documentation.
 
 Download DevStack
------------------
+=================
+
+Clone the DevStack repository:
 
 .. code-block:: console
 
    $ git clone https://opendev.org/openstack/devstack
-
-.. code-block:: console
-
    $ cd devstack
 
 The ``devstack`` repo contains a script that installs OpenStack.
 
-Create local.conf file
-----------------------
+Create stack user (optional)
+============================
 
-Create a ``local.conf`` file at the root of the devstack git repo.
-
-Host settings
->>>>>>>>>>>>>
-
-::
-
-  [[local|localrc]]
-  HOST_IP=YOUR_IP_CONFIG
-  SERVICE_HOST=$HOST_IP
-  DATABASE_TYPE=mysql
-  MYSQL_HOST=$HOST_IP
-  RABBIT_HOST=$HOST_IP
-
-- Replace YOUR_IP_CONFIG with your host IP (e.g. 10.0.0.72 or localhost).
-
-Password settings
->>>>>>>>>>>>>>>>>
-
-::
-
-  # Passwords
-  DATABASE_PASSWORD=123
-  ADMIN_PASSWORD=123
-  MYSQL_PASSWORD=123
-  RABBIT_PASSWORD=123
-  SERVICE_PASSWORD=123
-  SERVICE_TOKEN=ADMIN
-
-- Pre-set the passwords to prevent interactive prompts.
-
-Enable services
->>>>>>>>>>>>>>>
-
-::
-
-  #FIXED_RANGE=192.168.128.0/24
-  #IPV4_ADDRS_SAFE_TO_USE=192.168.128.0/24
-  #GIT_BASE=/opt/git
-  disable_service n-net
-  disable_service tempest
-  disable_service heat
-  enable_service q-svc
-  enable_service q-agt
-  enable_service q-dhcp
-  enable_service q-l3
-  enable_service q-meta
-  enable_service neutron
-  enable_service n-novnc
-  enable_plugin cyborg https://opendev.org/openstack/cyborg
-  NOVA_VNC_ENABLED=True
-  NOVNCPROXY_URL="http://$SERVICE_HOST:6080/vnc_auto.html"
-  VNCSERVER_LISTEN=0.0.0.0
-  VNCSERVER_PROXYCLIENT_ADDRESS=$SERVICE_HOST
-  RECLONE=False
-  #enable Logging
-  LOGFILE=/opt/stack/logs/stack.sh.log
-  VERBOSE=True
-  LOG_COLOR=True
-  LOGDIR=/opt/stack/logs
-
-- Uncomment GIT_BASE configuration if you have a local git repo
-
-- enable_plugin cyborg will execute cyborg/devstack/plugin.sh and start cyborg
-  service
-
-- The devstack logs will appear in $LOGDIR
+DevStack should be run as a non-root user with sudo enabled (standard logins to
+cloud images such as "ubuntu" or "cloud-user" are usually fine).
 
 .. note::
 
-  If you got version conflicts, please set ``PIP_UPGRADE`` to ``True`` in local.conf
+   Skip this step if you already have a user with passwordless sudo privileges.
 
+You can create a separate stack user to run DevStack with using the
+provided script. This will clone the current devstack code locally, then setup
+the "stack" account that devstack services will run under. Finally, it will
+move devstack into its default location in /opt/stack/devstack:
 
-Multi-Node Lab
---------------
-If you want to setup an OpenStack with cyborg in a realistic test configuration
-with multiple physical servers. Please ref [#MultiNodeLab]_.
+.. code-block:: console
 
-Cluster Controller
->>>>>>>>>>>>>>>>>>
+   $ sudo ./tools/create-stack-user.sh
+   $ cd ../..
+   $ sudo mv devstack /opt/stack
+   $ sudo chown -R stack:stack /opt/stack/devstack
 
-::
+Then switch to the stack user:
 
-  disable_service cyborg-agent
+.. code-block:: console
 
-Compute Nodes
->>>>>>>>>>>>>
+   $ sudo su - stack
+   $ cd /opt/stack/devstack
 
-::
+Configure local.conf
+====================
 
-  enable_service cyborg-agent
-  disable_service cyborg-api
-  disable_service cyborg-cond
+Create a ``local.conf`` file at the root of the devstack git repo. You can
+use the sample configuration template provided in the Cyborg repository as
+a starting point.
 
-- If you do not want to setup cyborg-agent on controller, you can disable it.
-- You do not need to enable cyborg-api and cyborg-cond on compute nodes.
+.. code-block:: console
 
-Testing with unmerged changes
->>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+   $ cp <cyborg-repo>/devstack/local-conf local.conf
 
-To test with changes that have not been merged, the enable_plugin
-line can be modified to specify the branch/reference to be cloned.
+The minimal configuration required to enable Cyborg is:
 
-::
+.. code-block:: ini
 
-  enable_plugin cyborg https://review.opendev.org/openstack/cyborg refs/changes/28/708728/1
+   [[local|localrc]]
+   enable_plugin cyborg https://opendev.org/openstack/cyborg
 
-the format is
+The sample ``local.conf`` file in the Cyborg repository includes additional
+optional configurations such as service management, logging settings, and
+host tuning options for memory-constrained environments.
 
-::
-
-  enable_plugin <directory name> <git repo url> <change/revision>
-
-
-Cell V2 Deployment
->>>>>>>>>>>>>>>>>>
-
-Compute node services must be mapped to a cell before they can be used.
-Cell V2 deployment, please ref [#CellV2]_.
+Edit the ``local.conf`` file as needed for your environment, particularly
+the password settings and host IP configuration.
 
 Run DevStack
-------------
+============
 
 .. code-block:: console
 
    $ ./stack.sh
 
-This will take a 30-40 minutes, largely depending on the speed of your internet
-connection. Many git trees and packages will be installed during this process.
+Verify Cyborg Services
+======================
 
-It will speed up your installation if you have a local GIT_BASE.
+After DevStack completes successfully, check for openstack accelerator devices:
 
-Use OpenStack
+.. code-block:: console
+
+   $ source openrc admin admin
+   $ openstack accelerator device list
+
+You can view Cyborg service logs using journalctl:
+
+.. code-block:: console
+
+   $ journalctl -u devstack@cyborg-api
+   $ journalctl -u devstack@cyborg-cond
+   $ journalctl -u devstack@cyborg-agent
+
+Managing Cyborg Services
+========================
+
+During development, you may need to restart Cyborg services after making
+code changes:
+
+.. code-block:: console
+
+   $ sudo systemctl restart devstack@cyborg-api
+   $ sudo systemctl restart devstack@cyborg-cond
+   $ sudo systemctl restart devstack@cyborg-agent
+
+Multi-Node Lab
+==============
+
+If you want to set up OpenStack with Cyborg in a realistic test configuration
+with multiple physical servers, please refer to [#MultiNodeLab]_.
+
+Controller node
+---------------
+
+On the controller node, disable the Cyborg agent service:
+
+.. code-block:: ini
+
+   [[local|localrc]]
+   disable_service cyborg-agent
+
+Compute Nodes
 -------------
 
-Command line
->>>>>>>>>>>>
+On compute nodes, enable the Cyborg agent and disable API and conductor
+services:
 
-You can ``source openrc YOUR_USER YOUR_USER (e.g. source openrc admin admin)``
-in your shell, and then use the ``openstack`` command line tool to manage your
-devstack.
+.. code-block:: ini
 
-Horizon
->>>>>>>
+   [[local|localrc]]
+   enable_service cyborg-agent
+   disable_service cyborg-api
+   disable_service cyborg-cond
 
-You can access horizon to experience the web interface to OpenStack, and manage
-vms, networks, volumes, and images from there.
+- If you do not want to run cyborg-agent on the controller, you can disable it.
+- You do not need to enable cyborg-api and cyborg-cond on compute nodes.
+
+Testing with unmerged changes
+=============================
+
+To test with changes that have not been merged, the enable_plugin
+line can be modified to specify the branch/reference to be cloned.
+
+.. code-block:: ini
+
+   enable_plugin cyborg https://review.opendev.org/openstack/cyborg refs/changes/28/708728/1
+
+The format is:
+
+.. code-block:: ini
+
+   enable_plugin <directory name> <git repo url> <change/revision>
+
+Cell V2 Deployment
+==================
+
+Compute node services must be mapped to a cell before they can be used.
+For Cell V2 deployment, please refer to [#CellV2]_.
 
 References
 ==========
 
-.. [#MultiNodeLab] `Openstack Multi-Node Lab Setup
-  <https://docs.openstack.org/devstack/latest/guides/multinode-lab.html>`_
-.. [#CellV2] `Openstack Cell V2 Deployment Guide
-  <https://docs.openstack.org/nova/latest/user/cells.html>`_
+.. [#MultiNodeLab] `OpenStack Multi-Node Lab Setup
+   <https://docs.openstack.org/devstack/latest/guides/multinode-lab.html>`_
+.. [#CellV2] `OpenStack Cell V2 Deployment Guide
+   <https://docs.openstack.org/nova/latest/user/cells.html>`_

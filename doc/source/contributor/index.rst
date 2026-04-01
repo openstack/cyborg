@@ -25,7 +25,8 @@ Reviewing
 * :doc:`/contributor/releasenotes`: When we need a release note for a
   contribution.
 
-* :doc:`/contributor/devstack_setup`: Guidelines for handling setup devstack
+* :doc:`/contributor/devstack_setup`: DevStack setup guide for Cyborg
+  development
 
 * :doc:`/contributor/driver-development-guide`: Get your driver development
   guide to contribute
