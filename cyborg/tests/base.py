@@ -62,6 +62,12 @@ class TestCase(base.BaseTestCase):
         """Override config options for a test."""
         self.cfg_fixture.config(**kw)
 
+    def flags(self, **kw):
+        """Override flag variables for a test."""
+        group = kw.pop('group', None)
+        for k, v in kw.items():
+            cfg.CONF.set_override(k, v, group)
+
     def set_defaults(self, **kw):
         """Set default values of config options."""
         group = kw.pop('group', None)
