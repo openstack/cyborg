@@ -1,0 +1,11 @@
+# Register Cyborg with Grenade and include its DB in the saved state for upgrade.
+register_project_for_upgrade cyborg
+register_db_to_save cyborg
+
+# Enable the Cyborg DevStack plugin on base (pinned branch) and target (current tree).
+devstack_localrc base enable_plugin cyborg https://opendev.org/openstack/cyborg $BASE_DEVSTACK_BRANCH
+devstack_localrc target enable_plugin cyborg https://opendev.org/openstack/cyborg
+
+# Start Cyborg API, conductor, and agent on both base and target stacks.
+devstack_localrc base enable_service cyborg-api cyborg-cond cyborg-agent
+devstack_localrc target enable_service cyborg-api cyborg-cond cyborg-agent
