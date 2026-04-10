@@ -57,3 +57,11 @@ repos:
     rev: v1.1.2
     hooks:
       - id: doc8
+  - repo: https://opendev.org/openstack/bashate
+    rev: 2.1.1
+    hooks:
+      - id: bashate
+        description: This hook runs bashate for linting shell scripts
+        types: [shell]
+        entry: bashate
+        files: ^(devstack|pci-sim)/

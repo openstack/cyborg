@@ -38,31 +38,31 @@ fi
 msg() { echo "== $* =="; }
 
 sysfs_write() {
-	local value=$1 path=$2
+    local value=$1 path=$2
 
-	[ -e "$path" ] || return 0
-	printf '%s\n' "$value" | $SUDO tee "$path" >/dev/null
+    [ -e "$path" ] || return 0
+    printf '%s\n' "$value" | $SUDO tee "$path" >/dev/null
 }
 
 find_fake_devs() {
-	local device=$1 d
+    local device=$1 d
 
-	for d in /sys/bus/pci/devices/*; do
-		[ "$(cat "$d/vendor" 2>/dev/null || true)" = "$VENDOR" ] || continue
-		[ "$(cat "$d/device" 2>/dev/null || true)" = "$device" ] || continue
-		basename "$d"
-	done | sort
+    for d in /sys/bus/pci/devices/*; do
+        [ "$(cat "$d/vendor" 2>/dev/null || true)" = "$VENDOR" ] || continue
+        [ "$(cat "$d/device" 2>/dev/null || true)" = "$device" ] || continue
+        basename "$d"
+    done | sort
 }
 
 unbind_dev() {
-	local dev=$1 base=/sys/bus/pci/devices/$1
+    local dev=$1 base=/sys/bus/pci/devices/$1
 
-	if [ -e "$base/driver/unbind" ]; then
-		msg "unbind $dev from $(basename "$(readlink -f "$base/driver")")"
-		sysfs_write "$dev" "$base/driver/unbind"
-	fi
+    if [ -e "$base/driver/unbind" ]; then
+        msg "unbind $dev from $(basename "$(readlink -f "$base/driver")")"
+        sysfs_write "$dev" "$base/driver/unbind"
+    fi
 
-	sysfs_write '' "$base/driver_override"
+    sysfs_write '' "$base/driver_override"
 }
 
 msg "preflight"
@@ -70,23 +70,23 @@ $SUDO true
 
 msg "unbind fake VFs"
 for vf in $(find_fake_devs "$VF_DEVICE"); do
-	unbind_dev "$vf" || true
+    unbind_dev "$vf" || true
 done
 
 msg "disable SR-IOV on fake PFs"
 for pf in $(find_fake_devs "$PF_DEVICE"); do
-	sysfs_write 0 "/sys/bus/pci/devices/$pf/sriov_numvfs" || true
+    sysfs_write 0 "/sys/bus/pci/devices/$pf/sriov_numvfs" || true
 done
 
 msg "remove fake PFs"
 for pf in $(find_fake_devs "$PF_DEVICE"); do
-	unbind_dev "$pf" || true
-	sysfs_write 1 "/sys/bus/pci/devices/$pf/remove" || true
+    unbind_dev "$pf" || true
+    sysfs_write 1 "/sys/bus/pci/devices/$pf/remove" || true
 done
 
 if [ "$RMMOD" = 1 ] && grep -q "^$MODULE_NAME " /proc/modules; then
-	msg "rmmod $MODULE_NAME"
-	$SUDO rmmod "$MODULE_NAME"
+    msg "rmmod $MODULE_NAME"
+    $SUDO rmmod "$MODULE_NAME"
 fi
 
 msg "remaining fake devices"

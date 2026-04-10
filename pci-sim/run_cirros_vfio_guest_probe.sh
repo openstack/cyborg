@@ -32,14 +32,15 @@ MODULE=${MODULE:-./fake_pci_sriov.ko}
 MODULE_ARGS=${MODULE_ARGS:-}
 RELOAD_MODULE=${RELOAD_MODULE:-1}
 if [ -z "${QEMU_BIN:-}" ]; then
-	if command -v qemu-system-x86_64 >/dev/null 2>&1; then
-		QEMU_BIN=qemu-system-x86_64
-	else
-		QEMU_BIN=/usr/libexec/qemu-kvm
-	fi
+    if command -v qemu-system-x86_64 >/dev/null 2>&1; then
+        QEMU_BIN=qemu-system-x86_64
+    else
+        QEMU_BIN=/usr/libexec/qemu-kvm
+    fi
 fi
 IMAGE=${IMAGE:-/tmp/cirros-0.6.3-x86_64-disk.img}
-IMAGE_URL=${IMAGE_URL:-https://github.com/cirros-dev/cirros/releases/download/0.6.3/cirros-0.6.3-x86_64-disk.img}
+IMAGE_URL=${IMAGE_URL:-https://github.com/cirros-dev/cirros/\
+releases/download/0.6.3/cirros-0.6.3-x86_64-disk.img}
 VENDOR=${VENDOR:-0x1d55}
 PF_DEVICE=${PF_DEVICE:-0x1000}
 VF_DEVICE=${VF_DEVICE:-0x1001}
@@ -52,33 +53,36 @@ exec > >(tee -a "$LOG") 2>&1
 msg() { echo "== $* =="; }
 
 find_dev() {
-	local device=$1
-	local d
+    local device=$1
+    local d
 
-	for d in /sys/bus/pci/devices/*; do
-		[ "$(cat "$d/vendor" 2>/dev/null || true)" = "$VENDOR" ] || continue
-		[ "$(cat "$d/device" 2>/dev/null || true)" = "$device" ] || continue
-		basename "$d"
-		return 0
-	done
-	return 1
+    for d in /sys/bus/pci/devices/*; do
+        [ "$(cat "$d/vendor" 2>/dev/null || true)" = "$VENDOR" ] || continue
+        [ "$(cat "$d/device" 2>/dev/null || true)" = "$device" ] || continue
+        basename "$d"
+        return 0
+    done
+    return 1
 }
 
 PF=""
 VF=""
 cleanup() {
-	set +e
-	msg cleanup
-	if [ -n "${VF:-}" ] && [ -e "/sys/bus/pci/devices/$VF" ]; then
-		if [ -e "/sys/bus/pci/devices/$VF/driver/unbind" ]; then
-			echo "$VF" | sudo -n tee "/sys/bus/pci/devices/$VF/driver/unbind" >/dev/null
-		fi
-		echo '' | sudo -n tee "/sys/bus/pci/devices/$VF/driver_override" >/dev/null
-	fi
-	if [ -n "${PF:-}" ] && [ -e "/sys/bus/pci/devices/$PF/sriov_numvfs" ]; then
-		echo 0 | sudo -n tee "/sys/bus/pci/devices/$PF/sriov_numvfs" >/dev/null
-	fi
-	msg "log saved to $LOG"
+    set +e
+    msg cleanup
+    if [ -n "${VF:-}" ] && [ -e "/sys/bus/pci/devices/$VF" ]; then
+        if [ -e "/sys/bus/pci/devices/$VF/driver/unbind" ]; then
+            echo "$VF" | sudo -n tee \
+                "/sys/bus/pci/devices/$VF/driver/unbind" >/dev/null
+        fi
+        echo '' | sudo -n tee \
+            "/sys/bus/pci/devices/$VF/driver_override" >/dev/null
+    fi
+    if [ -n "${PF:-}" ] && \
+       [ -e "/sys/bus/pci/devices/$PF/sriov_numvfs" ]; then
+        echo 0 | sudo -n tee "/sys/bus/pci/devices/$PF/sriov_numvfs" >/dev/null
+    fi
+    msg "log saved to $LOG"
 }
 trap cleanup EXIT
 
@@ -92,24 +96,25 @@ sudo -n true
 
 msg "ensure CirrOS image"
 if [ ! -s "$IMAGE" ]; then
-	timeout 180s curl -L --fail --connect-timeout 20 \
-		-o "$IMAGE.tmp" "$IMAGE_URL"
-	mv "$IMAGE.tmp" "$IMAGE"
+    timeout 180s curl -L --fail --connect-timeout 20 \
+        -o "$IMAGE.tmp" "$IMAGE_URL"
+    mv "$IMAGE.tmp" "$IMAGE"
 fi
 
 msg "prepare VFIO and fake PCI module"
 sudo -n modprobe vfio-pci
 if grep -q '^fake_pci_sriov ' /proc/modules && [ "$RELOAD_MODULE" = 1 ]; then
-	old_pf=$(find_dev "$PF_DEVICE" || true)
-	if [ -n "$old_pf" ]; then
-		echo 1 | sudo -n tee "/sys/bus/pci/devices/$old_pf/remove" >/dev/null || true
-	fi
-	sudo -n rmmod fake_pci_sriov || true
+    old_pf=$(find_dev "$PF_DEVICE" || true)
+    if [ -n "$old_pf" ]; then
+        echo 1 | sudo -n tee \
+            "/sys/bus/pci/devices/$old_pf/remove" >/dev/null || true
+    fi
+    sudo -n rmmod fake_pci_sriov || true
 fi
 if ! grep -q '^fake_pci_sriov ' /proc/modules; then
-	msg "insmod $MODULE $MODULE_ARGS"
-	# shellcheck disable=SC2086
-	sudo -n insmod "$MODULE" $MODULE_ARGS
+    msg "insmod $MODULE $MODULE_ARGS"
+    # shellcheck disable=SC2086
+    sudo -n insmod "$MODULE" $MODULE_ARGS
 fi
 
 msg "create one VF"
@@ -123,13 +128,16 @@ msg "VF=$VF"
 
 msg "bind VF to pci_sim_vfio_pci"
 if [ -e /sys/module/vfio_iommu_type1/parameters/allow_unsafe_interrupts ]; then
-	echo Y | sudo -n tee \
-		/sys/module/vfio_iommu_type1/parameters/allow_unsafe_interrupts >/dev/null
+    echo Y | sudo -n tee \
+        /sys/module/vfio_iommu_type1/parameters/allow_unsafe_interrupts \
+        >/dev/null
 fi
 if [ -e "/sys/bus/pci/devices/$VF/driver/unbind" ]; then
-	echo "$VF" | sudo -n tee "/sys/bus/pci/devices/$VF/driver/unbind" >/dev/null
+    echo "$VF" | sudo -n tee \
+        "/sys/bus/pci/devices/$VF/driver/unbind" >/dev/null
 fi
-echo pci_sim_vfio_pci | sudo -n tee "/sys/bus/pci/devices/$VF/driver_override" >/dev/null
+echo pci_sim_vfio_pci | sudo -n tee \
+    "/sys/bus/pci/devices/$VF/driver_override" >/dev/null
 echo "$VF" | sudo -n tee /sys/bus/pci/drivers_probe >/dev/null
 readlink -f "/sys/bus/pci/devices/$VF/driver"
 
