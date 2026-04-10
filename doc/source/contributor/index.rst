@@ -28,6 +28,8 @@ Reviewing
 * :doc:`/contributor/devstack_setup`: DevStack setup guide for Cyborg
   development
 
+* :doc:`/contributor/vm-setup`: Creating development VMs for testing
+
 * :doc:`/contributor/driver-development-guide`: Get your driver development
   guide to contribute
 
@@ -41,5 +43,6 @@ Reviewing
    microversions
    releasenotes
    devstack_setup
+   vm-setup
    driver-development-guide
    release-guide
