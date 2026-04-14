@@ -135,6 +135,15 @@ function configure_cyborg_common {
 function configure_cyborg_agent {
     # set up drivers / hardware types
     iniset $CYBORG_CONF_FILE agent enabled_drivers $CYBORG_ENABLED_DRIVERS
+
+    # Configure placement client auth for multinode deployments
+    configure_keystoneauth $CYBORG_CONF_FILE placement placement
+
+    # Add retries so that placement registers the resource provider
+    # Set higher than the default (3) because in CI the subnode agent
+    # starts before nova-compute has registered its resource provider
+    # with Placement. 6 retries gives ~63s of tolerance (1+2+4+8+16+32).
+    iniset $CYBORG_CONF_FILE agent resource_provider_startup_retries 6
 }
 
 # configure_cyborg_api() - Is used by configure_cyborg(). Performs
@@ -165,18 +174,6 @@ function configure_auth_for {
     iniset $CYBORG_CONF_FILE $service_config_section cafile $SSL_BUNDLE_FILE
 }
 
-function configure_cyborg_other_client_section {
-    # $1 can be nova placement or other.
-    local section=$1
-    iniset $CYBORG_CONF_FILE $section auth_type "password"
-    iniset $CYBORG_CONF_FILE $section auth_url "$KEYSTONE_SERVICE_URI"
-    iniset $CYBORG_CONF_FILE $section username $section
-    iniset $CYBORG_CONF_FILE $section password "$SERVICE_PASSWORD"
-    iniset $CYBORG_CONF_FILE $section user_domain_name "$SERVICE_DOMAIN_NAME"
-    iniset $CYBORG_CONF_FILE $section project_name "$SERVICE_TENANT_NAME"
-    iniset $CYBORG_CONF_FILE $section project_domain_name "$SERVICE_DOMAIN_NAME"
-}
-
 # configure_cyborg_conductor() - Is used by configure_cyborg().
 # Sets conductor specific settings.
 function configure_cyborg_conductor {
@@ -186,8 +183,8 @@ function configure_cyborg_conductor {
 
     # this one is needed for lookup of Cyborg API endpoint via Keystone
     configure_auth_for service_catalog
-    configure_cyborg_other_client_section nova
-    configure_cyborg_other_client_section placement
+    configure_keystoneauth $CYBORG_CONF_FILE nova nova
+    configure_keystoneauth $CYBORG_CONF_FILE placement placement
 
     # NOTE(sean-k-mooney) it is not obvious why this is in the conductor
     # section or what sets is_deployed_by_agent so this should either be
