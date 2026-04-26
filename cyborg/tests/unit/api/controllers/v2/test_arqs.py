@@ -243,20 +243,25 @@ class TestARQsController(v2_test.APITestV2):
             "Device Profile not found with "
             "name=wrong_device_profile_name", exc.args[0])
 
-    @mock.patch('cyborg.conductor.rpcapi.ConductorAPI.arq_delete_by_uuid')
-    @mock.patch('cyborg.conductor.rpcapi.ConductorAPI.'
-                'arq_delete_by_instance_uuid')
-    def test_delete(self, mock_by_inst, mock_by_arq):
+    @mock.patch('cyborg.objects.ExtARQ.delete_by_uuid')
+    @mock.patch('cyborg.objects.ExtARQ.get')
+    @mock.patch('cyborg.common.service_token_utils.is_service_request')
+    def test_delete_by_arq(self, mock_is_svc, mock_get, mock_delete):
+        mock_is_svc.return_value = True
         url = self.ARQ_URL
         arq = self.fake_extarqs[0].arq
-        instance = arq.instance_uuid
-
-        mock_by_arq.return_value = None
+        mock_get.return_value = self.fake_extarqs[0]
         args = '?' + "arqs=" + str(arq['uuid'])
         response = self.delete(url + args, headers=self.headers)
         self.assertEqual(HTTPStatus.NO_CONTENT, response.status_int)
 
-        mock_by_inst.return_value = None
+    @mock.patch('cyborg.objects.ExtARQ.delete_by_instance')
+    @mock.patch('cyborg.common.service_token_utils.is_service_request')
+    def test_delete_by_instance(self, mock_is_svc, mock_delete):
+        mock_is_svc.return_value = True
+        url = self.ARQ_URL
+        arq = self.fake_extarqs[0].arq
+        instance = arq.instance_uuid
         args = '?' + "instance=" + instance
         response = self.delete(url + args, headers=self.headers)
         self.assertEqual(HTTPStatus.NO_CONTENT, response.status_int)
@@ -278,10 +283,16 @@ class TestARQsController(v2_test.APITestV2):
         # now, improve this case with assertRaises later.
         self.assertIn("Bad response: 403 Forbidden", exc.args[0])
 
+    @mock.patch(
+        'cyborg.api.controllers.v2.arqs.service_token_utils.is_service_request'
+    )
     @mock.patch.object(arqs.ARQsController, '_check_if_already_bound')
     @mock.patch('cyborg.conductor.rpcapi.ConductorAPI.arq_apply_patch')
-    def test_apply_patch(self, mock_apply_patch, mock_check_if_bound):
+    def test_apply_patch(
+        self, mock_apply_patch, mock_check_if_bound, mock_is_svc
+    ):
         """Test the happy path for ARQ bind (patch)."""
+        mock_is_svc.return_value = True
         patch_list, device_rp_uuid = fake_extarq.get_patch_list()
         arq_uuids = list(patch_list.keys())
         obj_extarq = self.fake_extarqs[0]
@@ -302,10 +313,15 @@ class TestARQsController(v2_test.APITestV2):
                                                  valid_fields)
         mock_check_if_bound.assert_called_once_with(mock.ANY, valid_fields)
 
+    @mock.patch(
+        'cyborg.api.controllers.v2.arqs.service_token_utils.is_service_request'
+    )
     @mock.patch.object(arqs.ARQsController, '_check_if_already_bound')
     @mock.patch('cyborg.conductor.rpcapi.ConductorAPI.arq_apply_patch')
     def test_apply_patch_allow_project_id(
-            self, mock_apply_patch, mock_check_if_bound):
+        self, mock_apply_patch, mock_check_if_bound, mock_is_svc
+    ):
+        mock_is_svc.return_value = True
         patch_list, _ = fake_extarq.get_patch_list()
         explicit_pid = str(uuids.explicit_project)
         for arq_uuid, patch in patch_list.items():
@@ -653,3 +669,268 @@ class TestARQProjectIsolation(v2_test.APITestV2):
         uuid = extarq.arq['uuid']
         out = self.get_json(self.ARQ_URL + '/%s' % uuid, headers=headers)
         self.assertEqual(uuid, out['uuid'])
+
+
+class TestARQServiceTokenProtection(v2_test.APITestV2):
+    """Tests for Bug #2144056: service token requirement for bound ARQs.
+
+    Binding (add), unbinding (remove), and deleting a bound ARQ all
+    require a service token so that only Nova can perform these
+    operations on behalf of the user.
+    """
+
+    ARQ_URL = '/accelerator_requests'
+
+    def setUp(self):
+        super().setUp()
+        resolved = fake_extarq.get_fake_extarq_resolved_objs()
+        self.unbound_extarq = resolved[0]
+        self.bound_extarq = resolved[1]
+
+    def _member_headers(self):
+        headers = self.gen_headers(
+            cyborg_context.RequestContext(
+                user_id=str(uuids.member_user),
+                project_id=str(uuids.member_project),
+                is_admin=False,
+            )
+        )
+        headers['X-Roles'] = 'member'
+        return headers
+
+    def _service_token_headers(self):
+        headers = self._member_headers()
+        headers['X-Service-Roles'] = 'service'
+        headers['X-Service-Token'] = 'fake-service-token'
+        return headers
+
+    # -- DELETE tests ------------------------------------------------
+
+    @mock.patch('cyborg.objects.ExtARQ.delete_by_uuid')
+    @mock.patch('cyborg.objects.ExtARQ.get')
+    def test_delete_bound_arq_without_service_token_rejected(
+        self, mock_get, mock_delete
+    ):
+        mock_get.return_value = self.bound_extarq
+        headers = self._member_headers()
+        uuid = self.bound_extarq.arq['uuid']
+        response = self.delete(
+            self.ARQ_URL + '?arqs=%s' % uuid,
+            headers=headers,
+            expect_errors=True,
+        )
+        self.assertEqual(HTTPStatus.FORBIDDEN, response.status_int)
+        mock_delete.assert_not_called()
+
+    @mock.patch('cyborg.objects.ExtARQ.delete_by_uuid')
+    @mock.patch('cyborg.objects.ExtARQ.get')
+    def test_delete_bound_arq_with_service_token_succeeds(
+        self, mock_get, mock_delete
+    ):
+        mock_get.return_value = self.bound_extarq
+        headers = self._service_token_headers()
+        uuid = self.bound_extarq.arq['uuid']
+        response = self.delete(
+            self.ARQ_URL + '?arqs=%s' % uuid,
+            headers=headers,
+            expect_errors=True,
+        )
+        self.assertEqual(204, response.status_int)
+
+    @mock.patch('cyborg.objects.ExtARQ.delete_by_uuid')
+    @mock.patch('cyborg.objects.ExtARQ.get')
+    def test_delete_unbound_arq_without_service_token_succeeds(
+        self, mock_get, mock_delete
+    ):
+        mock_get.return_value = self.unbound_extarq
+        headers = self._member_headers()
+        uuid = self.unbound_extarq.arq['uuid']
+        response = self.delete(
+            self.ARQ_URL + '?arqs=%s' % uuid,
+            headers=headers,
+            expect_errors=True,
+        )
+        self.assertEqual(204, response.status_int)
+
+    @mock.patch('cyborg.objects.ExtARQ.delete_by_instance')
+    def test_delete_by_instance_without_service_token_rejected(
+        self, mock_delete
+    ):
+        headers = self._member_headers()
+        response = self.delete(
+            self.ARQ_URL + '?instance=%s' % str(uuids.instance1),
+            headers=headers,
+            expect_errors=True,
+        )
+        self.assertEqual(HTTPStatus.FORBIDDEN, response.status_int)
+        mock_delete.assert_not_called()
+
+    @mock.patch('cyborg.objects.ExtARQ.delete_by_instance')
+    def test_delete_by_instance_with_service_token_succeeds(self, mock_delete):
+        headers = self._service_token_headers()
+        response = self.delete(
+            self.ARQ_URL + '?instance=%s' % str(uuids.instance1),
+            headers=headers,
+            expect_errors=True,
+        )
+        self.assertEqual(204, response.status_int)
+
+    @mock.patch('cyborg.common.service_token_utils.is_service_request')
+    @mock.patch('cyborg.objects.ExtARQ.delete_by_instance')
+    def test_service_token_check_not_bypassable_by_policy(
+        self, mock_delete, mock_is_service
+    ):
+        """Even with admin role, bound ARQ delete requires service token."""
+        mock_is_service.return_value = False
+        headers = self.gen_headers(self.context)
+        response = self.delete(
+            self.ARQ_URL + '?instance=%s' % str(uuids.instance1),
+            headers=headers,
+            expect_errors=True,
+        )
+        self.assertEqual(HTTPStatus.FORBIDDEN, response.status_int)
+        mock_delete.assert_not_called()
+
+    # -- PATCH (bind / unbind) tests ---------------------------------
+
+    @mock.patch(
+        'cyborg.api.controllers.v2.arqs.ARQsController._validate_arq_patch'
+    )
+    @mock.patch('cyborg.conductor.rpcapi.ConductorAPI.arq_apply_patch')
+    def test_bind_without_service_token_rejected(
+        self, mock_apply, mock_validate
+    ):
+        """Binding (setting instance_uuid) requires a service token."""
+        mock_validate.return_value = {
+            'hostname': 'fake-host',
+            'device_rp_uuid': str(uuids.device_rp),
+            'instance_uuid': str(uuids.instance1),
+        }
+        arq_uuid = self.unbound_extarq.arq['uuid']
+        patch_list = {
+            arq_uuid: [
+                {'path': '/hostname', 'op': 'add', 'value': 'fake-host'},
+                {
+                    'path': '/device_rp_uuid',
+                    'op': 'add',
+                    'value': str(uuids.device_rp),
+                },
+                {
+                    'path': '/instance_uuid',
+                    'op': 'add',
+                    'value': str(uuids.instance1),
+                },
+            ]
+        }
+        headers = self._member_headers()
+        headers['Content-Type'] = 'application/json'
+        response = self.patch_json(
+            self.ARQ_URL,
+            params=patch_list,
+            headers=headers,
+            expect_errors=True,
+        )
+        self.assertEqual(HTTPStatus.FORBIDDEN, response.status_int)
+        mock_apply.assert_not_called()
+
+    @mock.patch(
+        'cyborg.api.controllers.v2.arqs.ARQsController._check_if_already_bound'
+    )
+    @mock.patch(
+        'cyborg.api.controllers.v2.arqs.ARQsController._validate_arq_patch'
+    )
+    @mock.patch('cyborg.conductor.rpcapi.ConductorAPI.arq_apply_patch')
+    def test_bind_with_service_token_succeeds(
+        self, mock_apply, mock_validate, mock_check_bound
+    ):
+        mock_validate.return_value = {
+            'hostname': 'fake-host',
+            'device_rp_uuid': str(uuids.device_rp),
+            'instance_uuid': str(uuids.instance1),
+        }
+        arq_uuid = self.unbound_extarq.arq['uuid']
+        patch_list = {
+            arq_uuid: [
+                {'path': '/hostname', 'op': 'add', 'value': 'fake-host'},
+                {
+                    'path': '/device_rp_uuid',
+                    'op': 'add',
+                    'value': str(uuids.device_rp),
+                },
+                {
+                    'path': '/instance_uuid',
+                    'op': 'add',
+                    'value': str(uuids.instance1),
+                },
+            ]
+        }
+        headers = self._service_token_headers()
+        headers['Content-Type'] = 'application/json'
+        response = self.patch_json(
+            self.ARQ_URL,
+            params=patch_list,
+            headers=headers,
+            expect_errors=True,
+        )
+        self.assertEqual(202, response.status_int)
+
+    @mock.patch(
+        'cyborg.api.controllers.v2.arqs.ARQsController._validate_arq_patch'
+    )
+    @mock.patch('cyborg.conductor.rpcapi.ConductorAPI.arq_apply_patch')
+    def test_unbind_without_service_token_rejected(
+        self, mock_apply, mock_validate
+    ):
+        mock_validate.return_value = {
+            'hostname': None,
+            'device_rp_uuid': None,
+            'instance_uuid': None,
+        }
+        arq_uuid = self.bound_extarq.arq['uuid']
+        patch_list = {
+            arq_uuid: [
+                {'path': '/hostname', 'op': 'remove', 'value': ''},
+                {'path': '/device_rp_uuid', 'op': 'remove', 'value': ''},
+                {'path': '/instance_uuid', 'op': 'remove', 'value': ''},
+            ]
+        }
+        headers = self._member_headers()
+        headers['Content-Type'] = 'application/json'
+        response = self.patch_json(
+            self.ARQ_URL,
+            params=patch_list,
+            headers=headers,
+            expect_errors=True,
+        )
+        self.assertEqual(HTTPStatus.FORBIDDEN, response.status_int)
+        mock_apply.assert_not_called()
+
+    @mock.patch(
+        'cyborg.api.controllers.v2.arqs.ARQsController._validate_arq_patch'
+    )
+    @mock.patch('cyborg.conductor.rpcapi.ConductorAPI.arq_apply_patch')
+    def test_unbind_with_service_token_succeeds(
+        self, mock_apply, mock_validate
+    ):
+        mock_validate.return_value = {
+            'hostname': None,
+            'device_rp_uuid': None,
+            'instance_uuid': None,
+        }
+        arq_uuid = self.bound_extarq.arq['uuid']
+        patch_list = {
+            arq_uuid: [
+                {'path': '/hostname', 'op': 'remove', 'value': ''},
+                {'path': '/device_rp_uuid', 'op': 'remove', 'value': ''},
+                {'path': '/instance_uuid', 'op': 'remove', 'value': ''},
+            ]
+        }
+        headers = self._service_token_headers()
+        headers['Content-Type'] = 'application/json'
+        response = self.patch_json(
+            self.ARQ_URL,
+            params=patch_list,
+            headers=headers,
+            expect_errors=True,
+        )
+        self.assertEqual(202, response.status_int)
