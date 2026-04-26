@@ -21,6 +21,9 @@ from cyborg import version
 
 def parse_args(argv, default_config_files=None):
     rpc.set_defaults(control_exchange='cyborg')
+    cfg.CONF.set_default(
+        'service_token_roles_required', True, group='keystone_authtoken'
+    )
     version_string = version.version_info.release_string()
     cfg.CONF(argv[1:],
              project='cyborg',
