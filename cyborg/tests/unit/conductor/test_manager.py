@@ -154,3 +154,19 @@ class ConductorManagerTest(base.TestCase):
 
         mock_destroy_driver_deployable.assert_called_once()
         mock_placement_delete.assert_called_once()
+
+    @mock.patch(
+        'cyborg.common.data_migrations.heal_arq_project_ids', autospec=True
+    )
+    def test_init_host_heals_null_project_ids(self, mock_heal):
+        mock_heal.return_value = 3
+        self.cm.init_host()
+        mock_heal.assert_called_once()
+
+    @mock.patch(
+        'cyborg.common.data_migrations.heal_arq_project_ids', autospec=True
+    )
+    def test_init_host_heal_handles_failure(self, mock_heal):
+        mock_heal.side_effect = Exception('Nova unavailable')
+        self.cm.init_host()
+        mock_heal.assert_called_once()

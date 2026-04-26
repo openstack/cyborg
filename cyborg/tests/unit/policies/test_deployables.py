@@ -63,9 +63,11 @@ class DeployablePolicyTest(base.BasePolicyTest):
         self.program_authorized_contexts = self.read_authorized_contexts
         self.program_unauthorized_contexts = self.read_unauthorized_contexts
 
+    @mock.patch('cyborg.objects.Attribute.get_by_filter', autospec=True)
     @mock.patch('cyborg.objects.Deployable.list', autospec=True)
-    def test_get_all_deployables_success(self, mock_list):
+    def test_get_all_deployables_success(self, mock_list, mock_attr):
         mock_list.return_value = [self.fake_dep]
+        mock_attr.return_value = []
         for context in self.read_authorized_contexts:
             headers = self.gen_headers(context)
             response = self.get_json(DEPLOYABLE_URL, headers=headers)

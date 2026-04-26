@@ -55,6 +55,10 @@ class AgentManager(periodic_task.PeriodicTasks):
         self.image_api = ImageAPI()
         self._rt = ResourceTracker(host, self.cond_api)
 
+    def init_host(self):
+        """Hook called by RPCService.start() after the RPC server is up."""
+        pass
+
     def periodic_tasks(self, context, raise_on_error=False):
         return self.run_periodic_tasks(context, raise_on_error=raise_on_error)
 
