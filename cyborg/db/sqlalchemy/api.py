@@ -864,37 +864,47 @@ class Connection(api.Connection):
 
     @oslo_db_api.retry_on_deadlock
     @main_context_manager.writer
-    def extarq_delete(self, context, uuid):
+    def extarq_delete(self, context, uuid, project_id=None):
         query = model_query(context, models.ExtArq)
         query = add_identity_filter(query, uuid)
+        if project_id:
+            query = query.filter_by(project_id=project_id)
         count = query.delete()
         if count != 1:
             raise exception.ResourceNotFound(
-                resource='ExtArq',
-                msg='with uuid=%s' % uuid)
+                resource='ExtArq', msg='with uuid=%s' % uuid
+            )
 
-    def extarq_update(self, context, uuid, values, state_scope=None):
+    def extarq_update(
+        self, context, uuid, values, state_scope=None, project_id=None
+    ):
         if 'uuid' in values and values['uuid'] != uuid:
             msg = _("Cannot overwrite UUID for an existing ExtArq.")
             raise exception.InvalidParameterValue(err=msg)
-        return self._do_update_extarq(context, uuid, values, state_scope)
+        return self._do_update_extarq(
+            context, uuid, values, state_scope, project_id=project_id
+        )
 
     @oslo_db_api.retry_on_deadlock
     @main_context_manager.writer
-    def _do_update_extarq(self, context, uuid, values, state_scope=None):
+    def _do_update_extarq(
+        self, context, uuid, values, state_scope=None, project_id=None
+    ):
         query = model_query(context, models.ExtArq)
-        query = query_update = query.filter_by(
-            uuid=uuid).with_for_update()
+        query = query_update = query.filter_by(uuid=uuid).with_for_update()
+        if project_id:
+            query = query.filter_by(project_id=project_id)
+            query_update = query_update.filter_by(project_id=project_id)
         if type(state_scope) is list:
             query_update = query_update.filter(
-                models.ExtArq.state.in_(state_scope))
+                models.ExtArq.state.in_(state_scope)
+            )
         try:
-            query_update.update(
-                values, synchronize_session="fetch")
+            query_update.update(values, synchronize_session="fetch")
         except NoResultFound:
             raise exception.ResourceNotFound(
-                resource='ExtArq',
-                msg='with uuid=%s' % uuid)
+                resource='ExtArq', msg='with uuid=%s' % uuid
+            )
         ref = query.first()
         return ref
 
@@ -933,11 +943,10 @@ class Connection(api.Connection):
 
     @oslo_db_api.retry_on_deadlock
     @main_context_manager.writer
-    def extarq_get(self, context, uuid, lock=False):
-        query = model_query(
-            context,
-            models.ExtArq).filter_by(uuid=uuid)
-        # NOTE we will support aync bind, so get query by lock
+    def extarq_get(self, context, uuid, lock=False, project_id=None):
+        query = model_query(context, models.ExtArq).filter_by(uuid=uuid)
+        if project_id:
+            query = query.filter_by(project_id=project_id)
         if lock:
             query = query.with_for_update()
         try:

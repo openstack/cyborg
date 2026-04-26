@@ -170,7 +170,7 @@ class ARQsController(base.CyborgController):
         LOG.info('[arqs] post returned: %s', ret)
         return ret
 
-    @authorize_wsgi.authorize_wsgi("cyborg:arq", "get_one")
+    @authorize_wsgi.authorize_wsgi("cyborg:arq", "get_one", False)
     @expose.expose(ARQ, types.uuid)
     def get_one(self, uuid):
         """Get a single ARQ by UUID."""

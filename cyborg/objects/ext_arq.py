@@ -109,7 +109,8 @@ class ExtARQ(base.CyborgObject, object_base.VersionedObjectDictCompat,
     @classmethod
     def get(cls, context, uuid, lock=False):
         """Find a DB ExtARQ and return an Obj ExtARQ."""
-        db_extarq = cls.dbapi.extarq_get(context, uuid)
+        target = {} if context.is_admin else {'project_id': context.project_id}
+        db_extarq = cls.dbapi.extarq_get(context, uuid, **target)
         obj_arq = objects.ARQ(context)
         obj_extarq = cls(context)
         obj_extarq['arq'] = obj_arq
@@ -119,9 +120,9 @@ class ExtARQ(base.CyborgObject, object_base.VersionedObjectDictCompat,
     @classmethod
     def list(cls, context, uuid_range=None):
         """Return a list of ExtARQ objects."""
-        db_extarqs = cls.dbapi.extarq_list(context, uuid_range)
-        obj_extarq_list = cls._from_db_object_list(
-            db_extarqs, context)
+        target = {} if context.is_admin else {'project_id': context.project_id}
+        db_extarqs = cls.dbapi.extarq_list(context, uuid_range, **target)
+        obj_extarq_list = cls._from_db_object_list(db_extarqs, context)
         return obj_extarq_list
 
     def save(self, context):
@@ -162,7 +163,8 @@ class ExtARQ(base.CyborgObject, object_base.VersionedObjectDictCompat,
 
     def destroy(self, context):
         """Delete an ExtARQ from the DB."""
-        self.dbapi.extarq_delete(context, self.arq.uuid)
+        target = {} if context.is_admin else {'project_id': context.project_id}
+        self.dbapi.extarq_delete(context, self.arq.uuid, **target)
         self.obj_reset_changes()
 
     @classmethod

@@ -15,6 +15,7 @@
 
 """Tests for manipulating ExtArq via the DB API"""
 
+from oslo_utils.fixture import uuidsentinel
 from oslo_utils import uuidutils
 
 from cyborg.common import exception
@@ -69,6 +70,95 @@ class TestDbExtArq(base.DbTestCase):
 
     def test_delete_by_uuid_not_exist(self):
         random_uuid = uuidutils.generate_uuid()
-        self.assertRaises(exception.ResourceNotFound,
-                          self.dbapi.extarq_delete,
-                          self.context, random_uuid)
+        self.assertRaises(
+            exception.ResourceNotFound,
+            self.dbapi.extarq_delete,
+            self.context,
+            random_uuid,
+        )
+
+    def test_get_by_uuid_with_matching_project_id(self):
+        pid = str(uuidsentinel.project_a)
+        created = utils.create_test_extarq(self.context, project_id=pid)
+        result = self.dbapi.extarq_get(
+            self.context, created['uuid'], project_id=pid
+        )
+        self.assertEqual(created['uuid'], result['uuid'])
+
+    def test_get_by_uuid_with_wrong_project_id(self):
+        pid = str(uuidsentinel.project_a)
+        other = str(uuidsentinel.project_b)
+        created = utils.create_test_extarq(self.context, project_id=pid)
+        self.assertRaises(
+            exception.ResourceNotFound,
+            self.dbapi.extarq_get,
+            self.context,
+            created['uuid'],
+            project_id=other,
+        )
+
+    def test_get_by_uuid_no_project_filter_returns_any(self):
+        pid = str(uuidsentinel.project_a)
+        created = utils.create_test_extarq(self.context, project_id=pid)
+        result = self.dbapi.extarq_get(self.context, created['uuid'])
+        self.assertEqual(created['uuid'], result['uuid'])
+
+    def test_delete_with_matching_project_id(self):
+        pid = str(uuidsentinel.project_a)
+        created = utils.create_test_extarq(self.context, project_id=pid)
+        self.dbapi.extarq_delete(self.context, created['uuid'], project_id=pid)
+        self.assertRaises(
+            exception.ResourceNotFound,
+            self.dbapi.extarq_get,
+            self.context,
+            created['uuid'],
+        )
+
+    def test_delete_with_wrong_project_id(self):
+        pid = str(uuidsentinel.project_a)
+        other = str(uuidsentinel.project_b)
+        created = utils.create_test_extarq(self.context, project_id=pid)
+        self.assertRaises(
+            exception.ResourceNotFound,
+            self.dbapi.extarq_delete,
+            self.context,
+            created['uuid'],
+            project_id=other,
+        )
+
+    def test_list_with_project_id_filter(self):
+        pid_a = str(uuidsentinel.project_a)
+        pid_b = str(uuidsentinel.project_b)
+        arq_a = utils.create_test_extarq(
+            self.context,
+            id=1,
+            uuid=uuidutils.generate_uuid(),
+            project_id=pid_a,
+        )
+        utils.create_test_extarq(
+            self.context,
+            id=2,
+            uuid=uuidutils.generate_uuid(),
+            project_id=pid_b,
+        )
+        results = self.dbapi.extarq_list(self.context, project_id=pid_a)
+        result_uuids = [r.uuid for r in results]
+        self.assertEqual([arq_a['uuid']], result_uuids)
+
+    def test_list_without_project_id_filter_returns_all(self):
+        pid_a = str(uuidsentinel.project_a)
+        pid_b = str(uuidsentinel.project_b)
+        utils.create_test_extarq(
+            self.context,
+            id=1,
+            uuid=uuidutils.generate_uuid(),
+            project_id=pid_a,
+        )
+        utils.create_test_extarq(
+            self.context,
+            id=2,
+            uuid=uuidutils.generate_uuid(),
+            project_id=pid_b,
+        )
+        results = self.dbapi.extarq_list(self.context)
+        self.assertEqual(2, len(results))

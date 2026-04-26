@@ -81,7 +81,7 @@ def create_test_device(context, **kwargs):
 
 
 def get_test_extarq(**kwargs):
-    return {
+    result = {
         'uuid': kwargs.get('uuid', '10efe63d-dfea-4a37-ad94-4116fba50986'),
         'id': kwargs.get('id', 1),
         'state': kwargs.get('state', 'Bound'),
@@ -96,6 +96,9 @@ def get_test_extarq(**kwargs):
         'created_at': kwargs.get('created_at', None),
         'updated_at': kwargs.get('updated_at', None)
     }
+    if 'project_id' in kwargs:
+        result['project_id'] = kwargs['project_id']
+    return result
 
 
 def create_test_extarq(context, **kwargs):
