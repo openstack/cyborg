@@ -23,11 +23,14 @@ from cyborg.tests.unit import policy_fixture
 
 LOG = logging.getLogger(__name__)
 
+POLICY_DENY_EXPECTED = 'Bad response: 403 Forbidden'
+
 
 class BasePolicyTest(v2_test.APITestV2):
 
     def setUp(self):
-        super(BasePolicyTest, self).setUp()
+        super().setUp()
+        self.flags(enforce_scope=True, group='oslo_policy')
         self.policy = self.useFixture(policy_fixture.PolicyFixture())
 
         self.admin_project_id = uuids.admin_project_id
