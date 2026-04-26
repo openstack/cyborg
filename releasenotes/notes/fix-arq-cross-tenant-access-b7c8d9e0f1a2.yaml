@@ -1,0 +1,35 @@
+---
+security:
+  - |
+    This issue is assigned CVE-2026-40214.
+
+    Fixed a cross-tenant access control vulnerability in accelerator
+    request (ARQ) management. The ``project_id`` field was never
+    populated on ARQ records, which meant non-admin users could list,
+    view, and delete ARQs belonging to other projects. This could
+    lead to information disclosure (leaking instance UUIDs across
+    tenants) and denial of service (deleting another tenant's ARQ
+    prevents their instance from restarting).
+
+    ARQs are now scoped to the requesting project. Non-admin users
+    can only see and manage their own project's ARQs.
+
+    Additionally, binding, unbinding, and deleting bound ARQs now
+    require a service token. Only Nova, identified by a valid
+    service token with the ``service`` role, may set or clear the
+    ``instance_uuid`` on an ARQ or delete a bound ARQ. This
+    prevents users from directly manipulating ARQs that Nova is
+    managing, following the same pattern as the Cinder
+    OSSA-2023-003 fix.
+upgrade:
+  - |
+    Nova must be configured with
+    ``[service_user] send_service_user_token = true`` for Cyborg to
+    accept bound-ARQ operations (bind, unbind, delete). This is the same
+    requirement as for Cinder volume attachments since OSSA-2023-003.
+
+    Cyborg now defaults
+    ``[keystone_authtoken] service_token_roles_required`` to ``true``
+    so that keystonemiddleware validates the service token roles.
+    Operators who have not already set this should ensure the service
+    user has the ``service`` role in Keystone.
