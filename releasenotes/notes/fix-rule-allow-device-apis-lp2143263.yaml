@@ -1,0 +1,19 @@
+---
+security:
+  - |
+    This issue is assigned CVE-2026-40213.
+
+    Replaced permissive ``rule:allow`` defaults with ``rule:admin_api`` on
+    device, deployable, and attribute API policies so authenticated
+    low-privilege users cannot read or change hardware topology and
+    management data without the admin role. System-scoped tokens are not
+    supported by Cyborg. Deployments that relied on the old
+    defaults must grant ``admin`` or define custom policy rules for these
+    APIs.
+upgrade:
+  - |
+    Cyborg API policies now declare ``scope_types=['project']`` and reject
+    Keystone system-scoped tokens via oslo.policy scope enforcement. Keep
+    ``[oslo_policy] enforce_scope=True``. Disabling it weakens project
+    isolation and is discouraged; prefer custom policy rules if you need
+    different access behavior.

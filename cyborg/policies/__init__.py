@@ -31,5 +31,4 @@ def list_policies():
         old_policy.deployable_policies,
         old_policy.attribute_policies,
         old_policy.accelerator_request_policies,
-        old_policy.fpga_policies,
     )
