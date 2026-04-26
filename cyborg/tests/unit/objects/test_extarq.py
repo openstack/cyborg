@@ -18,6 +18,7 @@ from unittest import mock
 from oslo_utils.fixture import uuidsentinel as uuids
 from testtools.matchers import HasLength
 
+from cyborg import context as cyborg_context
 from cyborg import objects
 from cyborg.common import constants
 from cyborg.common import exception
@@ -681,3 +682,93 @@ class TestExtARQProjectId(base.DbTestCase):
         extarq.start_bind_job(member_ctx, valid_fields)
 
         self.assertEqual(explicit_pid, extarq.arq.project_id)
+
+
+class TestExtARQProjectIsolation(base.DbTestCase):
+    """Tests for Bug #2144056: project-scoped access in object layer."""
+
+    def setUp(self):
+        super().setUp()
+        self.fake_obj_extarqs = fake_extarq.get_fake_extarq_objs()
+
+    def _make_member_context(self, project_id=None):
+        return cyborg_context.RequestContext(
+            user_id=str(uuids.member_user),
+            project_id=project_id or str(uuids.member_project),
+            is_admin=False,
+            roles=['member'],
+        )
+
+    def _make_admin_context(self):
+        return cyborg_context.RequestContext(
+            user_id=str(uuids.admin_user),
+            project_id=str(uuids.admin_project),
+            is_admin=True,
+            roles=['admin'],
+        )
+
+    @mock.patch('cyborg.objects.ExtARQ.dbapi')
+    def test_get_member_passes_project_id_filter(self, mock_dbapi):
+        """Non-admin get() should filter by project_id."""
+        member_ctx = self._make_member_context()
+        fake_db_extarq = self.fake_obj_extarqs[0]
+        mock_dbapi.extarq_get.return_value = fake_db_extarq
+        uuid = fake_db_extarq.arq['uuid']
+        with mock.patch.object(
+            objects.ExtARQ, '_from_db_object', return_value=fake_db_extarq
+        ):
+            objects.ExtARQ.get(member_ctx, uuid)
+        mock_dbapi.extarq_get.assert_called_once_with(
+            member_ctx, uuid, project_id=member_ctx.project_id
+        )
+
+    @mock.patch('cyborg.objects.ExtARQ.dbapi')
+    def test_get_admin_no_project_id_filter(self, mock_dbapi):
+        """Admin get() should not filter by project_id."""
+        admin_ctx = self._make_admin_context()
+        fake_db_extarq = self.fake_obj_extarqs[0]
+        mock_dbapi.extarq_get.return_value = fake_db_extarq
+        uuid = fake_db_extarq.arq['uuid']
+        with mock.patch.object(
+            objects.ExtARQ, '_from_db_object', return_value=fake_db_extarq
+        ):
+            objects.ExtARQ.get(admin_ctx, uuid)
+        mock_dbapi.extarq_get.assert_called_once_with(admin_ctx, uuid)
+
+    @mock.patch('cyborg.objects.ExtARQ.dbapi')
+    def test_destroy_member_passes_project_id_filter(self, mock_dbapi):
+        """Non-admin destroy() should filter by project_id."""
+        member_ctx = self._make_member_context()
+        extarq = self.fake_obj_extarqs[0]
+        uuid = extarq.arq['uuid']
+        extarq.destroy(member_ctx)
+        mock_dbapi.extarq_delete.assert_called_once_with(
+            member_ctx, uuid, project_id=member_ctx.project_id
+        )
+
+    @mock.patch('cyborg.objects.ExtARQ.dbapi')
+    def test_destroy_admin_no_project_id_filter(self, mock_dbapi):
+        """Admin destroy() should not filter by project_id."""
+        admin_ctx = self._make_admin_context()
+        extarq = self.fake_obj_extarqs[0]
+        uuid = extarq.arq['uuid']
+        extarq.destroy(admin_ctx)
+        mock_dbapi.extarq_delete.assert_called_once_with(admin_ctx, uuid)
+
+    @mock.patch('cyborg.objects.ExtARQ.dbapi')
+    def test_list_member_passes_project_id_filter(self, mock_dbapi):
+        """Non-admin list() should filter by project_id."""
+        member_ctx = self._make_member_context()
+        mock_dbapi.extarq_list.return_value = []
+        objects.ExtARQ.list(member_ctx)
+        mock_dbapi.extarq_list.assert_called_once_with(
+            member_ctx, None, project_id=member_ctx.project_id
+        )
+
+    @mock.patch('cyborg.objects.ExtARQ.dbapi')
+    def test_list_admin_no_project_id_filter(self, mock_dbapi):
+        """Admin list() should not filter by project_id."""
+        admin_ctx = self._make_admin_context()
+        mock_dbapi.extarq_list.return_value = []
+        objects.ExtARQ.list(admin_ctx)
+        mock_dbapi.extarq_list.assert_called_once_with(admin_ctx, None)
