@@ -32,7 +32,29 @@ def get_instance():
     return IMPL
 
 
-class Connection(object, metaclass=abc.ABCMeta):
+class _FilterSentinel:
+    """Sentinel for NULL / NOT NULL database column filters.
+
+    Use ``NULL_FILTER`` to match rows where a column IS NULL and
+    ``NOT_NULL_FILTER`` to match rows where a column IS NOT NULL,
+    distinguishing from ``None`` which means "no filter".
+    """
+
+    def __init__(self, name):
+        self._name = name
+
+    def __repr__(self):
+        return self._name
+
+    def __bool__(self):
+        return True
+
+
+NULL_FILTER = _FilterSentinel('NULL_FILTER')
+NOT_NULL_FILTER = _FilterSentinel('NOT_NULL_FILTER')
+
+
+class Connection(metaclass=abc.ABCMeta):
     """Base class for storage system connections."""
 
     @abc.abstractmethod
@@ -186,8 +208,27 @@ class Connection(object, metaclass=abc.ABCMeta):
         """Update an extarq."""
 
     @abc.abstractmethod
-    def extarq_list(self, context, uuid_range=None):
-        """Get requested list of extarqs."""
+    def extarq_list(
+        self,
+        context,
+        uuid_range=None,
+        project_id=None,
+        instance_uuid=None,
+        limit=None,
+        marker=None,
+    ):
+        """Get requested list of extarqs.
+
+        :param project_id: Filter by project_id. Pass ``NULL_FILTER``
+            to match rows where project_id IS NULL, or
+            ``NOT_NULL_FILTER`` to match IS NOT NULL.
+        :param instance_uuid: Filter by instance_uuid. Pass
+            ``NULL_FILTER`` to match rows where instance_uuid IS NULL,
+            or ``NOT_NULL_FILTER`` to match IS NOT NULL.
+        :param limit: Maximum number of rows to return.
+        :param marker: The last-seen ``id`` value; rows after this
+            marker are returned (keyset pagination).
+        """
 
     @abc.abstractmethod
     def extarq_get(self, context, uuid, lock=False):
