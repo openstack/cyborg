@@ -568,3 +568,88 @@ class TestARQProjectIdOnCreate(v2_test.APITestV2):
                 controller._validate_arq_patch,
                 patch,
             )
+
+
+class TestARQProjectIsolation(v2_test.APITestV2):
+    """Tests for Bug #2144056: project-scoped ARQ access control.
+
+    The authorize_wsgi decorator uses need_target=False for ARQ
+    endpoints because ARQsController has no _get_resource method.
+    With need_target=True and no _get_resource the policy target is
+    an empty dict, causing ``project_id:%(project_id)s`` to never
+    match — which blocks ALL non-admin users, even for their own
+    ARQs.  With need_target=False the target is populated from the
+    request context so the role check passes; cross-project
+    isolation is then enforced in the object/DB layer via
+    project_id filtering.
+    """
+
+    ARQ_URL = '/accelerator_requests'
+
+    def setUp(self):
+        super().setUp()
+        self.fake_extarqs = fake_extarq.get_fake_extarq_objs()
+
+    def _member_headers(self, project_id):
+        headers = self.gen_headers(
+            cyborg_context.RequestContext(
+                user_id=str(uuids.member_user),
+                project_id=project_id,
+                is_admin=False,
+            )
+        )
+        headers['X-Roles'] = 'member'
+        return headers
+
+    def _admin_headers(self):
+        return self.gen_headers(self.context)
+
+    @mock.patch('cyborg.objects.ExtARQ.list')
+    def test_list_as_member_returns_only_own_project(self, mock_list):
+        mock_list.return_value = self.fake_extarqs[:2]
+        headers = self._member_headers(str(uuids.project_a))
+        data = self.get_json(self.ARQ_URL, headers=headers)
+        out_arqs = data['arqs']
+        self.assertEqual(2, len(out_arqs))
+        mock_list.assert_called_once()
+
+    @mock.patch('cyborg.objects.ExtARQ.list')
+    def test_list_as_admin_returns_all_projects(self, mock_list):
+        mock_list.return_value = self.fake_extarqs
+        headers = self._admin_headers()
+        data = self.get_json(self.ARQ_URL, headers=headers)
+        out_arqs = data['arqs']
+        self.assertEqual(len(self.fake_extarqs), len(out_arqs))
+
+    @mock.patch('cyborg.objects.ExtARQ.get')
+    def test_get_one_own_project_succeeds(self, mock_get):
+        extarq = self.fake_extarqs[0]
+        mock_get.return_value = extarq
+        headers = self._member_headers(str(uuids.project_a))
+        uuid = extarq.arq['uuid']
+        out = self.get_json(self.ARQ_URL + '/%s' % uuid, headers=headers)
+        self.assertEqual(uuid, out['uuid'])
+
+    @mock.patch('cyborg.objects.ExtARQ.get')
+    def test_get_one_other_project_returns_404(self, mock_get):
+        mock_get.side_effect = exception.ResourceNotFound(
+            resource='ExtArq', msg='not found'
+        )
+        headers = self._member_headers(str(uuids.project_b))
+        uuid = self.fake_extarqs[0].arq['uuid']
+        response = self.get_json(
+            self.ARQ_URL + '/%s' % uuid,
+            headers=headers,
+            expect_errors=True,
+            return_json=False,
+        )
+        self.assertEqual(404, response.status_int)
+
+    @mock.patch('cyborg.objects.ExtARQ.get')
+    def test_get_one_as_admin_any_project(self, mock_get):
+        extarq = self.fake_extarqs[0]
+        mock_get.return_value = extarq
+        headers = self._admin_headers()
+        uuid = extarq.arq['uuid']
+        out = self.get_json(self.ARQ_URL + '/%s' % uuid, headers=headers)
+        self.assertEqual(uuid, out['uuid'])

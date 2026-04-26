@@ -200,11 +200,13 @@ class Connection(metaclass=abc.ABCMeta):
         """Create a new extarq."""
 
     @abc.abstractmethod
-    def extarq_delete(self, context, uuid):
+    def extarq_delete(self, context, uuid, project_id=None):
         """Delete an extarq."""
 
     @abc.abstractmethod
-    def extarq_update(self, context, uuid, values, state_scope=None):
+    def extarq_update(
+        self, context, uuid, values, state_scope=None, project_id=None
+    ):
         """Update an extarq."""
 
     @abc.abstractmethod
@@ -231,7 +233,7 @@ class Connection(metaclass=abc.ABCMeta):
         """
 
     @abc.abstractmethod
-    def extarq_get(self, context, uuid, lock=False):
+    def extarq_get(self, context, uuid, lock=False, project_id=None):
         """Get requested extarq."""
 
     # attach_handle
