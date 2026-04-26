@@ -97,6 +97,10 @@ class AgentManager(periodic_task.PeriodicTasks):
         self.image_api = ImageAPI()
         self._rt = ResourceTracker(self.resource_provider_name, self.cond_api)
 
+    def init_host(self):
+        """Hook called by RPCService.start() after the RPC server is up."""
+        pass
+
     def _get_resource_provider_name(self):
         """Determine the correct resource provider name by querying Placement.
 

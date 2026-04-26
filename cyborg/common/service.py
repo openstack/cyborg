@@ -54,6 +54,8 @@ class RPCService(service.Service):
         self.rpcserver = rpc.get_server(target, endpoints, serializer)
         self.rpcserver.start()
 
+        self.manager.init_host()
+
         admin_context = context.get_admin_context()
         # Use the _args variant to pass kwargs to the callback.
         self.tg.add_dynamic_timer_args(

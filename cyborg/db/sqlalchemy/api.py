@@ -998,11 +998,37 @@ class Connection(api.Connection):
         return ref
 
     @main_context_manager.reader
-    def extarq_list(self, context, uuid_range=None):
+    def extarq_list(
+        self,
+        context,
+        uuid_range=None,
+        project_id=None,
+        instance_uuid=None,
+        limit=None,
+        marker=None,
+    ):
         query = model_query(context, models.ExtArq)
+        if project_id is api.NULL_FILTER:
+            query = query.filter(models.ExtArq.project_id.is_(None))
+        elif project_id is api.NOT_NULL_FILTER:
+            query = query.filter(models.ExtArq.project_id.isnot(None))
+        elif project_id:
+            query = query.filter_by(project_id=project_id)
+        if instance_uuid is api.NULL_FILTER:
+            query = query.filter(models.ExtArq.instance_uuid.is_(None))
+        elif instance_uuid is api.NOT_NULL_FILTER:
+            query = query.filter(models.ExtArq.instance_uuid.isnot(None))
+        elif instance_uuid:
+            query = query.filter_by(instance_uuid=instance_uuid)
         if type(uuid_range) is list:
             query = query.filter(models.ExtArq.uuid.in_(uuid_range))
-        return _paginate_query(context, models.ExtArq, query)
+        if marker is not None:
+            marker = (
+                model_query(context, models.ExtArq).filter_by(id=marker).one()
+            )
+        return _paginate_query(
+            context, models.ExtArq, query, limit=limit, marker=marker
+        )
 
     @oslo_db_api.retry_on_deadlock
     @main_context_manager.writer

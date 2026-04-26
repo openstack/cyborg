@@ -21,6 +21,7 @@ import sys
 
 from oslo_config import cfg
 
+from cyborg.common import data_migrations
 from cyborg.common import service
 from cyborg.common.i18n import _
 from cyborg.conf import CONF
@@ -42,6 +43,10 @@ class DBCommand:
 
     def create_schema(self):
         migration.create_schema()
+
+    def online_data_migrations(self):
+        count = data_migrations.heal_arq_project_ids()
+        print('Migrated %d ARQ(s)' % count)
 
 
 def add_command_parsers(subparsers):
@@ -82,6 +87,16 @@ def add_command_parsers(subparsers):
         'create_schema', help=_("Create the database schema.")
     )
     parser.set_defaults(func=command_object.create_schema)
+
+    parser = subparsers.add_parser(
+        'online_data_migrations',
+        help=_(
+            "Perform online data migrations. "
+            "Currently backfills project_id on existing ARQs "
+            "by querying Nova for instance details."
+        ),
+    )
+    parser.set_defaults(func=command_object.online_data_migrations)
 
 
 def main():
