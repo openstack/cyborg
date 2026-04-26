@@ -15,6 +15,7 @@
 
 from unittest import mock
 
+from oslo_utils.fixture import uuidsentinel as uuids
 from testtools.matchers import HasLength
 
 from cyborg import objects
@@ -612,3 +613,71 @@ class TestExtARQObject(base.DbTestCase):
         primitive = arq_obj.obj_to_primitive()
         arq_obj.obj_make_compatible(primitive['cyborg_object.data'], '1.2')
         self.assertIn('deployable_id', primitive['cyborg_object.data'])
+
+
+class TestExtARQProjectId(base.DbTestCase):
+    """Tests for Bug #2144056: project_id in start_bind_job."""
+
+    def setUp(self):
+        super().setUp()
+        self.fake_obj_extarqs = fake_extarq.get_fake_extarq_objs()
+
+    def _make_member_context(self, project_id=None):
+        from cyborg import context as cyborg_context
+
+        pid = project_id or str(uuids.member_project)
+        return cyborg_context.RequestContext(
+            user_id=str(uuids.member_user),
+            project_id=pid,
+            is_admin=False,
+        )
+
+    @mock.patch('cyborg.objects.ExtARQ.update_check_state')
+    @mock.patch('cyborg.objects.Deployable.get_by_device_rp_uuid')
+    @mock.patch('cyborg.objects.extarq.ext_arq_job.ExtARQJobMixin._bind_job')
+    def test_start_bind_job_defaults_project_id_to_context(
+        self, mock_bind, mock_get_dep, mock_update_state
+    ):
+        """project_id should default to context.project_id."""
+        member_ctx = self._make_member_context()
+        extarq = self.fake_obj_extarqs[0]
+        extarq.arq.state = constants.ARQ_INITIAL
+        uuid = extarq.arq.uuid
+        valid_fields = {
+            uuid: {
+                'hostname': 'host1',
+                'device_rp_uuid': str(uuids.device_rp),
+                'instance_uuid': str(uuids.instance),
+            }
+        }
+        mock_get_dep.return_value = mock.MagicMock()
+
+        extarq.start_bind_job(member_ctx, valid_fields)
+
+        self.assertEqual(member_ctx.project_id, extarq.arq.project_id)
+
+    @mock.patch('cyborg.objects.ExtARQ.update_check_state')
+    @mock.patch('cyborg.objects.Deployable.get_by_device_rp_uuid')
+    @mock.patch('cyborg.objects.extarq.ext_arq_job.ExtARQJobMixin._bind_job')
+    def test_start_bind_job_uses_explicit_project_id(
+        self, mock_bind, mock_get_dep, mock_update_state
+    ):
+        """Explicit project_id should be used when provided."""
+        member_ctx = self._make_member_context()
+        extarq = self.fake_obj_extarqs[0]
+        extarq.arq.state = constants.ARQ_INITIAL
+        uuid = extarq.arq.uuid
+        explicit_pid = str(uuids.explicit_project)
+        valid_fields = {
+            uuid: {
+                'hostname': 'host1',
+                'device_rp_uuid': str(uuids.device_rp),
+                'instance_uuid': str(uuids.instance),
+                'project_id': explicit_pid,
+            }
+        }
+        mock_get_dep.return_value = mock.MagicMock()
+
+        extarq.start_bind_job(member_ctx, valid_fields)
+
+        self.assertEqual(explicit_pid, extarq.arq.project_id)
