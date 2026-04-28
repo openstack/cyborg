@@ -142,4 +142,8 @@ SUPPORT_RESOURCES = (FPGA, GPU, VGPU, PGPU, QAT, NIC, SSD) = (
 FPGA_TRAITS = (FPGA_FUNCTION_ID,) = ("CUSTOM_FPGA_FUNCTION_ID",)
 
 
+# Standard os-traits trait marking a resource provider managed by Cyborg.
+OWNER_CYBORG = 'OWNER_CYBORG'
+
+
 RESOURCES_PREFIX = "resources:"

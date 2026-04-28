@@ -51,7 +51,7 @@ def _get_traits(vendor_id, product_id, vgpu_type_name=None):
     Example PGPU traits:
     {traits:["OWNER_CYBORG", "CUSTOM_NVIDIA_1EB8"]}
     """
-    traits = ["OWNER_CYBORG"]
+    traits = [constants.OWNER_CYBORG]
     # PGPU trait
     gpu_trait = "_".join(
         (

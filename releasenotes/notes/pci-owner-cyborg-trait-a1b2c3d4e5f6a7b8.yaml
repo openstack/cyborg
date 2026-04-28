@@ -1,0 +1,13 @@
+---
+fixes:
+  - |
+    The PCI driver now includes the standard ``OWNER_CYBORG`` trait in the
+    trait list reported for PCI devices, consistent with the existing NVIDIA
+    GPU driver behaviour. This trait is a standard os-traits marker
+    (``os_traits.OWNER_CYBORG``) that signals the resource provider is managed
+    by Cyborg and is stored in both the Cyborg ``attributes`` table and
+    reported to Placement as a resource provider trait. It has no effect on
+    Nova VM scheduling unless a device profile explicitly requires it.
+    ``OWNER_CYBORG`` is now also defined as a named constant in
+    ``cyborg.common.constants`` to prevent typos and improve consistency
+    across all drivers.
