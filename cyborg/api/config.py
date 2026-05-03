@@ -22,7 +22,6 @@ server = {'port': '6666', 'host': '127.0.0.1'}
 app = {
     'root': 'cyborg.api.controllers.root.RootController',
     'modules': ['cyborg.api'],
-    'static_root': '%(confdir)s/public',
     'debug': False,
     'acl_public_routes': ['/', '/v2'],
 }

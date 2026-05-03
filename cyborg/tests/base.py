@@ -74,20 +74,6 @@ class TestCase(base.BaseTestCase):
         for o, v in kw.items():
             self.cfg_fixture.set_default(o, v, group=group)
 
-    def get_path(self, project_file=None):
-        """Get the absolute path to a file. Used for testing the API.
-
-        :param project_file: File whose path to return. Default: None.
-        :returns: path to the specified file, or path to project root.
-        """
-        root = os.path.abspath(
-            os.path.join(os.path.dirname(__file__), '..', '..')
-        )
-        if project_file:
-            return os.path.join(root, project_file)
-        else:
-            return root
-
 
 class DietTestCase(base.BaseTestCase):
     """Same great taste, less filling.
