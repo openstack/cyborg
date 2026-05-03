@@ -31,7 +31,6 @@ from sqlalchemy import String
 from sqlalchemy import Text
 from sqlalchemy import orm
 from sqlalchemy import schema
-from sqlalchemy.ext.declarative import declarative_base
 
 from cyborg.common import constants
 from cyborg.common import paths
@@ -73,7 +72,7 @@ class CyborgBase(models.TimestampMixin, models.ModelBase):
         return updated_values
 
 
-Base = declarative_base(cls=CyborgBase)
+Base = orm.declarative_base(cls=CyborgBase)
 
 
 class Device(Base):
