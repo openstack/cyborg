@@ -39,10 +39,6 @@ class BaseApiTest(base.DbTestCase):
 
     def setUp(self):
         super().setUp()
-        cfg.CONF.set_override("auth_version", "v3", group='keystone_authtoken')
-        cfg.CONF.set_override(
-            "admin_user", "admin", group='keystone_authtoken'
-        )
         self.app = self._make_app()
 
         def reset_pecan():
