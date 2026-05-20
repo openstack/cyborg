@@ -62,8 +62,12 @@ intel_nic_driver = "cyborg.accelerator.drivers.nic.intel.driver:IntelNICDriver"
 inspur_nvme_ssd_driver = "cyborg.accelerator.drivers.ssd.inspur.driver:InspurNVMeSSDDriver"
 pci_driver = "cyborg.accelerator.drivers.pci.pci.driver:PCIDriver"
 
-[tool.setuptools]
-packages = ["cyborg"]
+[tool.setuptools.packages.find]
+# pci-sim/ is an out-of-tree kernel module and must not be packaged in
+# cyborg wheels or sdists.  Restricting auto-discovery to cyborg* ensures
+# it is excluded from both the wheel and the sdist (pbr.build delegates
+# to setuptools.build_meta for both).
+include = ["cyborg*"]
 
 # NOTE: data-files is deprecated by setuptools in favour of package_data,
 # but package_data installs files inside the Python package tree and is not
@@ -101,6 +105,9 @@ ignore = [
 
 [tool.ruff.lint.per-file-ignores]
 "cyborg/tests/*" = ["S"]
+# pci-sim scripts are system-level test fixtures that intentionally call
+# subprocess with controlled arguments; suppress the subprocess audit rules.
+"pci-sim/*" = ["S"]
 
 [tool.ruff.lint.isort]
 known-first-party = ["cyborg"]

@@ -1,0 +1,23 @@
+# SPDX-License-Identifier: GPL-2.0-only
+
+config SAMPLE_FAKE_PCI_SRIOV
+	tristate "Fake PCI Host Controller with SR-IOV for testing"
+	depends on PCI && PCI_DOMAINS && IOMMU_API && VFIO_PCI_CORE && TTY
+	help
+	  This builds a sample kernel module that creates a fake PCI host
+	  controller with SR-IOV capable devices. It includes a software
+	  IOMMU driver that provides proper IOMMU groups, enabling the
+	  devices to be assigned to VMs via VFIO.
+
+	  The module creates a PCI device that appears in lspci and can
+	  have up to 7 Virtual Functions enabled via sriov_numvfs sysfs.
+
+	  This is useful for testing:
+	  - PCI device passthrough with libvirt/QEMU
+	  - SR-IOV functionality in OpenStack Nova
+	  - VFIO driver development
+
+	  To compile this as a module, choose M here. The module will
+	  be called fake_pci_sriov.
+
+	  If unsure, say N.

@@ -46,6 +46,9 @@ Reviewing
 
 * :doc:`/contributor/release-guide`: Chronological guide for release liaisons
 
+* :doc:`/contributor/pci-sim/index`: pci-sim fake SR-IOV kernel module for
+  PCI passthrough testing without physical hardware
+
 .. # NOTE: toctree needs to be placed at the end of the section to
    # keep the document structure in the PDF doc.
 .. toctree::
@@ -60,3 +63,4 @@ Reviewing
    grenade-upgrade
    driver-development-guide
    release-guide
+   pci-sim/index

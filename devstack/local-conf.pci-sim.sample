@@ -1,0 +1,43 @@
+# Sample local.conf for Cyborg development with pci-sim fake SR-IOV devices.
+#
+# pci-sim builds and loads the fake_pci_sriov kernel module, which creates
+# fake SR-IOV PCI devices that can be passed through to QEMU guests via VFIO.
+# This allows Nova PCI passthrough and Cyborg accelerator testing without
+# physical SR-IOV hardware.
+#
+# Copy this file to the root of your DevStack checkout as local.conf and
+# adjust passwords and HOST_IP for your environment.
+#
+# pci-sim is enabled by default when the cyborg plugin is loaded.
+# Set ENABLE_PCI_SIM=False to disable it.
+#
+# NOTE: For nested/VM-based DevStack environments (the common case for
+# development), ensure the VM has nested KVM and IOMMU enabled, or set
+# PCI_SIM_ALLOW_UNSAFE_INTERRUPTS=True (the default) to allow VFIO without
+# interrupt remapping support.
+
+[[local|localrc]]
+
+ADMIN_PASSWORD=password
+DATABASE_PASSWORD=password
+RABBIT_PASSWORD=password
+SERVICE_PASSWORD=password
+
+# Set this to the address other services/guests should use.
+# HOST_IP=192.0.2.10
+
+# Enable Cyborg. pci-sim is included — no separate enable_plugin needed.
+enable_plugin cyborg https://opendev.org/openstack/cyborg
+
+ENABLE_PCI_SIM=True
+# pci-sim topology: 2 fake PFs, 4 VFs each.
+# With both integrations enabled, PF0 VFs go to Nova and PF1 VFs to Cyborg.
+PCI_SIM_NUM_PFS=2
+PCI_SIM_NUM_VFS=4
+# optionally disable service integration
+# PCI_SIM_CONFIGURE_NOVA_PCI=False
+# PCI_SIM_CONFIGURE_CYBORG_PCI=False
+
+# Required for nested/devstack environments without interrupt remapping.
+PCI_SIM_ALLOW_UNSAFE_INTERRUPTS=True
+

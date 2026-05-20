@@ -137,7 +137,7 @@ function configure_cyborg_agent {
     iniset $CYBORG_CONF_FILE agent enabled_drivers $CYBORG_ENABLED_DRIVERS
 
     # Configure placement client auth for multinode deployments
-    configure_keystoneauth $CYBORG_CONF_FILE placement placement
+    configure_keystoneauth $CYBORG_CONF_FILE cyborg placement
 
     # Add retries so that placement registers the resource provider
     # Set higher than the default (3) because in CI the subnode agent
@@ -183,8 +183,8 @@ function configure_cyborg_conductor {
 
     # this one is needed for lookup of Cyborg API endpoint via Keystone
     configure_auth_for service_catalog
-    configure_keystoneauth $CYBORG_CONF_FILE nova nova
-    configure_keystoneauth $CYBORG_CONF_FILE placement placement
+    configure_keystoneauth $CYBORG_CONF_FILE cyborg nova
+    configure_keystoneauth $CYBORG_CONF_FILE cyborg placement
 
     # NOTE(sean-k-mooney) it is not obvious why this is in the conductor
     # section or what sets is_deployed_by_agent so this should either be
