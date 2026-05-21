@@ -25,7 +25,7 @@ LOGDAYS=2
 disable_service swift
 # etcd is only needed by cinder backup
 disable_service etcd
-# Cinder is not required for basic Cyborg testing;
+# Cinder is not required for basic Cyborg testing.
 disable_service cinder
 # Horizon is not required for Cyborg
 disable_service horizon
