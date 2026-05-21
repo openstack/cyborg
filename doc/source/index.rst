@@ -12,6 +12,7 @@ Overview
 
     user/introduction
     user/architecture
+    user/using-cyborg
     user/usage
 
 Documentation for Operators

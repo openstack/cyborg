@@ -15,6 +15,18 @@ Basic Information
 
    contributing
 
+Contributing
+============
+
+* :doc:`/contributor/devstack_setup`: DevStack setup guide for Cyborg
+  development
+
+* :doc:`/contributor/vm-setup`: Creating development VMs for testing
+
+* :doc:`/contributor/nvme-driver`: Cyborg NVMe driver development environment
+
+* :doc:`/user/using-cyborg`: Using Cyborg with instances
+
 Reviewing
 =========
 
@@ -24,13 +36,6 @@ Reviewing
 
 * :doc:`/contributor/releasenotes`: When we need a release note for a
   contribution.
-
-* :doc:`/contributor/devstack_setup`: DevStack setup guide for Cyborg
-  development
-
-* :doc:`/contributor/vm-setup`: Creating development VMs for testing
-
-* :doc:`/contributor/nvme-driver`: Cyborg NVMe driver development environment
 
 * :doc:`/contributor/driver-development-guide`: Get your driver development
   guide to contribute
