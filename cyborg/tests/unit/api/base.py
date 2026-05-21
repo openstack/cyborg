@@ -47,15 +47,10 @@ class BaseApiTest(base.DbTestCase):
         self.addCleanup(reset_pecan)
 
     def _make_app(self):
-        # Determine where we are so we can set up paths in the config
-        root_dir = self.get_path()
-
         self.app_config = {
             'app': {
                 'root': 'cyborg.api.controllers.root.RootController',
                 'modules': ['cyborg.api'],
-                'static_root': '%s/public' % root_dir,
-                'template_path': '%s/api/templates' % root_dir,
                 'acl_public_routes': ['/', '/v1/.*'],
             },
         }
