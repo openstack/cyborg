@@ -34,6 +34,7 @@
       - ^(test-|)requirements.txt$
       - ^.git.*$
       - ^tox.ini$
+      - ^cyborg/tests/.*$
 
 - job:
     name: cyborg-grenade-skip-level-always
