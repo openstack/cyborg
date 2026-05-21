@@ -9,9 +9,9 @@
       - openstack/python-cyborgclient
       - openstack/cyborg-tempest-plugin
     vars: &grenade_vars
-      devstack_plugins:
+      devstack_plugins: &cyborg_devstack_plugins
         cyborg: https://opendev.org/openstack/cyborg
-      devstack_services:
+      devstack_services: &cyborg_devstack_services
         tempest: true
         s-account: false
         s-container: false
@@ -47,6 +47,32 @@
     required-projects: *base_required_projects_master
     vars: *grenade_vars
     irrelevant-files: *base_irrelevant_files
+
+- job:
+    name: cyborg-multinode-tempest
+    parent: devstack-tempest
+    nodeset: openstack-two-node-noble
+    description: |
+      Cyborg multinode devstack tempest job
+    required-projects: *base_required_projects_master
+    irrelevant-files: *base_irrelevant_files
+    vars:
+      devstack_plugins: *cyborg_devstack_plugins
+      devstack_services:
+        <<: *cyborg_devstack_services
+        cyborg-agent: false
+      tempest_plugins:
+        - cyborg-tempest-plugin
+      tempest_test_regex: cyborg_tempest_plugin
+      tox_envlist: all
+    group-vars:
+      subnode:
+        devstack_plugins: *cyborg_devstack_plugins
+        devstack_services:
+          <<: *cyborg_devstack_services
+          cyborg-api: false
+          cyborg-cond: false
+          tempest: false
 
 - project:
     templates:
