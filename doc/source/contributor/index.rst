@@ -30,6 +30,8 @@ Reviewing
 
 * :doc:`/contributor/vm-setup`: Creating development VMs for testing
 
+* :doc:`/contributor/nvme-driver`: Cyborg NVMe driver development environment
+
 * :doc:`/contributor/driver-development-guide`: Get your driver development
   guide to contribute
 
@@ -44,5 +46,6 @@ Reviewing
    releasenotes
    devstack_setup
    vm-setup
+   nvme-driver
    driver-development-guide
    release-guide
