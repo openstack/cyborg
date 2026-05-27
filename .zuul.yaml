@@ -1,14 +1,15 @@
 - job:
-    name: cyborg-grenade
+    name: cyborg-tempest-stub
+    abstract: true
     description: |
-      Grenade job that performs upgrade from previous release(N-1) to
-      current release(N).
-    parent: grenade
-    required-projects: &base_required_projects_master
+      Abstract base job for Cyborg CI. Defines shared devstack
+      configuration, irrelevant file patterns, and required projects
+      used by both tempest and grenade jobs.
+    required-projects: &base_required_projects
       - openstack/cyborg
       - openstack/python-cyborgclient
       - openstack/cyborg-tempest-plugin
-    vars: &grenade_vars
+    vars: &base_vars
       devstack_plugins: &cyborg_devstack_plugins
         cyborg: https://opendev.org/openstack/cyborg
       devstack_services: &cyborg_devstack_services
@@ -37,6 +38,16 @@
       - ^cyborg/tests/.*$
 
 - job:
+    name: cyborg-grenade
+    description: |
+      Grenade job that performs upgrade from previous release(N-1) to
+      current release(N).
+    parent: grenade
+    required-projects: *base_required_projects
+    vars: *base_vars
+    irrelevant-files: *base_irrelevant_files
+
+- job:
     name: cyborg-grenade-skip-level-always
     description: |
       Grenade job that skips the previous release, validating that projects
@@ -44,8 +55,8 @@
       to the current branch. For example: If N-2 is 2025.1 release then N
       would be 2026.1.
     parent: grenade-skip-level-always
-    required-projects: *base_required_projects_master
-    vars: *grenade_vars
+    required-projects: *base_required_projects
+    vars: *base_vars
     irrelevant-files: *base_irrelevant_files
 
 - job:
@@ -54,7 +65,7 @@
     nodeset: openstack-two-node-noble
     description: |
       Cyborg multinode devstack tempest job
-    required-projects: *base_required_projects_master
+    required-projects: *base_required_projects
     irrelevant-files: *base_irrelevant_files
     vars:
       devstack_plugins: *cyborg_devstack_plugins
@@ -81,12 +92,8 @@
       run on python 3.
     parent: devstack-tempest
     timeout: 7800
-    required-projects: &tempest_required_projects
-      - openstack/cyborg
-      - openstack/python-cyborgclient
-      - openstack/tempest
-      - openstack/cyborg-tempest-plugin
-    vars: *grenade_vars
+    required-projects: *base_required_projects
+    vars: *base_vars
     irrelevant-files: *base_irrelevant_files
 
 - job:
@@ -96,8 +103,8 @@
       Cyborg devstack tempest tests job for IPv6-only deployment
     voting: true
     timeout: 7800
-    required-projects: *tempest_required_projects
-    vars: *grenade_vars
+    required-projects: *base_required_projects
+    vars: *base_vars
     irrelevant-files: *base_irrelevant_files
 
 - project:
