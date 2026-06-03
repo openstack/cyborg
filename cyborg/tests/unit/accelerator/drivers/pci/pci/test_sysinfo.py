@@ -55,7 +55,11 @@ class TestSysinfo(base.DietTestCase):
             'devices': devices,
             'hostname': hostname,
             'rc': constants.RESOURCES['PCI'],
-            'traits': ['CUSTOM_PCI_NVIDIA', 'CUSTOM_PCI_PRODUCT_ID_1EB8'],
+            'traits': [
+                constants.OWNER_CYBORG,
+                'CUSTOM_PCI_NVIDIA',
+                'CUSTOM_PCI_PRODUCT_ID_1EB8',
+            ],
         }
 
     def test_match_standard_device(self):
@@ -89,9 +93,14 @@ class TestSysinfo(base.DietTestCase):
         m = sysinfo.LSPCI_PATTERN.match('')
         self.assertIsNone(m)
 
+    def test_owner_cyborg_trait_always_present(self):
+        result = sysinfo._get_traits('10de', '1eb8')
+        self.assertIn(constants.OWNER_CYBORG, result['traits'])
+
     def test_known_vendor(self):
         result = sysinfo._get_traits('10de', '1eb8')
         traits = result['traits']
+        self.assertIn(constants.OWNER_CYBORG, traits)
         self.assertIn('CUSTOM_PCI_NVIDIA', traits)
         self.assertIn('CUSTOM_PCI_PRODUCT_ID_1EB8', traits)
 
@@ -99,11 +108,11 @@ class TestSysinfo(base.DietTestCase):
         result = sysinfo._get_traits('dead', 'beef')
         traits = result['traits']
         self.assertIn('CUSTOM_PCI_PRODUCT_ID_BEEF', traits)
-        # No vendor trait should be present
-        vendor_traits = [
+        # Only OWNER_CYBORG and the product trait should be present
+        non_product_traits = [
             t for t in traits if not t.startswith('CUSTOM_PCI_PRODUCT_ID')
         ]
-        self.assertEqual([], vendor_traits)
+        self.assertEqual([constants.OWNER_CYBORG], non_product_traits)
 
     def test_product_id_uppercased(self):
         result = sysinfo._get_traits('dead', 'abcd')
@@ -174,6 +183,7 @@ class TestDiscoverPcis(base.TestCase):
         trait_vals = [
             a['value'] for a in attr_data if a['key'].startswith('trait')
         ]
+        self.assertIn(constants.OWNER_CYBORG, trait_vals)
         self.assertIn('CUSTOM_PCI_NVIDIA', trait_vals)
         self.assertIn('CUSTOM_PCI_PRODUCT_ID_1EB8', trait_vals)
 
@@ -194,11 +204,11 @@ class TestDiscoverPcis(base.TestCase):
             a['value'] for a in attr_data if a['key'].startswith('trait')
         ]
         self.assertIn('CUSTOM_PCI_PRODUCT_ID_BEEF', trait_vals)
-        # Ensure no vendor-specific trait is present
-        vendor_traits = [
+        # Only OWNER_CYBORG and the product trait should be present
+        non_product_traits = [
             t for t in trait_vals if not t.startswith('CUSTOM_PCI_PRODUCT_ID')
         ]
-        self.assertEqual([], vendor_traits)
+        self.assertEqual([constants.OWNER_CYBORG], non_product_traits)
 
     @mock.patch(_MOCK_GET_PCI, autospec=True)
     def test_discover_multiple_devices_filtered(self, mock_pci):

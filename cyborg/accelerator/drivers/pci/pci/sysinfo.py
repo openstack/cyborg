@@ -54,7 +54,7 @@ def _get_traits(vendor_id, product_id):
     Example PGPU traits:
     {traits:["OWNER_CYBORG", "CUSTOM_PCI_1EB8"]}
     """
-    traits = []
+    traits = [constants.OWNER_CYBORG]
     vendor_name = pci_utils.VENDOR_MAPS.get(vendor_id)
     if vendor_name:
         traits.append("CUSTOM_PCI_" + vendor_name.upper())
