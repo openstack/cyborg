@@ -163,5 +163,5 @@ class TestIntelFPGADriver(base.TestCase):
 
         # program PF
         mock_prog.return_value = bytes([0])
-        intel.program(cpid, "/path/image")
+        intel.update(cpid, "/path/image")
         mock_prog.assert_called_with(expect_cmd)

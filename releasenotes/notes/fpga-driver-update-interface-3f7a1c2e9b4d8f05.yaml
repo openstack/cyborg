@@ -1,0 +1,9 @@
+---
+upgrade:
+  - |
+    FPGA driver authors who subclass ``FPGADriver`` must rename their
+    ``program(control_path, image_path)`` implementation to
+    ``update(control_path, image_path)``. The agent now invokes
+    ``driver.update()`` (the standard ``GenericDriver`` interface) instead
+    of the FPGA-specific ``driver.program()``. In-tree Intel and Xilinx
+    drivers have been updated accordingly.

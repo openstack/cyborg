@@ -142,6 +142,15 @@ class TestFakeDriver(base.TestCase):
         self.assertEqual(deployables[0]['num_accelerators'], len(ah_list))
         self._validate_attach_handle_list(ah_list)
 
+    def test_update_returns_true(self):
+        """update() reports success without real FPGA hardware.
+
+        The fake driver returns True so the full program API flow can be
+        exercised in CI without real hardware.
+        """
+        fake_drv = FakeDriver()
+        self.assertTrue(fake_drv.update(None, None))
+
     def test_generate_attach_handles(self):
         fake_drv = FakeDriver()
         pci_addr = '{"domain":"0000","bus":"0c","device":"00","function":"0"}'

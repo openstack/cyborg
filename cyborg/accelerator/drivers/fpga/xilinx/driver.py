@@ -48,7 +48,7 @@ class XilinxFPGADriver(FPGADriver):
     def discover(self):
         return sysinfo.fpga_tree()
 
-    def program(self, controlpath_id, image_file_path):
+    def update(self, controlpath_id, image_file_path):
         """Program the FPGA with the provided bitstream image.
 
         :param controlpath_id: the ID of controlpath.
