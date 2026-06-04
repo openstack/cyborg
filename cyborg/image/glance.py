@@ -23,12 +23,9 @@ import stat
 import sys
 import time
 
-import cryptography
 import glanceclient
 import glanceclient.exc
 
-from cursive import exception as cursive_exception
-from cursive import signature_utils
 from glanceclient.v2 import schemas
 from keystoneauth1 import loading as ks_loading
 from oslo_log import log as logging
@@ -38,7 +35,6 @@ from oslo_utils import timeutils
 
 import cyborg.conf
 
-from cyborg import objects
 from cyborg import service_auth
 from cyborg.common import exception
 from cyborg.common import utils
@@ -228,45 +224,10 @@ class GlanceImageServiceV2:
             _reraise_translated_image_exception(image_id)
 
         if image_chunks.wrapped is None:
-            # None is a valid return value, but there's nothing we can do with
-            # a image with no associated data
             raise exception.ImageUnacceptable(
                 image_id=image_id,
-                reason='Image has no \
-                                              associated data',
+                reason='Image has no associated data',
             )
-
-        # Retrieve properties for verification of Glance image signature
-        verifier = None
-        if CONF.glance.verify_glance_signatures:
-            image_meta_dict = self.show(
-                context, image_id, include_locations=False
-            )
-            image_meta = objects.ImageMeta.from_dict(image_meta_dict)
-            img_signature = image_meta.properties.get('img_signature')
-            img_sig_hash_method = image_meta.properties.get(
-                'img_signature_hash_method'
-            )
-            img_sig_cert_uuid = image_meta.properties.get(
-                'img_signature_certificate_uuid'
-            )
-            img_sig_key_type = image_meta.properties.get(
-                'img_signature_key_type'
-            )
-            try:
-                verifier = signature_utils.get_verifier(
-                    context=context,
-                    img_signature_certificate_uuid=img_sig_cert_uuid,
-                    img_signature_hash_method=img_sig_hash_method,
-                    img_signature=img_signature,
-                    img_signature_key_type=img_sig_key_type,
-                )
-            except cursive_exception.SignatureVerificationError:
-                with excutils.save_and_reraise_exception():
-                    LOG.error(
-                        'Image signature verification failed for image: %s',
-                        image_id,
-                    )
 
         close_file = False
         if data is None and dst_path:
@@ -274,45 +235,11 @@ class GlanceImageServiceV2:
             close_file = True
 
         if data is None:
-            # Perform image signature verification
-            if verifier:
-                try:
-                    for chunk in image_chunks:
-                        verifier.update(chunk)
-                    verifier.verify()
-
-                    LOG.info(
-                        'Image signature verification succeeded for image: %s',
-                        image_id,
-                    )
-
-                except cryptography.exceptions.InvalidSignature:
-                    with excutils.save_and_reraise_exception():
-                        LOG.error(
-                            'Image signature verification failed '
-                            'for image: %s',
-                            image_id,
-                        )
             return image_chunks
         else:
             try:
                 for chunk in image_chunks:
-                    if verifier:
-                        verifier.update(chunk)
                     data.write(chunk)
-                if verifier:
-                    verifier.verify()
-                    LOG.info(
-                        'Image signature verification succeeded for image %s',
-                        image_id,
-                    )
-            except cryptography.exceptions.InvalidSignature:
-                data.truncate(0)
-                with excutils.save_and_reraise_exception():
-                    LOG.error(
-                        'Image signature verification failed for image: %s',
-                        image_id,
-                    )
             except Exception as ex:
                 with excutils.save_and_reraise_exception():
                     LOG.error(

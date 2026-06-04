@@ -1,0 +1,23 @@
+---
+upgrade:
+  - |
+    The broken image signature verification feature and its associated
+    configuration options have been removed. As noted in `bug 2144308`_,
+    the signature verification code has not worked since it was introduced
+    in the Stein release (2018). The implementation referenced components
+    from Nova (``self.show()`` method and ``objects.ImageMeta``) that were
+    never implemented in Cyborg. Given that no one has reported this feature
+    working in that time, it is simply removed.
+
+    The following configuration options in the ``[glance]`` section have been
+    removed:
+
+    * ``verify_glance_signatures``
+    * ``default_trusted_certificate_ids``
+    * ``enable_certificate_validation``
+
+    If image signature verification is needed in the future, it will be
+    re-implemented as a new feature with proper test coverage, key manager
+    integration, and documentation.
+
+    .. _`bug 2144308`: https://bugs.launchpad.net/openstack-cyborg/+bug/2144308
