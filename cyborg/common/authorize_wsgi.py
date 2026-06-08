@@ -19,6 +19,7 @@ import wsme
 
 from oslo_concurrency import lockutils
 from oslo_config import cfg
+from oslo_policy import opts as policy_opts
 from oslo_policy import policy
 
 from cyborg import policies
@@ -53,6 +54,13 @@ def init_enforcer(
 
     if _ENFORCER:
         return
+
+    # NOTE: Default to legacy authorization behaviour during the SRBAC
+    # transition window. Operators may opt in to new defaults by setting
+    # enforce_new_defaults = True in cyborg.conf [oslo_policy].
+    # Use policy_opts.set_defaults() to ensure the oslo_policy config
+    # group is registered before setting the default.
+    policy_opts.set_defaults(CONF, enforce_new_defaults=False)
 
     # NOTE: Register defaults for policy-in-code here so that they are
     # loaded exactly once - when this module-global is initialized.

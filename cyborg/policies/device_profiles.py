@@ -50,8 +50,7 @@ deprecated_create = policy.DeprecatedRule(
     name='cyborg:device_profile:create',
     check_str=base.deprecated_is_admin,
     deprecated_reason=(
-        'project_admin_or_owner is too permissive, '
-        'introduce admin for creation'
+        'project_admin_or_owner is too permissive, require admin for creation'
     ),
     deprecated_since=versionutils.deprecated.WALLABY,
 )

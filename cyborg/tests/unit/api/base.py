@@ -135,11 +135,20 @@ class BaseApiTest(base.DbTestCase):
         extra_environ when we call delete, get_json or other method request.
         """
         ct = context.to_dict()
+        # RequestContext normalizes missing and empty roles to []. An explicit
+        # override distinguishes an empty header from the legacy fallback.
+        roles_overridden = 'roles' in kw
         ct.update(kw)
+        role = "user"
         if ct.get("is_admin"):
             role = "admin"
-        else:
-            role = "user"
+        roles_val = ct.get('roles')
+        x_roles = role
+        if isinstance(roles_val, list):
+            if roles_val or roles_overridden:
+                x_roles = ','.join(roles_val)
+        elif roles_val is not None:
+            x_roles = roles_val
         headers = {
             'X-User-Name': ct.get("user_name") or "user",
             'X-User-Id': ct.get("user_id")
@@ -152,7 +161,7 @@ class BaseApiTest(base.DbTestCase):
             'X-User-Domain-Name': ct.get("domain_name") or "no_domain",
             'X-Auth-Token': ct.get("auth_token")
             or "b9764005b8c145bf972634fb16a826e8",
-            'X-Roles': ct.get("roles") or role,
+            'X-Roles': x_roles,
         }
         if ct.get('system_scope') == 'all':
             headers.update({'Openstack-System-Scope': 'all'})

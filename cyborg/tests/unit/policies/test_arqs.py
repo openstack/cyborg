@@ -37,12 +37,23 @@ class ARQPolicyTest(base.BasePolicyTest):
         self.fake_extarq_obj = fake_extarq.get_fake_extarq_objs()[0]
 
         # rule:project_member_or_admin with project scope enforced.
+        # With enforce_new_defaults=False (Cyborg's default), oslo.policy
+        # ORs the new check string with the deprecated bridge
+        # (admin_or_owner: is_admin:True or project_id:%(project_id)s).
+        # The request context is the policy target, so target project_id
+        # equals the caller's project_id, meaning every project-scoped
+        # context passes via the deprecated bridge. Only system-scoped
+        # contexts are rejected (by enforce_scope=True).
         self.create_authorized_contexts = [
             self.legacy_admin_context,
             self.project_admin_context,
             self.legacy_owner_context,
             self.project_member_context,
+            self.project_reader_context,
             self.other_project_member_context,
+            self.project_foo_context,
+            self.project_manager_context,
+            self.project_service_context,
         ]
         self.create_unauthorized_contexts = list(
             set(self.all_contexts) - set(self.create_authorized_contexts)

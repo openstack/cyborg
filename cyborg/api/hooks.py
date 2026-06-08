@@ -68,8 +68,8 @@ class ContextHook(hooks.PecanHook):
 
     X-Roles:
         Used for setting context.is_admin flag to either True or False.
-        The flag is set to True, if X-Roles contains either an administrator
-        or admin substring. Otherwise it is set to False.
+        The flag is set to True if X-Roles contains the admin role.
+        Otherwise it is set to False.
 
     """
 
@@ -93,7 +93,7 @@ class ContextHook(hooks.PecanHook):
         user_auth_plugin = req.environ.get('keystone.token_auth')
 
         roles = req.headers.get('X-Roles', '').split(',')
-        is_admin = 'admin' in roles or 'administrator' in roles
+        is_admin = 'admin' in roles
 
         state.request.context = context.RequestContext.from_environ(
             req.environ,

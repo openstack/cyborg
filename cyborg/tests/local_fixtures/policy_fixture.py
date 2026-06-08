@@ -41,7 +41,8 @@ class PolicyFixture(fixtures.Fixture):
         )
         with open(self.policy_file_name, 'w') as policy_file:
             policy_file.write(policy_data)
-        policy_opts.set_defaults(CONF)
+        # Keep this transition default synchronized with init_enforcer().
+        policy_opts.set_defaults(CONF, enforce_new_defaults=False)
         CONF.set_override('policy_file', self.policy_file_name, 'oslo_policy')
         cyborg_policy._ENFORCER = None
         # NOTE(yumeng): Logging all the deprecation warning for every unit

@@ -35,61 +35,90 @@ class BasePolicyTest(v2_test.APITestV2):
         self.project_id = uuids.project_id
         self.foo_project_id = uuids.foo_project_id
         self.project_id_other = uuids.project_id_other
+        self.service_project_id = uuids.service_project_id
+
+        # All test contexts include Keystone implied roles.
+        # Implication chain: admin -> manager -> member -> reader.
+        # The service role is separate (no implication).
 
         # legacy default role: "default:admin_or_owner"
         self.legacy_admin_context = cyborg_context.RequestContext(
             user_id="legacy_admin",
             project_id=self.admin_project_id,
-            roles='admin',
+            roles=['admin', 'manager', 'member', 'reader'],
         )
         self.legacy_owner_context = cyborg_context.RequestContext(
             user_id="legacy_owner",
             project_id=self.admin_project_id,
-            roles='member',
+            roles=['member', 'reader'],
         )
 
         # system scoped users
         self.system_admin_context = cyborg_context.RequestContext(
-            user_id="sys_admin", roles='admin', system_scope='all'
+            user_id="sys_admin",
+            roles=['admin', 'manager', 'member', 'reader'],
+            system_scope='all',
         )
 
         self.system_member_context = cyborg_context.RequestContext(
-            user_id="sys_member", roles='member', system_scope='all'
+            user_id="sys_member",
+            roles=['member', 'reader'],
+            system_scope='all',
         )
 
         self.system_reader_context = cyborg_context.RequestContext(
-            user_id="sys_reader", roles='reader', system_scope='all'
+            user_id="sys_reader",
+            roles=['reader'],
+            system_scope='all',
         )
 
         self.system_foo_context = cyborg_context.RequestContext(
-            user_id="sys_foo", roles='foo', system_scope='all'
+            user_id="sys_foo",
+            roles=['foo'],
+            system_scope='all',
         )
 
         # project scoped users
         self.project_admin_context = cyborg_context.RequestContext(
-            user_id="project_admin", project_id=self.project_id, roles='admin'
+            user_id="project_admin",
+            project_id=self.project_id,
+            roles=['admin', 'manager', 'member', 'reader'],
         )
 
         self.project_member_context = cyborg_context.RequestContext(
             user_id="project_member",
             project_id=self.project_id,
-            roles='member',
+            roles=['member', 'reader'],
         )
 
         self.project_reader_context = cyborg_context.RequestContext(
             user_id="project_reader",
             project_id=self.project_id,
-            roles='reader',
+            roles=['reader'],
         )
 
         self.project_foo_context = cyborg_context.RequestContext(
-            user_id="project_foo", project_id=self.project_id, roles='foo'
+            user_id="project_foo",
+            project_id=self.project_id,
+            roles=['foo'],
         )
 
         self.other_project_member_context = cyborg_context.RequestContext(
             user_id="other_project_member",
             project_id=self.project_id_other,
-            roles='member',
+            roles=['member', 'reader'],
+        )
+
+        self.project_manager_context = cyborg_context.RequestContext(
+            user_id="project_manager",
+            project_id=self.project_id,
+            roles=['manager', 'member', 'reader'],
+        )
+
+        self.project_service_context = cyborg_context.RequestContext(
+            user_id="project_service",
+            project_id=self.service_project_id,
+            roles=['service'],
         )
 
         self.all_contexts = [
@@ -104,4 +133,6 @@ class BasePolicyTest(v2_test.APITestV2):
             self.project_reader_context,
             self.other_project_member_context,
             self.project_foo_context,
+            self.project_manager_context,
+            self.project_service_context,
         ]

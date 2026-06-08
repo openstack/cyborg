@@ -1,0 +1,37 @@
+---
+features:
+  - |
+    New base policy rules have been added:
+    ``project_manager_or_admin``, ``project_member_or_service``,
+    ``service_api``, and ``project_manager_api``.
+  - |
+    The non-standard ``role:administrator`` alias has been removed
+    from the ``admin_api`` base rule, aligning Cyborg with the
+    Keystone bootstrap role set used by Nova and other services.
+upgrade:
+  - |
+    Cyborg now overrides ``enforce_new_defaults`` to ``False`` in its
+    default configuration. During the transition window, both legacy
+    and new authorization paths are accepted. Operators may opt in
+    to the new persona-based defaults by setting
+    ``[oslo_policy] enforce_new_defaults = True`` in ``cyborg.conf``.
+
+    The transition timeline is:
+
+    * **2026.2** -- new defaults available, ``enforce_new_defaults``
+      defaults to ``False``. Operators may opt in early.
+    * **2027.1** -- the override will be removed and new defaults
+      will be enforced by default. Operators not yet ready can set
+      ``enforce_new_defaults = False`` explicitly.
+    * **2027.2** -- the deprecated legacy rules and bridges will be
+      removed.
+  - |
+    The ``manager`` and ``service`` roles must exist in Keystone
+    (both available by default since 2023.2 (Bobcat)). The ``service`` role
+    must be assigned to Nova's service account for the service-token gate
+    to function.
+  - |
+    Operators relying on the non-standard ``administrator`` role for
+    Cyborg admin access must either assign the standard ``admin``
+    role or provide custom policy overrides before deploying this
+    change.

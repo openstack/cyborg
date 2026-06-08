@@ -109,6 +109,8 @@ PROJECT_MEMBER = 'rule:project_member_api'
 PROJECT_READER = 'rule:project_reader_api'
 PROJECT_MEMBER_OR_ADMIN = 'rule:project_member_or_admin'
 PROJECT_READER_OR_ADMIN = 'rule:project_reader_or_admin'
+PROJECT_MANAGER_OR_ADMIN = 'rule:project_manager_or_admin'
+PROJECT_MEMBER_OR_SERVICE = 'rule:project_member_or_service'
 
 # NOTE(yumeng): Keystone already support implied roles means assignment
 # of one role implies the assignment of another. New defaults roles
@@ -127,7 +129,7 @@ PROJECT_READER_OR_ADMIN = 'rule:project_reader_or_admin'
 default_policies = [
     policy.RuleDefault(
         name='admin_api',
-        check_str='role:admin or role:administrator',
+        check_str='role:admin',
         description='Legacy rule for cloud admin access',
     ),
     policy.RuleDefault(
@@ -155,6 +157,28 @@ default_policies = [
         "project_reader_or_admin",
         "rule:project_reader_api or rule:admin_api",
         "Default rule for Project reader or admin APIs.",
+        deprecated_rule=DEPRECATED_ADMIN_OR_OWNER,
+    ),
+    policy.RuleDefault(
+        name='service_api',
+        check_str='role:service',
+        description='Default rule for service-to-service APIs.',
+    ),
+    policy.RuleDefault(
+        name='project_manager_api',
+        check_str='role:manager and project_id:%(project_id)s',
+        description='Default rule for project manager APIs.',
+    ),
+    policy.RuleDefault(
+        'project_manager_or_admin',
+        'rule:project_manager_api or rule:admin_api',
+        'Default rule for project manager or admin APIs.',
+        deprecated_rule=DEPRECATED_ADMIN_OR_OWNER,
+    ),
+    policy.RuleDefault(
+        'project_member_or_service',
+        'rule:project_member_api or rule:service_api',
+        'Default rule for project member or service APIs.',
         deprecated_rule=DEPRECATED_ADMIN_OR_OWNER,
     ),
 ]
