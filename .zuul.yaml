@@ -113,6 +113,23 @@
     vars: *cyborg_base_vars
     irrelevant-files: *base_irrelevant_files
 
+- job:
+    name: cyborg-tempest-srbac
+    parent: cyborg-tempest-py3
+    description: |
+      Cyborg tempest job with enforce_new_defaults enabled for SRBAC
+      policy testing.
+    vars:
+      devstack_local_conf:
+        post-config:
+          $CYBORG_CONF:
+            oslo_policy:
+              enforce_new_defaults: true
+        test-config:
+          $TEMPEST_CONFIG:
+            cyborg_policy:
+              enforce_new_defaults: true
+
 - project:
     templates:
       - openstack-cover-jobs
@@ -127,6 +144,7 @@
         - cyborg-tempest-ipv6
         - cyborg-grenade
         - cyborg-grenade-skip-level-always
+        - cyborg-tempest-srbac
     gate:
       jobs:
         - openstack-tox-functional
@@ -134,6 +152,7 @@
         - cyborg-tempest-ipv6
         - cyborg-grenade
         - cyborg-grenade-skip-level-always
+        - cyborg-tempest-srbac
     experimental:
       jobs:
         - cyborg-tempest-centos-10-stream
