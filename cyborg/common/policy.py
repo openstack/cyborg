@@ -26,33 +26,6 @@ from oslo_policy import policy
 #       All of these may be overridden by configuration, but we can
 #       depend on their existence throughout the code.
 
-device_policies = [
-    policy.RuleDefault(
-        'cyborg:device:get_one',
-        'rule:admin_api',
-        description='Show device detail',
-        scope_types=['project'],
-    ),
-    policy.RuleDefault(
-        'cyborg:device:get_all',
-        'rule:admin_api',
-        description='Retrieve all device records',
-        scope_types=['project'],
-    ),
-    policy.RuleDefault(
-        'cyborg:device:disable',
-        'rule:admin_api',
-        description='Disable a device',
-        scope_types=['project'],
-    ),
-    policy.RuleDefault(
-        'cyborg:device:enable',
-        'rule:admin_api',
-        description='Enable a device',
-        scope_types=['project'],
-    ),
-]
-
 deployable_policies = [
     policy.RuleDefault(
         'cyborg:deployable:get_one',
