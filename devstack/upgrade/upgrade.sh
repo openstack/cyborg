@@ -72,14 +72,14 @@ if [ $ret_val -gt 1 ] ; then
     # returned as greater than 1 which means there is a major upgrade
     # stopping issue which needs to be addressed.
     echo "WARNING: Status check failed, we're going to attempt to apply the schema update and then re-evaluate."
-    $CYBORG_BIN_DIR/cyborg-dbsync --config-file=$CYBORG_CONF_FILE upgrade
+    $CYBORG_BIN_DIR/cyborg-dbsync --config-file=$CYBORG_CONF upgrade
     $CYBORG_BIN_DIR/cyborg-status upgrade check && ret_val=$? || ret_val=$?
     if [ $ret_val -gt 1 ] ; then
         die $LINENO "Cyborg DB Status check failed, returned: $ret_val"
     fi
 fi
 
-$CYBORG_BIN_DIR/cyborg-dbsync --config-file=$CYBORG_CONF_FILE upgrade || die $LINENO "DB migration error"
+$CYBORG_BIN_DIR/cyborg-dbsync --config-file=$CYBORG_CONF upgrade || die $LINENO "DB migration error"
 
 # When using uWSGI: create config if missing; re-enable Apache site (stop_cyborg
 # disables it, and we only call write_uwsgi_config when conf is missing).
