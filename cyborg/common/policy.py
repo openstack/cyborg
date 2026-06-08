@@ -26,27 +26,6 @@ from oslo_policy import policy
 #       All of these may be overridden by configuration, but we can
 #       depend on their existence throughout the code.
 
-deployable_policies = [
-    policy.RuleDefault(
-        'cyborg:deployable:get_one',
-        'rule:admin_api',
-        description='Show deployable detail',
-        scope_types=['project'],
-    ),
-    policy.RuleDefault(
-        'cyborg:deployable:get_all',
-        'rule:admin_api',
-        description='Retrieve all deployable records',
-        scope_types=['project'],
-    ),
-    policy.RuleDefault(
-        'cyborg:deployable:program',
-        'rule:admin_api',
-        description='FPGA programming.',
-        scope_types=['project'],
-    ),
-]
-
 attribute_policies = [
     policy.RuleDefault(
         'cyborg:attribute:get_one',
