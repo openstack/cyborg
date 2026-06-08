@@ -10,3 +10,4 @@ Configuration Guide
    sample-config
    sample-policy
    policy-guide
+   policy-concepts
