@@ -17,6 +17,7 @@
 import itertools
 
 from cyborg.common import policy as old_policy
+from cyborg.policies import arqs
 from cyborg.policies import base
 from cyborg.policies import device_profiles
 
@@ -25,10 +26,10 @@ def list_policies():
     return itertools.chain(
         base.list_policies(),
         device_profiles.list_policies(),
+        arqs.list_policies(),
         # NOTE(yumeng)old_policies will also be loaded before they are replaced
         # by new policies
         old_policy.device_policies,
         old_policy.deployable_policies,
         old_policy.attribute_policies,
-        old_policy.accelerator_request_policies,
     )

@@ -26,39 +26,6 @@ from oslo_policy import policy
 #       All of these may be overridden by configuration, but we can
 #       depend on their existence throughout the code.
 
-accelerator_request_policies = [
-    policy.RuleDefault(
-        'cyborg:arq:get_all',
-        'rule:default',
-        description='Retrieve accelerator request records.',
-        scope_types=['project'],
-    ),
-    policy.RuleDefault(
-        'cyborg:arq:get_one',
-        'rule:default',
-        description='Get an accelerator request record.',
-        scope_types=['project'],
-    ),
-    policy.RuleDefault(
-        'cyborg:arq:create',
-        'rule:project_member_or_admin',
-        description='Create accelerator request records.',
-        scope_types=['project'],
-    ),
-    policy.RuleDefault(
-        'cyborg:arq:delete',
-        'rule:default',
-        description='Delete accelerator request records.',
-        scope_types=['project'],
-    ),
-    policy.RuleDefault(
-        'cyborg:arq:update',
-        'rule:default',
-        description='Update accelerator request records.',
-        scope_types=['project'],
-    ),
-]
-
 device_policies = [
     policy.RuleDefault(
         'cyborg:device:get_one',

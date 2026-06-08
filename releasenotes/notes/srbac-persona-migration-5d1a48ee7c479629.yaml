@@ -8,6 +8,19 @@ features:
     The non-standard ``role:administrator`` alias has been removed
     from the ``admin_api`` base rule, aligning Cyborg with the
     Keystone bootstrap role set used by Nova and other services.
+  - |
+    Accelerator request (ARQ) policies have been migrated to
+    ``DocumentedRuleDefault`` with persona-based defaults as part of
+    the OpenStack TC's Consistent and Secure RBAC community goal.
+    New personas for ARQ endpoints:
+
+    * **reader** -- read-only access to ARQs within the caller's
+      project.
+    * **member** and **service** -- ARQ write operations (create,
+      delete, update), supporting both Nova's current
+      token-forwarding and future service-credential presentation.
+    * **admin** -- full access to all ARQ operations via implied
+      roles.
 upgrade:
   - |
     Cyborg now overrides ``enforce_new_defaults`` to ``False`` in its
@@ -35,3 +48,10 @@ upgrade:
     Cyborg admin access must either assign the standard ``admin``
     role or provide custom policy overrides before deploying this
     change.
+deprecations:
+  - |
+    The legacy ARQ policy defaults formerly defined in
+    ``cyborg/common/policy.py`` have been replaced by
+    ``DocumentedRuleDefault`` entries in ``cyborg/policies/arqs.py``.
+    Backward compatibility is preserved through deprecated-rule
+    bridges until 2027.2, when the bridges will be removed.

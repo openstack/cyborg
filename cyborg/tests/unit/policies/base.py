@@ -136,3 +136,7 @@ class BasePolicyTest(v2_test.APITestV2):
             self.project_manager_context,
             self.project_service_context,
         ]
+
+    def set_enforce_new_defaults(self, value):
+        self.flags(enforce_new_defaults=value, group='oslo_policy')
+        self.policy.reset_enforcer()
