@@ -36,6 +36,13 @@ features:
     * **manager** -- read access to deployable inventory (list,
       show).
     * **admin** -- full access including FPGA programming.
+  - |
+    Attribute policies have been migrated to
+    ``DocumentedRuleDefault`` with persona-based defaults. New
+    personas for attribute endpoints:
+
+    * **manager** -- read access to attribute records (list, show).
+    * **admin** -- full access including create and delete.
 upgrade:
   - |
     Cyborg now overrides ``enforce_new_defaults`` to ``False`` in its
@@ -65,8 +72,9 @@ upgrade:
     change.
 deprecations:
   - |
-    The legacy ARQ, device, and deployable policy defaults formerly
-    defined in ``cyborg/common/policy.py`` have been replaced by
+    The legacy per-endpoint policy defaults formerly defined in
+    ``cyborg/common/policy.py`` have been replaced by
     ``DocumentedRuleDefault`` entries in ``cyborg/policies/``.
-    Backward compatibility is preserved through deprecated-rule
-    bridges until 2027.2, when the bridges will be removed.
+    The legacy file has been removed. Backward compatibility is
+    preserved through deprecated-rule bridges until 2027.2, when
+    the bridges will be removed.
