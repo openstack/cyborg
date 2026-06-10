@@ -116,7 +116,7 @@ class AttributeCollection(Attribute):
 class AttributesController(base.CyborgController, AttributeCollection):
     """REST controller for Attributes."""
 
-    @authorize_wsgi.authorize_wsgi("cyborg:attribute", "get_all", False)
+    @authorize_wsgi.authorize_wsgi("cyborg:attribute", "get_all")
     @expose.expose(AttributeCollection, wtypes.IntegerType(), wtypes.text)
     def get_all(self, deployable_id=None, key=None):
         """Retrieve a list of attributes."""
@@ -147,7 +147,7 @@ class AttributesController(base.CyborgController, AttributeCollection):
         LOG.info('[attributes] get_one returned: %s', ret)
         return ret
 
-    @authorize_wsgi.authorize_wsgi("cyborg:attribute", "create", False)
+    @authorize_wsgi.authorize_wsgi("cyborg:attribute", "create")
     @expose.expose(
         Attribute, body=types.jsontype, status_code=HTTPStatus.CREATED
     )

@@ -121,7 +121,7 @@ class DevicesController(base.CyborgController):
         device = objects.Device.get(context, uuid)
         return Device.convert_with_links(device)
 
-    @authorize_wsgi.authorize_wsgi("cyborg:device", "get_all", False)
+    @authorize_wsgi.authorize_wsgi("cyborg:device", "get_all")
     @expose.expose(
         DeviceCollection,
         wtypes.text,

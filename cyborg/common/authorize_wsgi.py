@@ -20,7 +20,6 @@ import wsme
 from oslo_concurrency import lockutils
 from oslo_config import cfg
 from oslo_policy import policy
-from oslo_versionedobjects import base as object_base
 
 from cyborg import policies
 from cyborg.common import exception
@@ -103,18 +102,16 @@ def authorize(rule, target, creds, do_raise=False, *args, **kwargs):
 
 # This decorator MUST appear first (the outermost decorator)
 # on an API method for it to work correctly
-def authorize_wsgi(api_name, act=None, need_target=True):
+def authorize_wsgi(api_name, act=None):
     """This is a decorator to simplify wsgi action policy rule check.
     :param api_name: The collection name to be evaluate.
     :param act: The function name of wsgi action.
-    :param need_target: Whether need target for authorization. Such as,
-                        when create some resource , maybe target is not needed.
     example:
         from cyborg.common import authorize_wsgi
         class AcceleratorController(rest.RestController):
             ....
             @authorize_wsgi.authorize_wsgi("cyborg:accelerator",
-                                           "create", False)
+                                           "create")
             @wsme_pecan.wsexpose(Accelerator, body=types.jsontype,
                                  status_code=HTTPStatus.CREATED)
             def post(self, values):
@@ -143,38 +140,13 @@ def authorize_wsgi(api_name, act=None, need_target=True):
             context = pecan.request.context
             credentials = context.to_policy_values()
             credentials['is_admin'] = context.is_admin
-            target = {}
-            # maybe we can pass "_get_resource" to authorize_wsgi
-            if need_target and hasattr(self, "_get_resource"):
-                try:
-                    resource = getattr(self, "_get_resource")(*args, **kwargs)
-                    # just support object, other type will just keep target as
-                    # empty, then follow authorize method will fail and throw
-                    # an exception
-                    if isinstance(
-                        resource, object_base.VersionedObjectDictCompat
-                    ):
-                        target = {
-                            'project_id': resource.project_id,
-                            'user_id': resource.user_id,
-                        }
-                except Exception:
-                    return return_error(500)
-            elif need_target:
-                # if developer do not set _get_resource, just set target as
-                # empty, then follow authorize method will fail and throw an
-                # exception
-                target = {}
-            else:
-                # for create method, before resource exsites, we can check the
-                # the credentials with itself.
-                target = {
-                    'project_id': context.project_id,
-                    'user_id': context.user_id,
-                }
+            policy_target = {
+                'project_id': context.project_id,
+                'user_id': context.user_id,
+            }
 
             try:
-                authorize(action, target, credentials, do_raise=True)
+                authorize(action, policy_target, credentials, do_raise=True)
             except Exception:
                 return return_error(403)
 

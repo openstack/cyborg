@@ -142,7 +142,7 @@ class DeviceProfileCollection(DeviceProfile):
 class DeviceProfilesController(base.CyborgController, DeviceProfileCollection):
     """REST controller for Device Profiles."""
 
-    @authorize_wsgi.authorize_wsgi("cyborg:device_profile", "create", False)
+    @authorize_wsgi.authorize_wsgi("cyborg:device_profile", "create")
     @expose.expose(
         DeviceProfile, body=types.jsontype, status_code=HTTPStatus.CREATED
     )
@@ -264,7 +264,7 @@ class DeviceProfilesController(base.CyborgController, DeviceProfileCollection):
 
         return obj_devprofs
 
-    @authorize_wsgi.authorize_wsgi("cyborg:device_profile", "get_all", False)
+    @authorize_wsgi.authorize_wsgi("cyborg:device_profile", "get_all")
     @expose.expose(DeviceProfileCollection, wtypes.text)
     def get_all(self, name=None):
         """Retrieve a list of device profiles."""

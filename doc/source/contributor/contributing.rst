@@ -86,3 +86,31 @@ Project Team Lead Duties
 
 All common PTL duties are enumerated in the `PTL guide
 <https://docs.openstack.org/project-team-guide/ptl.html>`_.
+
+API Policy Targets
+~~~~~~~~~~~~~~~~~~
+
+Cyborg API controllers use the request context as the policy target.
+This mirrors Nova's default policy target behaviour. The
+``@authorize_wsgi.authorize_wsgi`` decorator must be the outermost (first)
+decorator on an API method. Policy checks receive a target containing the
+caller's ``project_id`` and ``user_id``::
+
+  {
+      'project_id': context.project_id,
+      'user_id': context.user_id,
+  }
+
+This is important for project-scoped persona rules such as
+``project_id:%(project_id)s``. Passing an empty target would make those
+checks fail for non-admin project users.
+
+Global resources, such as device profiles, should use admin-only policy
+rules rather than relying on an empty target. If an API needs policy to
+enforce ownership of an existing resource, fetch the resource first and
+pass a target built from the resource's project or user fields.
+
+ARQ ownership is enforced below the API policy check. ``ExtARQ.get()``,
+``ExtARQ.list()``, and ``ExtARQ.destroy()`` pass a project filter to the
+DB layer for non-admin contexts, and the DB methods apply that
+``project_id`` filter before returning, updating, or deleting rows.

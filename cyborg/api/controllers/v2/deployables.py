@@ -127,7 +127,7 @@ class DeployablesController(base.CyborgController, DeployableCollection):
 
     # TODO(s_shogo): We will update the policy of deployable APIs,
     # and using the new default policy rules in the W or later.
-    @authorize_wsgi.authorize_wsgi("cyborg:deployable", "program", False)
+    @authorize_wsgi.authorize_wsgi("cyborg:deployable", "program")
     @expose.expose(Deployable, types.uuid, body=[DeployablePatchType])
     def program(self, uuid, program_info):
         """Program a new deployable(FPGA).

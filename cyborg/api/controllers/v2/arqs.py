@@ -146,7 +146,7 @@ class ARQsController(base.CyborgController):
     nova/nova/accelerator/cyborg.py.
     """
 
-    @authorize_wsgi.authorize_wsgi("cyborg:arq", "create", False)
+    @authorize_wsgi.authorize_wsgi("cyborg:arq", "create")
     @expose.expose(
         ARQCollection, body=types.jsontype, status_code=HTTPStatus.CREATED
     )
@@ -217,7 +217,7 @@ class ARQsController(base.CyborgController):
         LOG.info('[arqs] post returned: %s', ret)
         return ret
 
-    @authorize_wsgi.authorize_wsgi("cyborg:arq", "get_one", False)
+    @authorize_wsgi.authorize_wsgi("cyborg:arq", "get_one")
     @expose.expose(ARQ, types.uuid)
     def get_one(self, uuid):
         """Get a single ARQ by UUID."""
@@ -225,7 +225,7 @@ class ARQsController(base.CyborgController):
         extarq = objects.ExtARQ.get(context, uuid)
         return ARQ.convert_with_links(extarq.arq)
 
-    @authorize_wsgi.authorize_wsgi("cyborg:arq", "get_all", False)
+    @authorize_wsgi.authorize_wsgi("cyborg:arq", "get_all")
     @expose.expose(ARQCollection, wtypes.text, types.uuid)
     def get_all(self, bind_state=None, instance=None):
         """Retrieve a list of arqs."""
@@ -270,7 +270,7 @@ class ARQsController(base.CyborgController):
         LOG.info('[arqs:get_all] Returned: %s', ret)
         return ret
 
-    @authorize_wsgi.authorize_wsgi("cyborg:arq", "delete", False)
+    @authorize_wsgi.authorize_wsgi("cyborg:arq", "delete")
     @expose.expose(
         None, wtypes.text, types.uuid, status_code=HTTPStatus.NO_CONTENT
     )
@@ -392,7 +392,7 @@ class ARQsController(base.CyborgController):
             reason = msg.format(instance_uuid)
             raise exception.PatchError(reason=reason)
 
-    @authorize_wsgi.authorize_wsgi("cyborg:arq", "update", False)
+    @authorize_wsgi.authorize_wsgi("cyborg:arq", "update")
     @expose.expose(None, body=types.jsontype, status_code=HTTPStatus.ACCEPTED)
     def patch(self, patch_list):
         """Bind/Unbind one or more ARQs.

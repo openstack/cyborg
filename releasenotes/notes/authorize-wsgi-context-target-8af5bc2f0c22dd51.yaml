@@ -1,0 +1,7 @@
+---
+upgrade:
+  - |
+    The ``authorize_wsgi`` helper no longer accepts the ``need_target``
+    argument. It now always builds the policy target from the request
+    context's ``project_id`` and ``user_id``. Out-of-tree API controllers
+    that pass a third argument to ``authorize_wsgi`` must remove it.

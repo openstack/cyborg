@@ -13,8 +13,6 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import unittest
-
 from http import HTTPStatus
 from unittest import mock
 
@@ -281,23 +279,6 @@ class TestARQsController(v2_test.APITestV2):
         args = '?' + "instance=" + instance
         response = self.delete(url + args, headers=self.headers)
         self.assertEqual(HTTPStatus.NO_CONTENT, response.status_int)
-
-    @unittest.skip("Need more code to implement _get_resource in rbac")
-    def test_delete_with_non_default(self):
-        value = {"is_admin": False, "roles": "user", "is_admin_project": False}
-        ct = self.gen_context(value)
-        headers = self.gen_headers(ct)
-        url = self.ARQ_URL
-        arq = self.fake_extarqs[0].arq
-        args = '?' + "arqs=" + str(arq['uuid'])
-        exc = None
-        try:
-            self.delete(url + args, headers=headers)
-        except Exception as e:
-            exc = e
-        # Cyborg does not raise different exception when policy check failed
-        # now, improve this case with assertRaises later.
-        self.assertIn("Bad response: 403 Forbidden", exc.args[0])
 
     @mock.patch(
         'cyborg.api.controllers.v2.arqs.service_token_utils.is_service_request'
@@ -621,15 +602,10 @@ class TestARQProjectIdOnCreate(v2_test.APITestV2):
 class TestARQProjectIsolation(v2_test.APITestV2):
     """Tests for Bug #2144056: project-scoped ARQ access control.
 
-    The authorize_wsgi decorator uses need_target=False for ARQ
-    endpoints because ARQsController has no _get_resource method.
-    With need_target=True and no _get_resource the policy target is
-    an empty dict, causing ``project_id:%(project_id)s`` to never
-    match — which blocks ALL non-admin users, even for their own
-    ARQs.  With need_target=False the target is populated from the
-    request context so the role check passes; cross-project
-    isolation is then enforced in the object/DB layer via
-    project_id filtering.
+    The authorize_wsgi decorator populates the policy target from the
+    request context so project-scoped role checks can pass; cross-project
+    isolation is then enforced in the object/DB layer via project_id
+    filtering.
     """
 
     ARQ_URL = '/accelerator_requests'

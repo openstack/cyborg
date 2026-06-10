@@ -57,10 +57,9 @@ deprecated_create = policy.DeprecatedRule(
 )
 deprecated_delete = policy.DeprecatedRule(
     name='cyborg:device_profile:delete',
-    check_str=base.deprecated_default,
+    check_str=base.deprecated_is_admin,
     deprecated_reason=(
-        'project_admin_or_owner is too permissive, '
-        'introduce admin for deletion'
+        'device profiles are global resources, require admin for deletion'
     ),
     deprecated_since=versionutils.deprecated.WALLABY,
 )
