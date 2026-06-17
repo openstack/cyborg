@@ -6,7 +6,7 @@ pci-sim
 
 ``pci-sim`` provides an out-of-tree build of the ``fake_pci_sriov`` Linux
 kernel module for DevStack and CI testing of SR-IOV PCI passthrough flows
-without physical SR-IOV hardware.  It is included in the Cyborg repository
+without physical SR-IOV hardware. It is included in the Cyborg repository
 under the top-level ``pci-sim/`` directory and is built and loaded
 automatically by the Cyborg DevStack plugin.
 
@@ -14,6 +14,7 @@ automatically by the Cyborg DevStack plugin.
    :maxdepth: 2
 
    overview
+   developer-guide
    build
    devstack
    testing
