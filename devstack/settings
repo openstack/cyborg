@@ -43,3 +43,54 @@ CYBORG_CLIENT_INSTALL=$(trueorfalse True CYBORG_CLIENT_INSTALL)
 CYBORG_CLIENT_REPO=${CYBORG_CLIENT_REPO:-"$GIT_BASE/openstack/python-cyborgclient"}
 CYBORG_CLIENT_BRANCH=${CYBORG_CLIENT_BRANCH:-master}
 CYBORG_CLIENT_DIR="${DEST}/python-cyborgclient"
+
+# ---------------------------------------------------------------------------
+# pci-sim: fake SR-IOV kernel module for PCI passthrough testing
+# ---------------------------------------------------------------------------
+
+# Master switch. Set to False to skip all pci-sim phases (build, load,
+# configuration, and test-resource creation). Defaults to False for backward
+# compatibility with old jobs.
+ENABLE_PCI_SIM=$(trueorfalse False ENABLE_PCI_SIM)
+
+# Whether to build and install pci-sim during DevStack.
+PCI_SIM_BUILD=$(trueorfalse ${ENABLE_PCI_SIM} PCI_SIM_BUILD)
+
+# Whether to load fake_pci_sriov after building it.
+PCI_SIM_LOAD=$(trueorfalse ${ENABLE_PCI_SIM} PCI_SIM_LOAD)
+
+# Whether to allow VFIO on hosts without interrupt remapping support. This is
+# required for nested/devstack test environments where vfio_iommu_type1 would
+# otherwise reject attaching pci-sim VFs with "No interrupt remapping support".
+PCI_SIM_ALLOW_UNSAFE_INTERRUPTS=$(trueorfalse ${ENABLE_PCI_SIM} PCI_SIM_ALLOW_UNSAFE_INTERRUPTS)
+
+# Number of fake SR-IOV PFs to create when PCI_SIM_LOAD=True.
+PCI_SIM_NUM_PFS=${PCI_SIM_NUM_PFS:-2}
+
+# Number of VFs to enable on each fake PF when PCI_SIM_LOAD=True.
+# fake_pci_sriov currently supports 0 through 7 VFs per PF.
+PCI_SIM_NUM_VFS=${PCI_SIM_NUM_VFS:-4}
+
+# Whether this plugin should configure Nova to consume pci-sim VFs directly via
+# [pci] device_spec/alias.
+PCI_SIM_CONFIGURE_NOVA_PCI=$(trueorfalse ${ENABLE_PCI_SIM} PCI_SIM_CONFIGURE_NOVA_PCI)
+
+# Whether this plugin should configure Cyborg's generic pci_driver to manage
+# pci-sim VFs via [agent] enabled_drivers and [pci] passthrough_whitelist.
+PCI_SIM_CONFIGURE_CYBORG_PCI=$(trueorfalse ${ENABLE_PCI_SIM} PCI_SIM_CONFIGURE_CYBORG_PCI)
+
+# Whether to configure Nova to report PCI inventory to Placement and to use
+# Placement for PCI scheduling. Only used when PCI_SIM_CONFIGURE_NOVA_PCI=True.
+PCI_SIM_NOVA_PCI_IN_PLACEMENT=$(trueorfalse ${ENABLE_PCI_SIM} PCI_SIM_NOVA_PCI_IN_PLACEMENT)
+
+# Whether to create convenience test flavors/device profiles in stack/test-config.
+PCI_SIM_CREATE_TEST_FLAVORS=$(trueorfalse ${ENABLE_PCI_SIM} PCI_SIM_CREATE_TEST_FLAVORS)
+PCI_SIM_NOVA_FLAVOR_NAME=${PCI_SIM_NOVA_FLAVOR_NAME:-pci-sim-nova}
+PCI_SIM_NOVA_ALIAS_NAME=${PCI_SIM_NOVA_ALIAS_NAME:-pci_sim_vf}
+PCI_SIM_NOVA_ALIAS_COUNT=${PCI_SIM_NOVA_ALIAS_COUNT:-1}
+PCI_SIM_CYBORG_DEVICE_PROFILE_NAME=${PCI_SIM_CYBORG_DEVICE_PROFILE_NAME:-pci-sim-cyborg-dp}
+PCI_SIM_CYBORG_FLAVOR_NAME=${PCI_SIM_CYBORG_FLAVOR_NAME:-pci-sim-cyborg}
+
+# Extra module parameters used when PCI_SIM_LOAD=True. Do not include num_pfs;
+# set PCI_SIM_NUM_PFS instead.
+PCI_SIM_MODULE_ARGS=${PCI_SIM_MODULE_ARGS:-}

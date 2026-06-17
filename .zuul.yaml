@@ -1,15 +1,17 @@
 - job:
-    name: cyborg-tempest-stub
+    name: cyborg-tempest-base
     abstract: true
     description: |
-      Abstract base job for Cyborg CI. Defines shared devstack
-      configuration, irrelevant file patterns, and required projects
-      used by both tempest and grenade jobs.
+      base job of all cyborg tempest jobs
+    parent: devstack-tempest
+    timeout: 7800
+    nodeset: devstack-single-node-debian-trixie
     required-projects: &base_required_projects
       - openstack/cyborg
       - openstack/python-cyborgclient
       - openstack/cyborg-tempest-plugin
-    vars: &base_vars
+      - openstack/tempest
+    vars: &cyborg_base_vars
       devstack_plugins: &cyborg_devstack_plugins
         cyborg: https://opendev.org/openstack/cyborg
       devstack_services: &cyborg_devstack_services
@@ -23,6 +25,8 @@
         c-sch: false
         c-vol: false
         cinder: false
+      devstack_localrc:
+        ENABLE_PCI_SIM: true
       tempest_plugins:
         - cyborg-tempest-plugin
       tempest_test_regex: cyborg_tempest_plugin
@@ -44,7 +48,10 @@
       current release(N).
     parent: grenade
     required-projects: *base_required_projects
-    vars: *base_vars
+    vars: &cyborg_grenade_vars
+      <<: *cyborg_base_vars
+      devstack_localrc:
+        ENABLE_PCI_SIM: false
     irrelevant-files: *base_irrelevant_files
 
 - job:
@@ -56,26 +63,16 @@
       would be 2026.1.
     parent: grenade-skip-level-always
     required-projects: *base_required_projects
-    vars: *base_vars
+    vars: *cyborg_grenade_vars
     irrelevant-files: *base_irrelevant_files
 
 - job:
     name: cyborg-multinode-tempest
-    parent: devstack-tempest
-    nodeset: openstack-two-node-noble
+    abstract: true
+    parent: cyborg-tempest-base
+    nodeset: devstack-two-node-debian-trixie
     description: |
-      Cyborg multinode devstack tempest job
-    required-projects: *base_required_projects
-    irrelevant-files: *base_irrelevant_files
-    vars:
-      devstack_plugins: *cyborg_devstack_plugins
-      devstack_services:
-        <<: *cyborg_devstack_services
-        cyborg-agent: false
-      tempest_plugins:
-        - cyborg-tempest-plugin
-      tempest_test_regex: cyborg_tempest_plugin
-      tox_envlist: all
+      Abstract multinode Cyborg devstack tempest job
     group-vars:
       subnode:
         devstack_plugins: *cyborg_devstack_plugins
@@ -84,27 +81,26 @@
           cyborg-api: false
           cyborg-cond: false
           tempest: false
+        devstack_localrc:
+          PCI_SIM_CREATE_TEST_FLAVORS: false
+          ENABLE_PCI_SIM: true
 
 - job:
     name: cyborg-tempest-py3
     description: |
       Cyborg devstack tempest tests job for >=Ussuri release
       run on python 3.
-    parent: devstack-tempest
-    timeout: 7800
-    required-projects: *base_required_projects
-    vars: *base_vars
-    irrelevant-files: *base_irrelevant_files
-
+    parent: cyborg-multinode-tempest
 - job:
     name: cyborg-tempest-ipv6
     parent: devstack-tempest-ipv6
+    nodeset: devstack-single-node-debian-trixie
     description: |
       Cyborg devstack tempest tests job for IPv6-only deployment
     voting: true
     timeout: 7800
     required-projects: *base_required_projects
-    vars: *base_vars
+    vars: *cyborg_base_vars
     irrelevant-files: *base_irrelevant_files
 
 - project:
@@ -123,5 +119,6 @@
     gate:
       jobs:
         - cyborg-tempest-py3
+        - cyborg-tempest-ipv6
         - cyborg-grenade
         - cyborg-grenade-skip-level-always

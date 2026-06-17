@@ -1,0 +1,419 @@
+# SPDX-License-Identifier: Apache-2.0
+
+# pci-sim exposes a deliberately small fake SR-IOV topology: each fake
+# PF can create up to seven VFs because the module models one PCI slot
+# with function 0 as the PF and functions 1-7 as VFs.  Keep the IDs here
+# in sync with pci-sim/fake_pci_sriov.h and the Cyborg PCI driver tests.
+PCI_SIM_VENDOR_ID=${PCI_SIM_VENDOR_ID:-0x1d55}
+PCI_SIM_PF_DEVICE_ID=${PCI_SIM_PF_DEVICE_ID:-0x1000}
+PCI_SIM_VF_DEVICE_ID=${PCI_SIM_VF_DEVICE_ID:-0x1001}
+PCI_SIM_MODULE_NAME=${PCI_SIM_MODULE_NAME:-fake_pci_sriov}
+
+function pci_sim_validate_config {
+    # The module supports up to 16 fake host bridges/PFs and up to 7 VFs
+    # per PF.  Validate early so stack.sh fails before loading the module
+    # with a topology the driver will reject.
+    if [[ $PCI_SIM_NUM_PFS -lt 1 || $PCI_SIM_NUM_PFS -gt 16 ]]; then
+        die $LINENO "PCI_SIM_NUM_PFS must be between 1 and 16; got $PCI_SIM_NUM_PFS"
+    fi
+
+    if [[ $PCI_SIM_NUM_VFS -lt 0 || $PCI_SIM_NUM_VFS -gt 7 ]]; then
+        die $LINENO "PCI_SIM_NUM_VFS must be between 0 and 7; got $PCI_SIM_NUM_VFS"
+    fi
+}
+
+function pci_sim_sysfs_write {
+    local value=$1
+    local path=$2
+
+    # Most lifecycle operations are sysfs writes that require root.  Keep the
+    # sudo/tee pattern in one helper so callers describe intent instead of
+    # repeating privilege plumbing.
+    echo "$value" | sudo tee "$path" >/dev/null
+}
+
+function pci_sim_find_devs {
+    local device_id=$1
+    local dev
+
+    # Discover devices through sysfs rather than lspci output so the function
+    # works before pciutils is installed and returns stable BDF names for later
+    # sysfs writes.
+    for dev in /sys/bus/pci/devices/*; do
+        [[ -e $dev/vendor && -e $dev/device ]] || continue
+        [[ $(cat "$dev/vendor") == "$PCI_SIM_VENDOR_ID" ]] || continue
+        [[ $(cat "$dev/device") == "$device_id" ]] || continue
+        basename "$dev"
+    done | sort
+}
+
+function pci_sim_csv_has_value {
+    local csv=$1
+    local value=$2
+
+    # Strip spaces and pad with leading/trailing commas so a single pattern
+    # matches whole CSV tokens at the beginning, middle, or end.  This avoids
+    # partial matches such as "nova" matching "nova_flavor".
+    [[ ,${csv// /}, == *,${value},* ]]
+}
+
+function pci_sim_iniappend_csv_unique {
+    local file=$1
+    local section=$2
+    local option=$3
+    local value=$4
+    local current
+
+    current=$(iniget "$file" "$section" "$option" || true)
+    # DevStack functions may call this more than once across rechecks or
+    # restacks.  Preserve existing values and append only missing filters.
+    if [[ -z $current ]]; then
+        iniset "$file" "$section" "$option" "$value"
+    elif ! pci_sim_csv_has_value "$current" "$value"; then
+        iniset "$file" "$section" "$option" "$current,$value"
+    fi
+}
+
+function pci_sim_openstack_auth {
+    # Resource creation happens late enough that openstackclient is available,
+    # but standalone phase testing may not have sourced credentials yet.
+    if [[ -n ${OS_AUTH_URL:-} ]]; then
+        return 0
+    fi
+
+    if [[ -n ${TOP_DIR:-} && -f $TOP_DIR/openrc ]]; then
+        source $TOP_DIR/openrc admin admin
+    elif [[ -n ${DEST:-} && -f $DEST/devstack/openrc ]]; then
+        source $DEST/devstack/openrc admin admin
+    fi
+}
+
+function pci_sim_find_vfs_for_pf {
+    local pf=$1
+    local dev
+
+    # The PCI core exposes a VF's parent PF through the physfn symlink.  Use it
+    # to keep Nova/Cyborg assignment stable when more than one fake PF exists.
+    for dev in /sys/bus/pci/devices/*; do
+        [[ -e $dev/vendor && -e $dev/device && -e $dev/physfn ]] || continue
+        [[ $(cat "$dev/vendor") == "$PCI_SIM_VENDOR_ID" ]] || continue
+        [[ $(cat "$dev/device") == "$PCI_SIM_VF_DEVICE_ID" ]] || continue
+        [[ $(basename "$(readlink -f "$dev/physfn")") == "$pf" ]] || continue
+        basename "$dev"
+    done | sort
+}
+
+function pci_sim_bind_vf_to_vfio {
+    local vf=$1
+    local dev_path=/sys/bus/pci/devices/$vf
+
+    # driver_override forces this VF to the pci-sim-specific VFIO driver even
+    # when the host loopback driver would otherwise match the same device ID.
+    if [[ -e $dev_path/driver/unbind ]]; then
+        pci_sim_sysfs_write "$vf" "$dev_path/driver/unbind"
+    fi
+    pci_sim_sysfs_write pci_sim_vfio_pci "$dev_path/driver_override"
+    pci_sim_sysfs_write "$vf" /sys/bus/pci/drivers_probe
+
+    local driver
+    driver=$(basename "$(readlink -f "$dev_path/driver")")
+    if [[ $driver != pci_sim_vfio_pci ]]; then
+        die $LINENO "Failed to bind $vf to pci_sim_vfio_pci; current driver is $driver"
+    fi
+}
+
+function build_pci_sim {
+    set -x
+    local kver=$(uname -r)
+    local kconfig=/boot/config-${kver}
+    local -a pkgs=(build-essential linux-headers-${kver} kmod)
+
+    # CONFIG_DEBUG_INFO_BTF causes the kernel Makefile to invoke pahole
+    # (from dwarves) to generate BTF type info for the .ko.  Read the
+    # running kernel's own config so this adapts automatically to any
+    # kernel on any distro without needing changes here.
+    if grep -q '^CONFIG_DEBUG_INFO_BTF=y' "${kconfig}"; then
+        pkgs+=(dwarves)
+    fi
+
+    sudo apt-get update
+    sudo apt-get install -y "${pkgs[@]}"
+
+    $CYBORG_DIR/tools/check-kernel-config.sh
+    make -C $CYBORG_DIR/pci-sim modules
+    sudo make -C $CYBORG_DIR/pci-sim modules_install
+    sudo depmod -a
+}
+
+function pci_sim_configure_vfio_iommu {
+    set -x
+
+    [[ "$PCI_SIM_ALLOW_UNSAFE_INTERRUPTS" == True ]] || return 0
+
+    # Nested/devstack hosts often lack interrupt remapping.  In that case VFIO
+    # refuses to attach groups unless vfio_iommu_type1 allows unsafe interrupts.
+    # Pass the module parameter before loading VFIO and also update the runtime
+    # sysfs knob for repeated stack.sh runs where the module is already loaded.
+    sudo modprobe vfio_iommu_type1 allow_unsafe_interrupts=1 || true
+    if [[ -e /sys/module/vfio_iommu_type1/parameters/allow_unsafe_interrupts ]]; then
+        pci_sim_sysfs_write Y /sys/module/vfio_iommu_type1/parameters/allow_unsafe_interrupts
+    fi
+}
+
+function load_pci_sim {
+    set -x
+    pci_sim_validate_config
+
+    # Start from a deterministic state so repeated stack.sh runs do not inherit
+    # stale VFs or module parameters.
+    unload_pci_sim || true
+
+    pci_sim_configure_vfio_iommu
+    sudo modprobe vfio-pci
+    # Prefer the installed module path used by DevStack.  Fall back to the
+    # build-tree module to make local plugin-function testing convenient.
+    # shellcheck disable=SC2086
+    if ! sudo modprobe $PCI_SIM_MODULE_NAME num_pfs=$PCI_SIM_NUM_PFS $PCI_SIM_MODULE_ARGS; then
+        # shellcheck disable=SC2086
+        sudo insmod $CYBORG_DIR/pci-sim/fake_pci_sriov.ko \
+            num_pfs=$PCI_SIM_NUM_PFS $PCI_SIM_MODULE_ARGS
+    fi
+}
+
+function configure_pci_sim_vfs {
+    set -x
+    local pf vf
+    local -a pfs vfs
+
+    # Reset sriov_numvfs before recreating VFs so repeated stack.sh runs do not
+    # leave stale VF devices or driver bindings behind.
+    pci_sim_validate_config
+    mapfile -t pfs < <(pci_sim_find_devs "$PCI_SIM_PF_DEVICE_ID")
+
+    if [[ ${#pfs[@]} -ne $PCI_SIM_NUM_PFS ]]; then
+        die $LINENO "Expected $PCI_SIM_NUM_PFS pci-sim PF(s), found ${#pfs[@]}: ${pfs[*]}"
+    fi
+
+    for pf in "${pfs[@]}"; do
+        pci_sim_sysfs_write 0 "/sys/bus/pci/devices/$pf/sriov_numvfs" || true
+        pci_sim_sysfs_write "$PCI_SIM_NUM_VFS" "/sys/bus/pci/devices/$pf/sriov_numvfs"
+        mapfile -t vfs < <(pci_sim_find_vfs_for_pf "$pf")
+        for vf in "${vfs[@]}"; do
+            pci_sim_bind_vf_to_vfio "$vf"
+        done
+    done
+
+    echo "pci-sim PFs: ${pfs[*]}"
+    echo "pci-sim VFs: $(pci_sim_find_devs "$PCI_SIM_VF_DEVICE_ID" | xargs echo)"
+}
+
+function pci_sim_pf_target {
+    local index=$1
+
+    # When both services are enabled, split fake PFs by index.  This lets one
+    # DevStack cloud expose Nova PCI passthrough and Cyborg accelerator flows
+    # at the same time without both services managing the same VF.
+    if [[ "$PCI_SIM_CONFIGURE_NOVA_PCI" == True && \
+          "$PCI_SIM_CONFIGURE_CYBORG_PCI" == True ]]; then
+        if (( index % 2 == 0 )); then
+            echo nova
+        else
+            echo cyborg
+        fi
+    elif [[ "$PCI_SIM_CONFIGURE_NOVA_PCI" == True ]]; then
+        echo nova
+    elif [[ "$PCI_SIM_CONFIGURE_CYBORG_PCI" == True ]]; then
+        echo cyborg
+    fi
+}
+
+function configure_pci_sim_nova_conf_file {
+    local conf_file=$1
+    shift
+    local -a specs aliases
+    local vf
+
+    [[ -f $conf_file ]] || die $LINENO "Nova config does not exist: $conf_file"
+
+    for vf in "$@"; do
+        specs+=("{\"address\":\"$vf\",\"vendor_id\":\"1d55\",\"product_id\":\"1001\",\"device_type\":\"type-VF\",\"managed\":\"no\"}")
+    done
+    aliases+=("{\"vendor_id\":\"1d55\",\"product_id\":\"1001\",\"device_type\":\"type-VF\",\"name\":\"$PCI_SIM_NOVA_ALIAS_NAME\"}")
+
+    if (( ${#specs[@]} > 0 )); then
+        iniset_multiline "$conf_file" pci device_spec "${specs[@]}"
+        iniset_multiline "$conf_file" pci alias "${aliases[@]}"
+
+        iniset "$conf_file" filter_scheduler available_filters \
+            nova.scheduler.filters.all_filters
+        pci_sim_iniappend_csv_unique "$conf_file" filter_scheduler \
+            enabled_filters PciPassthroughFilter
+        pci_sim_iniappend_csv_unique "$conf_file" filter_scheduler \
+            enabled_filters NUMATopologyFilter
+
+        if [[ "$PCI_SIM_NOVA_PCI_IN_PLACEMENT" == True ]]; then
+            iniset "$conf_file" pci report_in_placement True
+            iniset "$conf_file" filter_scheduler pci_in_placement True
+        fi
+    fi
+}
+
+function configure_pci_sim_nova {
+    set -x
+    local conf_file
+    local -a nova_conf_files
+
+    [[ "$PCI_SIM_CONFIGURE_NOVA_PCI" == True ]] || return 0
+
+    NOVA_CONF=${NOVA_CONF:-/etc/nova/nova.conf}
+    NOVA_CPU_CONF=${NOVA_CPU_CONF:-/etc/nova/nova-cpu.conf}
+
+    # Some DevStack deployments keep compute-service PCI options in a separate
+    # nova-cpu.conf.  Update both files when they exist so nova-api and
+    # nova-compute see compatible alias/device_spec settings.
+    nova_conf_files=("$NOVA_CONF")
+    if [[ -f $NOVA_CPU_CONF && $NOVA_CPU_CONF != "$NOVA_CONF" ]]; then
+        nova_conf_files+=("$NOVA_CPU_CONF")
+    fi
+
+    for conf_file in "${nova_conf_files[@]}"; do
+        configure_pci_sim_nova_conf_file "$conf_file" "$@"
+    done
+}
+
+function configure_pci_sim_cyborg {
+    set -x
+    local current_drivers
+    local -a specs
+    local vf
+
+    [[ "$PCI_SIM_CONFIGURE_CYBORG_PCI" == True ]] || return 0
+
+    CYBORG_CONF_FILE=${CYBORG_CONF_FILE:-/etc/cyborg/cyborg.conf}
+    [[ -f $CYBORG_CONF_FILE ]] || die $LINENO "CYBORG_CONF_FILE does not exist: $CYBORG_CONF_FILE"
+
+    current_drivers=$(iniget "$CYBORG_CONF_FILE" agent enabled_drivers || true)
+    # Enable the generic PCI driver without dropping any other accelerator
+    # drivers the local DevStack environment already requested.
+    if [[ -z $current_drivers ]]; then
+        iniset "$CYBORG_CONF_FILE" agent enabled_drivers pci_driver
+    elif [[ ,$current_drivers, != *,pci_driver,* ]]; then
+        iniset "$CYBORG_CONF_FILE" agent enabled_drivers "$current_drivers,pci_driver"
+    fi
+
+    for vf in "$@"; do
+        specs+=("{\"address\":\"$vf\"}")
+    done
+
+    if (( ${#specs[@]} > 0 )); then
+        iniset_multiline "$CYBORG_CONF_FILE" pci passthrough_whitelist "${specs[@]}"
+    fi
+}
+
+function pci_sim_collect_target_vfs {
+    local wanted_target=$1
+    local pf target
+    local -a pfs pf_vfs
+    local index=0
+
+    mapfile -t pfs < <(pci_sim_find_devs "$PCI_SIM_PF_DEVICE_ID")
+    for pf in "${pfs[@]}"; do
+        target=$(pci_sim_pf_target "$index")
+        if [[ $target == "$wanted_target" ]]; then
+            mapfile -t pf_vfs < <(pci_sim_find_vfs_for_pf "$pf")
+            printf '%s
+' "${pf_vfs[@]}"
+        fi
+        index=$((index + 1))
+    done
+}
+
+function configure_pci_sim_nova_service_config {
+    set -x
+    local -a nova_vfs
+
+    [[ "$PCI_SIM_CONFIGURE_NOVA_PCI" == True ]] || return 0
+    mapfile -t nova_vfs < <(pci_sim_collect_target_vfs nova)
+    configure_pci_sim_nova "${nova_vfs[@]}"
+    echo "pci-sim Nova VFs: ${nova_vfs[*]:-}"
+}
+
+function configure_pci_sim_cyborg_service_config {
+    set -x
+    local -a cyborg_vfs
+
+    [[ "$PCI_SIM_CONFIGURE_CYBORG_PCI" == True ]] || return 0
+    mapfile -t cyborg_vfs < <(pci_sim_collect_target_vfs cyborg)
+    configure_pci_sim_cyborg "${cyborg_vfs[@]}"
+    echo "pci-sim Cyborg VFs: ${cyborg_vfs[*]:-}"
+}
+
+function pci_sim_flavor_create_like_m1_nano {
+    local flavor_name=$1
+    local ram disk vcpus ephemeral swap
+
+    ram=$(openstack flavor show m1.nano -f value -c ram 2>/dev/null || echo 192)
+    disk=$(openstack flavor show m1.nano -f value -c disk 2>/dev/null || echo 1)
+    vcpus=$(openstack flavor show m1.nano -f value -c vcpus 2>/dev/null || echo 1)
+    ephemeral=$(openstack flavor show m1.nano -f value \
+        -c OS-FLV-EXT-DATA:ephemeral 2>/dev/null || echo 0)
+    swap=$(openstack flavor show m1.nano -f value -c swap 2>/dev/null || echo 0)
+
+    if ! openstack flavor show "$flavor_name" >/dev/null 2>&1; then
+        openstack flavor create "$flavor_name" --ram "$ram" \
+            --disk "$disk" --vcpus "$vcpus" --ephemeral "$ephemeral" \
+            --swap "$swap"
+    fi
+    openstack flavor set "$flavor_name" --property hw_rng:allowed=True
+}
+
+function create_pci_sim_nova_flavor {
+    [[ "$PCI_SIM_CONFIGURE_NOVA_PCI" == True ]] || return 0
+
+    pci_sim_flavor_create_like_m1_nano "$PCI_SIM_NOVA_FLAVOR_NAME"
+    openstack flavor set "$PCI_SIM_NOVA_FLAVOR_NAME" \
+        --property "pci_passthrough:alias=$PCI_SIM_NOVA_ALIAS_NAME:$PCI_SIM_NOVA_ALIAS_COUNT"
+}
+
+function create_pci_sim_cyborg_device_profile {
+    local groups
+
+    [[ "$PCI_SIM_CONFIGURE_CYBORG_PCI" == True ]] || return 0
+
+    groups='[{"resources:CUSTOM_PCI":"1","trait:CUSTOM_PCI_PRODUCT_ID_1001":"required"}]'
+    if ! openstack accelerator device profile list -f value -c name | \
+        grep -qx "$PCI_SIM_CYBORG_DEVICE_PROFILE_NAME"; then
+        openstack accelerator device profile create \
+            "$PCI_SIM_CYBORG_DEVICE_PROFILE_NAME" "$groups"
+    fi
+}
+
+function create_pci_sim_cyborg_flavor {
+    [[ "$PCI_SIM_CONFIGURE_CYBORG_PCI" == True ]] || return 0
+
+    pci_sim_flavor_create_like_m1_nano "$PCI_SIM_CYBORG_FLAVOR_NAME"
+    openstack flavor set "$PCI_SIM_CYBORG_FLAVOR_NAME" \
+        --property "accel:device_profile=$PCI_SIM_CYBORG_DEVICE_PROFILE_NAME"
+}
+
+function create_pci_sim_test_resources {
+    set -x
+
+    # These resources are convenience fixtures for manual validation.  The
+    # helper is idempotent so unstack/stack cycles can reuse names safely.
+    [[ "$PCI_SIM_CREATE_TEST_FLAVORS" == True ]] || return 0
+    pci_sim_openstack_auth
+    create_pci_sim_nova_flavor
+    create_pci_sim_cyborg_device_profile
+    create_pci_sim_cyborg_flavor
+}
+
+function unload_pci_sim {
+    set -x
+    local cleanup=$CYBORG_DIR/pci-sim/cleanup_fake_pci_sriov.sh
+    if [[ -x $cleanup ]]; then
+        $cleanup || true
+    elif grep -q "^$PCI_SIM_MODULE_NAME " /proc/modules; then
+        sudo rmmod "$PCI_SIM_MODULE_NAME"
+    fi
+}

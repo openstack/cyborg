@@ -22,6 +22,18 @@ etc/cyborg/cyborg.conf.sample
 .idea/*
 .vscode/*
 
+# pci-sim kernel module build outputs
+pci-sim/*.o
+pci-sim/*.ko
+pci-sim/*.mod
+pci-sim/*.mod.c
+pci-sim/*.cmd
+pci-sim/modules.order
+pci-sim/Module.symvers
+pci-sim/.module-common.o
+pci-sim/.tmp_versions/
+pci-sim/.cache.mk
+
 # Editors
 *.sublime-workspace
 *.swp
