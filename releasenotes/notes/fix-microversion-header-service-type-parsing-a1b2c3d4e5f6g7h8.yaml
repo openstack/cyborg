@@ -1,0 +1,14 @@
+---
+fixes:
+  - |
+    Restored support for the standard ``OpenStack-API-Version`` header
+    format that includes the service type prefix
+    (``OpenStack-API-Version: accelerator 2.1``), as specified by the
+    `API-WG microversion guideline
+    <https://specs.openstack.org/openstack/api-wg/guidelines/microversion_specification.html>`_.
+    A previous change inadvertently removed parsing of the service type
+    prefix, causing clients that follow the standard (including
+    keystoneauth and openstacksdk) to always fall back to the minimum
+    API version.  Both the prefixed and bare version formats are now
+    accepted; a deprecation warning is logged when the service type
+    prefix is omitted.

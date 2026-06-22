@@ -34,7 +34,10 @@ from cyborg.api.controllers.v2 import versions
 
 def min_version():
     return base.Version(
-        {base.Version.current_api_version: versions.min_version_string()},
+        {
+            base.Version.current_api_version: '%s %s'
+            % (versions.service_type_string(), versions.min_version_string())
+        },
         versions.min_version_string(),
         versions.max_version_string(),
     )
@@ -42,7 +45,10 @@ def min_version():
 
 def max_version():
     return base.Version(
-        {base.Version.current_api_version: versions.max_version_string()},
+        {
+            base.Version.current_api_version: '%s %s'
+            % (versions.service_type_string(), versions.max_version_string())
+        },
         versions.min_version_string(),
         versions.max_version_string(),
     )
@@ -145,7 +151,10 @@ class Controller(rest.RestController):
 
         # assert that requested version is supported
         self._check_version(v, pecan.response.headers)
-        pecan.response.headers[base.Version.current_api_version] = str(v)
+        pecan.response.headers[base.Version.current_api_version] = "%s %s" % (
+            versions.service_type_string(),
+            v,
+        )
         pecan.request.version = v
 
         return super()._route(args, request)

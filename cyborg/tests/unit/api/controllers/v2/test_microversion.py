@@ -20,6 +20,9 @@ H_MAX_VER = 'openstack-api-maximum-version'
 H_RESP_VER = 'openstack-api-version'
 MIN_VER = versions.min_version_string()
 MAX_VER = versions.max_version_string()
+# Response header value includes the service type prefix per API-WG spec.
+RESP_MIN = '%s %s' % (SERVICE_TYPE, MIN_VER)
+RESP_MAX = '%s %s' % (SERVICE_TYPE, MAX_VER)
 
 
 class TestMicroversions(api_base.BaseApiTest):
@@ -54,7 +57,7 @@ class TestMicroversions(api_base.BaseApiTest):
         response = self.get_json('/v2', return_json=False)
         self.assertEqual(response.headers[H_MIN_VER], MIN_VER)
         self.assertEqual(response.headers[H_MAX_VER], MAX_VER)
-        self.assertEqual(response.headers[H_RESP_VER], MIN_VER)
+        self.assertEqual(response.headers[H_RESP_VER], RESP_MIN)
         self.assertTrue(
             all(
                 x in response.json.keys()
@@ -68,7 +71,7 @@ class TestMicroversions(api_base.BaseApiTest):
         )
         self.assertEqual(response.headers[H_MIN_VER], MIN_VER)
         self.assertEqual(response.headers[H_MAX_VER], MAX_VER)
-        self.assertEqual(response.headers[H_RESP_VER], '2.0')
+        self.assertEqual(response.headers[H_RESP_VER], RESP_MIN)
         self.assertTrue(
             all(
                 x in response.json.keys()
@@ -84,7 +87,7 @@ class TestMicroversions(api_base.BaseApiTest):
         )
         self.assertEqual(response.headers[H_MIN_VER], MIN_VER)
         self.assertEqual(response.headers[H_MAX_VER], MAX_VER)
-        self.assertEqual(response.headers[H_RESP_VER], MAX_VER)
+        self.assertEqual(response.headers[H_RESP_VER], RESP_MAX)
         self.assertTrue(
             all(
                 x in response.json.keys()
@@ -109,3 +112,28 @@ class TestMicroversions(api_base.BaseApiTest):
         )
         self.assertTrue(response.json['error_message'])
         self.assertIn(expected_error_msg, response.json['error_message'])
+
+    def test_standard_header_with_service_type(self):
+        """The API-WG standard format includes the service type.
+
+        OpenStack-API-Version: accelerator 2.0
+        """
+        response = self.get_json(
+            '/v2',
+            headers={'OpenStack-API-Version': 'accelerator 2.0'},
+            return_json=False,
+        )
+        self.assertEqual(response.headers[H_MIN_VER], MIN_VER)
+        self.assertEqual(response.headers[H_MAX_VER], MAX_VER)
+        self.assertEqual(response.headers[H_RESP_VER], RESP_MIN)
+
+    def test_standard_header_with_service_type_latest(self):
+        """The API-WG standard format with 'latest'."""
+        response = self.get_json(
+            '/v2',
+            headers={'OpenStack-API-Version': 'accelerator latest'},
+            return_json=False,
+        )
+        self.assertEqual(response.headers[H_MIN_VER], MIN_VER)
+        self.assertEqual(response.headers[H_MAX_VER], MAX_VER)
+        self.assertEqual(response.headers[H_RESP_VER], RESP_MAX)
