@@ -95,9 +95,10 @@ Request
   - key: attribute_key_req
   - value: attribute_value_req
 
-**Example post curl**
+**Example request: create an attribute**
 
-.. literalinclude:: ../../doc/api_samples/attributes/attributes-post-curl.json
+.. literalinclude:: ../../doc/api_samples/attributes/attributes-post-req.json
+   :language: javascript
 
 **Example response: create an attribute**
 

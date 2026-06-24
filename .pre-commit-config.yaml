@@ -19,7 +19,6 @@ repos:
         files: .*\.(yaml|yml)$
       - id: check-json
         files: .*\.json$
-        exclude: .*-curl.*\.json$
       - id: check-ast
       # git
       - id: check-added-large-files
