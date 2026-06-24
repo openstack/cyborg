@@ -15,6 +15,8 @@
    "state":"Initial",
    "device_rp_uuid":null,
    "device_profile_name":"tmp-dp1",
+   "project_id":"4e01a8e0-52b4-42e4-be67-20dd82f0ef77",
+   "attach_handle_uuid":null,
    "attach_handle_info":{
    }
 }

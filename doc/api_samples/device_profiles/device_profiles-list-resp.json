@@ -25,7 +25,7 @@
          "description": "",
          "groups":[
             {
-               "trait:CUSTOM_CHENKE_TRAITS":"required",
+               "trait:CUSTOM_FPGA_INSPUR":"required",
                "resources:FPGA":"1",
                "accel:bitstream_id":"d5ca2f11-3108-4426-a11c-a959987565df"
             }
