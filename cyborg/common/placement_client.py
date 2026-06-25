@@ -43,7 +43,7 @@ class PlacementClient:
             raise exception.PlacementServerError(
                 "Placement Server has some error at this time."
             )
-        LOG.debug('Successfully get resources from placement: %s', url)
+        LOG.debug('Successfully got resources from placement: %s', url)
         return res
 
     def post(self, url, data, version=None, global_request_id=None):
@@ -57,7 +57,7 @@ class PlacementClient:
             raise exception.PlacementServerError(
                 "Placement Server has some error at this time."
             )
-        LOG.debug('Successfully create resources from placement: %s', url)
+        LOG.debug('Successfully created resources from placement: %s', url)
         return res
 
     def put(self, url, data, version=None, global_request_id=None):
@@ -74,7 +74,7 @@ class PlacementClient:
             raise exception.PlacementServerError(
                 "Placement Server has some error at this time."
             )
-        LOG.debug('Successfully update resources from placement: %s', url)
+        LOG.debug('Successfully updated resources from placement: %s', url)
         return res
 
     def delete(self, url, version=None, global_request_id=None):
@@ -85,7 +85,7 @@ class PlacementClient:
             raise exception.PlacementServerError(
                 "Placement Server has some error at this time."
             )
-        LOG.debug('Successfully delete resources from placement: %s', url)
+        LOG.debug('Successfully deleted resources from placement: %s', url)
         return res
 
     def _get_rp_traits(self, rp_uuid):
@@ -309,8 +309,8 @@ class PlacementClient:
                 )
             elif resp.status_code == 201:
                 LOG.info(
-                    "Successfully created resource class %(rc_name).",
-                    {"rc_name", name},
+                    "Successfully created resource class %(rc_name)s.",
+                    {"rc_name": name},
                 )
 
     def get_providers_in_tree(self, context, uuid):
@@ -397,8 +397,8 @@ class PlacementClient:
             LOG.error(msg, args)
         elif resp.status_code == 204:
             LOG.info(
-                "Successfully delete resource class %(rc_name).",
-                {"rc_name", name},
+                "Successfully deleted resource class %(rc_name)s.",
+                {"rc_name": name},
             )
 
     def _delete_trait(self, context, name):
@@ -423,8 +423,8 @@ class PlacementClient:
             LOG.error(msg, args)
         elif resp.status_code == 204:
             LOG.info(
-                "Successfully delete trait %(trait_name).",
-                {"trait_name", name},
+                "Successfully deleted trait %(trait_name)s.",
+                {"trait_name": name},
             )
 
     def update_rp_inventory_reserved(self, rp_uuid, resource, total, reserved):

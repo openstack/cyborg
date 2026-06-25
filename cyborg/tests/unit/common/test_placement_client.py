@@ -40,7 +40,7 @@ class PlacementAPITest(base.TestCase):
         self.mock_sdk.get.return_value = mock.Mock(status_code=200)
         placement = placement_client.PlacementClient()
         placement.get(mock.Mock())
-        msg = 'Successfully get resources from placement: %s'
+        msg = 'Successfully got resources from placement: %s'
         self.mock_log_debug.assert_called_once_with(msg, mock.ANY)
 
     def test_get_exception(self):
@@ -55,7 +55,7 @@ class PlacementAPITest(base.TestCase):
         self.mock_sdk.post.return_value = mock.Mock(status_code=200)
         placement = placement_client.PlacementClient()
         placement.post(mock.Mock(), mock.ANY)
-        msg = 'Successfully create resources from placement: %s'
+        msg = 'Successfully created resources from placement: %s'
         self.mock_log_debug.assert_called_once_with(msg, mock.ANY)
 
     def test_post_exception(self):
@@ -73,7 +73,7 @@ class PlacementAPITest(base.TestCase):
         self.mock_sdk.put.return_value = mock.Mock(status_code=200)
         placement = placement_client.PlacementClient()
         placement.put(mock.Mock(), mock.ANY)
-        msg = 'Successfully update resources from placement: %s'
+        msg = 'Successfully updated resources from placement: %s'
         self.mock_log_debug.assert_called_once_with(msg, mock.ANY)
 
     def test_put_exception(self):
@@ -91,7 +91,7 @@ class PlacementAPITest(base.TestCase):
         self.mock_sdk.delete.return_value = mock.Mock(status_code=200)
         placement = placement_client.PlacementClient()
         placement.delete(mock.Mock(), mock.ANY)
-        msg = 'Successfully delete resources from placement: %s'
+        msg = 'Successfully deleted resources from placement: %s'
         self.mock_log_debug.assert_called_once_with(msg, mock.ANY)
 
     def test_delete_exception(self):
@@ -109,7 +109,7 @@ class PlacementAPITest(base.TestCase):
         self.mock_sdk.get.return_value = mock.Mock(status_code=200)
         placement = placement_client.PlacementClient()
         placement._get_rp_traits(mock.ANY)
-        msg = 'Successfully get resources from placement: %s'
+        msg = 'Successfully got resources from placement: %s'
         self.mock_log_debug.assert_called_once_with(msg, mock.ANY)
 
     def test_get_rp_traits_exception(self):
@@ -126,7 +126,7 @@ class PlacementAPITest(base.TestCase):
         self.mock_sdk.get.return_value = None
         placement._ensure_traits([mock.ANY])
         self.assertEqual(2, self.mock_log_debug.call_count)
-        msg = 'Successfully update resources from placement: %s'
+        msg = 'Successfully updated resources from placement: %s'
         # first call/arg
         self.assertIn(msg, self.mock_log_debug.call_args_list[1][0][0])
 
@@ -149,7 +149,7 @@ class PlacementAPITest(base.TestCase):
         placement = placement_client.PlacementClient()
         rp.return_value = {'status_code': 200, 'generation': 0}
         placement._put_rp_traits(mock.ANY, {'traits': 'fake_trait'})
-        msg = 'Successfully update resources from placement: %s'
+        msg = 'Successfully updated resources from placement: %s'
         self.mock_log_debug.assert_called_once_with(msg, mock.ANY)
 
     @mock.patch(
