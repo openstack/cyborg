@@ -19,10 +19,8 @@ from keystoneauth1 import plugin
 from keystoneauth1.access import service_catalog as ksa_service_catalog
 from oslo_context import context
 from oslo_db.sqlalchemy import enginefacade
-from oslo_utils import timeutils
 
 from cyborg.common import exception
-from cyborg.common import utils
 
 
 class _ContextAuthPlugin(plugin.BaseAuthPlugin):
@@ -70,9 +68,6 @@ class RequestContext(context.RequestContext):
     FROM_DICT_EXTRA_KEYS = [
         'user_id',
         'project_id',
-        'read_deleted',
-        'remote_address',
-        'timestamp',
         'service_catalog',
     ]
 
@@ -81,25 +76,12 @@ class RequestContext(context.RequestContext):
         user_id=None,
         project_id=None,
         is_admin=None,
-        read_deleted="no",
-        remote_address=None,
-        timestamp=None,
         service_catalog=None,
         user_auth_plugin=None,
         **kwargs,
     ):
-        """:param read_deleted: 'no' indicates deleted records are hidden,
-             'yes' indicates deleted records are visible,
-             'only' indicates that *only* deleted records are visible.
-
-        :param overwrite: Set to False to ensure that the thread-local
-             copy of the index is not overwritten.
-
-        :param instance_lock_checked: This is not used and will be removed
-             in a future release.
-
-        :param user_auth_plugin: The auth plugin for the current request's
-             authentication data.
+        """:param user_auth_plugin: The auth plugin for the current request's
+        authentication data.
         """
         if user_id:
             kwargs['user_id'] = user_id
@@ -107,14 +89,6 @@ class RequestContext(context.RequestContext):
             kwargs['project_id'] = project_id
 
         super().__init__(is_admin=is_admin, **kwargs)
-
-        self.read_deleted = read_deleted
-        self.remote_address = remote_address
-        if not timestamp:
-            timestamp = timeutils.utcnow()
-        if isinstance(timestamp, str):
-            timestamp = timeutils.parse_strtime(timestamp)
-        self.timestamp = timestamp
 
         if service_catalog:
             # Only include required parts of service_catalog
@@ -140,9 +114,6 @@ class RequestContext(context.RequestContext):
         values.update(
             {
                 'user_id': self.user_id,
-                'read_deleted': self.read_deleted,
-                'remote_address': self.remote_address,
-                'timestamp': utils.strtime(self.timestamp),
                 'user_name': self.user_name,
                 'service_catalog': self.service_catalog,
                 'project_name': self.project_name,
@@ -162,7 +133,7 @@ def get_context():
     )
 
 
-def get_admin_context(read_deleted="no"):
+def get_admin_context():
     # NOTE(alaski): This method should only be used when an admin context is
     # necessary for the entirety of the context lifetime. If that's not the
     # case please use get_context(), or create the RequestContext manually, and
@@ -173,7 +144,6 @@ def get_admin_context(read_deleted="no"):
         user_id=None,
         project_id=None,
         is_admin=True,
-        read_deleted=read_deleted,
         overwrite=False,
     )
 
