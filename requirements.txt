@@ -8,7 +8,7 @@ WSME>=0.10.1 # MIT
 oslo.i18n>=1.5.0 # Apache-2.0
 oslo.config>=1.1.0,!=4.3.0,!=4.4.0 # Apache-2.0
 oslo.log>=5.0.0 # Apache-2.0
-oslo.context>=2.9.0 # Apache-2.0
+oslo.context>=2.19.2 # Apache-2.0
 oslo.messaging>=14.1.0 # Apache-2.0
 oslo.concurrency>=3.26.0 # Apache-2.0
 oslo.service[threading]>=4.4.1 # Apache-2.0
