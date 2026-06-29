@@ -83,9 +83,9 @@ class DevicePolicyTest(base.BasePolicyTest):
             set(self.all_contexts) - set(self.read_authorized_contexts)
         )
 
-        # disable and enable remain admin-only (same new default and
-        # deprecated bridge: rule:admin_api). The request-context target is
-        # irrelevant because admin_api has no project_id requirement.
+        # The legacy and new checks for disable and enable are both
+        # admin_api, so they are admin-only in both modes. The request-context
+        # target is irrelevant because admin_api has no project_id requirement.
         self.write_authorized_contexts = [
             self.legacy_admin_context,
             self.project_admin_context,
@@ -274,8 +274,8 @@ class DevicePolicyNewDefaultsTest(base.BasePolicyTest):
             set(self.all_contexts) - set(self.read_authorized_contexts)
         )
 
-        # device:disable and device:enable: admin_api (role:admin) in both
-        # new default and deprecated bridge, so admin-only in both modes.
+        # device:disable and device:enable use admin_api (role:admin) in
+        # both legacy and new defaults, so they are admin-only in both modes.
         self.write_authorized_contexts = [
             self.legacy_admin_context,
             self.project_admin_context,

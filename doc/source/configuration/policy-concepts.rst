@@ -243,10 +243,11 @@ v2 API endpoint.
 Backward Compatibility
 -----------------------
 
-Backward compatibility is preserved through deprecated-rule bridges on every
-migrated policy. When ``enforce_new_defaults = False`` (the Cyborg default in
-2026.2), oslo.policy evaluates the new check string OR the legacy bridge, so
-existing tokens that passed before continue to pass.
+Backward compatibility is preserved through deprecated-rule bridges on
+migrated policies where the legacy check string differs from the new default.
+When ``enforce_new_defaults = False`` (the Cyborg default in 2026.2),
+oslo.policy evaluates the new check string OR the legacy bridge, so existing
+tokens that passed before continue to pass.
 
 The deprecated bridge check strings are:
 
@@ -254,11 +255,15 @@ The deprecated bridge check strings are:
   (``is_admin:True or project_id:%(project_id)s``)
 - ARQ create: ``rule:project_member_or_admin``
 - ARQ writes: ``rule:admin_or_owner``
-- Device, deployable, attribute endpoints: ``rule:admin_api``
+- Device, deployable, and attribute reads: legacy bridge
+  ``rule:admin_api`` (new default ``rule:project_manager_or_admin``)
 - Device profile reads: legacy bridge ``rule:admin_or_owner``
   (new default ``project_reader_or_admin``)
 - Device profile create/delete: legacy bridge ``rule:is_admin``
   (new default ``admin_api``)
+
+Admin-only policies whose check string remains ``rule:admin_api`` do not need a
+deprecated-rule bridge because there is no legacy/new-default difference.
 
 .. note::
 

@@ -39,27 +39,6 @@ deprecated_get_all = policy.DeprecatedRule(
     ),
     deprecated_since=versionutils.deprecated.GAZPACHO,
 )
-deprecated_create = policy.DeprecatedRule(
-    name='cyborg:attribute:create',
-    check_str='rule:admin_api',
-    deprecated_reason=(
-        'rule:admin_api is retained as the default for attribute '
-        'create as attributes describe shared physical '
-        'infrastructure properties populated by cyborg-agent'
-    ),
-    deprecated_since=versionutils.deprecated.GAZPACHO,
-)
-deprecated_delete = policy.DeprecatedRule(
-    name='cyborg:attribute:delete',
-    check_str='rule:admin_api',
-    deprecated_reason=(
-        'rule:admin_api is retained as the default for attribute '
-        'delete as attributes describe shared physical '
-        'infrastructure properties populated by cyborg-agent'
-    ),
-    deprecated_since=versionutils.deprecated.GAZPACHO,
-)
-
 attribute_policies = [
     policy.DocumentedRuleDefault(
         name='cyborg:attribute:get_all',
@@ -81,6 +60,7 @@ attribute_policies = [
         scope_types=['project'],
         deprecated_rule=deprecated_get_one,
     ),
+    # No deprecated_rule: base.ADMIN == 'rule:admin_api' is unchanged.
     policy.DocumentedRuleDefault(
         name='cyborg:attribute:create',
         check_str=base.ADMIN,
@@ -89,7 +69,6 @@ attribute_policies = [
             {'path': '/v2/attributes', 'method': 'POST'},
         ],
         scope_types=['project'],
-        deprecated_rule=deprecated_create,
     ),
     policy.DocumentedRuleDefault(
         name='cyborg:attribute:delete',
@@ -99,7 +78,6 @@ attribute_policies = [
             {'path': '/v2/attributes/{uuid}', 'method': 'DELETE'},
         ],
         scope_types=['project'],
-        deprecated_rule=deprecated_delete,
     ),
 ]
 
