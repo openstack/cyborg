@@ -33,6 +33,7 @@
       tox_envlist: all
     irrelevant-files: &base_irrelevant_files
       - ^.*\.rst$
+      - ^api-ref/.*$
       - ^doc/.*$
       - ^setup.cfg$
       - ^releasenotes/.*$
