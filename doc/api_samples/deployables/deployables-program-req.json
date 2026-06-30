@@ -1,0 +1,11 @@
+[
+    {
+        "path": "/program",
+        "value": [
+            {
+                "image_uuid": "76babc1b-3222-4992-a046-52441e403577"
+            }
+        ],
+        "op": "replace"
+    }
+]

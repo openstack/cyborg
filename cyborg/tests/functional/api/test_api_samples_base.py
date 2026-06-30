@@ -77,6 +77,16 @@ class ApiSampleTestBase(base.TestCase):
         result = common.seed_device_profiles(self.context)
         return {k: v.uuid for k, v in result.items()}
 
+    def seed_programable_deployable(self):
+        self.useFixture(
+            fixtures.MockPatch(
+                'cyborg.api.controllers.v2.deployables.AgentAPI',
+                autospec=True,
+            )
+        )
+        result = common.seed_programable_deployable(self.context)
+        return {k: v.uuid for k, v in result.items()}
+
     def seed_arqs(self):
         self.useFixture(
             fixtures.MockPatch(
@@ -102,14 +112,36 @@ class ApiSampleTestBase(base.TestCase):
             headers.update(extra_headers)
         return headers
 
-    def _check_sample(self, url, sample_path, extra_headers=None):
+    def _check_sample(
+        self, url, sample_path, extra_headers=None, method='GET', req_path=None
+    ):
         """Compare API response structure against a sample JSON file.
 
         When GENERATE_SAMPLES=1, overwrites the sample file instead.
+
+        :param method: HTTP method (default GET). For PATCH, also pass
+            *req_path* with the path to a JSON request body sample.
+        :param req_path: Path to a JSON file used as the request body
+            for non-GET methods.
         """
-        response = self.app.get(
-            url, headers=self._get_headers(extra_headers), expect_errors=False
-        )
+        headers = self._get_headers(extra_headers)
+        if method == 'PATCH':
+            if not req_path:
+                raise ValueError("req_path is required for PATCH requests")
+            with open(req_path) as f:
+                body = json.load(f)
+            response = self.app.patch_json(
+                url,
+                body,
+                headers=headers,
+                expect_errors=False,
+            )
+        else:
+            response = self.app.get(
+                url,
+                headers=headers,
+                expect_errors=False,
+            )
         actual = response.json
 
         if GENERATE_SAMPLES:
