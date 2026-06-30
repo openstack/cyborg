@@ -124,36 +124,36 @@ function configure_cyborg {
 function configure_cyborg_common {
     configure_cyborg_dirs
     # Copy over cyborg configuration file and configure common parameters.
-    iniset $CYBORG_CONF_FILE DEFAULT debug True
-    inicomment $CYBORG_CONF_FILE DEFAULT log_file
-    iniset $CYBORG_CONF_FILE database connection `database_connection_url cyborg`
-    iniset $CYBORG_CONF_FILE DEFAULT state_path $CYBORG_STATE_PATH
-    iniset $CYBORG_CONF_FILE DEFAULT use_syslog $SYSLOG
-    iniset_rpc_backend cyborg $CYBORG_CONF_FILE
+    iniset $CYBORG_CONF DEFAULT debug True
+    inicomment $CYBORG_CONF DEFAULT log_file
+    iniset $CYBORG_CONF database connection `database_connection_url cyborg`
+    iniset $CYBORG_CONF DEFAULT state_path $CYBORG_STATE_PATH
+    iniset $CYBORG_CONF DEFAULT use_syslog $SYSLOG
+    iniset_rpc_backend cyborg $CYBORG_CONF
 }
 
 function configure_cyborg_agent {
     # set up drivers / hardware types
-    iniset $CYBORG_CONF_FILE agent enabled_drivers $CYBORG_ENABLED_DRIVERS
+    iniset $CYBORG_CONF agent enabled_drivers $CYBORG_ENABLED_DRIVERS
 
     # Configure placement client auth for multinode deployments
-    configure_keystoneauth $CYBORG_CONF_FILE cyborg placement
+    configure_keystoneauth $CYBORG_CONF cyborg placement
 
     # Add retries so that placement registers the resource provider
     # Set higher than the default (3) because in CI the subnode agent
     # starts before nova-compute has registered its resource provider
     # with Placement. 6 retries gives ~63s of tolerance (1+2+4+8+16+32).
-    iniset $CYBORG_CONF_FILE agent resource_provider_startup_retries 6
+    iniset $CYBORG_CONF agent resource_provider_startup_retries 6
 }
 
 # configure_cyborg_api() - Is used by configure_cyborg(). Performs
 # API specific configuration.
 function configure_cyborg_api {
-    iniset $CYBORG_CONF_FILE DEFAULT auth_strategy $CYBORG_AUTH_STRATEGY
-    configure_keystone_authtoken_middleware $CYBORG_CONF_FILE cyborg
-    iniset $CYBORG_CONF_FILE oslo_policy policy_file $CYBORG_POLICY_JSON
+    iniset $CYBORG_CONF DEFAULT auth_strategy $CYBORG_AUTH_STRATEGY
+    configure_keystone_authtoken_middleware $CYBORG_CONF cyborg
+    iniset $CYBORG_CONF oslo_policy policy_file $CYBORG_POLICY_JSON
 
-    iniset $CYBORG_CONF_FILE conductor automated_clean $CYBORG_AUTOMATED_CLEAN_ENABLED
+    iniset $CYBORG_CONF conductor automated_clean $CYBORG_AUTOMATED_CLEAN_ENABLED
 
     if [ "$CYBORG_USE_UWSGI" == "True" ]; then
         write_uwsgi_config "$CYBORG_UWSGI_CONF" "$CYBORG_UWSGI" "/accelerator" "" "cyborg-api"
@@ -164,14 +164,14 @@ function configure_cyborg_api {
 function configure_auth_for {
     local service_config_section
     service_config_section=$1
-    iniset $CYBORG_CONF_FILE $service_config_section auth_type password
-    iniset $CYBORG_CONF_FILE $service_config_section auth_url $KEYSTONE_SERVICE_URI
-    iniset $CYBORG_CONF_FILE $service_config_section username cyborg
-    iniset $CYBORG_CONF_FILE $service_config_section password $SERVICE_PASSWORD
-    iniset $CYBORG_CONF_FILE $service_config_section project_name $SERVICE_PROJECT_NAME
-    iniset $CYBORG_CONF_FILE $service_config_section user_domain_id default
-    iniset $CYBORG_CONF_FILE $service_config_section project_domain_id default
-    iniset $CYBORG_CONF_FILE $service_config_section cafile $SSL_BUNDLE_FILE
+    iniset $CYBORG_CONF $service_config_section auth_type password
+    iniset $CYBORG_CONF $service_config_section auth_url $KEYSTONE_SERVICE_URI
+    iniset $CYBORG_CONF $service_config_section username cyborg
+    iniset $CYBORG_CONF $service_config_section password $SERVICE_PASSWORD
+    iniset $CYBORG_CONF $service_config_section project_name $SERVICE_PROJECT_NAME
+    iniset $CYBORG_CONF $service_config_section user_domain_id default
+    iniset $CYBORG_CONF $service_config_section project_domain_id default
+    iniset $CYBORG_CONF $service_config_section cafile $SSL_BUNDLE_FILE
 }
 
 # configure_cyborg_conductor() - Is used by configure_cyborg().
@@ -179,18 +179,18 @@ function configure_auth_for {
 function configure_cyborg_conductor {
 
     # set keystone region for all services
-    iniset $CYBORG_CONF_FILE keystone region_name $REGION_NAME
+    iniset $CYBORG_CONF keystone region_name $REGION_NAME
 
     # this one is needed for lookup of Cyborg API endpoint via Keystone
     configure_auth_for service_catalog
-    configure_keystoneauth $CYBORG_CONF_FILE cyborg nova
-    configure_keystoneauth $CYBORG_CONF_FILE cyborg placement
+    configure_keystoneauth $CYBORG_CONF cyborg nova
+    configure_keystoneauth $CYBORG_CONF cyborg placement
 
     # NOTE(sean-k-mooney) it is not obvious why this is in the conductor
     # section or what sets is_deployed_by_agent so this should either be
     # documented, removed or moved to the correct location.
     if is_deployed_by_agent; then
-        iniset $CYBORG_CONF_FILE api ramdisk_heartbeat_timeout 30
+        iniset $CYBORG_CONF api ramdisk_heartbeat_timeout 30
     fi
 }
 
@@ -210,7 +210,7 @@ function init_cyborg {
         recreate_database cyborg utf8
 
         # Migrate cyborg database
-        $CYBORG_BIN_DIR/cyborg-dbsync --config-file ${CYBORG_CONF_FILE} upgrade
+        $CYBORG_BIN_DIR/cyborg-dbsync --config-file ${CYBORG_CONF} upgrade
         create_cyborg_cache_dir
     fi
 }
@@ -240,20 +240,20 @@ function start_cyborg_api {
     if [ "$CYBORG_USE_UWSGI" == "True" ]; then
         run_process cyborg-api "$(which uwsgi) --ini $CYBORG_UWSGI_CONF --procname-prefix cyborg-api"
     else
-        run_process cyborg-api "$CYBORG_BIN_DIR/cyborg-api --config-file $CYBORG_CONF_FILE"
+        run_process cyborg-api "$CYBORG_BIN_DIR/cyborg-api --config-file $CYBORG_CONF"
     fi
 }
 
 # start_cyborg_conductor() - Used by start_cyborg().
 # Starts Cyborg conductor.
 function start_cyborg_conductor {
-    run_process cyborg-cond "$CYBORG_BIN_DIR/cyborg-conductor --config-file=$CYBORG_CONF_FILE"
+    run_process cyborg-cond "$CYBORG_BIN_DIR/cyborg-conductor --config-file=$CYBORG_CONF"
 }
 
 # start_cyborg_agent() - Used by start_cyborg().
 # Starts Cyborg agent.
 function start_cyborg_agent {
-    run_process cyborg-agent "$CYBORG_BIN_DIR/cyborg-agent --config-file=$CYBORG_CONF_FILE"
+    run_process cyborg-agent "$CYBORG_BIN_DIR/cyborg-agent --config-file=$CYBORG_CONF"
 }
 
 # stop_cyborg() - Stop running processes
