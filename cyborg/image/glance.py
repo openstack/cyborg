@@ -15,23 +15,18 @@
 
 """Implementation of an image service that uses Glance as the backend."""
 
-import copy
 import inspect
 import os
 import re
 import stat
-import sys
 import time
 
 import glanceclient
 import glanceclient.exc
 
-from glanceclient.v2 import schemas
 from keystoneauth1 import loading as ks_loading
 from oslo_log import log as logging
-from oslo_serialization import jsonutils
 from oslo_utils import excutils
-from oslo_utils import timeutils
 
 import cyborg.conf
 
@@ -72,11 +67,6 @@ def _glanceclient_from_endpoint(context, endpoint, version):
     )
 
 
-def generate_glance_url(context):
-    """Return the glance url."""
-    return get_api_server(context)
-
-
 def _endpoint_from_image_ref(image_href):
     """Return the image_ref and guessed endpoint from an image url.
 
@@ -89,16 +79,6 @@ def _endpoint_from_image_ref(image_href):
     # which are version, 'images', and image_id
     endpoint = '/'.join(parts[:-3])
     return (image_id, endpoint)
-
-
-def generate_identity_headers(context, status='Confirmed'):
-    return {
-        'X-Auth-Token': getattr(context, 'auth_token', None),
-        'X-User-Id': getattr(context, 'user_id', None),
-        'X-Tenant-Id': getattr(context, 'project_id', None),
-        'X-Roles': ','.join(getattr(context, 'roles', [])),
-        'X-Identity-Status': status,
-    }
 
 
 def get_api_server(context):
@@ -220,8 +200,17 @@ class GlanceImageServiceV2:
         """Calls out to Glance for data and writes data."""
         try:
             image_chunks = self._client.call(context, 2, 'data', image_id)
-        except Exception:
-            _reraise_translated_image_exception(image_id)
+        except (
+            glanceclient.exc.HTTPForbidden,
+            glanceclient.exc.HTTPUnauthorized,
+        ):
+            raise exception.ImageNotAuthorized(image_id=image_id)
+        except glanceclient.exc.HTTPNotFound:
+            raise exception.ResourceNotFound(
+                resource='Image', msg='with uuid=%s' % image_id
+            )
+        except glanceclient.exc.HTTPBadRequest as e:
+            raise exception.ImageBadRequest(image_id=image_id, response=str(e))
 
         if image_chunks.wrapped is None:
             raise exception.ImageUnacceptable(
@@ -257,367 +246,6 @@ class GlanceImageServiceV2:
                     data.close()
 
 
-def _extract_query_params(params):
-    _params = {}
-    accepted_params = (
-        'filters',
-        'marker',
-        'limit',
-        'page_size',
-        'sort_key',
-        'sort_dir',
-    )
-    for param in accepted_params:
-        if params.get(param):
-            _params[param] = params.get(param)
-
-    # ensure filters is a dict
-    _params.setdefault('filters', {})
-    # NOTE(vish): don't filter out private images
-    _params['filters'].setdefault('is_public', 'none')
-
-    return _params
-
-
-def _extract_query_params_v2(params):
-    _params = {}
-    accepted_params = (
-        'filters',
-        'marker',
-        'limit',
-        'page_size',
-        'sort_key',
-        'sort_dir',
-    )
-    for param in accepted_params:
-        if params.get(param):
-            _params[param] = params.get(param)
-
-    # ensure filters is a dict
-    _params.setdefault('filters', {})
-    # NOTE(vish): don't filter out private images
-    _params['filters'].setdefault('is_public', 'none')
-
-    # adopt filters to be accepted by glance v2 api
-    filters = _params['filters']
-    new_filters = {}
-
-    for filter_ in filters:
-        # remove 'property-' prefix from filters by custom properties
-        if filter_.startswith('property-'):
-            new_filters[filter_.lstrip('property-')] = filters[filter_]
-        elif filter_ == 'changes-since':
-            # convert old 'changes-since' into new 'updated_at' filter
-            updated_at = 'gte:' + filters['changes-since']
-            new_filters['updated_at'] = updated_at
-        elif filter_ == 'is_public':
-            # convert old 'is_public' flag into 'visibility' filter
-            # omit the filter if is_public is None
-            is_public = filters['is_public']
-            if is_public.lower() in ('true', '1'):
-                new_filters['visibility'] = 'public'
-            elif is_public.lower() in ('false', '0'):
-                new_filters['visibility'] = 'private'
-        else:
-            new_filters[filter_] = filters[filter_]
-
-    _params['filters'] = new_filters
-
-    return _params
-
-
-def _is_image_available(context, image):
-    """Check image availability.
-
-    This check is needed in case cyborg and Glance are deployed
-    without authentication turned on.
-    """
-    # The presence of an auth token implies this is an authenticated
-    # request and we need not handle the noauth use-case.
-    if hasattr(context, 'auth_token') and context.auth_token:
-        return True
-
-    def _is_image_public(image):
-        # NOTE(jaypipes) V2 Glance API replaced the is_public attribute
-        # with a visibility attribute. We do this here to prevent the
-        # glanceclient for a V2 image model from throwing an
-        # exception from warlock when trying to access an is_public
-        # attribute.
-        if hasattr(image, 'visibility'):
-            return str(image.visibility).lower() == 'public'
-        else:
-            return image.is_public
-
-    if context.is_admin or _is_image_public(image):
-        return True
-
-    properties = image.properties
-
-    if context.project_id and ('owner_id' in properties):
-        return str(properties['owner_id']) == str(context.project_id)
-
-    if context.project_id and ('project_id' in properties):
-        return str(properties['project_id']) == str(context.project_id)
-
-    try:
-        user_id = properties['user_id']
-    except KeyError:
-        return False
-
-    return str(user_id) == str(context.user_id)
-
-
-def _translate_to_glance(image_meta):
-    image_meta = _convert_to_string(image_meta)
-    image_meta = _remove_read_only(image_meta)
-    image_meta = _convert_to_v2(image_meta)
-    return image_meta
-
-
-def _convert_to_v2(image_meta):
-    output = {}
-    for name, value in image_meta.items():
-        if name == 'properties':
-            for prop_name, prop_value in value.items():
-                # if allow_additional_image_properties is disabled we can't
-                # define kernel_id and ramdisk_id as None, so we have to omit
-                # these properties if they are not set.
-                if (
-                    prop_name in ('kernel_id', 'ramdisk_id')
-                    and prop_value is not None
-                    and prop_value.strip().lower() in ('none', '')
-                ):
-                    continue
-                # in glance only string and None property values are allowed,
-                # v1 client accepts any values and converts them to string,
-                # v2 doesn't - so we have to take care of it.
-                elif prop_value is None or isinstance(prop_value, str):
-                    output[prop_name] = prop_value
-                else:
-                    output[prop_name] = str(prop_value)
-
-        elif name in ('min_ram', 'min_disk'):
-            output[name] = int(value)
-        elif name == 'is_public':
-            output['visibility'] = 'public' if value else 'private'
-        elif name in ('size', 'deleted'):
-            continue
-        else:
-            output[name] = value
-    return output
-
-
-def _translate_from_glance(image, include_locations=False):
-    image_meta = _extract_attributes_v2(
-        image, include_locations=include_locations
-    )
-
-    image_meta = _convert_timestamps_to_datetimes(image_meta)
-    image_meta = _convert_from_string(image_meta)
-    return image_meta
-
-
-def _convert_timestamps_to_datetimes(image_meta):
-    """Returns image with timestamp fields converted to datetime objects."""
-    for attr in ['created_at', 'updated_at', 'deleted_at']:
-        if image_meta.get(attr):
-            image_meta[attr] = timeutils.parse_isotime(image_meta[attr])
-    return image_meta
-
-
-# NOTE(bcwaldon): used to store non-string data in glance metadata
-def _json_loads(properties, attr):
-    prop = properties[attr]
-    if isinstance(prop, str):
-        properties[attr] = jsonutils.loads(prop)
-
-
-def _json_dumps(properties, attr):
-    prop = properties[attr]
-    if not isinstance(prop, str):
-        properties[attr] = jsonutils.dumps(prop)
-
-
-_CONVERT_PROPS = ('block_device_mapping', 'mappings')
-
-
-def _convert(method, metadata):
-    metadata = copy.deepcopy(metadata)
-    properties = metadata.get('properties')
-    if properties:
-        for attr in _CONVERT_PROPS:
-            if attr in properties:
-                method(properties, attr)
-
-    return metadata
-
-
-def _convert_from_string(metadata):
-    return _convert(_json_loads, metadata)
-
-
-def _convert_to_string(metadata):
-    return _convert(_json_dumps, metadata)
-
-
-def _extract_attributes(image, include_locations=False):
-    # TODO(mfedosin): Remove this function once we move to glance V2
-    # completely.
-    # NOTE(hdd): If a key is not found, base.Resource.__getattr__() may perform
-    # a get(), resulting in a useless request back to glance. This list is
-    # therefore sorted, with dependent attributes as the end
-    # 'deleted_at' depends on 'deleted'
-    # 'checksum' depends on 'status' == 'active'
-    IMAGE_ATTRIBUTES = [
-        'size',
-        'disk_format',
-        'owner',
-        'container_format',
-        'status',
-        'id',
-        'name',
-        'created_at',
-        'updated_at',
-        'deleted',
-        'deleted_at',
-        'checksum',
-        'min_disk',
-        'min_ram',
-        'is_public',
-        'direct_url',
-        'locations',
-    ]
-
-    queued = getattr(image, 'status') == 'queued'
-    queued_exclude_attrs = ['disk_format', 'container_format']
-    include_locations_attrs = ['direct_url', 'locations']
-    output = {}
-
-    for attr in IMAGE_ATTRIBUTES:
-        if attr == 'deleted_at' and not output['deleted']:
-            output[attr] = None
-        elif attr == 'checksum' and output['status'] != 'active':
-            output[attr] = None
-        # image may not have 'name' attr
-        elif attr == 'name':
-            output[attr] = getattr(image, attr, None)
-        # NOTE(liusheng): queued image may not have these attributes and 'name'
-        elif queued and attr in queued_exclude_attrs:
-            output[attr] = getattr(image, attr, None)
-        # NOTE(mriedem): Only get location attrs if including locations.
-        elif attr in include_locations_attrs:
-            if include_locations:
-                output[attr] = getattr(image, attr, None)
-        # NOTE(mdorman): 'size' attribute must not be 'None', so use 0 instead
-        elif attr == 'size':
-            # NOTE(mriedem): A snapshot image may not have the size attribute
-            # set so default to 0.
-            output[attr] = getattr(image, attr, 0) or 0
-        else:
-            # NOTE(xarses): Anything that is caught with the default value
-            # will result in an additional lookup to glance for said attr.
-            # Notable attributes that could have this issue:
-            # disk_format, container_format, name, deleted, checksum
-            output[attr] = getattr(image, attr, None)
-
-    output['properties'] = getattr(image, 'properties', {})
-
-    return output
-
-
-def _extract_attributes_v2(image, include_locations=False):
-    include_locations_attrs = ['direct_url', 'locations']
-    omit_attrs = [
-        'self',
-        'schema',
-        'protected',
-        'virtual_size',
-        'file',
-        'tags',
-    ]
-    raw_schema = image.schema
-    schema = schemas.Schema(raw_schema)
-    output = {
-        'properties': {},
-        'deleted': False,
-        'deleted_at': None,
-        'disk_format': None,
-        'container_format': None,
-        'name': None,
-        'checksum': None,
-    }
-    for name, value in image.items():
-        if (
-            name in omit_attrs
-            or name in include_locations_attrs
-            and not include_locations
-        ):
-            continue
-        elif name == 'visibility':
-            output['is_public'] = value == 'public'
-        elif name == 'size' and value is None:
-            output['size'] = 0
-        elif schema.is_base_property(name):
-            output[name] = value
-        else:
-            output['properties'][name] = value
-
-    return output
-
-
-def _remove_read_only(image_meta):
-    IMAGE_ATTRIBUTES = ['status', 'updated_at', 'created_at', 'deleted_at']
-    output = copy.deepcopy(image_meta)
-    for attr in IMAGE_ATTRIBUTES:
-        if attr in output:
-            del output[attr]
-    return output
-
-
-def _reraise_translated_image_exception(image_id):
-    """Transform the exception for the image but keep its traceback intact."""
-    exc_type, exc_value, exc_trace = sys.exc_info()
-    new_exc = _translate_image_exception(image_id, exc_value)
-    raise new_exc.with_traceback(exc_trace)
-
-
-def _reraise_translated_exception():
-    """Transform the exception but keep its traceback intact."""
-    exc_type, exc_value, exc_trace = sys.exc_info()
-    new_exc = _translate_plain_exception(exc_value)
-    raise new_exc.with_traceback(exc_trace)
-
-
-def _translate_image_exception(image_id, exc_value):
-    if isinstance(
-        exc_value,
-        glanceclient.exc.HTTPForbidden | glanceclient.exc.HTTPUnauthorized,
-    ):  # noqa: E501
-        return exception.ImageNotAuthorized(image_id=image_id)
-    if isinstance(exc_value, glanceclient.exc.HTTPNotFound):
-        return exception.ResourceNotFound(
-            resource='Image', msg='with uuid=%s' % image_id
-        )
-    if isinstance(exc_value, glanceclient.exc.HTTPBadRequest):
-        return exception.ImageBadRequest(
-            image_id=image_id, response=str(exc_value)
-        )
-    return exc_value
-
-
-def _translate_plain_exception(exc_value):
-    if isinstance(
-        exc_value,
-        glanceclient.exc.HTTPForbidden | glanceclient.exc.HTTPUnauthorized,
-    ):  # noqa: E501
-        return exception.HTTPForbidden(str(exc_value))
-    if isinstance(exc_value, glanceclient.exc.HTTPNotFound):
-        return exception.HTTPNotFound(str(exc_value))
-    if isinstance(exc_value, glanceclient.exc.HTTPBadRequest):
-        return exception.Invalid(str(exc_value))
-    return exc_value
-
-
 def get_remote_image_service(context, image_href):
     """Create an image_service and parse the id from the given image_href.
 
@@ -648,23 +276,3 @@ def get_remote_image_service(context, image_href):
 
 def get_default_image_service():
     return GlanceImageServiceV2()
-
-
-class UpdateGlanceImage:
-    def __init__(self, context, image_id, metadata, stream):
-        self.context = context
-        self.image_id = image_id
-        self.metadata = metadata
-        self.image_stream = stream
-
-    def start(self):
-        image_service, image_id = get_remote_image_service(
-            self.context, self.image_id
-        )
-        image_service.update(
-            self.context,
-            image_id,
-            self.metadata,
-            self.image_stream,
-            purge_props=False,
-        )
