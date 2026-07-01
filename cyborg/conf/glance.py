@@ -38,11 +38,6 @@ Specifies the number of retries when uploading / downloading
 an image to / from glance. 0 means no retries.
 """,
     ),
-    cfg.BoolOpt(
-        'debug',
-        default=False,
-        help='Enable or disable debug logging with glanceclient.',
-    ),
 ]
 
 deprecated_ksa_opts = {

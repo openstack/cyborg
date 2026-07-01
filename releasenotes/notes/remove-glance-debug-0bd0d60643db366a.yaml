@@ -1,0 +1,5 @@
+---
+upgrade:
+  - |
+    The ``[glance] debug`` option has been removed. This option has not been
+    actually used.
