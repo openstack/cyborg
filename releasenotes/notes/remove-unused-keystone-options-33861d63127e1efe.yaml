@@ -1,0 +1,5 @@
+---
+upgrade:
+  - |
+    The ``[keystone]`` group has been removed from the config files. This
+    group has not been actually used.
