@@ -20,21 +20,20 @@ from oslo_policy import policy
 from cyborg.policies import base
 
 
-# NOTE(yumeng)During the Policy-default-refresh work, the old device_profile
-# policies will be marked as deprecated device_profile policies.
-# To ensure API works fine with both old policies and new policies, we set
-# ``cyborg.conf [oslo_policy] enforce_scope = False`` by default. With this,
-# policy authorization check will pass those who comply with either new policy
-# rules or old policy rules by invoking oslo_policy.policy.OrCheck
+# NOTE(yumeng) During the policy-default-refresh work, the old
+# device_profile policies were marked as deprecated device_profile policies.
+# To ensure the API works with both old policies and new policies, policy
+# authorization will pass those who comply with either new policy rules or old
+# policy rules by invoking oslo_policy.policy.OrCheck while deprecated rules are
+# still enabled.
 # (REF:https://github.com/openstack/oslo.policy/blob/cab28649c689067970a51a2f9b329bdd6a0f0501/oslo_policy/policy.py#L726)
-# And once we move to new defaults only world, we will set
-# ``cyborg.conf [oslo_policy] enforce_scope = True`` by default, at which time
-# we can totally remove these deprecated device_profile policies from code.
+# Once Cyborg moves to a new-defaults-only world, we can remove these
+# deprecated device_profile policies from code.
 deprecated_get_all = policy.DeprecatedRule(
     name='cyborg:device_profile:get_all',
     check_str=base.deprecated_default,
     deprecated_reason=(
-        'request admin_or_owmer rule is too strict for listing device_profile'
+        'request admin_or_owner rule is too strict for listing device_profile'
     ),
     deprecated_since=versionutils.deprecated.WALLABY,
 )
@@ -42,7 +41,7 @@ deprecated_get_one = policy.DeprecatedRule(
     name='cyborg:device_profile:get_one',
     check_str=base.deprecated_default,
     deprecated_reason=(
-        'request admin_or_owmer rule is too strict for '
+        'request admin_or_owner rule is too strict for '
         'retrieving a device_profile'
     ),
     deprecated_since=versionutils.deprecated.WALLABY,
