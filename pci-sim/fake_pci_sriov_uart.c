@@ -11,13 +11,11 @@
 
 #include "fake_pci_sriov.h"
 
-static DEFINE_IDR(pci_sim_tty_idr);
-static DEFINE_MUTEX(pci_sim_tty_idr_lock);
+static DEFINE_XARRAY_ALLOC(pci_sim_tty_xa);
+static DEFINE_MUTEX(pci_sim_tty_xa_lock); /* Serializes TTY ID lookup/removal. */
 static struct tty_driver *pci_sim_tty_driver;
 
-/* =========================================================================
- * 16550-compatible UART emulation
- * ========================================================================= */
+/* 16550-compatible UART emulation */
 
 void pci_sim_uart_reset(struct pci_sim_uart *uart)
 {
@@ -49,8 +47,8 @@ static unsigned int pci_sim_uart_space_locked(struct pci_sim_uart *uart)
 	return PCI_SIM_UART_FIFO_SIZE - uart->count;
 }
 
-size_t pci_sim_uart_write_data(struct pci_sim_uart *uart,
-			       const u8 *buf, size_t len)
+size_t pci_sim_uart_write_data(struct pci_sim_uart *uart, const u8 *buf,
+			       size_t len)
 {
 	unsigned long flags;
 	size_t copied, i;
@@ -289,9 +287,7 @@ void pci_sim_uart_write_reg(struct pci_sim_uart *uart, u8 reg, u8 val)
 	}
 }
 
-/* =========================================================================
- * VF TTY loopback helper
- * ========================================================================= */
+/* VF TTY loopback helper */
 
 static void pci_sim_vf_flush_to_tty(struct pci_sim_vf_tty *vf)
 {
@@ -306,7 +302,8 @@ static void pci_sim_vf_flush_to_tty(struct pci_sim_vf_tty *vf)
 			break;
 
 		pending = pci_sim_uart_peek_data(&vf->uart, buf,
-				min_t(size_t, sizeof(buf), room));
+						 min_t(size_t, sizeof(buf),
+						       room));
 		if (!pending)
 			break;
 
@@ -325,9 +322,7 @@ static void pci_sim_vf_flush_to_tty(struct pci_sim_vf_tty *vf)
 		tty_flip_buffer_push(&vf->port);
 }
 
-/* =========================================================================
- * TTY driver operations
- * ========================================================================= */
+/* TTY driver operations */
 
 static int pci_sim_tty_install(struct tty_driver *driver,
 			       struct tty_struct *tty)
@@ -336,13 +331,13 @@ static int pci_sim_tty_install(struct tty_driver *driver,
 	struct tty_port *port;
 	int ret;
 
-	mutex_lock(&pci_sim_tty_idr_lock);
-	vf = idr_find(&pci_sim_tty_idr, tty->index);
+	mutex_lock(&pci_sim_tty_xa_lock);
+	vf = xa_load(&pci_sim_tty_xa, tty->index);
 	if (vf)
 		port = tty_port_get(&vf->port);
 	else
 		port = NULL;
-	mutex_unlock(&pci_sim_tty_idr_lock);
+	mutex_unlock(&pci_sim_tty_xa_lock);
 
 	if (!port)
 		return -ENODEV;
@@ -427,25 +422,25 @@ static void pci_sim_tty_hangup(struct tty_struct *tty)
 }
 
 static const struct tty_operations pci_sim_tty_ops = {
-	.install	 = pci_sim_tty_install,
-	.open		 = pci_sim_tty_open,
-	.close		 = pci_sim_tty_close,
-	.write		 = pci_sim_tty_write,
-	.write_room	 = pci_sim_tty_write_room,
+	.install = pci_sim_tty_install,
+	.open = pci_sim_tty_open,
+	.close = pci_sim_tty_close,
+	.write = pci_sim_tty_write,
+	.write_room = pci_sim_tty_write_room,
 	.chars_in_buffer = pci_sim_tty_chars_in_buffer,
-	.hangup		 = pci_sim_tty_hangup,
-	.cleanup	 = pci_sim_tty_cleanup,
+	.hangup = pci_sim_tty_hangup,
+	.cleanup = pci_sim_tty_cleanup,
 };
 
 static void pci_sim_tty_destruct_port(struct tty_port *port)
 {
-	struct pci_sim_vf_tty *vf = container_of(port, struct pci_sim_vf_tty,
-						   port);
+	struct pci_sim_vf_tty *vf =
+		container_of(port, struct pci_sim_vf_tty, port);
 
-	mutex_lock(&pci_sim_tty_idr_lock);
+	mutex_lock(&pci_sim_tty_xa_lock);
 	if (vf->id >= 0)
-		idr_remove(&pci_sim_tty_idr, vf->id);
-	mutex_unlock(&pci_sim_tty_idr_lock);
+		xa_erase(&pci_sim_tty_xa, vf->id);
+	mutex_unlock(&pci_sim_tty_xa_lock);
 
 	kfree(vf);
 }
@@ -454,15 +449,14 @@ static const struct tty_port_operations pci_sim_tty_port_ops = {
 	.destruct = pci_sim_tty_destruct_port,
 };
 
-/* =========================================================================
- * VF PCI driver
- * ========================================================================= */
+/* VF PCI driver */
 
 static int pci_sim_vf_probe(struct pci_dev *pdev,
 			    const struct pci_device_id *id)
 {
 	struct pci_sim_vf_tty *vf;
 	struct device *tty_dev;
+	u32 tty_id;
 	int ret;
 
 	ret = pci_enable_device(pdev);
@@ -480,12 +474,13 @@ static int pci_sim_vf_probe(struct pci_dev *pdev,
 	mutex_init(&vf->state_lock);
 	pci_sim_uart_init(&vf->uart);
 
-	mutex_lock(&pci_sim_tty_idr_lock);
-	ret = idr_alloc(&pci_sim_tty_idr, vf, 0, PCI_SIM_MAX_TTYS, GFP_KERNEL);
-	mutex_unlock(&pci_sim_tty_idr_lock);
-	if (ret < 0)
+	mutex_lock(&pci_sim_tty_xa_lock);
+	ret = xa_alloc(&pci_sim_tty_xa, &tty_id, vf,
+		       XA_LIMIT(0, PCI_SIM_MAX_TTYS - 1), GFP_KERNEL);
+	mutex_unlock(&pci_sim_tty_xa_lock);
+	if (ret)
 		goto err_free;
-	vf->id = ret;
+	vf->id = tty_id;
 
 	tty_port_init(&vf->port);
 	vf->port.ops = &pci_sim_tty_port_ops;
@@ -498,8 +493,8 @@ static int pci_sim_vf_probe(struct pci_dev *pdev,
 	}
 
 	pci_set_drvdata(pdev, vf);
-	pci_info(pdev, "registered /dev/%s%d, lsr=0x%02x\n",
-		 PCI_SIM_TTY_NAME, vf->id, pci_sim_uart_lsr(&vf->uart));
+	pci_info(pdev, "registered /dev/%s%d, lsr=0x%02x\n", PCI_SIM_TTY_NAME,
+		 vf->id, pci_sim_uart_lsr(&vf->uart));
 
 	return 0;
 
@@ -534,27 +529,26 @@ static void pci_sim_vf_remove(struct pci_dev *pdev)
 
 static const struct pci_device_id pci_sim_vf_ids[] = {
 	{ PCI_DEVICE(FAKE_PCI_VENDOR_ID, FAKE_PCI_VF_DEVICE_ID) },
-	{ }
+	{}
 };
 MODULE_DEVICE_TABLE(pci, pci_sim_vf_ids);
 
 struct pci_driver pci_sim_vf_driver = {
-	.name		= "pci_sim_loopback_vf",
-	.id_table	= pci_sim_vf_ids,
-	.probe		= pci_sim_vf_probe,
-	.remove		= pci_sim_vf_remove,
+	.name = "pci_sim_loopback_vf",
+	.id_table = pci_sim_vf_ids,
+	.probe = pci_sim_vf_probe,
+	.remove = pci_sim_vf_remove,
 };
 
-/* =========================================================================
- * TTY driver registration (called from core init/exit)
- * ========================================================================= */
+/* TTY driver registration (called from core init/exit) */
 
 int pci_sim_tty_register_driver(void)
 {
 	int ret;
 
-	pci_sim_tty_driver = tty_alloc_driver(PCI_SIM_MAX_TTYS,
-			TTY_DRIVER_REAL_RAW | TTY_DRIVER_DYNAMIC_DEV);
+	pci_sim_tty_driver =
+		tty_alloc_driver(PCI_SIM_MAX_TTYS,
+				 TTY_DRIVER_REAL_RAW | TTY_DRIVER_DYNAMIC_DEV);
 	if (IS_ERR(pci_sim_tty_driver))
 		return PTR_ERR(pci_sim_tty_driver);
 
@@ -565,8 +559,8 @@ int pci_sim_tty_register_driver(void)
 	pci_sim_tty_driver->type = TTY_DRIVER_TYPE_SERIAL;
 	pci_sim_tty_driver->subtype = SERIAL_TYPE_NORMAL;
 	pci_sim_tty_driver->init_termios = tty_std_termios;
-	pci_sim_tty_driver->init_termios.c_cflag = B9600 | CS8 | CREAD |
-						    HUPCL | CLOCAL;
+	pci_sim_tty_driver->init_termios.c_cflag = B9600 | CS8 | CREAD | HUPCL |
+						   CLOCAL;
 	pci_sim_tty_driver->init_termios.c_lflag &= ~(ECHO | ICANON);
 	pci_sim_tty_driver->init_termios.c_oflag &= ~(OPOST | ONLCR);
 
@@ -589,5 +583,5 @@ void pci_sim_tty_unregister_driver(void)
 	tty_unregister_driver(pci_sim_tty_driver);
 	tty_driver_kref_put(pci_sim_tty_driver);
 	pci_sim_tty_driver = NULL;
-	idr_destroy(&pci_sim_tty_idr);
+	xa_destroy(&pci_sim_tty_xa);
 }

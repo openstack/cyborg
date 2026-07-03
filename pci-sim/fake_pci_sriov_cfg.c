@@ -8,9 +8,7 @@
 
 #include "fake_pci_sriov.h"
 
-/* =========================================================================
- * Config-space byte helpers
- * ========================================================================= */
+/* Config-space byte helpers */
 
 static u16 fake_cfg_read16(const u8 *config, int where)
 {
@@ -67,9 +65,7 @@ static int fake_cfg_write(u8 *config, int where, int size, u32 val)
 	}
 }
 
-/* =========================================================================
- * Host-lookup helpers (used by iommu.c and pci_ops below)
- * ========================================================================= */
+/* Host-lookup helpers (used by iommu.c and pci_ops below) */
 
 struct fake_pci_host *fake_pci_host_from_domain(int domain)
 {
@@ -85,9 +81,7 @@ struct fake_pci_host *fake_pci_host_from_domain(int domain)
 	return NULL;
 }
 
-/* =========================================================================
- * PCI capability initialisation
- * ========================================================================= */
+/* PCI capability initialisation */
 
 static void fake_pci_set_class(u8 *config, u32 class)
 {
@@ -152,7 +146,7 @@ static int fake_pci_write_bar(u8 *config, int where, u32 val, int base)
 		} else {
 			fake_cfg_write32(config, where,
 					 (val & ~(BAR0_SIZE - 1)) |
-					 FAKE_PCI_BAR_FLAGS);
+						 FAKE_PCI_BAR_FLAGS);
 		}
 		return PCIBIOS_SUCCESSFUL;
 	}
@@ -178,7 +172,8 @@ void init_pf_config_space(struct fake_pci_device *dev)
 	fake_cfg_write16(config, PCI_VENDOR_ID, FAKE_PCI_VENDOR_ID);
 	fake_cfg_write16(config, PCI_DEVICE_ID, FAKE_PCI_PF_DEVICE_ID);
 	fake_cfg_write16(config, PCI_COMMAND,
-			 PCI_COMMAND_IO | PCI_COMMAND_MEMORY | PCI_COMMAND_MASTER);
+			 PCI_COMMAND_IO | PCI_COMMAND_MEMORY |
+				 PCI_COMMAND_MASTER);
 	fake_cfg_write16(config, PCI_STATUS, PCI_STATUS_CAP_LIST);
 
 	config[PCI_REVISION_ID] = 0x01;
@@ -188,7 +183,8 @@ void init_pf_config_space(struct fake_pci_device *dev)
 
 	fake_cfg_write32(config, PCI_BASE_ADDRESS_0, FAKE_PCI_BAR_FLAGS);
 	fake_cfg_write32(config, PCI_BASE_ADDRESS_1, 0);
-	fake_cfg_write16(config, PCI_SUBSYSTEM_VENDOR_ID, FAKE_PCI_SUBSYS_VENDOR);
+	fake_cfg_write16(config, PCI_SUBSYSTEM_VENDOR_ID,
+			 FAKE_PCI_SUBSYS_VENDOR);
 	fake_cfg_write16(config, PCI_SUBSYSTEM_ID, FAKE_PCI_SUBSYS_ID);
 
 	config[PCI_CAPABILITY_LIST] = PCIE_CAP_OFFSET;
@@ -211,18 +207,20 @@ static void init_vf_config_space(struct fake_pci_device *dev, int vf_index)
 	fake_cfg_write16(config, PCI_VENDOR_ID, FAKE_PCI_VENDOR_ID);
 	fake_cfg_write16(config, PCI_DEVICE_ID, FAKE_PCI_VF_DEVICE_ID);
 	fake_cfg_write16(config, PCI_COMMAND,
-			 PCI_COMMAND_IO | PCI_COMMAND_MEMORY | PCI_COMMAND_MASTER);
+			 PCI_COMMAND_IO | PCI_COMMAND_MEMORY |
+				 PCI_COMMAND_MASTER);
 	fake_cfg_write16(config, PCI_STATUS, PCI_STATUS_CAP_LIST);
 
 	config[PCI_REVISION_ID] = 0x01;
 	fake_pci_set_class(config, vf_serial_class ? FAKE_PCI_SERIAL_CLASS :
-			   FAKE_PCI_VENDOR_CLASS);
+						     FAKE_PCI_VENDOR_CLASS);
 	config[PCI_CACHE_LINE_SIZE] = 64 / 4;
 	config[PCI_HEADER_TYPE] = PCI_HEADER_TYPE_NORMAL;
 
 	fake_cfg_write32(config, PCI_BASE_ADDRESS_0, FAKE_PCI_BAR_FLAGS);
 	fake_cfg_write32(config, PCI_BASE_ADDRESS_1, 0);
-	fake_cfg_write16(config, PCI_SUBSYSTEM_VENDOR_ID, FAKE_PCI_SUBSYS_VENDOR);
+	fake_cfg_write16(config, PCI_SUBSYSTEM_VENDOR_ID,
+			 FAKE_PCI_SUBSYS_VENDOR);
 	fake_cfg_write16(config, PCI_SUBSYSTEM_ID, FAKE_PCI_SUBSYS_ID);
 
 	config[PCI_CAPABILITY_LIST] = PCIE_CAP_OFFSET;
@@ -230,9 +228,7 @@ static void init_vf_config_space(struct fake_pci_device *dev, int vf_index)
 	init_pcie_capability(config, false);
 }
 
-/* =========================================================================
- * pci_ops: config-space read/write
- * ========================================================================= */
+/* pci_ops: config-space read/write */
 
 static struct fake_pci_device *get_fake_device(struct fake_pci_host *host,
 					       unsigned int devfn)
@@ -300,7 +296,7 @@ static bool fake_pci_is_sriov_cfg(int where)
 {
 	return where >= SRIOV_CAP_OFFSET &&
 	       where < SRIOV_CAP_OFFSET + PCI_SRIOV_BAR +
-		       PCI_SRIOV_NUM_BARS * 4;
+			       PCI_SRIOV_NUM_BARS * 4;
 }
 
 static int fake_pci_write_config(struct pci_bus *bus, unsigned int devfn,
@@ -336,7 +332,8 @@ static int fake_pci_write_config(struct pci_bus *bus, unsigned int devfn,
 
 	if (size == 4 && where >= PCI_BASE_ADDRESS_0 &&
 	    where < PCI_BASE_ADDRESS_5 + 4) {
-		ret = fake_pci_write_bar(config, where, val, PCI_BASE_ADDRESS_0);
+		ret = fake_pci_write_bar(config, where, val,
+					 PCI_BASE_ADDRESS_0);
 		goto out_unlock;
 	}
 
@@ -348,8 +345,7 @@ static int fake_pci_write_config(struct pci_bus *bus, unsigned int devfn,
 
 	if (size == 4 && !dev->is_vf &&
 	    where >= SRIOV_CAP_OFFSET + PCI_SRIOV_BAR &&
-	    where < SRIOV_CAP_OFFSET + PCI_SRIOV_BAR +
-		    PCI_SRIOV_NUM_BARS * 4) {
+	    where < SRIOV_CAP_OFFSET + PCI_SRIOV_BAR + PCI_SRIOV_NUM_BARS * 4) {
 		ret = fake_pci_write_bar(config, where, val,
 					 SRIOV_CAP_OFFSET + PCI_SRIOV_BAR);
 		goto out_unlock;
@@ -382,13 +378,11 @@ out_unlock:
 }
 
 struct pci_ops fake_pci_ops = {
-	.read	= fake_pci_read_config,
-	.write	= fake_pci_write_config,
+	.read = fake_pci_read_config,
+	.write = fake_pci_write_config,
 };
 
-/* =========================================================================
- * SR-IOV VF enable/disable
- * ========================================================================= */
+/* SR-IOV VF enable/disable */
 
 static void handle_sriov_numvfs_write(struct fake_pci_host *host, u16 num_vfs)
 {
@@ -414,14 +408,13 @@ static void handle_sriov_numvfs_write(struct fake_pci_host *host, u16 num_vfs)
 	}
 
 	host->num_vfs_enabled = num_vfs;
-	fake_cfg_write16(pf_config, SRIOV_CAP_OFFSET + PCI_SRIOV_NUM_VF, num_vfs);
+	fake_cfg_write16(pf_config, SRIOV_CAP_OFFSET + PCI_SRIOV_NUM_VF,
+			 num_vfs);
 
 	mutex_unlock(&host->lock);
 }
 
-/* =========================================================================
- * PF driver
- * ========================================================================= */
+/* PF driver */
 
 static struct fake_pci_host *fake_pci_host_from_pdev(struct pci_dev *pdev)
 {
@@ -495,14 +488,14 @@ static int fake_pci_sriov_configure(struct pci_dev *pdev, int num_vfs)
 
 static const struct pci_device_id fake_pci_pf_ids[] = {
 	{ PCI_DEVICE(FAKE_PCI_VENDOR_ID, FAKE_PCI_PF_DEVICE_ID) },
-	{ }
+	{}
 };
 MODULE_DEVICE_TABLE(pci, fake_pci_pf_ids);
 
 struct pci_driver fake_pci_pf_driver = {
-	.name		= "fake_pci_sriov_pf",
-	.id_table	= fake_pci_pf_ids,
-	.probe		= fake_pci_pf_probe,
-	.remove		= fake_pci_pf_remove,
+	.name = "fake_pci_sriov_pf",
+	.id_table = fake_pci_pf_ids,
+	.probe = fake_pci_pf_probe,
+	.remove = fake_pci_pf_remove,
 	.sriov_configure = fake_pci_sriov_configure,
 };

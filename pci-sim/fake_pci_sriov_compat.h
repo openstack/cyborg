@@ -15,21 +15,21 @@
  */
 
 /* iommu_domain_ops.attach_dev gained the previous-domain argument later. */
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 15, 0)
+#if KERNEL_VERSION(6, 15, 0) <= LINUX_VERSION_CODE
 #define PCI_SIM_IOMMU_ATTACH_HAS_OLD_DOMAIN 1
 #else
 #define PCI_SIM_IOMMU_ATTACH_HAS_OLD_DOMAIN 0
 #endif
 
 /* iommu_ops.domain_alloc_paging_flags and IOMMU_HWPT_ALLOC_PASID are newer. */
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 15, 0)
+#if KERNEL_VERSION(6, 15, 0) <= LINUX_VERSION_CODE
 #define PCI_SIM_IOMMU_HAS_DOMAIN_ALLOC_PAGING_FLAGS 1
 #else
 #define PCI_SIM_IOMMU_HAS_DOMAIN_ALLOC_PAGING_FLAGS 0
 #endif
 
 /* VFIO grew optional region-info and PASID/token callbacks after 6.12. */
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 15, 0)
+#if KERNEL_VERSION(6, 15, 0) <= LINUX_VERSION_CODE
 #define PCI_SIM_VFIO_HAS_GET_REGION_INFO_CAPS 1
 #define PCI_SIM_VFIO_HAS_MATCH_TOKEN_UUID 1
 #define PCI_SIM_VFIO_HAS_PASID_IOAS 1

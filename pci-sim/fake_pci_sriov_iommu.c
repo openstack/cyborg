@@ -24,9 +24,10 @@ static struct fake_iommu_domain *to_fake_domain(struct iommu_domain *dom)
 
 static int fake_domain_attach(struct iommu_domain *domain, struct device *dev
 #if PCI_SIM_IOMMU_ATTACH_HAS_OLD_DOMAIN
-			      , struct iommu_domain *old
+			      ,
+			      struct iommu_domain *old
 #endif
-			      )
+)
 {
 	dev_dbg(dev, "fake_iommu: attached to domain type %u\n", domain->type);
 	return 0;
@@ -129,11 +130,11 @@ static phys_addr_t fake_domain_iova_to_phys(struct iommu_domain *domain,
 }
 
 static const struct iommu_domain_ops fake_paging_domain_ops = {
-	.attach_dev	= fake_domain_attach,
-	.free		= fake_domain_free_paging,
-	.map_pages	= fake_domain_map_pages,
-	.unmap_pages	= fake_domain_unmap_pages,
-	.iova_to_phys	= fake_domain_iova_to_phys,
+	.attach_dev = fake_domain_attach,
+	.free = fake_domain_free_paging,
+	.map_pages = fake_domain_map_pages,
+	.unmap_pages = fake_domain_unmap_pages,
+	.iova_to_phys = fake_domain_iova_to_phys,
 };
 
 static struct iommu_domain *fake_domain_alloc_paging_common(void)
@@ -227,16 +228,16 @@ static struct iommu_group *fake_iommu_device_group(struct device *dev)
 }
 
 const struct iommu_ops fake_iommu_ops = {
-	.owner				= THIS_MODULE,
-	.default_domain			= &fake_blocking_domain,
-	.blocked_domain			= &fake_blocking_domain,
-	.capable			= fake_iommu_capable,
-	.probe_device			= fake_iommu_probe_device,
-	.release_device			= fake_iommu_release_device,
-	.device_group			= fake_iommu_device_group,
+	.owner = THIS_MODULE,
+	.default_domain = &fake_blocking_domain,
+	.blocked_domain = &fake_blocking_domain,
+	.capable = fake_iommu_capable,
+	.probe_device = fake_iommu_probe_device,
+	.release_device = fake_iommu_release_device,
+	.device_group = fake_iommu_device_group,
 #if PCI_SIM_IOMMU_HAS_DOMAIN_ALLOC_PAGING_FLAGS
-	.domain_alloc_paging_flags	= fake_domain_alloc_paging_flags,
+	.domain_alloc_paging_flags = fake_domain_alloc_paging_flags,
 #else
-	.domain_alloc_paging		= fake_domain_alloc_paging,
+	.domain_alloc_paging = fake_domain_alloc_paging,
 #endif
 };

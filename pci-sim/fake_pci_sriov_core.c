@@ -10,55 +10,51 @@
 
 #include "fake_pci_sriov.h"
 
-/* =========================================================================
- * Module parameters
- * ========================================================================= */
+/* Module parameters */
 
 bool vf_serial_class;
 module_param(vf_serial_class, bool, 0644);
-MODULE_PARM_DESC(vf_serial_class,
-		 "Expose host-visible VFs as PCI serial/16550 class devices instead of vendor-specific");
+MODULE_PARM_DESC(
+	vf_serial_class,
+	"Expose host-visible VFs as PCI serial/16550 class devices instead of vendor-specific");
 
 bool vfio_guest_8250_compat = true;
 module_param(vfio_guest_8250_compat, bool, 0644);
-MODULE_PARM_DESC(vfio_guest_8250_compat,
-		 "Overlay VFIO guest config space with an 8250_pci-compatible SGI IOC3 serial identity");
+MODULE_PARM_DESC(
+	vfio_guest_8250_compat,
+	"Overlay VFIO guest config space with an 8250_pci-compatible SGI IOC3 serial identity");
 
 bool vfio_uart_trace;
 module_param(vfio_uart_trace, bool, 0644);
-MODULE_PARM_DESC(vfio_uart_trace,
-		 "Trace VFIO BAR0 UART register accesses");
+MODULE_PARM_DESC(vfio_uart_trace, "Trace VFIO BAR0 UART register accesses");
 
 static int fake_intx_irq;
 module_param(fake_intx_irq, int, 0644);
-MODULE_PARM_DESC(fake_intx_irq,
-		 "Optional host IRQ number to report for fake PCI INTx routing (0 disables)");
+MODULE_PARM_DESC(
+	fake_intx_irq,
+	"Optional host IRQ number to report for fake PCI INTx routing (0 disables)");
 
 static unsigned int num_pfs = 1;
 module_param(num_pfs, uint, 0444);
-MODULE_PARM_DESC(num_pfs,
-		 "Number of fake SR-IOV PFs to create");
+MODULE_PARM_DESC(num_pfs, "Number of fake SR-IOV PFs to create");
 
 static unsigned long mem_base;
 module_param(mem_base, ulong, 0444);
-MODULE_PARM_DESC(mem_base,
-		 "Fixed fake PCI MMIO window base address (0 chooses automatically)");
+MODULE_PARM_DESC(
+	mem_base,
+	"Fixed fake PCI MMIO window base address (0 chooses automatically)");
 
 unsigned long mem_stride = FAKE_PCI_MEM_STRIDE;
 module_param(mem_stride, ulong, 0444);
 MODULE_PARM_DESC(mem_stride,
 		 "Size and alignment of each fake PCI host MMIO window");
 
-/* =========================================================================
- * Global host list (also used by cfg.c and iommu.c)
- * ========================================================================= */
+/* Global host list (also used by cfg.c and iommu.c) */
 
 LIST_HEAD(fake_hosts);
-DEFINE_MUTEX(fake_hosts_lock);
+DEFINE_MUTEX(fake_hosts_lock); /* Protects fake_hosts. */
 
-/* =========================================================================
- * PCI host bridge helpers
- * ========================================================================= */
+/* PCI host bridge helpers */
 
 static void *fake_pci_host_sysdata(struct fake_pci_host *host)
 {
@@ -101,7 +97,7 @@ static void fake_pci_host_release_mem_resource(struct fake_pci_host *host)
 }
 
 static int fake_pci_alloc_mem_resource(struct fake_pci_host *host,
-					 resource_size_t stride)
+				       resource_size_t stride)
 {
 	static const struct {
 		resource_size_t start;
@@ -125,8 +121,8 @@ static int fake_pci_alloc_mem_resource(struct fake_pci_host *host,
 			host->mem_resource.flags |= IORESOURCE_MEM_64;
 
 		ret = allocate_resource(&iomem_resource, &host->mem_resource,
-					stride, regions[i].start, regions[i].end,
-					stride, NULL, NULL);
+					stride, regions[i].start,
+					regions[i].end, stride, NULL, NULL);
 		if (!ret) {
 			host->mem_resource_registered = true;
 			pr_info("fake_pci: allocated %s MMIO window [%#llx-%#llx]\n",
@@ -178,7 +174,8 @@ static int fake_pci_host_init_mem_resource(struct fake_pci_host *host,
 
 	ret = fake_pci_alloc_mem_resource(host, stride);
 	if (ret)
-		pr_err("fake_pci: failed to allocate any MMIO window: %d\n", ret);
+		pr_err("fake_pci: failed to allocate any MMIO window: %d\n",
+		       ret);
 
 	return ret;
 }
@@ -286,14 +283,7 @@ static void fake_pci_remove_all_hosts(void)
 		fake_pci_host_remove(host);
 }
 
-/* Forward declarations for drivers registered in init */
-extern struct pci_driver fake_pci_pf_driver;
-extern struct pci_driver pci_sim_vf_driver;
-extern struct pci_driver pci_sim_vfio_driver;
-
-/* =========================================================================
- * Module init / exit
- * ========================================================================= */
+/* Module init / exit */
 
 static int __init fake_pci_sriov_init(void)
 {
@@ -316,7 +306,8 @@ static int __init fake_pci_sriov_init(void)
 	fake_iommu_pdev = platform_device_register_full(&pdevinfo);
 	if (IS_ERR(fake_iommu_pdev)) {
 		err = PTR_ERR(fake_iommu_pdev);
-		pr_err("fake_pci: Failed to register IOMMU platform device: %d\n", err);
+		pr_err("fake_pci: Failed to register IOMMU platform device: %d\n",
+		       err);
 		return err;
 	}
 
@@ -344,13 +335,15 @@ static int __init fake_pci_sriov_init(void)
 
 	err = pci_register_driver(&pci_sim_vfio_driver);
 	if (err) {
-		pr_err("fake_pci: Failed to register VFIO UART driver: %d\n", err);
+		pr_err("fake_pci: Failed to register VFIO UART driver: %d\n",
+		       err);
 		goto err_tty;
 	}
 
 	err = pci_register_driver(&pci_sim_vf_driver);
 	if (err) {
-		pr_err("fake_pci: Failed to register VF loopback driver: %d\n", err);
+		pr_err("fake_pci: Failed to register VF loopback driver: %d\n",
+		       err);
 		goto err_vfio_driver;
 	}
 
@@ -387,7 +380,8 @@ static int __init fake_pci_sriov_init(void)
 		}
 	}
 
-	pr_info("fake_pci: Module loaded successfully with %u PF(s)\n", num_pfs);
+	pr_info("fake_pci: Module loaded successfully with %u PF(s)\n",
+		num_pfs);
 	pr_info("fake_pci: Use 'echo N > /sys/bus/pci/devices/.../sriov_numvfs' to enable VFs\n");
 
 	return 0;
@@ -433,4 +427,5 @@ module_exit(fake_pci_sriov_exit);
 
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("OpenStack Contributors");
-MODULE_DESCRIPTION("Fake PCI Host Controller with Software IOMMU for SR-IOV Testing");
+MODULE_DESCRIPTION(
+	"Fake PCI Host Controller with Software IOMMU for SR-IOV Testing");
