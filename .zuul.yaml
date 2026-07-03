@@ -92,6 +92,15 @@
       Cyborg devstack tempest tests job for >=Ussuri release
       run on python 3.
     parent: cyborg-multinode-tempest
+
+- job:
+    name: cyborg-tempest-centos-10-stream
+    parent: cyborg-tempest-base
+    nodeset: devstack-single-node-centos-10-stream
+    description: |
+      Cyborg devstack tempest tests job to test pci-sim on
+      CentOS Stream 10.
+
 - job:
     name: cyborg-tempest-ipv6
     parent: devstack-tempest-ipv6
@@ -123,3 +132,9 @@
         - cyborg-tempest-ipv6
         - cyborg-grenade
         - cyborg-grenade-skip-level-always
+    experimental:
+      jobs:
+        - cyborg-tempest-centos-10-stream
+    periodic-weekly:
+      jobs:
+        - cyborg-tempest-centos-10-stream

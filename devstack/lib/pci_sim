@@ -126,7 +126,20 @@ function build_pci_sim {
     set -x
     local kver=$(uname -r)
     local kconfig=/boot/config-${kver}
-    local -a pkgs=(build-essential linux-headers-${kver} kmod)
+    local -a pkgs
+
+    if is_ubuntu; then
+        pkgs=(build-essential "linux-headers-${kver}" kmod)
+    elif is_fedora; then
+        local kpkg
+        case "$kver" in
+            *+debug) kpkg="kernel-debug-devel-${kver%+debug}" ;;
+            *)       kpkg="kernel-devel-${kver}" ;;
+        esac
+        pkgs=(gcc make "$kpkg" kmod)
+    else
+        die $LINENO "Unsupported distro for pci-sim build"
+    fi
 
     # CONFIG_DEBUG_INFO_BTF causes the kernel Makefile to invoke pahole
     # (from dwarves) to generate BTF type info for the .ko.  Read the
@@ -136,11 +149,11 @@ function build_pci_sim {
         pkgs+=(dwarves)
     fi
 
-    sudo apt-get update
-    sudo apt-get install -y "${pkgs[@]}"
+    install_package "${pkgs[@]}"
 
     $CYBORG_DIR/tools/check-kernel-config.sh
-    make -C $CYBORG_DIR/pci-sim modules
+    make -C $CYBORG_DIR/pci-sim modules \
+        || die $LINENO "pci-sim kernel module build failed"
     sudo make -C $CYBORG_DIR/pci-sim modules_install
     sudo depmod -a
 }

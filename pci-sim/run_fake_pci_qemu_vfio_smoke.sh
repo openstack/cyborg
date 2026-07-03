@@ -7,7 +7,7 @@
 # driver to pci_sim_vfio_pci, attached to QEMU with vfio-pci, and cleaned up.
 # This is a host-side smoke test; it only verifies QEMU can start with the VF.
 #
-# Prerequisites: qemu-system-x86_64, timeout, sudo without a password, vfio-pci,
+# Prerequisites: qemu-system-x86_64 or qemu-kvm, timeout, sudo without a password, vfio-pci,
 # and a kernel that can load fake_pci_sriov.ko.
 #
 # Important environment variables:
@@ -15,6 +15,7 @@
 # - MODULE_ARGS: optional arguments passed to insmod
 # - VFS: number of VFs to create on the first PF, default 1
 # - QEMU_TIMEOUT/QEMU_KILL_AFTER: bounds for the QEMU run, defaults 12s/5s
+# - QEMU_BIN: QEMU binary path, auto-detected when unset
 # - ALLOW_UNSAFE_INTERRUPTS: set VFIO unsafe-interrupts knob when present,
 #   default 1 for nested development environments
 # - LOG: log file, default /tmp/fake_pci_qemu_vfio_smoke.log
@@ -27,6 +28,13 @@ set -euo pipefail
 
 MODULE=${MODULE:-./fake_pci_sriov.ko}
 MODULE_ARGS=${MODULE_ARGS:-}
+if [ -z "${QEMU_BIN:-}" ]; then
+	if command -v qemu-system-x86_64 >/dev/null 2>&1; then
+		QEMU_BIN=qemu-system-x86_64
+	else
+		QEMU_BIN=/usr/libexec/qemu-kvm
+	fi
+fi
 VENDOR=${VENDOR:-0x1d55}
 PF_DEVICE=${PF_DEVICE:-0x1000}
 VF_DEVICE=${VF_DEVICE:-0x1001}
@@ -73,7 +81,7 @@ trap cleanup EXIT
 cd "$(dirname "$0")"
 
 msg "preflight"
-command -v qemu-system-x86_64
+command -v "$QEMU_BIN"
 command -v timeout
 sudo -n true
 
@@ -116,7 +124,7 @@ readlink -f "/sys/bus/pci/devices/$VF/driver"
 msg "QEMU/VFIO smoke test; timeout rc=124 is expected"
 set +e
 sudo -n timeout --foreground --kill-after="$QEMU_KILL_AFTER" "$QEMU_TIMEOUT" \
-	qemu-system-x86_64 \
+	"$QEMU_BIN" \
 		-nodefaults -display none -serial none -parallel none -monitor none \
 		-machine q35,accel=kvm \
 		-m 256M \

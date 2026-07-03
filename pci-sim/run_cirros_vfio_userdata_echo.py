@@ -43,10 +43,11 @@ def launch_qemu(
     config_iso: str,
 ) -> tuple[subprocess.Popen[bytes], int]:
     """Launch QEMU with ``vf`` assigned and ``config_iso`` attached."""
+    qemu_bin = os.environ.get("QEMU_BIN", "qemu-system-x86_64")
     cmd = [
         "sudo",
         "-n",
-        "qemu-system-x86_64",
+        qemu_bin,
         "-nodefaults",
         "-display",
         "none",

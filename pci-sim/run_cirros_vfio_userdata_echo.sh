@@ -6,7 +6,7 @@
 # verifies the emulated UART loopback path from inside the guest.
 #
 # Prerequisites:
-# - qemu-system-x86_64, python3, xorriso, curl, timeout, sudo without a password
+# - qemu-system-x86_64 or qemu-kvm, python3, xorriso, curl, timeout, sudo without a password
 # - a kernel that can load fake_pci_sriov.ko and vfio-pci
 # - a CirrOS qcow2 image, downloaded automatically when IMAGE is missing
 #
@@ -34,6 +34,13 @@ set -euo pipefail
 MODULE=${MODULE:-./fake_pci_sriov.ko}
 MODULE_ARGS=${MODULE_ARGS:-}
 RELOAD_MODULE=${RELOAD_MODULE:-1}
+if [ -z "${QEMU_BIN:-}" ]; then
+	if command -v qemu-system-x86_64 >/dev/null 2>&1; then
+		QEMU_BIN=qemu-system-x86_64
+	else
+		QEMU_BIN=/usr/libexec/qemu-kvm
+	fi
+fi
 IMAGE=${IMAGE:-/tmp/cirros-0.6.3-x86_64-disk.img}
 IMAGE_URL=${IMAGE_URL:-https://github.com/cirros-dev/cirros/releases/download/0.6.3/cirros-0.6.3-x86_64-disk.img}
 VENDOR=${VENDOR:-0x1d55}
@@ -85,7 +92,7 @@ cd "$SCRIPT_DIR"
 USER_DATA=${USER_DATA:-$SCRIPT_DIR/cirros_vfio_userdata_echo.sh}
 
 msg preflight
-command -v qemu-system-x86_64
+command -v "$QEMU_BIN"
 command -v python3
 command -v xorriso
 [ -r "$USER_DATA" ]
@@ -147,7 +154,7 @@ echo "$VF" | sudo -n tee /sys/bus/pci/drivers_probe >/dev/null
 readlink -f "/sys/bus/pci/devices/$VF/driver"
 
 msg "boot CirrOS with config-drive"
-export IMAGE VF QEMU_DEADLINE CONFIG_ISO="$WORK/configdrive.iso"
+export IMAGE VF QEMU_DEADLINE QEMU_BIN CONFIG_ISO="$WORK/configdrive.iso"
 python3 "$SCRIPT_DIR/run_cirros_vfio_userdata_echo.py"
 
 msg "recent host dmesg"

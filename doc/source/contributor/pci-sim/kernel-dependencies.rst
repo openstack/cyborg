@@ -31,6 +31,16 @@ The smoke tests are more useful when these are also enabled:
 * ``CONFIG_VFIO_PCI``
 * ``CONFIG_KVM``
 
-The initial compatibility target is the current Ubuntu 26.04 generic kernel,
-``7.0.0-15-generic``.  Broader Ubuntu 26.04 kernel update compatibility should
-be added by version-guarding specific API differences as they are found.
+Compatibility targets
+=====================
+
+* Debian 13 (Trixie) kernel (``6.12.90+deb13.1-amd64``)
+* Ubuntu 26.04 generic kernel (``7.0.0-15-generic``)
+* CentOS Stream 10 kernel (``6.12.0-243.el10.x86_64``)
+
+CentOS Stream 10 ships kernel 6.12 but backports IOMMU and VFIO API changes
+from upstream 6.15+.  The compat header uses ``RHEL_RELEASE_CODE`` guards to
+select the correct API on RHEL-family kernels.
+
+Broader kernel update compatibility should be added by version-guarding
+specific API differences as they are found.

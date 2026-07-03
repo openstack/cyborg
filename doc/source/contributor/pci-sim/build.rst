@@ -6,11 +6,21 @@ Local build
 ===========
 
 Install headers for the running kernel, then build the module from the
-repository root:
+repository root.
+
+On Debian/Ubuntu:
 
 .. code-block:: console
 
    $ sudo apt install linux-headers-$(uname -r) build-essential
+   $ bash tools/check-kernel-config.sh
+   $ make -C pci-sim modules
+
+On CentOS/Fedora/RHEL:
+
+.. code-block:: console
+
+   $ sudo dnf install kernel-devel-$(uname -r) gcc make
    $ bash tools/check-kernel-config.sh
    $ make -C pci-sim modules
 

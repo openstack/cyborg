@@ -5,7 +5,7 @@
 # guest-side discovery commands from the serial console.
 #
 # Prerequisites:
-# - qemu-system-x86_64, python3, curl, timeout, sudo without a password
+# - qemu-system-x86_64 or qemu-kvm, python3, curl, timeout, sudo without a password
 # - a kernel that can load fake_pci_sriov.ko and vfio-pci
 # - a CirrOS qcow2 image, downloaded automatically when IMAGE is missing
 #
@@ -31,6 +31,13 @@ set -euo pipefail
 MODULE=${MODULE:-./fake_pci_sriov.ko}
 MODULE_ARGS=${MODULE_ARGS:-}
 RELOAD_MODULE=${RELOAD_MODULE:-1}
+if [ -z "${QEMU_BIN:-}" ]; then
+	if command -v qemu-system-x86_64 >/dev/null 2>&1; then
+		QEMU_BIN=qemu-system-x86_64
+	else
+		QEMU_BIN=/usr/libexec/qemu-kvm
+	fi
+fi
 IMAGE=${IMAGE:-/tmp/cirros-0.6.3-x86_64-disk.img}
 IMAGE_URL=${IMAGE_URL:-https://github.com/cirros-dev/cirros/releases/download/0.6.3/cirros-0.6.3-x86_64-disk.img}
 VENDOR=${VENDOR:-0x1d55}
@@ -79,7 +86,7 @@ SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
 cd "$SCRIPT_DIR"
 
 msg preflight
-command -v qemu-system-x86_64
+command -v "$QEMU_BIN"
 command -v python3
 sudo -n true
 
@@ -127,6 +134,6 @@ echo "$VF" | sudo -n tee /sys/bus/pci/drivers_probe >/dev/null
 readlink -f "/sys/bus/pci/devices/$VF/driver"
 
 msg "boot CirrOS and run guest probe"
-export IMAGE VF QEMU_DEADLINE
+export IMAGE VF QEMU_DEADLINE QEMU_BIN
 python3 "$SCRIPT_DIR/run_cirros_vfio_guest_probe.py"
 msg PASS
