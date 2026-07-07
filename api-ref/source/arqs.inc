@@ -58,9 +58,10 @@ Request
 
   - device_profile_name: device_profile_name
 
-**Example post curl**
+**Example request: create an accelerator request**
 
-.. literalinclude:: ../../doc/api_samples/accelerator_requests/accelerator_requests-post-curl.json
+.. literalinclude:: ../../doc/api_samples/accelerator_requests/accelerator_requests-post-req.json
+   :language: javascript
 
 **Example response: create an accelerator request**
 
@@ -88,9 +89,10 @@ Request
   - instance_uuid: instance_uuid_bind_unbind_req
   - instance_project_id: instance_project_id_bind_unbind_req
 
-**Example patch curl**
+**Example request: update an accelerator request**
 
-.. literalinclude:: ../../doc/api_samples/accelerator_requests/accelerator_requests-patch-curl.json
+.. literalinclude:: ../../doc/api_samples/accelerator_requests/accelerator_requests-patch-req.json
+   :language: javascript
 
 **Example response: update an accelerator request**
 

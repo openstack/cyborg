@@ -114,14 +114,14 @@ Response
   - updated_at: updated
   - links: links
 
-**Example post curl with resource/trait**
+**Example request: create a device profile with resource/trait**
 
-.. literalinclude:: ../../doc/api_samples/device_profiles/device_profiles-post-curl.json
+.. literalinclude:: ../../doc/api_samples/device_profiles/device_profiles-post-req.json
    :language: javascript
 
-**Example post curl with a cyborg property when bitstream is required**
+**Example request: create a device profile with a bitstream property**
 
-.. literalinclude:: ../../doc/api_samples/device_profiles/device_profiles-post-curl-with-bitstream.json
+.. literalinclude:: ../../doc/api_samples/device_profiles/device_profiles-post-req-with-bitstream.json
    :language: javascript
 
 **Example response: create a device profile**
