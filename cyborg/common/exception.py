@@ -200,6 +200,14 @@ class NotFound(CyborgException):
     code = HTTPStatus.NOT_FOUND
 
 
+class FileNotFound(NotFound):
+    _msg_fmt = _("File %(file_path)s could not be found.")
+
+
+class DeviceBusy(CyborgException):
+    _msg_fmt = _("Device file %(file_path)s is busy.")
+
+
 class ServiceUnavailable(CyborgException):
     _msg_fmt = _("Service is unavailable at this time.")
     code = HTTPStatus.SERVICE_UNAVAILABLE
