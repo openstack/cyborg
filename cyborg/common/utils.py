@@ -453,7 +453,3 @@ class FactoryMixin:
                 cls.__name__,
                 typ,
             )
-
-
-def strtime(at):
-    return at.strftime("%Y-%m-%dT%H:%M:%S.%f")
