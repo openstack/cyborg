@@ -124,3 +124,8 @@ The following table provides additional information for individual drivers.
      - CI
      - `Partial <../configuration/drivers.html#generic-pci-driver>`__
      - **Supported**
+   * - Generic Mdev Driver
+     - Discovers mediated device types via ``/sys/class/mdev_bus/`` and reports them to Placement. Works with NVIDIA vGPU, Intel GVT-g, and other mdev parents.
+     - CI
+     - `Partial <../configuration/mdev-driver.html>`__
+     - **Supported**

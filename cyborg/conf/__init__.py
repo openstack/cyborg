@@ -21,6 +21,7 @@ from cyborg.conf import database
 from cyborg.conf import default
 from cyborg.conf import devices
 from cyborg.conf import glance
+from cyborg.conf import mdev
 from cyborg.conf import nova
 from cyborg.conf import nvme
 from cyborg.conf import placement
@@ -39,3 +40,4 @@ service_token.register_opts(CONF)
 glance.register_opts(CONF)
 nova.register_opts(CONF)
 placement.register_opts(CONF)
+mdev.register_opts(CONF)

@@ -16,6 +16,8 @@ import pathlib
 
 import fixtures
 
+from cyborg.accelerator.bus_managers import mdev
+
 
 class MdevSysfsFixture(fixtures.Fixture):
     """Create a fake mdev_bus sysfs tree from dataclass objects.
@@ -38,6 +40,14 @@ class MdevSysfsFixture(fixtures.Fixture):
     def _create_device(self, parent):
         parent_dir = pathlib.Path(self.path) / parent.address
         parent_dir.mkdir(parents=True, exist_ok=True)
+        # PCI ID attributes are only materialised when known, so
+        # that devices constructed without them exercise the
+        # read-failure fallback path.  Real sysfs reports them
+        # with a ``0x`` prefix.
+        if parent.vendor != mdev.UNKNOWN_PCI_ID:
+            (parent_dir / 'vendor').write_text(f'0x{parent.vendor}')
+        if parent.model != mdev.UNKNOWN_PCI_ID:
+            (parent_dir / 'device').write_text(f'0x{parent.model}')
         for mtype in parent.mdev_types:
             self._create_mdev_type(parent_dir, mtype)
 

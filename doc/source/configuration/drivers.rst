@@ -74,6 +74,10 @@ The following table lists all available drivers and their supported hardware:
      - ``0xABCD``
      - ``0xabcd``
      - Fake driver for testing
+   * - ``mdev_driver``
+     - (configurable)
+     - (configurable)
+     - Generic Mdev (mediated device) driver
 
 Driver Configuration Reference
 ==============================
@@ -324,6 +328,17 @@ purposes. It does not require any actual hardware.
 
     [agent]
     enabled_drivers = fake_driver
+
+Generic Mdev Driver
+-------------------
+
+The generic mdev (mediated device) driver (``mdev_driver``) allows
+Cyborg to discover and manage mdev-capable devices such as NVIDIA
+vGPUs, Intel GVT-g virtual GPUs, and other hardware that exposes
+the Linux kernel mdev interface.
+
+For full configuration details, prerequisites, examples, and
+troubleshooting, see :doc:`mdev-driver`.
 
 Complete Configuration Examples
 ===============================
