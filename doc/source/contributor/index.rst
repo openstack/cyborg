@@ -27,6 +27,9 @@ Contributing
 
 * :doc:`/contributor/tempest-testing`: Running Cyborg tempest plugin tests
 
+* :doc:`/contributor/api-sample-testing`: Running functional API sample
+  validation tests
+
 * :doc:`/contributor/grenade-upgrade`: Upgrade testing using grenade
 
 * :doc:`/user/using-cyborg`: Using Cyborg with instances
@@ -60,6 +63,7 @@ Reviewing
    vm-setup
    nvme-driver
    tempest-testing
+   api-sample-testing
    grenade-upgrade
    driver-development-guide
    release-guide
