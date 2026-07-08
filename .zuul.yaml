@@ -113,12 +113,14 @@
       - openstack-python3-jobs
     check:
       jobs:
+        - openstack-tox-functional
         - cyborg-tempest-py3
         - cyborg-tempest-ipv6
         - cyborg-grenade
         - cyborg-grenade-skip-level-always
     gate:
       jobs:
+        - openstack-tox-functional
         - cyborg-tempest-py3
         - cyborg-tempest-ipv6
         - cyborg-grenade
