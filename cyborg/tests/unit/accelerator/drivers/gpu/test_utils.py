@@ -17,10 +17,13 @@ from unittest import mock
 from oslo_serialization import jsonutils
 
 from cyborg import conf
+from cyborg.accelerator.bus_managers import mdev
 from cyborg.accelerator.drivers.gpu import utils
 from cyborg.accelerator.drivers.gpu.nvidia import driver
 from cyborg.accelerator.drivers.gpu.nvidia import sysinfo
+from cyborg.conf import devices as conf_devices
 from cyborg.tests import base
+from cyborg.tests.local_fixtures import mdev_sysfs
 
 
 CONF = conf.CONF
@@ -45,61 +48,31 @@ NVIDIA_A100_VF_INFO = (
     "GA100 [A100 PCIe 40GB] [10de:20f1] (rev a1)"
 )
 
-NVIDIA_T4_SUPPORTED_MDEV_TYPES = [
-    'nvidia-222',
-    'nvidia-223',
-    'nvidia-224',
-    'nvidia-225',
-    'nvidia-226',
-    'nvidia-227',
-    'nvidia-228',
-    'nvidia-229',
-    'nvidia-230',
-    'nvidia-231',
-    'nvidia-232',
-    'nvidia-233',
-    'nvidia-234',
-    'nvidia-252',
-    'nvidia-319',
-    'nvidia-320',
-    'nvidia-321',
-]
-
-
-class stdout:
-    def readlines(self):
-        return [NVIDIA_GPU_INFO]
-
-    def readlines_T4(self):
-        return [NVIDIA_T4_GPU_INFO]
-
-    def readlines_A100(self):
-        return [NVIDIA_A100_PF_INFO + '\n' + NVIDIA_A100_VF_INFO]
-
-
-class p:
-    def __init__(self):
-        self.stdout = stdout()
-
-    def wait(self):
-        pass
-
 
 class TestGPUDriverUtils(base.TestCase):
     def setUp(self):
         super().setUp()
-        self.p = p()
+
+    def _enable_vgpu_type(self, vgpu_type, device_addresses):
+        self.cfg_fixture.config(
+            enabled_vgpu_types=[vgpu_type], group="gpu_devices"
+        )
+        conf_devices.register_dynamic_opts(sysinfo.CONF)
+        self.cfg_fixture.config(
+            device_addresses=device_addresses,
+            group="vgpu_%s" % vgpu_type,
+        )
 
     @mock.patch('cyborg.accelerator.common.utils.lspci_privileged')
     def test_discover_vendors(self, mock_devices):
-        mock_devices.return_value = self.p.stdout.readlines()[0]
+        mock_devices.return_value = NVIDIA_GPU_INFO
         gpu_vendors = utils.discover_vendors()
         self.assertEqual(1, len(gpu_vendors))
 
     @mock.patch('cyborg.accelerator.common.utils.lspci_privileged')
     def test_discover_gpus_report_pGPU(self, mock_devices_for_vendor):
         """test nvidia pGPU discover"""
-        mock_devices_for_vendor.return_value = self.p.stdout.readlines()[0]
+        mock_devices_for_vendor.return_value = NVIDIA_GPU_INFO
         self.set_defaults(host='host-192-168-32-195', debug=True)
 
         nvidia = driver.NVIDIAGPUDriver()
@@ -187,36 +160,39 @@ class TestGPUDriverUtils(base.TestCase):
         )
         self.assertEqual(attribute_list, attribute_actual_data)
 
-    @mock.patch(
-        'cyborg.accelerator.drivers.gpu.nvidia.sysinfo._is_vf',
-        return_value=False,
-        autospec=True,
-    )
-    @mock.patch('builtins.open')
-    @mock.patch('os.listdir')
-    @mock.patch('os.path.exists')
     @mock.patch('cyborg.accelerator.common.utils.lspci_privileged')
     def test_discover_gpus_report_vGPU(
         self,
         mock_devices_for_vendor,
-        mock_path_exists,
-        mock_supported_mdev_types,
-        mock_open,
-        mock_is_vf,
     ):
         """test nvidia vGPU discover"""
-        mock_devices_for_vendor.return_value = self.p.stdout.readlines_T4()[0]
-        mock_path_exists.return_value = True
-        mock_supported_mdev_types.return_value = NVIDIA_T4_SUPPORTED_MDEV_TYPES
-        file_content_list = ['GRID T4-1B', '1']
-        mock_open.side_effect = multi_mock_open(*file_content_list)
-        self.set_defaults(host='host-192-168-32-195', debug=True)
-        self.set_defaults(enabled_vgpu_types='nvidia-223', group='gpu_devices')
-        conf.devices.register_dynamic_opts(CONF)
-        self.set_defaults(
-            device_addresses=['0000:af:00.0'], group='vgpu_nvidia-223'
+        mock_devices_for_vendor.return_value = NVIDIA_T4_GPU_INFO
+        mdev_fix = self.useFixture(
+            mdev_sysfs.MdevSysfsFixture(
+                devices=[
+                    mdev.MdevParentDevice(
+                        address='0000:af:00.0',
+                        mdev_types=[
+                            mdev.MdevType(
+                                type_name='nvidia-223',
+                                name='GRID T4-1B',
+                                available_instances=1,
+                                created_instances=17,
+                                device_api='vfio-pci',
+                                description='',
+                            )
+                        ],
+                    ),
+                ]
+            ),
         )
-        nvidia = driver.NVIDIAGPUDriver()
+        mgr = mdev.MdevBusManager(sysfs_path=mdev_fix.path)
+        self.set_defaults(
+            host='host-192-168-32-195',
+            debug=True,
+        )
+        self._enable_vgpu_type("nvidia-223", ["0000:af:00.0"])
+        nvidia = driver.NVIDIAGPUDriver(mdev_bus_manager=mgr)
         gpu_list = nvidia.discover()
 
         self.assertEqual(1, len(gpu_list))
@@ -231,7 +207,7 @@ class TestGPUDriverUtils(base.TestCase):
                 '"vgpu_mark": "nvidia-223_0"}',
                 'in_use': False,
             }
-        ] * 8
+        ]
         attribute_list = [
             {'key': 'rc', 'value': 'VGPU'},
             {'key': 'trait0', 'value': 'OWNER_CYBORG'},
@@ -249,7 +225,7 @@ class TestGPUDriverUtils(base.TestCase):
                 {
                     'num_accelerators': 18,
                     'driver_name': 'NVIDIA',
-                    'name': 'host-192-168-32-195_0000:af:00.0',
+                    'name': ('host-192-168-32-195_0000:af:00.0'),
                     'attach_handle_list': attach_handle_list,
                     'attribute_list': attribute_list,
                 },
@@ -270,11 +246,19 @@ class TestGPUDriverUtils(base.TestCase):
         ]
         gpu_attribute_list = gpu_dep_list[0].as_dict()['attribute_list']
         attri_obj_data = []
-        [attri_obj_data.append(attr.as_dict()) for attr in gpu_attribute_list]
-        attribute_actual_data = sorted(attri_obj_data, key=lambda i: i['key'])
-        self.assertEqual(expected['vendor'], gpu_dict['vendor'])
+        for attr in gpu_attribute_list:
+            attri_obj_data.append(attr.as_dict())
+        attribute_actual_data = sorted(
+            attri_obj_data,
+            key=lambda i: i['key'],
+        )
         self.assertEqual(
-            expected['controlpath_id'], gpu_dict['controlpath_id']
+            expected['vendor'],
+            gpu_dict['vendor'],
+        )
+        self.assertEqual(
+            expected['controlpath_id'],
+            gpu_dict['controlpath_id'],
         )
         self.assertEqual(
             expected['std_board_info'],
@@ -297,9 +281,13 @@ class TestGPUDriverUtils(base.TestCase):
             gpu_dep_list[0].as_dict()['driver_name'],
         )
         self.assertEqual(
-            attach_handle_list[0], gpu_attach_handle_list[0].as_dict()
+            attach_handle_list[0],
+            gpu_attach_handle_list[0].as_dict(),
         )
-        self.assertEqual(attribute_list, attribute_actual_data)
+        self.assertEqual(
+            attribute_list,
+            attribute_actual_data,
+        )
 
     @mock.patch('cyborg.accelerator.drivers.gpu.nvidia.sysinfo._is_vf')
     @mock.patch('cyborg.accelerator.common.utils.lspci_privileged')
@@ -307,9 +295,9 @@ class TestGPUDriverUtils(base.TestCase):
         self, mock_devices_for_vendor, mock_is_vf
     ):
         """Test that VF devices are filtered when filter_sriov_vfs=True."""
-        mock_devices_for_vendor.return_value = self.p.stdout.readlines_A100()[
-            0
-        ]
+        mock_devices_for_vendor.return_value = (
+            NVIDIA_A100_PF_INFO + '\n' + NVIDIA_A100_VF_INFO
+        )
         mock_is_vf.side_effect = lambda addr: addr == '0000:3b:00.4'
         self.set_defaults(host='host-192-168-32-195', debug=True)
         self.set_defaults(filter_sriov_vfs=True, group='gpu_devices')
@@ -328,9 +316,9 @@ class TestGPUDriverUtils(base.TestCase):
         self, mock_devices_for_vendor, mock_is_vf
     ):
         """Test that VFs are reported when filter_sriov_vfs=False (default)."""
-        mock_devices_for_vendor.return_value = self.p.stdout.readlines_A100()[
-            0
-        ]
+        mock_devices_for_vendor.return_value = (
+            NVIDIA_A100_PF_INFO + '\n' + NVIDIA_A100_VF_INFO
+        )
         mock_is_vf.side_effect = lambda addr: addr == '0000:3b:00.4'
         self.set_defaults(host='host-192-168-32-195', debug=True)
 
@@ -346,9 +334,9 @@ class TestGPUDriverUtils(base.TestCase):
         self, mock_devices_for_vendor, mock_is_vf
     ):
         """Test discovery continues when _is_vf raises OSError."""
-        mock_devices_for_vendor.return_value = self.p.stdout.readlines_A100()[
-            0
-        ]
+        mock_devices_for_vendor.return_value = (
+            NVIDIA_A100_PF_INFO + '\n' + NVIDIA_A100_VF_INFO
+        )
         mock_is_vf.side_effect = OSError('device busy')
         self.set_defaults(host='host-192-168-32-195', debug=True)
         self.set_defaults(filter_sriov_vfs=True, group='gpu_devices')
@@ -381,22 +369,3 @@ class TestIsVf(base.TestCase):
         mock_exists.assert_called_once_with(
             '/sys/bus/pci/devices/0000:3b:00.4/physfn'
         )
-
-
-def multi_mock_open(*file_contents):
-    """Create a mock "open" that will mock open multiple files in sequence.
-
-    : params file_contents:  a list of file contents to be returned by open
-
-    : returns: (MagicMock) a mock opener that will return the contents of the
-               first file when opened the first time, the second file when
-               opened the second time, etc.
-    """
-
-    mock_files = [
-        mock.mock_open(read_data=content).return_value
-        for content in file_contents
-    ]
-    mock_opener = mock.mock_open()
-    mock_opener.side_effect = mock_files
-    return mock_opener

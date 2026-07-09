@@ -67,6 +67,9 @@ class AgentAPI:
             driver_name=driver_name,
         )
 
+    # TODO(jgilaber): remove create_vgpu_mdev and remove_vgpu_mdev
+    # when the RPC API is bumped to 2.0. Nova is responsible for
+    # mdev creation and removal.
     def create_vgpu_mdev(
         self, context, hostname, pci_addr, asked_type, ah_uuid
     ):
