@@ -19,7 +19,6 @@ import wsme
 
 from oslo_concurrency import lockutils
 from oslo_config import cfg
-from oslo_log import log
 from oslo_policy import policy
 from oslo_versionedobjects import base as object_base
 
@@ -29,7 +28,6 @@ from cyborg.common import exception
 
 _ENFORCER = None
 CONF = cfg.CONF
-LOG = log.getLogger(__name__)
 
 
 @lockutils.synchronized('policy_enforcer', 'cyborg-')
@@ -71,14 +69,6 @@ def init_enforcer(
     if suppress_deprecation_warnings:
         _ENFORCER.suppress_deprecation_warnings = True
     _ENFORCER.register_defaults(policies.list_policies())
-    if not CONF.oslo_policy.enforce_scope:
-        LOG.warning(
-            'oslo_policy.enforce_scope is disabled. System-scoped tokens '
-            'will be accepted by Cyborg APIs, bypassing project-level '
-            'isolation. This is a security risk. Operators should carefully '
-            'review their security posture before disabling scope '
-            'enforcement.'
-        )
 
 
 def get_enforcer():

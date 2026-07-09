@@ -13,7 +13,6 @@ security:
 upgrade:
   - |
     Cyborg API policies now declare ``scope_types=['project']`` and reject
-    Keystone system-scoped tokens via oslo.policy scope enforcement. Keep
-    ``[oslo_policy] enforce_scope=True``. Disabling it weakens project
-    isolation and is discouraged; prefer custom policy rules if you need
-    different access behavior.
+    Keystone system-scoped tokens via oslo.policy scope enforcement. Use
+    project-scoped tokens for Cyborg APIs; prefer custom policy rules if you
+    need different access behavior.

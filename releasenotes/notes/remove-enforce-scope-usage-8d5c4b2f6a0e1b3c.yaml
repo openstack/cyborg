@@ -1,0 +1,10 @@
+---
+upgrade:
+  - |
+    Cyborg no longer supports disabling policy scope enforcement. oslo.policy
+    always enforces ``scope_types`` when they are defined on policy rules.
+    Cyborg APIs continue to declare project scope, so callers must use
+    project-scoped tokens instead of system-scoped tokens. Operators should
+    audit any callers that relied on system-scoped tokens or
+    ``enforce_scope=False`` and migrate them to project-scoped tokens before
+    upgrading.

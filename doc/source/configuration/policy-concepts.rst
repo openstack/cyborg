@@ -87,8 +87,15 @@ examples.
 
 Policies with a ``scope_type`` of ``system`` means a user with a
 ``system-scoped`` token has permission to access the resource. This can be
-seen as a global role. All the system-level operation's policies
-have defaulted to ``scope_type`` of ``['system']``.
+seen as a global role. Cyborg does not currently declare system-scoped API
+policies; system-scoped tokens are not accepted for project-scoped APIs.
+
+.. rubric:: ``project`` scope
+
+Policies with a ``scope_type`` of ``project`` means a user with a
+``project-scoped`` token has permission to access the resource. This can be
+seen as a project role. Cyborg API policies are set to ``scope_type`` of
+``['project']`` by default.
 
 For example, consider the ``POST  /v2/device_profiles`` API.
 
@@ -96,46 +103,23 @@ For example, consider the ``POST  /v2/device_profiles`` API.
 
     # Create a device_profile
     # POST  /v2/device_profiles
-    # Intended scope(s): system
-    #"cyborg:device_profile:create": "rule:system_admin_api"
-
-.. rubric:: ``project`` scope
-
-Policies with a ``scope_type`` of ``project`` means a user with a
-``project-scoped`` token has permission to access the resource. This can be
-seen as a project role. All the project-level operation's policies should be
-set to ``scope_type`` of ``['project']`` by default.
+    # Intended scope(s): project
+    #"cyborg:device_profile:create": "rule:admin_api"
 
 .. rubric:: ``system and project`` scope
 
 Policies with a ``scope_type`` of ``system and project`` means a user with a
 ``system-scoped`` or ``project-scoped`` token has permission to access the
-resource. All the system and project level operation's policies have defaulted
-to ``scope_type`` of ``['system', 'project']``.
-
-For example, consider the ``GET  /v2/device_profiles/{device_profiles_uuid}``
-API.
-
-.. code::
-
-    # Retrieve a specific device_profile
-    # GET  /v2/device_profiles/{device_profiles_uuid}
-    # Intended scope(s): system, project
-    #"cyborg:device_profile:get_one": "rule:system_or_project_reader"
+resource. Cyborg does not currently declare API policies with combined system
+and project scope.
 
 These scope types provide a way to differentiate between system-level and
 project-level access roles. You can control the information with scope of the
 users.
 
-Policy scope is disabled by default to allow operators to migrate from
-the old policy enforcement system in a graceful way. This can be
-enabled by configuring the :oslo.config:option:`oslo_policy.enforce_scope`
-option to ``True``.
-
-.. note::
-
-  [oslo_policy]
-  enforce_scope=True
+Policy scope is always enforced for policies that define ``scope_types``. If a
+request token's scope does not match one of the policy's scope types,
+oslo.policy rejects the request before evaluating the policy rule.
 
 
 Roles
@@ -149,27 +133,23 @@ defaults for each policy.
 
 .. rubric:: ``reader``
 
-This provides read-only access to the resources within the ``system`` or
-``project``. Cyborg policies are defaulted to below rules:
+This provides read-only access to resources within a ``project``. Cyborg
+policies are defaulted to below rules:
 
 .. code::
-
-   system_reader_api
-      Default
-         role:reader and system_scope:all
 
    project_reader_api
       Default
          role:reader and project_id:%(project_id)s
 
-   system_or_project_reader
+   project_reader_or_admin
       Default
-         rule:system_reader_api or rule:project_reader_api
+         rule:project_reader_api or rule:admin_api
 
 .. rubric:: ``member``
 
-This role is to perform the project level write operation with combination
-to the system admin. Cyborg policies are defaulted to below rules:
+This role is to perform project-level write operations. Cyborg policies are
+defaulted to below rules:
 
 .. code::
 
@@ -177,28 +157,24 @@ to the system admin. Cyborg policies are defaulted to below rules:
       Default
          role:member and project_id:%(project_id)s
 
-   system_admin_or_owner
+   project_member_or_admin
       Default
-         rule:system_admin_api or rule:project_member_api
+         rule:project_member_api or rule:admin_api
 
 .. rubric:: ``admin``
 
-This role is to perform the admin level write operation at system as well
-as at project-level operations. Cyborg policies are defaulted to below rules:
+This role is to perform admin-level project operations. Cyborg policies are
+defaulted to below rules:
 
 .. code::
 
-   system_admin_api
+   admin_api
       Default
-         role:admin and system_scope:all
+         role:admin or role:administrator
 
    project_admin_api
       Default
          role:admin and project_id:%(project_id)s
-
-   system_admin_or_owner
-      Default
-         rule:system_admin_api or rule:project_member_api
 
 With these new defaults, you can solve the problem of:
 
@@ -213,13 +189,13 @@ With these new defaults, you can solve the problem of:
 Backward Compatibility
 ----------------------
 
-During the development period (Victoria and Wallaby releases), the new and old
-policy will both work for backward compatibility by supporting the old
-defaults and disabling the ``scope_type`` feature by default. This means the
-old defaults and deployments that use them will keep working as-is. However,
-we encourage every deployment to switch to new policy. ``scope_type`` will be
-enabled by default and the old defaults will be removed starting in the
-X release.
+During the Victoria and Wallaby releases, Cyborg supported both old and new
+policy defaults so operators could migrate gradually. That migration path
+included temporarily disabling scope enforcement.
+
+Scope enforcement is now always enabled when a policy defines
+``scope_types``. Operators must use project-scoped tokens for Cyborg APIs,
+which currently declare project scope.
 
 To implement the new default reader roles, some policies needed to become
 granular. They have been renamed, with the old names still supported for
@@ -228,8 +204,9 @@ backwards compatibility.
 Migration Plan
 --------------
 
-To have a graceful migration, Cyborg provides two flags to switch to the new
-policy completely. You do not need to overwrite the policy file to adopt the
+To have a graceful migration, Cyborg provides the
+``oslo_policy.enforce_new_defaults`` flag to switch to the new policy
+defaults completely. You do not need to overwrite the policy file to adopt the
 new policy defaults.
 
 Here is step wise guide for migration:
@@ -238,7 +215,6 @@ Here is step wise guide for migration:
 
    You need to create the new token with scope knowledge via below CLI:
 
-   - `Create System Scoped Token <https://docs.openstack.org/keystone/latest//admin/tokens-overview.html#operation_create_system_token>`__.
    - `Create Project Scoped Token <https://docs.openstack.org/keystone/latest//admin/tokens-overview.html#operation_create_project_scoped_token>`__.
 
 #. Create new default roles in keystone if not done:
@@ -247,21 +223,12 @@ Here is step wise guide for migration:
    the `Keystone Bootstrap <https://docs.openstack.org/keystone/latest//admin/bootstrap.html>`__.
    Keystone added this support in 14.0.0 (Rocky) release.
 
-#. Enable Scope Checks
+#. Use project-scoped tokens
 
-   The :oslo.config:option:`oslo_policy.enforce_scope` flag is to enable the
-   ``scope_type`` features. The scope of the token used in the request is
-   always compared to the ``scope_type`` of the policy. If the scopes do not
-   match, one of two things can happen.
-   If :oslo.config:option:`oslo_policy.enforce_scope` is True, the request
-   will be rejected. If :oslo.config:option:`oslo_policy.enforce_scope` is
-   False, an warning will be logged, but the request will be accepted
-   (assuming the rest of the policy passes). The default value of this flag
-   is False.
-
-   .. note:: Before you enable this flag, you need to audit your users and make
-             sure everyone who needs system-level access has a system role
-             assignment in keystone.
+   The scope of the token used in the request is always compared to the
+   ``scope_type`` of the policy. If the scopes do not match, the request is
+   rejected. Cyborg API policies currently declare project scope, so users must
+   use project-scoped tokens.
 
 #. Enable new defaults
 
