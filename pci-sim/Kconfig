@@ -12,10 +12,16 @@ config SAMPLE_FAKE_PCI_SRIOV
 	  The module creates a PCI device that appears in lspci and can
 	  have up to 7 Virtual Functions enabled via sriov_numvfs sysfs.
 
+	  Mediated device (mdev) support is compiled in when the kernel
+	  mdev framework is available (CONFIG_VFIO_MDEV). On kernels
+	  where the framework is absent the module still builds; writing
+	  "mdev" to the vf_personality sysfs attribute is then rejected.
+
 	  This is useful for testing:
 	  - PCI device passthrough with libvirt/QEMU
 	  - SR-IOV functionality in OpenStack Nova
 	  - VFIO driver development
+	  - Mediated device (mdev) support in OpenStack Cyborg
 
 	  To compile this as a module, choose M here. The module will
 	  be called fake_pci_sriov.

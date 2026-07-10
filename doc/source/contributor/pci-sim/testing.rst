@@ -41,6 +41,42 @@ The script loads two PFs, verifies the ``vf_personality`` and
 ``uart`` personality, confirms personality changes are rejected while
 VFs are active, and validates that invalid personality names are rejected.
 
+QEMU/mdev smoke test
+====================
+
+.. code-block:: console
+
+   $ make -C pci-sim modules
+   $ MODULE=./pci-sim/fake_pci_sriov.ko pci-sim/run_fake_pci_qemu_mdev_smoke.sh
+
+The script creates a fake mdev instance from the pci-sim module and verifies
+that QEMU can start with it attached via ``sysfsdev``.  Override the mdev type
+with ``MDEV_TYPE=sim_accel_large`` to test the large accelerator type.
+
+Mdev smoke test
+===============
+
+The mdev smoke test verifies that pci-sim correctly registers
+each fake PF as an mdev parent and exposes the expected mdev
+types in sysfs.
+
+.. code-block:: console
+
+   $ make -C pci-sim modules
+   $ sudo pci-sim/run_fake_pci_mdev_smoke.sh
+
+The script performs the following checks:
+
+#. Loads the module and sets the PF personality to ``mdev`` via
+   the ``vf_personality`` sysfs attribute.
+#. Verifies that the PF appears under ``/sys/class/mdev_bus/``.
+#. Confirms that the PF exposes two mdev types:
+   ``fake_pci_sriov_pf-sim_accel_small`` and
+   ``fake_pci_sriov_pf-sim_accel_large``.
+#. Reads ``available_instances`` for each type and verifies
+   the expected counts (default 8 small, 2 large).
+#. Cleans up and unloads the module.
+
 DevStack Nova/Cyborg serial echo test
 ======================================
 

@@ -41,4 +41,21 @@
 #define PCI_SIM_VFIO_HAS_MATCH_TOKEN_UUID PCI_SIM_HAS_615_API
 #define PCI_SIM_VFIO_HAS_PASID_IOAS PCI_SIM_HAS_615_API
 
+/*
+ * mdev (mediated device) support.  The mdev core lives in
+ * drivers/vfio/mdev/ and is built by the CONFIG_VFIO_MDEV tristate;
+ * it is not part of VFIO core.  The symbol has no Kconfig prompt
+ * and is selected in-tree by consumers (e.g. DRM_I915_GVT_KVMGT),
+ * so VFIO can be enabled on kernels where the mdev framework is
+ * absent.  Gate on CONFIG_VFIO_MDEV so such kernels still build
+ * the module: the mdev personality is then rejected at runtime.
+ * mdev_register_parent() has been stable since Linux 5.16, so no
+ * per-version shim is needed.
+ */
+#if IS_ENABLED(CONFIG_VFIO_MDEV)
+#define PCI_SIM_HAS_MDEV 1
+#else
+#define PCI_SIM_HAS_MDEV 0
+#endif
+
 #endif /* FAKE_PCI_SRIOV_COMPAT_H */

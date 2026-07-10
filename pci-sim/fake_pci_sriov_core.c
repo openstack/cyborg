@@ -12,6 +12,12 @@
 
 /* Module parameters */
 
+unsigned int mdev_instances = 8;
+module_param(mdev_instances, uint, 0444);
+MODULE_PARM_DESC(
+	mdev_instances,
+	"Maximum small-type mdev instances per PF (large = instances/4)");
+
 bool vf_serial_class;
 module_param(vf_serial_class, bool, 0644);
 MODULE_PARM_DESC(
@@ -381,6 +387,14 @@ static int __init fake_pci_sriov_init(void)
 		}
 	}
 
+#if PCI_SIM_HAS_MDEV
+	err = pci_sim_mdev_register_driver();
+	if (err) {
+		pr_err("fake_pci: Failed to register mdev driver: %d\n", err);
+		goto err_hosts;
+	}
+#endif
+
 	pr_info("fake_pci: Module loaded successfully with %u PF(s)\n",
 		num_pfs);
 	pr_info("fake_pci: Use 'echo N > /sys/bus/pci/devices/.../sriov_numvfs' to enable VFs\n");
@@ -408,6 +422,20 @@ err_platform_dev:
 static void __exit fake_pci_sriov_exit(void)
 {
 	pr_info("fake_pci: Unloading module\n");
+
+#if PCI_SIM_HAS_MDEV
+	{
+		struct fake_pci_host *host;
+
+		mutex_lock(&fake_hosts_lock);
+		list_for_each_entry(host, &fake_hosts, list) {
+			if (host->personality == PCI_SIM_VF_PERS_MDEV)
+				pci_sim_mdev_unregister_parent(host);
+		}
+		mutex_unlock(&fake_hosts_lock);
+		pci_sim_mdev_unregister_driver();
+	}
+#endif
 
 	fake_pci_remove_all_hosts();
 

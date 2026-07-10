@@ -47,6 +47,11 @@ warn_enabled CONFIG_PCI_IOV
 warn_enabled CONFIG_VFIO_PCI
 warn_enabled CONFIG_KVM
 
+# mdev support is compiled only when the kernel mdev framework is
+# available; without it the module builds but the mdev personality
+# is rejected at runtime.
+warn_enabled CONFIG_VFIO_MDEV
+
 if [[ $failed -ne 0 ]]; then
     exit 1
 fi

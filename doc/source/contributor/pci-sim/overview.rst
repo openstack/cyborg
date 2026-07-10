@@ -16,7 +16,13 @@ Each PF exposes a ``vf_personality`` sysfs file that controls what type of
 VF device the PF creates, enabling mixed configurations on the same host.
 PFs start with personality ``unset``; the user must assign a personality
 before the PF can create VFs.  Currently supported personalities are
-``uart``; additional types (e.g. NVMe, mdev) may be added in the future.
+``uart`` and ``mdev``; additional types (e.g. NVMe) may be added in
+the future.
+
+When a PF is configured with an ``mdev`` personality,
+it registers as an mdev parent and exposes two mdev types
+(``sim_accel_small`` and ``sim_accel_large``), which allows Cyborg's
+``GenericMdevDriver`` to be tested without real mdev-capable hardware.
 
 The source currently lives under the top-level ``pci-sim/`` directory and is
 built as an out-of-tree kernel module against
