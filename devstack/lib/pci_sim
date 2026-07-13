@@ -9,33 +9,85 @@ PCI_SIM_PF_DEVICE_ID=${PCI_SIM_PF_DEVICE_ID:-0x1000}
 PCI_SIM_VF_DEVICE_ID=${PCI_SIM_VF_DEVICE_ID:-0x1001}
 PCI_SIM_MODULE_NAME=${PCI_SIM_MODULE_NAME:-fake_pci_sriov}
 
+# Store personality:service by PF index in sorted PCI address order.
+function pci_sim_parse_service_map {
+    local -a entries
+    local entry index assignment
+
+    # read processes a single line and would discard a trailing empty field.
+    if [[ $PCI_SIM_SERVICE_MAP == *$'\n'* || $PCI_SIM_SERVICE_MAP == *, ]]; then
+        die $LINENO "PCI_SIM_SERVICE_MAP must be a comma-separated list of index:personality:service entries"
+    fi
+    IFS=',' read -ra entries <<< "$PCI_SIM_SERVICE_MAP"
+
+    for entry in "${entries[@]}"; do
+        if [[ ! $entry =~ ^([0-9]|1[0-5]):(.+)$ ]]; then
+            die $LINENO "Invalid PCI_SIM_SERVICE_MAP entry '$entry'; expected index:personality:service (index 0-15)"
+        fi
+        index=${BASH_REMATCH[1]}
+        assignment=${BASH_REMATCH[2]}
+        if (( index >= ${#entries[@]} )); then
+            die $LINENO "PCI_SIM_SERVICE_MAP indices must be consecutive from 0; got PF $index with ${#entries[@]} entries"
+        fi
+        if [[ -n ${PCI_SIM_PF_ASSIGNMENTS[index]:-} ]]; then
+            die $LINENO "Duplicate PF $index in PCI_SIM_SERVICE_MAP"
+        fi
+        case "$assignment" in
+            uart:nova|uart:cyborg|mdev:cyborg)
+                PCI_SIM_PF_ASSIGNMENTS[index]=$assignment
+                ;;
+            *)
+                die $LINENO "Unsupported PCI_SIM_SERVICE_MAP assignment '$assignment'; use uart:nova, uart:cyborg or mdev:cyborg"
+                ;;
+        esac
+    done
+}
+
+function pci_sim_has_assignment {
+    local assignment
+    for assignment in "${PCI_SIM_PF_ASSIGNMENTS[@]}"; do
+        [[ $assignment != "$1" ]] || return 0
+    done
+    return 1
+}
+
+function pci_sim_pf_mode {
+    local assignment=${PCI_SIM_PF_ASSIGNMENTS[$1]}
+    echo "${assignment%%:*}"
+}
+
 function pci_sim_configure_personalities {
-    local pf
+    local pf wanted
     local -a pfs
+    local index=0
 
     mapfile -t pfs < <(pci_sim_find_devs "$PCI_SIM_PF_DEVICE_ID")
 
     for pf in "${pfs[@]}"; do
+        wanted=$(pci_sim_pf_mode "$index")
         local sysfs_path="/sys/bus/pci/devices/$pf/vf_personality"
 
         if [[ -e "$sysfs_path" ]]; then
-            pci_sim_sysfs_write uart "$sysfs_path"
+            pci_sim_sysfs_write "$wanted" "$sysfs_path"
         else
             echo "WARNING: $sysfs_path does not exist for PF $pf"
         fi
+        index=$((index + 1))
     done
 }
 
-function pci_sim_validate_config {
-    # The module supports up to 16 fake host bridges/PFs and up to 7 VFs
-    # per PF.  Validate early so stack.sh fails before loading the module
-    # with a topology the driver will reject.
-    if [[ $PCI_SIM_NUM_PFS -lt 1 || $PCI_SIM_NUM_PFS -gt 16 ]]; then
-        die $LINENO "PCI_SIM_NUM_PFS must be between 1 and 16; got $PCI_SIM_NUM_PFS"
-    fi
+function pci_sim_init_config {
+    PCI_SIM_PF_ASSIGNMENTS=()
+    [[ -n ${PCI_SIM_SERVICE_MAP:-} ]] || return 0
 
     if [[ $PCI_SIM_NUM_VFS -lt 0 || $PCI_SIM_NUM_VFS -gt 7 ]]; then
         die $LINENO "PCI_SIM_NUM_VFS must be between 0 and 7; got $PCI_SIM_NUM_VFS"
+    fi
+
+    pci_sim_parse_service_map
+
+    if pci_sim_has_assignment mdev:cyborg && (( PCI_SIM_MDEV_INSTANCES < 1 )); then
+        die $LINENO "PCI_SIM_MDEV_INSTANCES must be >= 1; got $PCI_SIM_MDEV_INSTANCES"
     fi
 }
 
@@ -192,7 +244,6 @@ function pci_sim_configure_vfio_iommu {
 
 function load_pci_sim {
     set -x
-    pci_sim_validate_config
 
     # Start from a deterministic state so repeated stack.sh runs do not inherit
     # stale VFs or module parameters.
@@ -201,7 +252,11 @@ function load_pci_sim {
     pci_sim_configure_vfio_iommu
     sudo modprobe vfio-pci
 
-    local mod_args="num_pfs=$PCI_SIM_NUM_PFS $PCI_SIM_MODULE_ARGS"
+    local mod_args="$PCI_SIM_MODULE_ARGS num_pfs=${#PCI_SIM_PF_ASSIGNMENTS[@]}"
+    if pci_sim_has_assignment mdev:cyborg; then
+        sudo modprobe mdev || true
+        mod_args="$mod_args mdev_instances=$PCI_SIM_MDEV_INSTANCES"
+    fi
 
     # Prefer the installed module path used by DevStack.  Fall back to the
     # build-tree module to make local plugin-function testing convenient.
@@ -218,47 +273,32 @@ function configure_pci_sim_vfs {
     set -x
     local pf vf
     local -a pfs vfs
+    local index=0
 
     # Reset sriov_numvfs before recreating VFs so repeated stack.sh runs do not
     # leave stale VF devices or driver bindings behind.
-    pci_sim_validate_config
     mapfile -t pfs < <(pci_sim_find_devs "$PCI_SIM_PF_DEVICE_ID")
 
-    if [[ ${#pfs[@]} -ne $PCI_SIM_NUM_PFS ]]; then
-        die $LINENO "Expected $PCI_SIM_NUM_PFS pci-sim PF(s), found ${#pfs[@]}: ${pfs[*]}"
+    if [[ ${#pfs[@]} -ne ${#PCI_SIM_PF_ASSIGNMENTS[@]} ]]; then
+        die $LINENO "Expected ${#PCI_SIM_PF_ASSIGNMENTS[@]} pci-sim PF(s), found ${#pfs[@]}: ${pfs[*]}"
     fi
 
     for pf in "${pfs[@]}"; do
+        if [[ $(pci_sim_pf_mode "$index") != uart ]]; then
+            index=$((index + 1))
+            continue
+        fi
         pci_sim_sysfs_write 0 "/sys/bus/pci/devices/$pf/sriov_numvfs" || true
         pci_sim_sysfs_write "$PCI_SIM_NUM_VFS" "/sys/bus/pci/devices/$pf/sriov_numvfs"
         mapfile -t vfs < <(pci_sim_find_vfs_for_pf "$pf")
         for vf in "${vfs[@]}"; do
             pci_sim_bind_vf_to_vfio "$vf"
         done
+        index=$((index + 1))
     done
 
     echo "pci-sim PFs: ${pfs[*]}"
     echo "pci-sim VFs: $(pci_sim_find_devs "$PCI_SIM_VF_DEVICE_ID" | xargs echo)"
-}
-
-function pci_sim_pf_target {
-    local index=$1
-
-    # When both services are enabled, split fake PFs by index.  This lets one
-    # DevStack cloud expose Nova PCI passthrough and Cyborg accelerator flows
-    # at the same time without both services managing the same VF.
-    if [[ "$PCI_SIM_CONFIGURE_NOVA_PCI" == True && \
-          "$PCI_SIM_CONFIGURE_CYBORG_PCI" == True ]]; then
-        if (( index % 2 == 0 )); then
-            echo nova
-        else
-            echo cyborg
-        fi
-    elif [[ "$PCI_SIM_CONFIGURE_NOVA_PCI" == True ]]; then
-        echo nova
-    elif [[ "$PCI_SIM_CONFIGURE_CYBORG_PCI" == True ]]; then
-        echo cyborg
-    fi
 }
 
 function configure_pci_sim_nova_conf_file {
@@ -297,8 +337,6 @@ function configure_pci_sim_nova {
     local conf_file
     local -a nova_conf_files
 
-    [[ "$PCI_SIM_CONFIGURE_NOVA_PCI" == True ]] || return 0
-
     NOVA_CONF=${NOVA_CONF:-/etc/nova/nova.conf}
     NOVA_CPU_CONF=${NOVA_CPU_CONF:-/etc/nova/nova-cpu.conf}
 
@@ -321,8 +359,6 @@ function configure_pci_sim_cyborg {
     local -a specs
     local vf
 
-    [[ "$PCI_SIM_CONFIGURE_CYBORG_PCI" == True ]] || return 0
-
     [[ -f $CYBORG_AGENT_CONF ]] || die $LINENO "CYBORG_AGENT_CONF does not exist: $CYBORG_AGENT_CONF"
 
     current_drivers=$(iniget "$CYBORG_AGENT_CONF" agent enabled_drivers || true)
@@ -343,28 +379,30 @@ function configure_pci_sim_cyborg {
     fi
 }
 
-function pci_sim_collect_target_vfs {
-    local wanted_target=$1
-    local pf target
-    local -a pfs pf_vfs
-    local index=0
+function pci_sim_collect_target_pfs {
+    local assignment=$1 index
+    local -a pfs
 
     mapfile -t pfs < <(pci_sim_find_devs "$PCI_SIM_PF_DEVICE_ID")
-    for pf in "${pfs[@]}"; do
-        target=$(pci_sim_pf_target "$index")
-        if [[ $target == "$wanted_target" ]]; then
-            mapfile -t pf_vfs < <(pci_sim_find_vfs_for_pf "$pf")
-            printf '%s\n' "${pf_vfs[@]}"
+    for index in "${!pfs[@]}"; do
+        if [[ ${PCI_SIM_PF_ASSIGNMENTS[index]} == "$assignment" ]]; then
+            echo "${pfs[index]}"
         fi
-        index=$((index + 1))
     done
+}
+
+function pci_sim_collect_target_vfs {
+    local pf
+    while read -r pf; do
+        pci_sim_find_vfs_for_pf "$pf"
+    done < <(pci_sim_collect_target_pfs "uart:$1")
 }
 
 function configure_pci_sim_nova_service_config {
     set -x
     local -a nova_vfs
 
-    [[ "$PCI_SIM_CONFIGURE_NOVA_PCI" == True ]] || return 0
+    pci_sim_has_assignment uart:nova || return 0
     mapfile -t nova_vfs < <(pci_sim_collect_target_vfs nova)
     configure_pci_sim_nova "${nova_vfs[@]}"
     echo "pci-sim Nova VFs: ${nova_vfs[*]:-}"
@@ -374,10 +412,49 @@ function configure_pci_sim_cyborg_service_config {
     set -x
     local -a cyborg_vfs
 
-    [[ "$PCI_SIM_CONFIGURE_CYBORG_PCI" == True ]] || return 0
+    pci_sim_has_assignment uart:cyborg || return 0
     mapfile -t cyborg_vfs < <(pci_sim_collect_target_vfs cyborg)
     configure_pci_sim_cyborg "${cyborg_vfs[@]}"
     echo "pci-sim Cyborg VFs: ${cyborg_vfs[*]:-}"
+}
+
+function configure_pci_sim_cyborg_mdev {
+    set -x
+    local current_drivers
+    local -a specs
+    local pf
+
+    [[ -f $CYBORG_AGENT_CONF ]] || die $LINENO "CYBORG_AGENT_CONF does not exist: $CYBORG_AGENT_CONF"
+
+    current_drivers=$(iniget "$CYBORG_AGENT_CONF" agent enabled_drivers || true)
+    if [[ -z $current_drivers ]]; then
+        iniset "$CYBORG_AGENT_CONF" agent enabled_drivers mdev_driver
+    elif [[ ,$current_drivers, != *,mdev_driver,* ]]; then
+        iniset "$CYBORG_AGENT_CONF" agent enabled_drivers "$current_drivers,mdev_driver"
+    fi
+
+    # Cyborg accepts only one mdev type per parent PCI address.
+    for pf in "$@"; do
+        if [[ ! -d /sys/class/mdev_bus/$pf/mdev_supported_types/$PCI_SIM_MDEV_TYPE ]]; then
+            die $LINENO "pci-sim PF $pf does not support mdev type $PCI_SIM_MDEV_TYPE"
+        fi
+        specs+=("{\"address\":\"$pf\",\"mdev_type\":\"$PCI_SIM_MDEV_TYPE\"}")
+    done
+
+    if (( ${#specs[@]} > 0 )); then
+        iniset_multiline "$CYBORG_AGENT_CONF" mdev device_spec "${specs[@]}"
+    fi
+}
+
+function configure_pci_sim_cyborg_mdev_service_config {
+    set -x
+    local -a mdev_pfs
+
+    pci_sim_has_assignment mdev:cyborg || return 0
+
+    mapfile -t mdev_pfs < <(pci_sim_collect_target_pfs mdev:cyborg)
+    configure_pci_sim_cyborg_mdev "${mdev_pfs[@]}"
+    echo "pci-sim Cyborg mdev PFs: ${mdev_pfs[*]:-}"
 }
 
 function pci_sim_flavor_create_like_m1_nano {
@@ -400,7 +477,7 @@ function pci_sim_flavor_create_like_m1_nano {
 }
 
 function create_pci_sim_nova_flavor {
-    [[ "$PCI_SIM_CONFIGURE_NOVA_PCI" == True ]] || return 0
+    pci_sim_has_assignment uart:nova || return 0
 
     pci_sim_flavor_create_like_m1_nano "$PCI_SIM_NOVA_FLAVOR_NAME"
     openstack flavor set "$PCI_SIM_NOVA_FLAVOR_NAME" \
@@ -410,7 +487,7 @@ function create_pci_sim_nova_flavor {
 function create_pci_sim_cyborg_device_profile {
     local groups
 
-    [[ "$PCI_SIM_CONFIGURE_CYBORG_PCI" == True ]] || return 0
+    pci_sim_has_assignment uart:cyborg || return 0
 
     groups='[{"resources:CUSTOM_PCI":"1","trait:CUSTOM_PCI_PRODUCT_ID_1001":"required"}]'
     if ! openstack accelerator device profile list -f value -c name | \
@@ -421,11 +498,34 @@ function create_pci_sim_cyborg_device_profile {
 }
 
 function create_pci_sim_cyborg_flavor {
-    [[ "$PCI_SIM_CONFIGURE_CYBORG_PCI" == True ]] || return 0
+    pci_sim_has_assignment uart:cyborg || return 0
 
     pci_sim_flavor_create_like_m1_nano "$PCI_SIM_CYBORG_FLAVOR_NAME"
     openstack flavor set "$PCI_SIM_CYBORG_FLAVOR_NAME" \
         --property "accel:device_profile=$PCI_SIM_CYBORG_DEVICE_PROFILE_NAME"
+}
+
+function create_pci_sim_cyborg_mdev_device_profile {
+    local groups type_name
+
+    pci_sim_has_assignment mdev:cyborg || return 0
+
+    type_name=${PCI_SIM_MDEV_TYPE^^}
+    groups=$(printf '[{"resources:CUSTOM_MDEV_%s":"1"}]' "${type_name//-/_}")
+    if ! openstack accelerator device profile list -f value -c name | \
+        grep -qx "$PCI_SIM_CYBORG_MDEV_DEVICE_PROFILE_NAME"; then
+        openstack accelerator device profile create \
+            "$PCI_SIM_CYBORG_MDEV_DEVICE_PROFILE_NAME" "$groups"
+    fi
+}
+
+function create_pci_sim_cyborg_mdev_flavor {
+    pci_sim_has_assignment mdev:cyborg || return 0
+
+    pci_sim_flavor_create_like_m1_nano "$PCI_SIM_CYBORG_MDEV_FLAVOR_NAME"
+    openstack flavor set "$PCI_SIM_CYBORG_MDEV_FLAVOR_NAME" \
+        --property \
+        "accel:device_profile=$PCI_SIM_CYBORG_MDEV_DEVICE_PROFILE_NAME"
 }
 
 function create_pci_sim_test_resources {
@@ -438,6 +538,8 @@ function create_pci_sim_test_resources {
     create_pci_sim_nova_flavor
     create_pci_sim_cyborg_device_profile
     create_pci_sim_cyborg_flavor
+    create_pci_sim_cyborg_mdev_device_profile
+    create_pci_sim_cyborg_mdev_flavor
 }
 
 function unload_pci_sim {
@@ -449,3 +551,7 @@ function unload_pci_sim {
         sudo rmmod "$PCI_SIM_MODULE_NAME"
     fi
 }
+
+# Populate PCI_SIM_PF_ASSIGNMENTS at source time so the array is available in
+# every DevStack phase (plugin.sh re-sources this file for each phase).
+pci_sim_init_config
