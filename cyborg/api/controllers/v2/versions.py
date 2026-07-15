@@ -14,6 +14,9 @@
 #    under the License.
 
 
+from cyborg.api.controllers import base
+
+
 # This is the version 2 API
 BASE_VERSION = 2
 
@@ -45,7 +48,7 @@ _MAX_VERSION_STRING = '{}.{}'.format(BASE_VERSION, MINOR_MAX_VERSION)
 
 
 def service_type_string():
-    return 'accelerator'
+    return base.SERVICE_TYPE
 
 
 def min_version_string():

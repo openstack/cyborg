@@ -17,16 +17,21 @@ import datetime
 import functools
 import inspect
 
+import microversion_parse
 import pecan
 import wsme
 
+from oslo_log import log as logging
 from pecan import rest
 from webob import exc
 from wsme import types as wtypes
 
 
+LOG = logging.getLogger(__name__)
+
+
 API_V2 = 'v2'
-# name of attribute to keep version method information
+SERVICE_TYPE = 'accelerator'
 
 
 class APIBase(wtypes.Base):
@@ -104,6 +109,18 @@ class Version:
     def parse_headers(headers, default_version, latest_version):
         """Determine the API version requested based on the headers supplied.
 
+        Per the `OpenStack API-WG guideline`_ the ``OpenStack-API-Version``
+        header carries the service type followed by the requested version,
+        for example ``OpenStack-API-Version: accelerator 2.1``.
+        ``microversion_parse`` handles this standard format.  A bare
+        version string without the service type prefix is also accepted
+        for backward compatibility with older clients but triggers a
+        deprecation warning.
+
+        .. _OpenStack API-WG guideline:
+           https://specs.openstack.org/openstack/api-wg/guidelines/
+           microversion_specification.html
+
         :param headers: webob headers
         :param default_version: version to use if not specified in headers
         :param latest_version: version to use if latest is requested
@@ -111,12 +128,32 @@ class Version:
         :raises: webob.HTTPNotAcceptable
 
         """
-        version_str = headers.get(Version.current_api_version, default_version)
         minimal_version = (2, 0)
+        service_type = SERVICE_TYPE
+
+        # Try the standard format first:
+        #   OpenStack-API-Version: accelerator <version>
+        version_str = microversion_parse.get_version(
+            headers, service_type=service_type
+        )
 
         if version_str is None:
-            # If requested header is wrong, Cyborg answers with the minimal
-            # supported version.
+            # Fall back to a bare version string without the service
+            # type prefix for backward compatibility.
+            raw = headers.get(Version.current_api_version)
+            if raw is not None:
+                LOG.warning(
+                    'Received OpenStack-API-Version header without '
+                    'the service type prefix.  Clients should send '
+                    "'OpenStack-API-Version: %s <version>' "
+                    'per the API-WG guideline.',
+                    service_type,
+                )
+                version_str = raw
+            else:
+                version_str = default_version
+
+        if version_str is None:
             return minimal_version
 
         if version_str.lower() == 'latest':
@@ -125,15 +162,12 @@ class Version:
             parse_str = version_str
 
         try:
-            version = tuple(int(i) for i in parse_str.split('.'))
-        except ValueError:
-            version = minimal_version
-
-        if len(version) != 2:
+            version = microversion_parse.parse_version_string(parse_str)
+        except TypeError:
             raise exc.HTTPNotAcceptable(
                 "Invalid value for %s header" % Version.current_api_version
             )
-        return version
+        return (version.major, version.minor)
 
     def __gt__(self, other):
         return (self.major, self.minor) > (other.major, other.minor)
