@@ -26,7 +26,7 @@
         c-vol: false
         cinder: false
       devstack_localrc:
-        PCI_SIM_SERVICE_MAP: '0:uart:nova,1:uart:cyborg'
+        PCI_SIM_SERVICE_MAP: '0:uart:nova,1:uart:cyborg,2:mdev:cyborg'
       tempest_plugins:
         - cyborg-tempest-plugin
       tempest_test_regex: cyborg_tempest_plugin
