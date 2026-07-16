@@ -29,7 +29,7 @@ from oslotest import base
 from cyborg import context as cyborg_context
 from cyborg.common import config as cyborg_config
 from cyborg.tests import post_mortem_debug
-from cyborg.tests.unit import policy_fixture
+from cyborg.tests.local_fixtures import policy_fixture
 
 
 CONF = cfg.CONF

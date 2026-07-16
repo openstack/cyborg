@@ -1,6 +1,5 @@
 {
     "uuid": "359c0990-0258-44fd-8b05-fc510ac3d024",
-    "id": 0,
     "deployable_id": 1,
     "key": "rc",
     "value": "FPGA",
