@@ -157,5 +157,24 @@ class TestAcceleratorRequestSamples(base.ApiSampleTestBase):
         )
 
 
+class TestDeployableProgramSample(base.ApiSampleTestBase):
+    def test_deployable_program(self):
+        uuids = self.seed_programable_deployable()
+        self._check_sample(
+            f'/v2/deployables/{uuids["deployable"]}/program',
+            os.path.join(
+                SAMPLES_DIR,
+                'deployables',
+                'deployables-program-resp.json',
+            ),
+            method='PATCH',
+            req_path=os.path.join(
+                SAMPLES_DIR,
+                'deployables',
+                'deployables-program-req.json',
+            ),
+        )
+
+
 if __name__ == '__main__':
     unittest.main()

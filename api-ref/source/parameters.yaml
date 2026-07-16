@@ -359,6 +359,14 @@ hostname_resp:
   in: body
   required: true
   type: string
+image_uuid:
+  description: |
+    The UUID of the bitstream image to program onto the FPGA.
+    Supplied inside a JSON-Patch ``replace`` operation on ``/program``
+    (see the program endpoint example).
+  in: body
+  required: true
+  type: string
 instance_project_id_bind_unbind_req:
   description: |
     Project id of the target instance for bind or unbind of one accelerator request.

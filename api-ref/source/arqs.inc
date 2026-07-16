@@ -75,15 +75,22 @@ to bind and unbind the ARQ with the host name, device’s RP UUID and instance U
 is an asynchronous call which prepares or reconfigures the device in the
 background.
 
-.. rest_method:: PATCH /v2/accelerator_requests/{accelerator_request_uuid}
+.. rest_method:: PATCH /v2/accelerator_requests
 
-Updates:an accelerator request. The payload should have these fields:
+Bind or unbind one or more accelerator requests. The payload is a JSON
+object whose keys are ARQ UUIDs and whose values are lists of JSON-Patch
+operations. Only ``add`` (bind) and ``remove`` (unbind) operations are
+supported. All operations in a single request must use the same op.
 
 Request
 =======
+
+The request body is a JSON object keyed by ARQ UUID. Each value is a
+list of JSON-Patch operations whose ``path`` and ``value`` fields carry
+the bind/unbind parameters:
+
 .. rest_parameters:: parameters.yaml
 
-  - accelerator_request_uuid: accelerator_request_uuid
   - hostname: hostname_bind_unbind_req
   - device_rp_uuid: device_rp_uuid_bind_unbind_req
   - instance_uuid: instance_uuid_bind_unbind_req
@@ -94,9 +101,12 @@ Request
 .. literalinclude:: ../../doc/api_samples/accelerator_requests/accelerator_requests-patch-req.json
    :language: javascript
 
-**Example response: update an accelerator request**
+Response
+========
 
-.. literalinclude:: ../../doc/api_samples/accelerator_requests/accelerator_requests-after-update-resp.json
+Normal response codes: 202
+
+There is no body content for the response of a successful request.
 
 Delete Accelerator Requests by ARQ uuid
 ---------------------------------------

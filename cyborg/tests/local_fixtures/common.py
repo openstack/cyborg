@@ -91,6 +91,52 @@ def seed_devices(context):
     }
 
 
+def seed_programable_deployable(context):
+    """Create a device, deployable, and controlpath ID for programming.
+
+    The program endpoint requires a controlpath ID associated with the
+    device so it can locate the FPGA control path.
+    """
+    dev = objects.Device(
+        context,
+        uuid=uuidutils.generate_uuid(),
+        type='FPGA',
+        vendor='0xABCD',
+        model='miss model info',
+        std_board_info="{'device_id': '0xabcd', 'class': 'Fake class'}",
+        vendor_board_info='fake_vendor_info',
+        hostname='test-node-1',
+        status='enabled',
+    )
+    dev.create(context)
+
+    dep = objects.Deployable(
+        context,
+        uuid=uuidutils.generate_uuid(),
+        name='test-deployable-0',
+        num_accelerators=1,
+        device_id=dev.id,
+        rp_uuid=uuidutils.generate_uuid(),
+        driver_name='fake',
+    )
+    dep.create(context)
+
+    cpid = objects.ControlpathID(
+        context,
+        uuid=uuidutils.generate_uuid(),
+        device_id=dev.id,
+        cpid_type='PCI',
+        cpid_info='{"domain":"0000","bus":"0c","device":"00","function":"0"}',
+    )
+    cpid.create(context)
+
+    return {
+        'device': dev,
+        'deployable': dep,
+        'controlpath_id': cpid,
+    }
+
+
 def seed_device_profiles(context):
     """Create two test device profiles.
 
