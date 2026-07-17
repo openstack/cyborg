@@ -38,9 +38,9 @@
      - None
      - Test results reported at Aug 2020. Please reference: `Inspur FPGA Driver Test Report <https://wiki.openstack.org/wiki/Cyborg/TestReport/InspurFPGA>`_
    * - Intel NIC Driver
-     - None
-     - The driver for Intel NIC Cards.
-     - None
+     - `Intel X710 10GbE SFP+ <https://www.intel.com/content/www/us/en/products/details/ethernet/700-network-adapters.html>`_, `Intel XXV710 25GbE SFP28 <https://www.intel.com/content/www/us/en/products/details/ethernet/700-network-adapters.html>`_, Intel XXV710 25GbE backplane
+     - The driver for Intel NIC Cards. Supports SR-IOV VF discovery and passthrough via Cyborg + Nova + Neutron smartNIC flow.
+     - Requires SR-IOV to be enabled on the NIC and IOMMU on the host. Uses ``i40e`` host driver and ``iavf`` guest driver.
      - Test results reported at Feb 2021. Please reference: `Intel NIC Driver Test Report <https://wiki.openstack.org/wiki/Cyborg/TestReport/IntelNic>`_
    * - Inspur NVMe SSD Driver
      - None
