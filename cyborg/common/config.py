@@ -14,16 +14,42 @@
 #    under the License.
 
 from oslo_config import cfg
+from oslo_middleware import cors
 
 from cyborg import version
 from cyborg.common import rpc
 
 
-def parse_args(argv, default_config_files=None):
+def set_lib_defaults():
     rpc.set_defaults(control_exchange='cyborg')
     cfg.CONF.set_default(
         'service_token_roles_required', True, group='keystone_authtoken'
     )
+    cors.set_defaults(
+        allow_headers=[
+            'X-Auth-Token',
+            'X-Openstack-Request-Id',
+            'X-Identity-Status',
+            'X-Roles',
+            'X-Service-Catalog',
+            'X-User-Id',
+            'X-Tenant-Id',
+            'OpenStack-API-Version',
+        ],
+        expose_headers=[
+            'X-Auth-Token',
+            'X-Openstack-Request-Id',
+            'X-Subject-Token',
+            'X-Service-Token',
+            'OpenStack-API-Version',
+        ],
+        allow_methods=['GET', 'PUT', 'POST', 'DELETE', 'PATCH'],
+    )
+
+
+def parse_args(argv, default_config_files=None):
+    set_lib_defaults()
+
     version_string = version.version_info.release_string()
     cfg.CONF(
         argv[1:],
