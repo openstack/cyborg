@@ -276,6 +276,15 @@ function cyborg_configure_tempest {
     if [[ -n "$TEMPEST_ACCELERATOR_MAX_MICROVERSION" ]]; then
         iniset $TEMPEST_CONFIG accelerator max_microversion $TEMPEST_ACCELERATOR_MAX_MICROVERSION
     fi
+
+    if [[ "$ENABLE_PCI_SIM" == "True" ]]; then
+        iniset $TEMPEST_CONFIG cyborg_pci device_profile_name $PCI_SIM_CYBORG_DEVICE_PROFILE_NAME
+        # Guest-visible PCI IDs. pci_sim_vfio_pci overlays config-space with SGI IOC3
+        # identity (10a9:0003) when vfio_guest_8250_compat is enabled (default), so the
+        # IDs the guest sees differ from the host-side PCI_SIM_VENDOR_ID/VF_DEVICE_ID.
+        iniset $TEMPEST_CONFIG cyborg_pci vendor_id 10a9
+        iniset $TEMPEST_CONFIG cyborg_pci product_id 0003
+    fi
 }
 
 # Restore xtrace + pipefail
