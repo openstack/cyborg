@@ -25,6 +25,8 @@ Contributing
 
 * :doc:`/contributor/nvme-driver`: Cyborg NVMe driver development environment
 
+* :doc:`/contributor/intel-nic-sriov`: Intel NIC driver with SR-IOV
+
 * :doc:`/contributor/tempest-testing`: Running Cyborg tempest plugin tests
 
 * :doc:`/contributor/api-sample-testing`: Running functional API sample
@@ -62,6 +64,7 @@ Reviewing
    devstack_setup
    vm-setup
    nvme-driver
+   intel-nic-sriov
    tempest-testing
    api-sample-testing
    grenade-upgrade
