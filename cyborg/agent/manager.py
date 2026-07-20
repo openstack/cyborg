@@ -23,7 +23,6 @@ from oslo_log import log as logging
 from oslo_service import periodic_task
 from oslo_utils import uuidutils
 
-from cyborg.accelerator.drivers.fpga.base import FPGADriver
 from cyborg.accelerator.drivers.gpu import utils as gpu_utils
 from cyborg.agent.resource_tracker import ResourceTracker
 from cyborg.agent.rpcapi import AgentAPI
@@ -91,7 +90,6 @@ class AgentManager(periodic_task.PeriodicTasks):
                 else:
                     raise
 
-        self.fpga_driver = FPGADriver()
         self.cond_api = cond_api.ConductorAPI()
         self.agent_api = AgentAPI()
         self.image_api = ImageAPI()
@@ -180,7 +178,9 @@ class AgentManager(periodic_task.PeriodicTasks):
             context, bitstream_uuid, dest_path=download_path.name
         )
         try:
-            driver = self.fpga_driver.create(driver_name)
+            # Keep driver_name in the RPC signature for existing callers.
+            # The discovered control path determines the driver instance.
+            driver = self._rt.get_driver_for_controlpath(controlpath_id)
             ret = driver.update(controlpath_id, download_path.name)
             LOG.info('Driver update() API returned %s', ret)
         finally:

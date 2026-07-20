@@ -12,6 +12,8 @@
 
 """Cyborg agent manager test cases."""
 
+import os
+
 from unittest import mock
 
 import fixtures
@@ -24,7 +26,7 @@ from cyborg.tests import base
 
 
 class TestAgentManager(base.TestCase):
-    """Test Agent Manager resource provider name resolution."""
+    """Test Agent Manager behavior."""
 
     def setUp(self):
         super().setUp()
@@ -37,13 +39,37 @@ class TestAgentManager(base.TestCase):
     def _create_manager_with_mocks(self):
         """Create an AgentManager with all dependencies mocked."""
         with (
-            mock.patch('cyborg.agent.manager.FPGADriver'),
             mock.patch('cyborg.agent.manager.cond_api.ConductorAPI'),
             mock.patch('cyborg.agent.manager.AgentAPI'),
             mock.patch('cyborg.agent.manager.ImageAPI'),
             mock.patch('cyborg.agent.manager.ResourceTracker'),
         ):
             return manager.AgentManager('cyborg-agent-topic')
+
+    def test_fpga_program_uses_discovered_driver(self):
+        self.useFixture(fixtures.NestedTempfile())
+        self.placement_mock.get.return_value.json.return_value = {
+            'resource_providers': [{'uuid': 'test-uuid'}]
+        }
+        am = self._create_manager_with_mocks()
+        driver = am._rt.get_driver_for_controlpath.return_value
+        driver.update.return_value = True
+        controlpath = {'cpid_type': 'PCI', 'cpid_info': {'bus': '0c'}}
+        image_uuid = 'e16db3c5-2dca-4c03-b053-0953870c0001'
+
+        self.assertTrue(
+            am.fpga_program(
+                self.context, controlpath, image_uuid, 'unused-driver'
+            )
+        )
+        am.image_api.download.assert_called_once_with(
+            self.context, image_uuid, dest_path=mock.ANY
+        )
+        am._rt.get_driver_for_controlpath.assert_called_once_with(controlpath)
+        driver.update.assert_called_once_with(controlpath, mock.ANY)
+        path = am.image_api.download.call_args.kwargs['dest_path']
+        self.assertEqual(path, driver.update.call_args.args[1])
+        self.assertFalse(os.path.exists(path))
 
     @mock.patch('cyborg.agent.manager.CONF')
     def test_get_resource_provider_name_primary_success(self, mock_conf):

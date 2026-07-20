@@ -15,25 +15,10 @@
 from unittest import mock
 
 from cyborg.accelerator.drivers.fpga.base import FPGADriver
-from cyborg.accelerator.drivers.fpga.inspur.driver import (
-    InspurFPGADriver,  # noqa
-)
-from cyborg.accelerator.drivers.fpga.intel.driver import (
-    IntelFPGADriver,  # noqa
-)
-from cyborg.accelerator.drivers.fpga.xilinx.driver import (
-    XilinxFPGADriver,  # noqa
-)
 from cyborg.tests import base
 
 
 class TestFPGADriver(base.TestCase):
-    def test_create(self):
-        FPGADriver.create("intel")
-        FPGADriver.create("inspur")
-        FPGADriver.create("xilinx")
-        self.assertRaises(LookupError, FPGADriver.create, "fake")
-
     def test_discover(self):
         d = FPGADriver()
         self.assertRaises(NotImplementedError, d.discover)

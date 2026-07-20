@@ -27,6 +27,7 @@ from stevedore.extension import ExtensionManager
 from cyborg.common import exception
 from cyborg.common import utils
 from cyborg.conf import CONF
+from cyborg.objects.driver_objects import driver_controlpath_id
 
 
 LOG = logging.getLogger(__name__)
@@ -43,6 +44,7 @@ class ResourceTracker:
         self.host = host
         self.conductor_api = cond_api
         self.acc_drivers = {}
+        self._drivers_by_controlpath = {}
         self._initialize_drivers()
 
     def _initialize_drivers(self, enabled_drivers=None):
@@ -85,23 +87,8 @@ class ResourceTracker:
         """Return one discovery snapshot across all drivers keyed by name."""
         return {name: drv.discover() for name, drv in self.acc_drivers.items()}
 
-    @staticmethod
-    def _canonical_pci_address(cpid_info):
-        """Return a serialization-independent BDF string for cpid_info.
-
-        Drivers serialize cpid_info differently (key order, spacing), so
-        comparing the raw JSON would miss duplicates describing the same
-        device. Rebuild the canonical domain:bus:device.function form. Fall
-        back to the raw value if cpid_info is not the expected BDF JSON.
-        """
-        try:
-            info = jsonutils.loads(cpid_info)
-            return '%(domain)s:%(bus)s:%(device)s.%(function)s' % info
-        except (ValueError, TypeError, KeyError):
-            return cpid_info
-
     def check_duplicate_devices(self, device_lists):
-        """Reject duplicate PCI addresses in the discovery snapshot."""
+        """Reject duplicate device addresses in the discovery snapshot."""
         seen = {}
         # Flatten {driver: [devices]} into (driver_name, dev) pairs.
         pairs = (
@@ -110,7 +97,7 @@ class ResourceTracker:
             for dev in devices
         )
         for driver_name, dev in pairs:
-            addr = self._canonical_pci_address(dev.controlpath_id.cpid_info)
+            addr = dev.controlpath_id.address
             if addr in seen:
                 raise exception.InvalidConfiguration(
                     reason='Device %s claimed by both %s and %s'
@@ -118,12 +105,55 @@ class ResourceTracker:
                 )
             seen[addr] = driver_name
 
+    def discover_devices(self):
+        """Collect devices for reporting and map control paths to drivers.
+
+        Keep the loaded driver instance that reported each device so
+        the agent can dispatch device operations to the driver that
+        owns them.
+
+        A device must be managed by exactly one driver; duplicate
+        claims are rejected by check_duplicate_devices(). On failure
+        the stale ownership map is cleared so lookups fail closed.
+        """
+        device_lists = self.discover_all()
+        try:
+            self.check_duplicate_devices(device_lists)
+        except exception.InvalidConfiguration:
+            self._drivers_by_controlpath = {}
+            raise
+        devices_to_report = []
+        owners = {}
+        for driver_name, devices in device_lists.items():
+            for device in devices:
+                key = device.controlpath_id.address
+                owners[key] = self.acc_drivers[driver_name]
+            devices_to_report.extend(devices)
+        self._drivers_by_controlpath = owners
+        return devices_to_report
+
+    @utils.synchronized(AGENT_RESOURCE_SEMAPHORE)
+    def get_driver_for_controlpath(self, controlpath_id):
+        """Return the loaded driver that reported a control path.
+
+        Raise InvalidConfiguration if no enabled driver reports the path.
+        """
+        controlpath = driver_controlpath_id.DriverControlPathID(
+            cpid_type=controlpath_id['cpid_type'],
+            cpid_info=jsonutils.dumps(controlpath_id['cpid_info']),
+        )
+        key = controlpath.address
+        selected_driver = self._drivers_by_controlpath.get(key)
+        if selected_driver is None:
+            raise exception.InvalidConfiguration(
+                reason='No enabled driver discovered control path %s' % (key,)
+            )
+        return selected_driver
+
     @utils.synchronized(AGENT_RESOURCE_SEMAPHORE)
     def update_usage(self, context):
         """Update the resource usage periodically."""
-        acc_list = []
-        for acc_driver in self.acc_drivers.values():
-            acc_list.extend(acc_driver.discover())
+        acc_list = self.discover_devices()
         # Call conductor_api here to diff and report acc data. Now, we actually
         # do not have the method report_data.
         try:

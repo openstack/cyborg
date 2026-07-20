@@ -15,10 +15,17 @@
 
 """Cyborg agent resource_tracker test cases."""
 
+import copy
+
 from unittest import mock
 
+from oslo_serialization import jsonutils
+
+from cyborg.accelerator.drivers import fake
 from cyborg.accelerator.drivers.driver import GenericDriver
+from cyborg.accelerator.drivers.pci.pci import driver
 from cyborg.agent.resource_tracker import ResourceTracker
+from cyborg.common import constants
 from cyborg.common import exception
 from cyborg.conductor import rpcapi as cond_api
 from cyborg.conf import CONF
@@ -42,6 +49,173 @@ class TestResourceTracker(base.TestCase):
         # FIXME(Shaohe Feng) need add testcase. How to check the fpgas
         # has stored into DB by conductor correctly?
         pass
+
+    def test_driver_lookup_before_resource_update(self):
+        fake_driver = self.rt.acc_drivers['fake_driver']
+        # The first periodic report runs discovery and builds the
+        # control path to driver ownership map.
+        self.rt.discover_devices()
+        controlpath = fake_driver.discover()[0].controlpath_id
+        rpc_controlpath = {
+            'cpid_type': controlpath.cpid_type,
+            'cpid_info': jsonutils.loads(controlpath.cpid_info),
+        }
+
+        self.assertIs(
+            fake_driver,
+            self.rt.get_driver_for_controlpath(rpc_controlpath),
+        )
+
+    def test_lookup_does_not_rediscover_missing_controlpath(self):
+        with mock.patch.object(
+            self.rt.acc_drivers['fake_driver'], 'discover'
+        ) as discover:
+            self.assertRaises(
+                exception.InvalidConfiguration,
+                self.rt.get_driver_for_controlpath,
+                {'cpid_type': 'PCI', 'cpid_info': {'bus': 'ff'}},
+            )
+        discover.assert_not_called()
+
+    def test_each_device_controlpath_maps_to_its_driver(self):
+        fake_driver = fake.FakeDriver()
+        fpga = fake_driver.discover()[0]
+        gpu = copy.deepcopy(fpga)
+        gpu.type = constants.DEVICE_GPU
+        gpu.controlpath_id.cpid_info = (
+            '{"domain":"0000","bus":"0d","device":"00","function":"0"}'
+        )
+        pci_driver = driver.PCIDriver()
+        self.rt.acc_drivers = {'pci': pci_driver, 'fake': fake_driver}
+
+        with (
+            mock.patch.object(
+                pci_driver, 'discover', return_value=[gpu], autospec=True
+            ),
+            mock.patch.object(
+                self.rt.conductor_api, 'report_data', autospec=True
+            ) as report,
+        ):
+            self.rt.update_usage(self.context)
+
+        report.assert_called_once_with(self.context, self.host, mock.ANY)
+        self.assertEqual(
+            [constants.DEVICE_GPU, constants.DEVICE_FPGA],
+            [device.type for device in report.call_args.args[2]],
+        )
+        gpu_controlpath = {
+            'cpid_type': gpu.controlpath_id.cpid_type,
+            'cpid_info': jsonutils.loads(gpu.controlpath_id.cpid_info),
+        }
+        fpga_controlpath = {
+            'cpid_type': fpga.controlpath_id.cpid_type,
+            'cpid_info': jsonutils.loads(fpga.controlpath_id.cpid_info),
+        }
+        self.assertIs(
+            pci_driver, self.rt.get_driver_for_controlpath(gpu_controlpath)
+        )
+        self.assertIs(
+            fake_driver, self.rt.get_driver_for_controlpath(fpga_controlpath)
+        )
+
+    def test_equivalent_json_member_order_maps_to_same_driver(self):
+        fake_driver = fake.FakeDriver()
+        device = fake_driver.discover()[0]
+        device.controlpath_id.cpid_info = (
+            '{"function":"0","device":"00","bus":"0c","domain":"0000"}'
+        )
+        with mock.patch.object(
+            fake_driver, 'discover', return_value=[device], autospec=True
+        ):
+            self.rt.acc_drivers = {'fake': fake_driver}
+            with mock.patch.object(
+                self.rt.conductor_api, 'report_data', autospec=True
+            ) as report:
+                self.rt.update_usage(self.context)
+
+        report.assert_called_once_with(self.context, self.host, [device])
+        rpc_controlpath = {
+            'cpid_type': 'PCI',
+            'cpid_info': {
+                'domain': '0000',
+                'bus': '0c',
+                'device': '00',
+                'function': '0',
+            },
+        }
+        self.assertIs(
+            fake_driver,
+            self.rt.get_driver_for_controlpath(rpc_controlpath),
+        )
+
+    def test_duplicate_controlpath_is_a_config_error(self):
+        fake_driver = fake.FakeDriver()
+        other_driver = fake.FakeDriver()
+        self.rt.acc_drivers = {'fake': fake_driver}
+        controlpath = fake_driver.discover()[0].controlpath_id
+        rpc_controlpath = {
+            'cpid_type': controlpath.cpid_type,
+            'cpid_info': jsonutils.loads(controlpath.cpid_info),
+        }
+
+        with mock.patch.object(
+            self.rt.conductor_api, 'report_data', autospec=True
+        ) as report:
+            self.rt.update_usage(self.context)
+            self.assertIs(
+                fake_driver,
+                self.rt.get_driver_for_controlpath(rpc_controlpath),
+            )
+            report.reset_mock()
+
+            self.rt.acc_drivers['other'] = other_driver
+            exc = self.assertRaises(
+                exception.InvalidConfiguration,
+                self.rt.update_usage,
+                self.context,
+            )
+
+        report.assert_not_called()
+        self.assertIn('claimed by both', str(exc))
+        self.assertRaises(
+            exception.InvalidConfiguration,
+            self.rt.get_driver_for_controlpath,
+            rpc_controlpath,
+        )
+
+    def test_periodic_report_replaces_map_when_device_disappears(self):
+        fake_driver = fake.FakeDriver()
+        self.rt.acc_drivers = {'fake': fake_driver}
+        with mock.patch.object(
+            self.rt.conductor_api, 'report_data', autospec=True
+        ):
+            self.rt.update_usage(self.context)
+
+        controlpath = fake_driver.discover()[0].controlpath_id
+        rpc_controlpath = {
+            'cpid_type': controlpath.cpid_type,
+            'cpid_info': jsonutils.loads(controlpath.cpid_info),
+        }
+        self.assertIs(
+            fake_driver, self.rt.get_driver_for_controlpath(rpc_controlpath)
+        )
+
+        with (
+            mock.patch.object(
+                fake_driver, 'discover', return_value=[], autospec=True
+            ),
+            mock.patch.object(
+                self.rt.conductor_api, 'report_data', autospec=True
+            ) as report,
+        ):
+            self.rt.update_usage(self.context)
+
+        report.assert_called_once_with(self.context, self.host, [])
+        self.assertRaises(
+            exception.InvalidConfiguration,
+            self.rt.get_driver_for_controlpath,
+            rpc_controlpath,
+        )
 
     def test_initialize_acc_drivers(self):
         enabled_drivers = ['intel_fpga_driver']
@@ -82,8 +256,8 @@ class TestResourceTracker(base.TestCase):
             m.side_effect = exception.PlacementResourceProviderNotFound(
                 resource_provider='foo'
             )
-            self.rt.update_usage(None)
-            m.assert_called_once_with(None, 'fake-mini', mock.ANY)
+            self.rt.update_usage(self.context)
+            m.assert_called_once_with(self.context, 'fake-mini', mock.ANY)
         mock_log.error.assert_called_once_with(
             'Unable to report usage: %s', m.side_effect
         )

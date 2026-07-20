@@ -17,29 +17,16 @@
 Cyborg FPGA driver implementation.
 """
 
+from cyborg.accelerator.drivers import driver
 from cyborg.accelerator.drivers.fpga import utils
 
 
-VENDOR_MAPS = {"0x8086": "intel", "1bd4": 'inspur'}
-
-
-class FPGADriver:
+class FPGADriver(driver.GenericDriver):
     """Base class for FPGA drivers.
 
     This is just a virtual FPGA drivers interface.
     Vendor should implement their specific drivers.
     """
-
-    @classmethod
-    def create(cls, vendor, *args, **kwargs):
-        for sclass in cls.__subclasses__():
-            vendor = VENDOR_MAPS.get(vendor, vendor)
-            if vendor == sclass.VENDOR:
-                return sclass(*args, **kwargs)
-        raise LookupError("Not find the FPGA driver for vendor %s" % vendor)
-
-    def __init__(self, *args, **kwargs):
-        pass
 
     def init_host(self):
         pass
@@ -58,6 +45,9 @@ class FPGADriver:
         :returns: True if successful, False otherwise.
         """
         raise NotImplementedError()
+
+    def get_stats(self):
+        return {}
 
     @classmethod
     def discover_vendors(cls):

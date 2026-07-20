@@ -17,6 +17,8 @@ from unittest import mock
 from oslo_serialization import jsonutils
 
 from cyborg import objects
+from cyborg.objects.driver_objects import driver_controlpath_id
+from cyborg.tests import base as test_base
 from cyborg.tests.unit.db import base
 from cyborg.tests.unit.db import utils
 
@@ -118,3 +120,33 @@ class TestControlpathIDObject(base.DbTestCase):
                     self.context, uuid, {'cpid_info': 'new_cpid_info'}
                 )
                 self.assertEqual(self.context, control_path._context)
+
+
+class TestDriverControlPathIDObject(test_base.TestCase):
+    def test_cpid_info_obj(self):
+        initial_info = {'bus': '0c'}
+        control_path = driver_controlpath_id.DriverControlPathID(
+            cpid_type='PCI', cpid_info=jsonutils.dumps(initial_info)
+        )
+        self.assertEqual(initial_info, control_path.cpid_info_obj)
+
+        updated_info = {'bus': 'fake'}
+        control_path.cpid_info_obj = updated_info
+        self.assertEqual(jsonutils.dumps(updated_info), control_path.cpid_info)
+        self.assertEqual(updated_info, control_path.cpid_info_obj)
+
+    def test_address_canonicalizes_pci_info(self):
+        control_path = driver_controlpath_id.DriverControlPathID(
+            cpid_type='PCI',
+            cpid_info='{"function":"0","device":"00","bus":"0c",'
+            '"domain":"0000"}',
+        )
+
+        self.assertEqual('0000:0c:00.0', control_path.address)
+
+    def test_address_falls_back_to_raw_info(self):
+        control_path = driver_controlpath_id.DriverControlPathID(
+            cpid_type='OTHER', cpid_info='device-address'
+        )
+
+        self.assertEqual('device-address', control_path.address)

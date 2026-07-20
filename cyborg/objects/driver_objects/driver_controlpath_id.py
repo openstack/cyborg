@@ -13,6 +13,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from oslo_serialization import jsonutils
 from oslo_versionedobjects import base as object_base
 
 from cyborg.objects import base
@@ -32,6 +33,29 @@ class DriverControlPathID(
         # PCI BDF, PowerVM device, etc.
         'cpid_info': object_fields.StringField(nullable=False),
     }
+
+    @property
+    def cpid_info_obj(self):
+        """Return the control path information decoded from JSON."""
+        return jsonutils.loads(self.cpid_info)
+
+    @cpid_info_obj.setter
+    def cpid_info_obj(self, value):
+        """Store the control path information as JSON."""
+        self.cpid_info = jsonutils.dumps(value)
+
+    @staticmethod
+    def _canonical_pci_address(cpid_info):
+        """Return a PCI BDF independent of the JSON serialization."""
+        return '%(domain)s:%(bus)s:%(device)s.%(function)s' % cpid_info
+
+    @property
+    def address(self):
+        """Return a hashable address for the device on this control path."""
+        try:
+            return self._canonical_pci_address(self.cpid_info_obj)
+        except (ValueError, TypeError, KeyError):
+            return self.cpid_info
 
     def create(self, context, device_id):
         """Create a driver-side ControlPathID for drivers. Call
