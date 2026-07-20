@@ -1,0 +1,12 @@
+---
+fixes:
+  - |
+    The device-profile API previously rejected standard traits such as
+    ``OWNER_CYBORG`` because it required the ``CUSTOM_`` prefix. The API now
+    accepts operator-supplied trait names without validating them.
+    Operators must select traits that Placement can use; accepting a
+    device profile does not guarantee successful scheduling. The API still
+    requires ``required`` or ``forbidden`` as trait values.
+    See `Bug 2157586`_ for details.
+
+    .. _Bug 2157586: https://bugs.launchpad.net/openstack-cyborg/+bug/2157586

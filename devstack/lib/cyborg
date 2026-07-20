@@ -236,6 +236,9 @@ function cyborg_configure_tempest {
         # IDs the guest sees differ from the host-side PCI_SIM_VENDOR_ID/VF_DEVICE_ID.
         iniset $TEMPEST_CONFIG cyborg_pci vendor_id 10a9
         iniset $TEMPEST_CONFIG cyborg_pci product_id 0003
+        # The placement test's device option uses host-side IDs discovered by
+        # the Cyborg agent, unlike vendor_id/product_id above (guest IDs).
+        iniset $TEMPEST_CONFIG cyborg_pci device 1d55:1001
     fi
 
     if pci_sim_has_assignment mdev:cyborg; then

@@ -218,25 +218,43 @@ class TestDeviceProfileController(v2_test.APITestV2):
             headers=self.headers,
         )
 
-    def test_create_with_unsupported_trait_name(self):
-        test_unsupported_dp = self.fake_dps[0]
+    def _test_create_with_trait(self, trait_name, mock_cond_dp):
+        test_dp = self.fake_dps[0]
+        test_dp['created_at'] = str(test_dp['created_at'])
+        mock_cond_dp.return_value = self.fake_dp_objs[0]
+        for value in ('required', 'forbidden'):
+            with self.subTest(trait=trait_name, value=value):
+                mock_cond_dp.reset_mock()
+                test_dp['groups'] = [
+                    {'resources:FPGA': '1', 'trait:' + trait_name: value}
+                ]
+                self.fake_dp_objs[0].groups = test_dp['groups']
 
-        # generate special trait for test
-        del test_unsupported_dp['groups'][0][
-            'trait:CUSTOM_FPGA_INTEL_PAC_ARRIA10'
-        ]
-        test_unsupported_dp['groups'][0]['trait:FAKE_TRAIT'] = 'required'
-        test_unsupported_dp['created_at'] = str(
-            test_unsupported_dp['created_at']
+                response = self.post_json(
+                    self.DP_URL, [test_dp], headers=self.headers
+                )
+
+                self.assertEqual(http.HTTPStatus.CREATED, response.status_int)
+                mock_cond_dp.assert_called_once()
+                requested_dp = mock_cond_dp.call_args.args[1]
+                self.assertEqual(test_dp['groups'], requested_dp.groups)
+                self._validate_dp(
+                    test_dp, jsonutils.loads(response.controller_output)
+                )
+
+    @mock.patch('cyborg.conductor.rpcapi.ConductorAPI.device_profile_create')
+    def test_create_with_standard_trait(self, mock_cond_dp):
+        self._test_create_with_trait('OWNER_CYBORG', mock_cond_dp)
+
+    @mock.patch('cyborg.conductor.rpcapi.ConductorAPI.device_profile_create')
+    def test_create_with_custom_trait(self, mock_cond_dp):
+        self._test_create_with_trait(
+            'CUSTOM_FPGA_INTEL_PAC_ARRIA10', mock_cond_dp
         )
-        self.assertRaisesRegex(
-            webtest.app.AppError,
-            ".*Unsupported trait name format FAKE_TRAIT.*",
-            self.post_json,
-            self.DP_URL,
-            [test_unsupported_dp],
-            headers=self.headers,
-        )
+
+    @mock.patch('cyborg.conductor.rpcapi.ConductorAPI.device_profile_create')
+    def test_create_with_unknown_trait_name(self, mock_cond_dp):
+        self._test_create_with_trait('FAKE_TRAIT', mock_cond_dp)
 
     @mock.patch('cyborg.conductor.rpcapi.ConductorAPI.device_profile_create')
     def test_create_with_extra_space_in_trait(self, mock_cond_dp):
@@ -266,6 +284,11 @@ class TestDeviceProfileController(v2_test.APITestV2):
         # the created device_profile has no extra space in trait
         # {'trait:CUSTOM_FPGA_INTEL_PAC_ARRIA10': 'required}
         self.assertTrue(out_dp['groups'] == self.fake_dp_objs[0]['groups'])
+        mock_cond_dp.assert_called_once()
+        self.assertEqual(
+            self.fake_dp_objs[0]['groups'],
+            mock_cond_dp.call_args.args[1].groups,
+        )
 
     @mock.patch('cyborg.conductor.rpcapi.ConductorAPI.device_profile_create')
     def test_create_with_extra_space_in_rc(self, mock_cond_dp):
@@ -290,6 +313,11 @@ class TestDeviceProfileController(v2_test.APITestV2):
         # the created device_profile has no extra space in
         # rc:{'resources:FPGA': '1'}
         self.assertTrue(out_dp['groups'] == self.fake_dp_objs[0]['groups'])
+        mock_cond_dp.assert_called_once()
+        self.assertEqual(
+            self.fake_dp_objs[0]['groups'],
+            mock_cond_dp.call_args.args[1].groups,
+        )
 
     def test_create_with_unsupported_rc(self):
         test_unsupported_dp = self.fake_dps[0]

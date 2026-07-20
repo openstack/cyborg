@@ -208,15 +208,10 @@ class DeviceProfilesController(base.CyborgController, DeviceProfileCollection):
                         err="Device profile group keys must be of"
                         " the form %s" % GROUP_KEYS
                     )
-                # check trait name and it's value
+                # check trait value and normalize the name
                 if key.startswith("trait:"):
                     inner_origin_trait = ":".join(key.split(":")[1:])
                     inner_trait = inner_origin_trait.strip(" ")
-                    if not inner_trait.startswith('CUSTOM_'):
-                        raise exception.InvalidParameterValue(
-                            err="Unsupported trait name format %s, should "
-                            "start with CUSTOM_" % inner_trait
-                        )
                     if value not in TRAIT_VALUES:
                         raise exception.InvalidParameterValue(
                             err="Unsupported trait value %s, the value must"
