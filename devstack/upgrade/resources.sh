@@ -2,17 +2,18 @@
 
 set -o errexit
 
-source $GRENADE_DIR/grenaderc
-source $GRENADE_DIR/functions
+source "$GRENADE_DIR/grenaderc"
+source "$GRENADE_DIR/functions"
 
-TOP_DIR=${TOP_DIR:-$TARGET_DEVSTACK_DIR}
+TOP_DIR=${TOP_DIR:-"$TARGET_DEVSTACK_DIR"}
 
-source $TOP_DIR/openrc admin admin
+source "$TOP_DIR/openrc" admin admin
 
 set -o xtrace
 
 # Device profile groups JSON requesting one fake FPGA device
-DEVICE_PROFILE_GROUPS='[{"resources:FPGA": "1", "trait:CUSTOM_FAKE_DEVICE": "required"}]'
+DEVICE_PROFILE_GROUPS='[{"resources:FPGA": "1", '\
+'"trait:CUSTOM_FAKE_DEVICE": "required"}]'
 
 # Create a device profile that requests one FPGA from the fake driver
 function create_device_profile {
@@ -24,7 +25,8 @@ function create_device_profile {
 
 # Verify the pre-upgrade device profile is still listable after upgrade
 function verify_device_profile {
-    local dp_uuid=$(resource_get cyborg dp_uuid)
+    local dp_uuid
+    dp_uuid=$(resource_get cyborg dp_uuid)
     openstack accelerator device profile show "$dp_uuid"
 }
 
@@ -32,8 +34,10 @@ function verify_device_profile {
 # If it already exists (e.g. previous run didn't reach destroy), use its uuid.
 function create_post_upgrade_device_profile {
     local dp_uuid
-    dp_uuid=$(openstack accelerator device profile list -f value -c uuid -c name \
-        2>/dev/null | awk -v name="cyborg-grenade-post-dp" '$2==name {print $1; exit}')
+    dp_uuid=$(openstack accelerator device profile list \
+        -f value -c uuid -c name 2>/dev/null | \
+        awk -v name="cyborg-grenade-post-dp" \
+        '$2==name {print $1; exit}')
     if [[ -z "$dp_uuid" ]]; then
         dp_uuid=$(openstack accelerator device profile create \
             cyborg-grenade-post-dp "$DEVICE_PROFILE_GROUPS" -f value -c uuid)
@@ -43,19 +47,22 @@ function create_post_upgrade_device_profile {
 
 # Verify the post-upgrade device profile is listable
 function verify_post_upgrade_device_profile {
-    local dp_uuid=$(resource_get cyborg post_dp_uuid)
+    local dp_uuid
+    dp_uuid=$(resource_get cyborg post_dp_uuid)
     openstack accelerator device profile show "$dp_uuid"
 }
 
 # Remove the pre-upgrade device profile
 function delete_device_profile {
-    local dp_uuid=$(resource_get cyborg dp_uuid)
+    local dp_uuid
+    dp_uuid=$(resource_get cyborg dp_uuid)
     openstack accelerator device profile delete "$dp_uuid"
 }
 
 # Remove the post-upgrade device profile
 function delete_post_upgrade_device_profile {
-    local dp_uuid=$(resource_get cyborg post_dp_uuid)
+    local dp_uuid
+    dp_uuid=$(resource_get cyborg post_dp_uuid)
     openstack accelerator device profile delete "$dp_uuid"
 }
 

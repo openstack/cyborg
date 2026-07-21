@@ -5,12 +5,12 @@
 
 echo_summary "cyborg devstack plugin.sh called: $1/$2"
 CYBORG_DEVSTACK_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
-source $CYBORG_DEVSTACK_DIR/lib/cyborg
-source $CYBORG_DEVSTACK_DIR/lib/pci_sim
+source "$CYBORG_DEVSTACK_DIR/lib/cyborg"
+source "$CYBORG_DEVSTACK_DIR/lib/pci_sim"
 
-case $1 in
+case "$1" in
     "stack")
-        case $2 in
+        case "$2" in
             "pre-install")
                 clone_cyborg_client
                 ;;
@@ -48,7 +48,8 @@ case $1 in
                 # services have been started.
                 # Configure pci-sim Cyborg service settings before starting
                 # the agent so it picks up pci_driver and passthrough_whitelist.
-                if [[ "$ENABLE_PCI_SIM" == True && "$PCI_SIM_LOAD" == True ]]; then
+                if [[ "$ENABLE_PCI_SIM" == True && \
+                    "$PCI_SIM_LOAD" == True ]]; then
                     configure_pci_sim_cyborg_service_config
                 fi
                 # Initialize cyborg
@@ -67,7 +68,7 @@ case $1 in
                 if [[ "$ENABLE_PCI_SIM" == True ]]; then
                     create_pci_sim_test_resources
                 fi
-		;;
+                ;;
         esac
         ;;
     "unstack")
