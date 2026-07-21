@@ -37,17 +37,6 @@ deprecated_get_all = policy.DeprecatedRule(
     ),
     deprecated_since=versionutils.deprecated.GAZPACHO,
 )
-deprecated_program = policy.DeprecatedRule(
-    name='cyborg:deployable:program',
-    check_str='rule:admin_api',
-    deprecated_reason=(
-        'rule:admin_api is retained as the default for deployable '
-        'program as FPGA bitstream reprogramming affects shared '
-        'physical infrastructure'
-    ),
-    deprecated_since=versionutils.deprecated.GAZPACHO,
-)
-
 deployable_policies = [
     policy.DocumentedRuleDefault(
         name='cyborg:deployable:get_all',
@@ -69,6 +58,7 @@ deployable_policies = [
         scope_types=['project'],
         deprecated_rule=deprecated_get_one,
     ),
+    # No deprecated_rule: base.ADMIN == 'rule:admin_api' is unchanged.
     policy.DocumentedRuleDefault(
         name='cyborg:deployable:program',
         check_str=base.ADMIN,
@@ -80,7 +70,6 @@ deployable_policies = [
             },
         ],
         scope_types=['project'],
-        deprecated_rule=deprecated_program,
     ),
 ]
 

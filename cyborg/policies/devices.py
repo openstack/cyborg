@@ -37,25 +37,6 @@ deprecated_get_all = policy.DeprecatedRule(
     ),
     deprecated_since=versionutils.deprecated.GAZPACHO,
 )
-deprecated_disable = policy.DeprecatedRule(
-    name='cyborg:device:disable',
-    check_str='rule:admin_api',
-    deprecated_reason=(
-        'rule:admin_api is retained as the default for device '
-        'disable as it affects shared physical infrastructure'
-    ),
-    deprecated_since=versionutils.deprecated.GAZPACHO,
-)
-deprecated_enable = policy.DeprecatedRule(
-    name='cyborg:device:enable',
-    check_str='rule:admin_api',
-    deprecated_reason=(
-        'rule:admin_api is retained as the default for device '
-        'enable as it affects shared physical infrastructure'
-    ),
-    deprecated_since=versionutils.deprecated.GAZPACHO,
-)
-
 device_policies = [
     policy.DocumentedRuleDefault(
         name='cyborg:device:get_all',
@@ -77,6 +58,7 @@ device_policies = [
         scope_types=['project'],
         deprecated_rule=deprecated_get_one,
     ),
+    # No deprecated_rule: base.ADMIN == 'rule:admin_api' is unchanged.
     policy.DocumentedRuleDefault(
         name='cyborg:device:disable',
         check_str=base.ADMIN,
@@ -85,7 +67,6 @@ device_policies = [
             {'path': '/v2/devices/{uuid}/disable', 'method': 'POST'},
         ],
         scope_types=['project'],
-        deprecated_rule=deprecated_disable,
     ),
     policy.DocumentedRuleDefault(
         name='cyborg:device:enable',
@@ -95,7 +76,6 @@ device_policies = [
             {'path': '/v2/devices/{uuid}/enable', 'method': 'POST'},
         ],
         scope_types=['project'],
-        deprecated_rule=deprecated_enable,
     ),
 ]
 
