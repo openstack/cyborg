@@ -8,6 +8,13 @@
 
 #include "fake_pci_sriov.h"
 
+/* Per-PF VF personality names */
+
+const char *pci_sim_personality_names[PCI_SIM_VF_PERS_COUNT] = {
+	[PCI_SIM_VF_PERS_UNSET] = "unset",
+	[PCI_SIM_VF_PERS_UART] = "uart",
+};
+
 /* Config-space byte helpers */
 
 static u16 fake_cfg_read16(const u8 *config, int where)
@@ -291,6 +298,8 @@ static int fake_pci_read_config(struct pci_bus *bus, unsigned int devfn,
 }
 
 static void handle_sriov_numvfs_write(struct fake_pci_host *host, u16 num_vfs);
+static void locked_handle_sriov_numvfs_write(struct fake_pci_host *host,
+					     u16 num_vfs);
 
 static bool fake_pci_is_sriov_cfg(int where)
 {
@@ -384,12 +393,11 @@ struct pci_ops fake_pci_ops = {
 
 /* SR-IOV VF enable/disable */
 
-static void handle_sriov_numvfs_write(struct fake_pci_host *host, u16 num_vfs)
+static void locked_handle_sriov_numvfs_write(struct fake_pci_host *host,
+					     u16 num_vfs)
 {
 	u8 *pf_config = host->pf.config_space;
 	int i;
-
-	mutex_lock(&host->lock);
 
 	if (num_vfs > MAX_VFS)
 		num_vfs = MAX_VFS;
@@ -410,7 +418,12 @@ static void handle_sriov_numvfs_write(struct fake_pci_host *host, u16 num_vfs)
 	host->num_vfs_enabled = num_vfs;
 	fake_cfg_write16(pf_config, SRIOV_CAP_OFFSET + PCI_SRIOV_NUM_VF,
 			 num_vfs);
+}
 
+static void handle_sriov_numvfs_write(struct fake_pci_host *host, u16 num_vfs)
+{
+	mutex_lock(&host->lock);
+	locked_handle_sriov_numvfs_write(host, num_vfs);
 	mutex_unlock(&host->lock);
 }
 
@@ -472,10 +485,28 @@ static int fake_pci_sriov_configure(struct pci_dev *pdev, int num_vfs)
 		return 0;
 	}
 
-	if (host->num_vfs_enabled)
-		return -EBUSY;
+	/*
+	 * Hold host->lock across the personality and num_vfs_enabled checks
+	 * so that a concurrent vf_personality_store cannot change the
+	 * personality between the check and VF creation.
+	 */
+	mutex_lock(&host->lock);
+	if (host->personality != PCI_SIM_VF_PERS_UART) {
+		pci_info(pdev,
+			 "fake_pci: sriov_configure rejected; personality '%s' does not support SR-IOV\n",
+			 pci_sim_personality_names[host->personality]);
+		mutex_unlock(&host->lock);
+		return -ENODEV;
+	}
 
-	handle_sriov_numvfs_write(host, num_vfs);
+	if (host->num_vfs_enabled) {
+		mutex_unlock(&host->lock);
+		return -EBUSY;
+	}
+
+	locked_handle_sriov_numvfs_write(host, num_vfs);
+
+	mutex_unlock(&host->lock);
 
 	err = pci_enable_sriov(pdev, num_vfs);
 	if (err) {
@@ -485,6 +516,88 @@ static int fake_pci_sriov_configure(struct pci_dev *pdev, int num_vfs)
 
 	return num_vfs;
 }
+
+/* Per-PF VF personality sysfs interface */
+
+static ssize_t vf_personality_show(struct device *dev,
+				   struct device_attribute *attr, char *buf)
+{
+	struct pci_dev *pdev = to_pci_dev(dev);
+	struct fake_pci_host *host = pci_get_drvdata(pdev);
+
+	if (!host)
+		return -ENODEV;
+
+	return sysfs_emit(buf, "%s\n",
+			  pci_sim_personality_names[host->personality]);
+}
+
+static ssize_t vf_personality_store(struct device *dev,
+				    struct device_attribute *attr,
+				    const char *buf, size_t count)
+{
+	struct pci_dev *pdev = to_pci_dev(dev);
+	struct fake_pci_host *host = pci_get_drvdata(pdev);
+	int i;
+
+	if (!host)
+		return -ENODEV;
+
+	mutex_lock(&host->lock);
+
+	if (host->num_vfs_enabled) {
+		mutex_unlock(&host->lock);
+		return -EBUSY;
+	}
+
+	for (i = 0; i < PCI_SIM_VF_PERS_COUNT; i++) {
+		if (sysfs_streq(buf, pci_sim_personality_names[i])) {
+			host->personality = i;
+			mutex_unlock(&host->lock);
+			return count;
+		}
+	}
+
+	mutex_unlock(&host->lock);
+	return -EINVAL;
+}
+
+static DEVICE_ATTR_RW(vf_personality);
+
+static ssize_t vf_personality_available_show(struct device *dev,
+					     struct device_attribute *attr,
+					     char *buf)
+{
+	struct pci_dev *pdev = to_pci_dev(dev);
+	struct fake_pci_host *host = pci_get_drvdata(pdev);
+	int i, len = 0;
+
+	if (!host)
+		return -ENODEV;
+
+	for (i = 0; i < PCI_SIM_VF_PERS_COUNT; i++) {
+		if (i == host->personality)
+			len += sysfs_emit_at(buf, len, "[%s] ",
+					     pci_sim_personality_names[i]);
+		else
+			len += sysfs_emit_at(buf, len, "%s ",
+					     pci_sim_personality_names[i]);
+	}
+
+	if (len > 0)
+		buf[len - 1] = '\n';
+
+	return len;
+}
+
+static DEVICE_ATTR_RO(vf_personality_available);
+
+static struct attribute *fake_pci_pf_attrs[] = {
+	&dev_attr_vf_personality.attr,
+	&dev_attr_vf_personality_available.attr,
+	NULL,
+};
+ATTRIBUTE_GROUPS(fake_pci_pf);
 
 static const struct pci_device_id fake_pci_pf_ids[] = {
 	{ PCI_DEVICE(FAKE_PCI_VENDOR_ID, FAKE_PCI_PF_DEVICE_ID) },
@@ -498,4 +611,5 @@ struct pci_driver fake_pci_pf_driver = {
 	.probe = fake_pci_pf_probe,
 	.remove = fake_pci_pf_remove,
 	.sriov_configure = fake_pci_sriov_configure,
+	.dev_groups = fake_pci_pf_groups,
 };

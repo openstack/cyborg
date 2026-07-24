@@ -102,6 +102,8 @@ msg "PF=$PF"
 
 msg "enable $VFS VF"
 echo 0 | sudo -n tee "/sys/bus/pci/devices/$PF/sriov_numvfs" >/dev/null || true
+msg "set uart personality on PF=$PF"
+echo uart | sudo -n tee "/sys/bus/pci/devices/$PF/vf_personality" >/dev/null
 echo "$VFS" | sudo -n tee "/sys/bus/pci/devices/$PF/sriov_numvfs" >/dev/null
 sleep 1
 

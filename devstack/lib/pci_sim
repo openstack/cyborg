@@ -9,6 +9,23 @@ PCI_SIM_PF_DEVICE_ID=${PCI_SIM_PF_DEVICE_ID:-0x1000}
 PCI_SIM_VF_DEVICE_ID=${PCI_SIM_VF_DEVICE_ID:-0x1001}
 PCI_SIM_MODULE_NAME=${PCI_SIM_MODULE_NAME:-fake_pci_sriov}
 
+function pci_sim_configure_personalities {
+    local pf
+    local -a pfs
+
+    mapfile -t pfs < <(pci_sim_find_devs "$PCI_SIM_PF_DEVICE_ID")
+
+    for pf in "${pfs[@]}"; do
+        local sysfs_path="/sys/bus/pci/devices/$pf/vf_personality"
+
+        if [[ -e "$sysfs_path" ]]; then
+            pci_sim_sysfs_write uart "$sysfs_path"
+        else
+            echo "WARNING: $sysfs_path does not exist for PF $pf"
+        fi
+    done
+}
+
 function pci_sim_validate_config {
     # The module supports up to 16 fake host bridges/PFs and up to 7 VFs
     # per PF.  Validate early so stack.sh fails before loading the module
@@ -183,14 +200,18 @@ function load_pci_sim {
 
     pci_sim_configure_vfio_iommu
     sudo modprobe vfio-pci
+
+    local mod_args="num_pfs=$PCI_SIM_NUM_PFS $PCI_SIM_MODULE_ARGS"
+
     # Prefer the installed module path used by DevStack.  Fall back to the
     # build-tree module to make local plugin-function testing convenient.
     # shellcheck disable=SC2086
-    if ! sudo modprobe $PCI_SIM_MODULE_NAME num_pfs=$PCI_SIM_NUM_PFS $PCI_SIM_MODULE_ARGS; then
+    if ! sudo modprobe $PCI_SIM_MODULE_NAME $mod_args; then
         # shellcheck disable=SC2086
-        sudo insmod $CYBORG_DIR/pci-sim/fake_pci_sriov.ko \
-            num_pfs=$PCI_SIM_NUM_PFS $PCI_SIM_MODULE_ARGS
+        sudo insmod $CYBORG_DIR/pci-sim/fake_pci_sriov.ko $mod_args
     fi
+
+    pci_sim_configure_personalities
 }
 
 function configure_pci_sim_vfs {
@@ -333,8 +354,7 @@ function pci_sim_collect_target_vfs {
         target=$(pci_sim_pf_target "$index")
         if [[ $target == "$wanted_target" ]]; then
             mapfile -t pf_vfs < <(pci_sim_find_vfs_for_pf "$pf")
-            printf '%s
-' "${pf_vfs[@]}"
+            printf '%s\n' "${pf_vfs[@]}"
         fi
         index=$((index + 1))
     done

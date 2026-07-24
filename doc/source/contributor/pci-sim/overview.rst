@@ -12,6 +12,12 @@ The emulated VF payload is intentionally small: a 16550-style UART loopback.
 That is enough to prove that a VF assigned through VFIO is visible and usable
 inside an unmodified guest such as CirrOS.
 
+Each PF exposes a ``vf_personality`` sysfs file that controls what type of
+VF device the PF creates, enabling mixed configurations on the same host.
+PFs start with personality ``unset``; the user must assign a personality
+before the PF can create VFs.  Currently supported personalities are
+``uart``; additional types (e.g. NVMe, mdev) may be added in the future.
+
 The source currently lives under the top-level ``pci-sim/`` directory and is
 built as an out-of-tree kernel module against
 ``/lib/modules/$(uname -r)/build``.

@@ -2,9 +2,9 @@
 # SPDX-License-Identifier: GPL-2.0
 """Basic host-side loopback test for ./fake_pci_sriov.ko.
 
-The test finds the fake PF, enables VFs through sriov_numvfs, waits for the
-host-side tty devices, then verifies that bytes written to each tty are read
-back from the same tty.
+The test finds the fake PF, assigns the uart personality, enables VFs
+through sriov_numvfs, waits for the host-side tty devices, then verifies
+that bytes written to each tty are read back from the same tty.
 """
 
 import argparse
@@ -89,6 +89,20 @@ def set_numvfs(pf, num_vfs):
     sriov_numvfs = pf / "sriov_numvfs"
     if sriov_numvfs.exists():
         sriov_numvfs.write_text(f"{num_vfs}\n")
+
+
+def set_personality(pf, personality):
+    """Assign a VF personality ahead of VF creation.
+
+    The module rejects non-zero sriov_numvfs writes with -ENODEV
+    until the PF is given a personality that supports SR-IOV, so
+    this must run after any existing VFs are disabled (personality
+    writes fail with -EBUSY while VFs are enabled) and before the
+    VFs are created.
+    """
+    vf_personality = pf / "vf_personality"
+    if vf_personality.exists():
+        vf_personality.write_text(f"{personality}\n")
 
 
 def remove_fake_pf(timeout):
@@ -275,6 +289,8 @@ def main():
         # Start from a known VF state even when reusing an existing module.
         set_numvfs(pf, 0)
         pf = wait_for_pf(args.timeout)
+        # VF creation requires a personality that supports SR-IOV.
+        set_personality(pf, "uart")
         set_numvfs(pf, args.vfs)
 
         ttys = wait_for_ttys(args.vfs, args.timeout)

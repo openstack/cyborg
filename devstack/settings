@@ -84,5 +84,6 @@ PCI_SIM_CYBORG_DEVICE_PROFILE_NAME=${PCI_SIM_CYBORG_DEVICE_PROFILE_NAME:-pci-sim
 PCI_SIM_CYBORG_FLAVOR_NAME=${PCI_SIM_CYBORG_FLAVOR_NAME:-pci-sim-cyborg}
 
 # Extra module parameters used when PCI_SIM_LOAD=True. Do not include num_pfs;
-# set PCI_SIM_NUM_PFS instead.
+# set PCI_SIM_NUM_PFS instead.  Per-PF personalities are configured via sysfs
+# after module load.
 PCI_SIM_MODULE_ARGS=${PCI_SIM_MODULE_ARGS:-}

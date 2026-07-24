@@ -28,6 +28,19 @@ The QEMU helpers bind a fake VF to ``pci_sim_vfio_pci`` and verify that QEMU
 can start with the assigned VF.  CirrOS-based helpers are also included for
 guest-level UART loopback testing.
 
+VF personality sysfs smoke test
+===============================
+
+.. code-block:: console
+
+   $ make -C pci-sim modules
+   $ pci-sim/run_fake_pci_personality_smoke.sh
+
+The script loads two PFs, verifies the ``vf_personality`` and
+``vf_personality_available`` sysfs files, tests VF creation under the
+``uart`` personality, confirms personality changes are rejected while
+VFs are active, and validates that invalid personality names are rejected.
+
 DevStack Nova/Cyborg serial echo test
 ======================================
 

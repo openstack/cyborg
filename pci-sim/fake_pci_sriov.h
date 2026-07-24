@@ -71,6 +71,14 @@
 #define PCI_SIM_UART_FIFO_SIZE 4096
 #define PCI_SIM_UART_CHUNK 256
 
+/* Per-PF VF personality */
+
+enum pci_sim_vf_personality {
+	PCI_SIM_VF_PERS_UNSET = 0,
+	PCI_SIM_VF_PERS_UART,
+	PCI_SIM_VF_PERS_COUNT,
+};
+
 /* Data structures */
 
 struct fake_pci_device {
@@ -94,6 +102,7 @@ struct fake_pci_host {
 	bool mem_resource_registered;
 	struct fake_pci_device pf;
 	struct fake_pci_device vfs[MAX_VFS];
+	enum pci_sim_vf_personality personality;
 	int num_vfs_enabled;
 	int domain_nr;
 	struct mutex lock; /* Protects VF enable/disable state. */
@@ -149,6 +158,7 @@ extern struct platform_device *fake_iommu_pdev;
 /* fake_pci_sriov_cfg.c */
 void init_pf_config_space(struct fake_pci_device *dev);
 struct fake_pci_host *fake_pci_host_from_domain(int domain);
+extern const char *pci_sim_personality_names[PCI_SIM_VF_PERS_COUNT];
 
 /* fake_pci_sriov_uart.c */
 int pci_sim_tty_register_driver(void);

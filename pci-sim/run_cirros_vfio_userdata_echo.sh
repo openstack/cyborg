@@ -141,6 +141,8 @@ msg "create one VF"
 PF=$(find_dev "$PF_DEVICE")
 msg "PF=$PF"
 echo 0 | sudo -n tee "/sys/bus/pci/devices/$PF/sriov_numvfs" >/dev/null || true
+msg "set uart personality on PF=$PF"
+echo uart | sudo -n tee "/sys/bus/pci/devices/$PF/vf_personality" >/dev/null
 echo 1 | sudo -n tee "/sys/bus/pci/devices/$PF/sriov_numvfs" >/dev/null
 sleep 1
 VF=$(find_dev "$VF_DEVICE")
