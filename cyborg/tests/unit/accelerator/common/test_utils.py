@@ -16,6 +16,8 @@
 
 import unittest
 
+from unittest import mock
+
 from cyborg.accelerator.common import utils
 
 
@@ -58,3 +60,42 @@ class TestUtils(unittest.TestCase):
     def test_parse_address(self):
         result = self.utils.parse_address('0000:0b:00.1')
         self.assertEqual(result, ('0000', '0b', '00', '1'))
+
+    def test_parse_lspci_line(self):
+        line = (
+            "0000:00:02.0 VGA compatible controller [0300]: "
+            "Intel Corp Device [8086:1234] (rev 02)"
+        )
+        result = self.utils.parse_lspci_line(line)
+        self.assertEqual(result["address"], "0000:00:02.0")
+        self.assertEqual(result["class_name"], "VGA compatible controller")
+        self.assertEqual(result["class_id"], "0300")
+        self.assertEqual(result["device_name"], "Intel Corp Device")
+        self.assertEqual(result["vendor_id"], "8086")
+        self.assertEqual(result["device_id"], "1234")
+        self.assertEqual(result["revision"], "02")
+        self.assertEqual(result["raw_line"], line)
+
+    def test_parse_lspci_line_normalizes_hex(self):
+        line = "0000:3b:00.0 3D controller [0302]: NVIDIA [10DE:1DB4]"
+        result = self.utils.parse_lspci_line(line)
+        self.assertEqual(result["vendor_id"], "10de")
+        self.assertEqual(result["device_id"], "1db4")
+
+    def test_parse_lspci_line_no_match(self):
+        self.assertIsNone(self.utils.parse_lspci_line("not a pci line"))
+
+    @mock.patch('cyborg.accelerator.common.utils.lspci_privileged')
+    def test_get_pci_devices(self, mock_lspci):
+        mock_lspci.return_value = (
+            "0000:00:02.0 VGA compatible controller [0300]: "
+            "Intel [8086:1234]\n"
+            "0000:3b:00.0 3D controller [0302]: NVIDIA [10de:1db4]\n"
+            "a line that does not match the pattern"
+        )
+        result = list(self.utils.get_pci_devices())
+        self.assertEqual(len(result), 2)
+        self.assertEqual(result[0]["vendor_id"], "8086")
+        self.assertEqual(result[1]["device_id"], "1db4")
+        for dev in result:
+            self.assertIn("raw_line", dev)
