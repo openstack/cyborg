@@ -38,7 +38,7 @@ from cyborg.objects.driver_objects import driver_device
 LOG = logging.getLogger(__name__)
 
 PCI_DEVICES_PATH_PATTERN = "/sys/bus/pci/devices/*"
-KNOWN_NICS = [("0x8086", "0x158b"), ("0x8086", "0x1572")]
+KNOWN_NICS = [("0x8086", "0x158a"), ("0x8086", "0x158b"), ("0x8086", "0x1572")]
 DRIVER_NAME = "intel"
 
 VF = "virtfn*"
