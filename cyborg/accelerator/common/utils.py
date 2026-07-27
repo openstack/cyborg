@@ -161,6 +161,11 @@ def lspci_privileged():
     return processutils.execute('lspci', '-nn', '-D')[0]
 
 
+@cyborg.privsep.sys_admin_pctxt.entrypoint
+def pci_details(device):
+    return processutils.execute('lspci', '-k', '-s', device)[0]
+
+
 def parse_lspci_line(line):
     """Parse one 'lspci -nn -D' line into a normalized dict, or None.
 

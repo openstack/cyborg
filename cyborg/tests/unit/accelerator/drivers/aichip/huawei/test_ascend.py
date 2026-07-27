@@ -18,17 +18,15 @@ from cyborg.accelerator.drivers.aichip.huawei.ascend import AscendDriver
 from cyborg.tests import base
 
 
-d100_pci_res = (
-    '0000:00:0c.0 Processing accelerators [1200]:'
-    ' Device [19e5:d100] (rev 20)\n'
-    '0000:00:0d.0 Processing accelerators [1200]:'
-    ' Device [19e5:d100] (rev 20)\n',
-)
+d100_pci_res = """\
+0000:00:0c.0 Processing accelerators [1200]: Device [19e5:d100] (rev 20)
+0000:00:0d.0 Processing accelerators [1200]: Device [19e5:d100] (rev 20)
+"""
 
 
 class TestAscendDriver(base.TestCase):
     @mock.patch(
-        'cyborg.accelerator.drivers.aichip.huawei.ascend.lspci_privileged',
+        'cyborg.accelerator.common.utils.lspci_privileged',
         return_value=d100_pci_res,
     )
     def test_discover(self, mock_pci):
@@ -37,6 +35,7 @@ class TestAscendDriver(base.TestCase):
         self.assertEqual(2, len(npu_list))
         for ascend in npu_list:
             self.assertEqual('AICHIP', ascend.type)
+            self.assertEqual('Device', ascend.model)
             self.assertEqual('PCI', ascend.controlpath_id.cpid_type)
             self.assertEqual(
                 json.loads(

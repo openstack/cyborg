@@ -17,13 +17,8 @@
 Utils for SSD driver.
 """
 
-import re
-
-from oslo_concurrency import processutils
 from oslo_log import log as logging
 from oslo_serialization import jsonutils
-
-import cyborg.privsep
 
 from cyborg.accelerator.common import utils
 from cyborg.common import constants
@@ -38,33 +33,8 @@ from cyborg.objects.driver_objects import driver_device
 LOG = logging.getLogger(__name__)
 
 SSD_FLAGS = ["Non-Volatile memory controller"]
-SSD_INFO_PATTERN = re.compile(
-    r"(?P<devices>[0-9a-fA-F]{4}:[0-9a-fA-F]{2}:"
-    r"[0-9a-fA-F]{2}\.[0-9a-fA-F]) "
-    r"(?P<controller>.*) [\[].*]: (?P<model>.*) .*"
-    r"[\[](?P<vendor_id>[0-9a-fA-F]"
-    r"{4}):(?P<product_id>[0-9a-fA-F]{4})].*"
-)
 
 VENDOR_MAPS = utils.get_vendor_maps()
-
-
-@cyborg.privsep.sys_admin_pctxt.entrypoint
-def lspci_privileged():
-    cmd = ['lspci', '-nn', '-D']
-    return processutils.execute(*cmd)
-
-
-def get_pci_devices(pci_flags, vendor_id=None):
-    device_for_vendor_out = []
-    all_device_out = []
-    lspci_out = lspci_privileged()[0].split('\n')
-    for i in range(len(lspci_out)):
-        if any(x in lspci_out[i] for x in pci_flags):
-            all_device_out.append(lspci_out[i])
-            if vendor_id and vendor_id in lspci_out[i]:
-                device_for_vendor_out.append(lspci_out[i])
-    return device_for_vendor_out if vendor_id else all_device_out
 
 
 def get_traits(vendor_id, product_id):
@@ -82,38 +52,42 @@ def get_traits(vendor_id, product_id):
 
 def discover_vendors():
     vendors = set()
-    ssds = get_pci_devices(SSD_FLAGS)
+    ssds = (
+        dev
+        for dev in utils.get_pci_devices()
+        if any(flag in dev["raw_line"] for flag in SSD_FLAGS)
+    )
     for ssd in ssds:
-        m = SSD_INFO_PATTERN.match(ssd)
-        if m:
-            vendor_id = m.groupdict().get("vendor_id")
-            vendors.add(vendor_id)
+        vendor_id = ssd.get("vendor_id")
+        vendors.add(vendor_id)
     return vendors
 
 
 def discover_ssds(vendor_id=None):
     ssd_list = []
-    ssds = get_pci_devices(SSD_FLAGS, vendor_id)
+    ssds = (
+        dev
+        for dev in utils.get_pci_devices()
+        if any(flag in dev["raw_line"] for flag in SSD_FLAGS)
+        and (vendor_id is None or dev["vendor_id"] == vendor_id)
+    )
     for ssd in ssds:
-        m = SSD_INFO_PATTERN.match(ssd)
-        if m:
-            ssd_dict = m.groupdict()
-            ssd_dict['hostname'] = CONF.host
-            # generate traits info
-            traits = get_traits(ssd_dict["vendor_id"], ssd_dict["product_id"])
-            ssd_dict["rc"] = constants.RESOURCES["SSD"]
-            ssd_dict.update(traits)
-            ssd_list.append(_generate_driver_device(ssd_dict))
+        ssd['hostname'] = CONF.host
+        # generate traits info
+        traits = get_traits(ssd["vendor_id"], ssd["device_id"])
+        ssd["rc"] = constants.RESOURCES["SSD"]
+        ssd.update(traits)
+        ssd_list.append(_generate_driver_device(ssd))
     return ssd_list
 
 
 def _generate_driver_device(ssd):
     driver_device_obj = driver_device.DriverDevice()
     driver_device_obj.vendor = ssd["vendor_id"]
-    driver_device_obj.model = ssd.get('model', 'miss model info')
+    driver_device_obj.model = ssd.get('device_name', 'miss model info')
     std_board_info = {
-        'product_id': ssd.get('product_id'),
-        'controller': ssd.get('controller'),
+        'product_id': ssd.get('device_id'),
+        'controller': ssd.get('class_name'),
     }
     vendor_board_info = {'vendor_info': ssd.get('vendor_info', 'ssd_vb_info')}
     driver_device_obj.std_board_info = jsonutils.dumps(std_board_info)
@@ -130,7 +104,7 @@ def _generate_controlpath_id(ssd):
     # NOTE: SSDs , they all report "PCI" as
     # their cpid_type, while attach_handle_type of them are different.
     driver_cpid.cpid_type = "PCI"
-    driver_cpid.cpid_info = utils.pci_str_to_json(ssd["devices"])
+    driver_cpid.cpid_info = utils.pci_str_to_json(ssd["address"])
     return driver_cpid
 
 
@@ -141,7 +115,7 @@ def _generate_dep_list(ssd):
     # NOTE(wenping) Now simply named as <Compute_hostname>_<Device_address>
     # once cyborg needs to support SSD devices discovered from a baremetal
     # node, we might need to support more formats.
-    driver_dep.name = ssd.get('hostname', '') + '_' + ssd["devices"]
+    driver_dep.name = ssd.get('hostname', '') + '_' + ssd["address"]
     driver_dep.driver_name = VENDOR_MAPS.get(ssd["vendor_id"], '').upper()
     # driver_dep.num_accelerators for SSD is 1
     driver_dep.num_accelerators = 1
@@ -156,7 +130,7 @@ def _generate_attach_handle(ssd):
     else:
         driver_ah.attach_type = constants.AH_TYPE_MDEV
     driver_ah.in_use = False
-    driver_ah.attach_info = utils.pci_str_to_json(ssd["devices"])
+    driver_ah.attach_info = utils.pci_str_to_json(ssd["address"])
     return driver_ah
 
 

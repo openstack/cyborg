@@ -91,12 +91,12 @@ def _generate_attach_handle(gpu, num=None):
     driver_ah.in_use = False
     if gpu["rc"] == "PGPU":
         driver_ah.attach_type = constants.AH_TYPE_PCI
-        driver_ah.attach_info = utils.pci_str_to_json(gpu["devices"])
+        driver_ah.attach_info = utils.pci_str_to_json(gpu["address"])
     else:
         vgpu_mark = gpu["vGPU_type"] + '_' + str(num)
         driver_ah.attach_type = constants.AH_TYPE_MDEV
         driver_ah.attach_info = utils.mdev_str_to_json(
-            gpu["devices"], gpu["vGPU_type"], vgpu_mark
+            gpu["address"], gpu["vGPU_type"], vgpu_mark
         )
     return driver_ah
 
@@ -110,7 +110,7 @@ def _generate_dep_list(gpu):
     # <ComputeNodeName>_<NumaNodeName>_<CyborgName>_<NumInHost>
     # NOTE(yumeng) Since Wallaby release, the deplpyable_name is named as
     # <Compute_hostname>_<Device_address>
-    driver_dep.name = gpu.get('hostname', '') + '_' + gpu["devices"]
+    driver_dep.name = gpu.get('hostname', '') + '_' + gpu["address"]
     driver_dep.driver_name = gpu_utils.VENDOR_MAPS.get(
         gpu["vendor_id"], ''
     ).upper()
@@ -123,7 +123,7 @@ def _generate_dep_list(gpu):
         # the asked vGPU type
         vGPU_path = os.path.expandvars(
             '/sys/bus/pci/devices/{}/mdev_supported_types/{}/'.format(
-                gpu["devices"], gpu["vGPU_type"]
+                gpu["address"], gpu["vGPU_type"]
             )
         )
         num_available = 0
@@ -146,17 +146,17 @@ def _generate_dep_list(gpu):
 def _generate_controlpath_id(gpu):
     driver_cpid = driver_controlpath_id.DriverControlPathID()
     driver_cpid.cpid_type = "PCI"
-    driver_cpid.cpid_info = utils.pci_str_to_json(gpu["devices"])
+    driver_cpid.cpid_info = utils.pci_str_to_json(gpu["address"])
     return driver_cpid
 
 
 def _generate_driver_device(gpu):
     driver_device_obj = driver_device.DriverDevice()
     driver_device_obj.vendor = gpu['vendor_id']
-    driver_device_obj.model = gpu.get('model', 'miss model info')
+    driver_device_obj.model = gpu.get('device_name', 'miss model info')
     std_board_info = {
-        'product_id': gpu.get('product_id'),
-        'controller': gpu.get('controller'),
+        'product_id': gpu.get('device_id'),
+        'controller': gpu.get('class_name'),
     }
     vendor_board_info = {'vendor_info': gpu.get('vendor_info', 'gpu_vb_info')}
     driver_device_obj.std_board_info = jsonutils.dumps(std_board_info)
@@ -272,85 +272,85 @@ def _discover_gpus(vendor_id):
     supported_vgpu_types, pgpu_type_mapping = _get_supported_vgpu_types()
     # discover gpu devices by "lspci"
     gpu_list = []
-    gpus = gpu_utils.get_pci_devices(gpu_utils.GPU_FLAGS, vendor_id)
+    gpus = (
+        dev
+        for dev in utils.get_pci_devices()
+        if dev["vendor_id"] == vendor_id
+        and any(flag in dev["raw_line"] for flag in gpu_utils.GPU_FLAGS)
+    )
     # report trait,rc and generate driver object
     for gpu in gpus:
-        m = gpu_utils.GPU_INFO_PATTERN.match(gpu)
-        if m:
-            gpu_dict = m.groupdict()
-            # NOTE(bogdando): bug 1987380: Filter out SR-IOV VF
-            # devices. Cards like the A100 expose VFs when virtualized,
-            # but the NVIDIA driver should only report PFs or mediated devices.
-            # To support VFs we need to modify nova and cyborg to pass
-            # managed=false for the attach handle and propagate that in
-            # libvirt XML. It is unsafe to assign a MIG VF directly to a guest
-            # otherwise. We also do not support MIG without vfio-mdev today in
-            # cyborg, so this will be addressed as part of that effort as well.
-            #
-            # Gated behind [gpu_devices]filter_sriov_vfs (default False)
-            # because removing a VF that has an existing allocation in
-            # Placement would leave orphaned resources. Cyborg does not
-            # yet have upgrade-safe deferred-removal logic like Nova's
-            # PCI tracker (see nova/pci/manager.py _set_hvdevs).
-            if CONF.gpu_devices.filter_sriov_vfs:
-                try:
-                    is_vf = _is_vf(gpu_dict["devices"])
-                except Exception:
-                    LOG.warning(
-                        'Unable to determine VF status for '
-                        'device %s, assuming it is not a VF.',
-                        gpu_dict["devices"],
-                    )
-                    is_vf = False
-                if is_vf:
-                    LOG.info(
-                        'Skipping VF device %s, only PFs and'
-                        ' mediated devices are reported.',
-                        gpu_dict["devices"],
-                    )
-                    continue
-            # get hostname for deployable_name usage
-            gpu_dict['hostname'] = CONF.host
-            # get vgpu_type from cyborg.conf, otherwise vgpu_type=None
-            vgpu_type = _get_vgpu_type_per_pgpu(
-                gpu_dict["devices"], supported_vgpu_types, pgpu_type_mapping
+        # NOTE(bogdando): bug 1987380: Filter out SR-IOV VF
+        # devices. Cards like the A100 expose VFs when virtualized,
+        # but the NVIDIA driver should only report PFs or mediated devices.
+        # To support VFs we need to modify nova and cyborg to pass
+        # managed=false for the attach handle and propagate that in
+        # libvirt XML. It is unsafe to assign a MIG VF directly to a guest
+        # otherwise. We also do not support MIG without vfio-mdev today in
+        # cyborg, so this will be addressed as part of that effort as well.
+        #
+        # Gated behind [gpu_devices]filter_sriov_vfs (default False)
+        # because removing a VF that has an existing allocation in
+        # Placement would leave orphaned resources. Cyborg does not
+        # yet have upgrade-safe deferred-removal logic like Nova's
+        # PCI tracker (see nova/pci/manager.py _set_hvdevs).
+        if CONF.gpu_devices.filter_sriov_vfs:
+            try:
+                is_vf = _is_vf(gpu["address"])
+            except Exception:
+                LOG.warning(
+                    'Unable to determine VF status for '
+                    'device %s, assuming it is not a VF.',
+                    gpu["address"],
+                )
+                is_vf = False
+            if is_vf:
+                LOG.info(
+                    'Skipping VF device %s, only PFs and'
+                    ' mediated devices are reported.',
+                    gpu["address"],
+                )
+                continue
+        # get hostname for deployable_name usage
+        gpu['hostname'] = CONF.host
+        # get vgpu_type from cyborg.conf, otherwise vgpu_type=None
+        vgpu_type = _get_vgpu_type_per_pgpu(
+            gpu["address"], supported_vgpu_types, pgpu_type_mapping
+        )
+        # generate rc and trait for pGPU
+        if not vgpu_type:
+            gpu["rc"] = constants.RESOURCES["PGPU"]
+            traits = _get_traits(gpu["vendor_id"], gpu["device_id"])
+        # generate rc and trait for vGPU
+        else:
+            # get rc
+            gpu["rc"] = constants.RESOURCES["VGPU"]
+            mdev_path = os.path.expandvars(
+                '/sys/bus/pci/devices/{}/mdev_supported_types'.format(
+                    gpu["address"]
+                )
             )
-            # generate rc and trait for pGPU
-            if not vgpu_type:
-                gpu_dict["rc"] = constants.RESOURCES["PGPU"]
-                traits = _get_traits(
-                    gpu_dict["vendor_id"], gpu_dict["product_id"]
+            valid_types = os.listdir(mdev_path)
+            if vgpu_type not in valid_types:
+                raise exception.InvalidVGPUType(name=vgpu_type)
+            gpu["vGPU_type"] = vgpu_type
+            vGPU_path = os.path.expandvars(
+                '/sys/bus/pci/devices/{}/mdev_supported_types/{}/'.format(
+                    gpu["address"], gpu["vGPU_type"]
                 )
-            # generate rc and trait for vGPU
-            else:
-                # get rc
-                gpu_dict["rc"] = constants.RESOURCES["VGPU"]
-                mdev_path = os.path.expandvars(
-                    '/sys/bus/pci/devices/{}/mdev_supported_types'.format(
-                        gpu_dict["devices"]
-                    )
-                )
-                valid_types = os.listdir(mdev_path)
-                if vgpu_type not in valid_types:
-                    raise exception.InvalidVGPUType(name=vgpu_type)
-                gpu_dict["vGPU_type"] = vgpu_type
-                vGPU_path = os.path.expandvars(
-                    '/sys/bus/pci/devices/{}/mdev_supported_types/{}/'.format(
-                        gpu_dict["devices"], gpu_dict["vGPU_type"]
-                    )
-                )
-                # transfer vgpu_type to vgpu_type_name.
-                # eg. transfer 'nvidia-223' to 'T4_1B'
-                with open(vGPU_path + 'name') as f:
-                    name = f.read().strip()
-                vgpu_type_name = name.split(' ')[1].replace('-', '_')
-                traits = _get_traits(
-                    gpu_dict["vendor_id"],
-                    gpu_dict["product_id"],
-                    vgpu_type_name,
-                )
-            gpu_dict.update(traits)
-            gpu_list.append(_generate_driver_device(gpu_dict))
+            )
+            # transfer vgpu_type to vgpu_type_name.
+            # eg. transfer 'nvidia-223' to 'T4_1B'
+            with open(vGPU_path + 'name') as f:
+                name = f.read().strip()
+            vgpu_type_name = name.split(' ')[1].replace('-', '_')
+            traits = _get_traits(
+                gpu["vendor_id"],
+                gpu["device_id"],
+                vgpu_type_name,
+            )
+        gpu.update(traits)
+        gpu_list.append(_generate_driver_device(gpu))
     return gpu_list
 
 

@@ -16,9 +16,6 @@
 Cyborg Xilinx FPGA driver implementation.
 """
 
-import re
-
-from oslo_concurrency import processutils
 from oslo_log import log as logging
 from oslo_serialization import jsonutils
 
@@ -30,42 +27,15 @@ from cyborg.objects.driver_objects import driver_attribute
 from cyborg.objects.driver_objects import driver_controlpath_id
 from cyborg.objects.driver_objects import driver_deployable
 from cyborg.objects.driver_objects import driver_device
-from cyborg.privsep import sys_admin_pctxt
 
 
 LOG = logging.getLogger(__name__)
 
 XILINX_FPGA_FLAGS = ["Xilinx Corporation Device", "Processing accelerators"]
 
-XILINX_FPGA_INFO_PATTERN = re.compile(
-    r"(?P<pci_addr>[0-9a-fA-F]{4}:[0-9a-fA-F]{2}:"
-    r"[0-9a-fA-F]{2}\.[0-9a-fA-F]) "
-    r"(?P<controller>.*) [\[].*]: (?P<model>.*) .*"
-    r"[\[](?P<vendor_id>[0-9a-fA-F]"
-    r"{4}):(?P<product_id>[0-9a-fA-F]{4})].*"
-)
-
 XILINX_PF_MAPS = {"mgmt": "xclmgmt", "user": "xocl"}
 
 VENDOR_MAPS = {"10ee": "xilinx"}
-
-
-@sys_admin_pctxt.entrypoint
-def lspci_privileged(cmd):
-    return processutils.execute(*cmd)
-
-
-def get_pci_devices(pci_flags, vendor_id=None):
-    device_for_vendor_out = []
-    all_device_out = []
-    cmd = ['lspci', '-nnn', '-D']
-    lspci_out = lspci_privileged(cmd)[0].split('\n')
-    for i in range(len(lspci_out)):
-        if all(x in lspci_out[i] for x in pci_flags):
-            all_device_out.append(lspci_out[i])
-            if vendor_id and vendor_id in lspci_out[i]:
-                device_for_vendor_out.append(lspci_out[i])
-    return device_for_vendor_out if vendor_id else all_device_out
 
 
 def _generate_traits(vendor_id, product_id):
@@ -82,8 +52,7 @@ def _generate_traits(vendor_id, product_id):
 
 
 def _get_pf_type(device):
-    cmd = ['lspci', '-k', '-s', device]
-    result = lspci_privileged(cmd)[0]
+    result = utils.pci_details(device)
     for k, v in XILINX_PF_MAPS.items():
         if v in result:
             return k
@@ -91,31 +60,28 @@ def _get_pf_type(device):
 
 def _combine_device_by_pci_func(pci_devices):
     fpga_devices = []
-    for pci_dev in pci_devices:
-        m = XILINX_FPGA_INFO_PATTERN.match(pci_dev)
-        if m:
-            pci_dict = m.groupdict()
-            LOG.debug('Xilinx fpga pci device in dict: %s', pci_dict)
-            # 0000:3b:00.0/1
-            is_existed = False
-            new_addr = pci_dict.get('pci_addr')
-            for fpga in fpga_devices:
-                existed_addr = fpga.get('pci_addr')[0]
-                # compare domain:bus:slot
-                if (
-                    existed_addr
-                    and new_addr.split('.')[0] == existed_addr.split('.')[0]
-                ):
-                    fpga.update({'pci_addr': [existed_addr, new_addr]})
-                    is_existed = True
-            if not is_existed:
-                traits = _generate_traits(
-                    pci_dict["vendor_id"], pci_dict["product_id"]
-                )
-                pci_dict["rc"] = constants.RESOURCES["FPGA"]
-                pci_dict.update(traits)
-                pci_dict.update({'pci_addr': [new_addr]})
-                fpga_devices.append(pci_dict)
+    for pci_dict in pci_devices:
+        LOG.debug('Xilinx fpga pci device in dict: %s', pci_dict)
+        # 0000:3b:00.0/1
+        is_existed = False
+        new_addr = pci_dict.get('address')
+        for fpga in fpga_devices:
+            existed_addr = fpga.get('pci_addr')[0]
+            # compare domain:bus:slot
+            if (
+                existed_addr
+                and new_addr.split('.')[0] == existed_addr.split('.')[0]
+            ):
+                fpga.update({'pci_addr': [existed_addr, new_addr]})
+                is_existed = True
+        if not is_existed:
+            traits = _generate_traits(
+                pci_dict["vendor_id"], pci_dict["device_id"]
+            )
+            pci_dict["rc"] = constants.RESOURCES["FPGA"]
+            pci_dict.update(traits)
+            pci_dict.update({'pci_addr': [new_addr]})
+            fpga_devices.append(pci_dict)
     return fpga_devices
 
 
@@ -167,7 +133,11 @@ def _generate_attach_handle(fpga):
 
 def fpga_tree():
     fpga_list = []
-    fpga_pci_devices = get_pci_devices(XILINX_FPGA_FLAGS)
+    fpga_pci_devices = list(
+        dev
+        for dev in utils.get_pci_devices()
+        if all(flag in dev["raw_line"] for flag in XILINX_FPGA_FLAGS)
+    )
     LOG.debug("Xilinx fpga devices from lspci: %s", fpga_pci_devices)
     # In the return pci devices, mgmt pf and user pf are two entries.
     # Now only when binding both to vm, end user can program it.
@@ -175,10 +145,10 @@ def fpga_tree():
     for fpga in _combine_device_by_pci_func(fpga_pci_devices):
         driver_device_obj = driver_device.DriverDevice()
         driver_device_obj.vendor = fpga["vendor_id"]
-        driver_device_obj.model = fpga.get('model', 'miss model info')
+        driver_device_obj.model = fpga.get('device_name', 'miss model info')
         std_board_info = {
-            'product_id': fpga.get('product_id'),
-            'controller': fpga.get('controller'),
+            'product_id': fpga.get('device_id'),
+            'controller': fpga.get('class_name'),
         }
         vendor_board_info = {
             'vendor_info': fpga.get('vendor_info', 'fpga_vb_info')

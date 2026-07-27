@@ -49,15 +49,15 @@ class TestSSDDriverUtils(base.TestCase):
         super().setUp()
         self.p = p()
 
-    @mock.patch('cyborg.accelerator.drivers.ssd.utils.lspci_privileged')
+    @mock.patch('cyborg.accelerator.common.utils.lspci_privileged')
     def test_discover_vendors(self, mock_devices):
-        mock_devices.return_value = self.p.stdout.readlines()
+        mock_devices.return_value = self.p.stdout.readlines()[0]
         ssd_vendors = utils.discover_vendors()
         self.assertEqual(1, len(ssd_vendors))
 
-    @mock.patch('cyborg.accelerator.drivers.ssd.utils.lspci_privileged')
+    @mock.patch('cyborg.accelerator.common.utils.lspci_privileged')
     def test_discover_with_inspur_ssd_driver(self, mock_devices_for_vendor):
-        mock_devices_for_vendor.return_value = self.p.stdout.readlines()
+        mock_devices_for_vendor.return_value = self.p.stdout.readlines()[0]
         self.set_defaults(host='host-192-168-32-195', debug=True)
         vendor_id = '1bd4'
         ssd_list = InspurNVMeSSDDriver.discover(vendor_id)
@@ -141,9 +141,9 @@ class TestSSDDriverUtils(base.TestCase):
         )
         self.assertEqual(attribute_list, attribute_actual_data)
 
-    @mock.patch('cyborg.accelerator.drivers.ssd.utils.lspci_privileged')
+    @mock.patch('cyborg.accelerator.common.utils.lspci_privileged')
     def test_discover_with_base_ssd_driver(self, mock_devices_for_vendor):
-        mock_devices_for_vendor.return_value = self.p.stdout.readlines()
+        mock_devices_for_vendor.return_value = self.p.stdout.readlines()[0]
         with self.assertLogs(None, level='INFO') as cm:
             d = SSDDriver.create()
             ssd_list = d.discover()

@@ -16,7 +16,6 @@ from unittest import mock
 
 from oslo_serialization import jsonutils
 
-from cyborg.accelerator.drivers.fpga.inspur import sysinfo
 from cyborg.accelerator.drivers.fpga.inspur.driver import InspurFPGADriver
 from cyborg.tests import base
 
@@ -46,11 +45,9 @@ class TestInspurFPGADriver(base.TestCase):
         super().setUp()
         self.p = p()
 
-    @mock.patch(
-        'cyborg.accelerator.drivers.fpga.inspur.sysinfo.lspci_privileged'
-    )
+    @mock.patch('cyborg.accelerator.common.utils.lspci_privileged')
     def test_discover(self, mock_devices_for_vendor):
-        mock_devices_for_vendor.return_value = self.p.stdout.readlines()
+        mock_devices_for_vendor.return_value = self.p.stdout.readlines()[0]
         self.set_defaults(host='host-192-168-32-195', debug=True)
         fpga_list = InspurFPGADriver().discover()
         self.assertEqual(1, len(fpga_list))
@@ -132,30 +129,3 @@ class TestInspurFPGADriver(base.TestCase):
             attach_handle_list[0], fpga_attach_handle_list[0].as_dict()
         )
         self.assertEqual(attribute_list, attribute_actual_data)
-
-    @mock.patch(
-        'cyborg.accelerator.drivers.fpga.inspur.sysinfo.lspci_privileged'
-    )
-    def test_get_pci_devices_by_inspur_vendor(self, mock_devices_for_vendor):
-        fake_pci_output = [
-            (
-                "0000:86:00.0 Processing accelerators [1200]: "
-                "Inspur Electronic Information Industry Co., Ltd. "
-                "Device [1bd4:a115] (rev 04)\n"
-                "0000:86:00.0 Processing accelerators [1200]: "
-                "Xilinx Corporation Device [10ee:5000]"
-            )
-        ]
-        mock_devices_for_vendor.return_value = fake_pci_output
-        pci_devices = sysinfo.get_pci_devices(
-            sysinfo.INSPUR_FPGA_FLAGS, vendor_id=sysinfo.VENDOR_ID
-        )
-        expected = [
-            (
-                "0000:86:00.0 Processing accelerators [1200]: "
-                "Inspur Electronic Information Industry Co., Ltd. "
-                "Device [1bd4:a115] (rev 04)"
-            )
-        ]
-        self.assertEqual(len(pci_devices), 1)
-        self.assertEqual(pci_devices, expected)
