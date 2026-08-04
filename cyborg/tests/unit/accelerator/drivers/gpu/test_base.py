@@ -13,6 +13,8 @@
 # under the License.
 
 
+from unittest import mock
+
 from cyborg.accelerator.drivers.gpu.base import GPUDriver
 from cyborg.accelerator.drivers.gpu.nvidia.driver import NVIDIAGPUDriver
 from cyborg.tests import base
@@ -27,3 +29,11 @@ class TestGPUDriver(base.TestCase):
     def test_discover(self):
         d = GPUDriver()
         self.assertRaises(NotImplementedError, d.discover)
+
+    def test_init_host_default_noop(self):
+        d = GPUDriver()
+        d.init_host()
+
+    def test_cleanup_default_noop(self):
+        d = GPUDriver()
+        d.cleanup(mock.Mock())

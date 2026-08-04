@@ -11,6 +11,8 @@
 # under the License.
 
 
+from unittest import mock
+
 from cyborg.accelerator.drivers.nic.base import NICDriver
 from cyborg.accelerator.drivers.nic.intel.driver import IntelNICDriver  # noqa
 from cyborg.tests import base
@@ -28,3 +30,11 @@ class TestNICDriver(base.TestCase):
     def test_discover_vendors(self):
         d = NICDriver()
         self.assertRaises(NotImplementedError, d.discover_vendors)
+
+    def test_init_host_default_noop(self):
+        d = NICDriver()
+        d.init_host()
+
+    def test_cleanup_default_noop(self):
+        d = NICDriver()
+        d.cleanup(mock.Mock())

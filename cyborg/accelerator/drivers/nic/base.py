@@ -35,6 +35,12 @@ class NICDriver:
                 return sclass(*args, **kwargs)
         raise LookupError("Not find the NIC driver for vendor %s" % vendor)
 
+    def init_host(self):
+        pass
+
+    def cleanup(self, device):
+        pass
+
     def discover(self):
         """Discover NIC information of current vendor(Identified by class).
 

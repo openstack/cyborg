@@ -44,6 +44,12 @@ class SSDDriver:
                 return sclass(*args, **kwargs)
         raise LookupError("Not find the SSD driver for vendor %s" % vendor)
 
+    def init_host(self):
+        pass
+
+    def cleanup(self, device):
+        pass
+
     def discover(self):
         """Discover SSD information of current vendor(Identified by class).
 
