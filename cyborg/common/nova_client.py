@@ -47,49 +47,46 @@ class NovaAPI:
         url = "/os-server-external-events"
         body = {"events": events}
         response = self.nova_client.post(url, json=body)
-        # NOTE(Sundar): Response status should always be 200/207. See
-        # https://review.opendev.org/#/c/698037/
         if response.status_code == 200:
             LOG.info(
                 "Successfully sent events to Nova, events: %(events)s",
                 {"events": events},
             )
         elif response.status_code == 207:
-            # NOTE(Sundar): If Nova returns per-event code of 422, that
-            # is due to a race condition where Nova has not associated
-            # the instance with a host yet. See
-            # https://bugs.launchpad.net/nova/+bug/1855752
-            events = [ev for ev in response.json()['events']]
-            event_codes = {ev['code'] for ev in events}
-            if len(event_codes) == 1:  # all events have same event code
-                if event_codes == {422}:
-                    LOG.info(
-                        'Ignoring Nova notification error that the '
-                        'instance %s is not yet associated with a host.',
-                        events[0]['server_uuid'],
-                    )
-                else:
-                    msg = _(
-                        'Unexpected event code %(code)s for instance %(inst)s'
-                    )
-                    msg = msg % {
-                        'code': event_codes.pop(),
-                        'inst': events[0]["server_uuid"],
-                    }
-                    raise exception.InvalidAPIResponse(
-                        service='Nova', api=url[1:], msg=msg
-                    )
+            resp_events = response.json()['events']
+            event_codes = {ev['code'] for ev in resp_events}
+            if len(event_codes) == 1 and event_codes == {422}:
+                # LP#1855752: Nova returns 422 per-event when instance.host
+                # is not yet set. This is expected for instant ARQ binds
+                # because Cyborg notifies during the conductor's bind RPC,
+                # before build_and_run_instance assigns the host. Nova
+                # compute handles this via exit_wait_early: it polls Cyborg
+                # for already-bound ARQs and skips the event wait.
+                LOG.debug(
+                    'Nova returned 422 for instance %s (host not yet '
+                    'assigned). Expected for instant ARQ binds; Nova '
+                    'compute will detect the bound state via polling.',
+                    resp_events[0]['server_uuid'],
+                )
+            elif len(event_codes) == 1:
+                msg = _('Unexpected event code %(code)s for instance %(inst)s')
+                msg = msg % {
+                    'code': event_codes.pop(),
+                    'inst': resp_events[0]["server_uuid"],
+                }
+                raise exception.InvalidAPIResponse(
+                    service='Nova', api=url[1:], msg=msg
+                )
             else:
                 msg = _(
                     'All event responses are expected to '
                     'have the same event code. Instance: %(inst)s'
                 )
-                msg = msg % {'inst': events[0]['server_uuid']}
+                msg = msg % {'inst': resp_events[0]['server_uuid']}
                 raise exception.InvalidAPIResponse(
                     service='Nova', api=url[1:], msg=msg
                 )
         else:
-            # Unexpected return code from Nova
             msg = _('Failed to send events %(ev)s: HTTP %(code)s: %(txt)s')
             msg = msg % {
                 'ev': events,
