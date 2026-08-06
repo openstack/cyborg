@@ -99,6 +99,22 @@ DEVICE_TYPE = (
 )
 
 
+# Device state (lifecycle for devices that support secure cleanup)
+DEVICE_STATES = (
+    DEVICE_STATE_AVAILABLE,
+    DEVICE_STATE_ALLOCATED,
+    DEVICE_STATE_PENDING_CLEANING,
+    DEVICE_STATE_CLEANING,
+    DEVICE_STATE_ERROR,
+) = (
+    'available',
+    'allocated',
+    'pending_cleaning',
+    'cleaning',
+    'error',
+)
+
+
 # Device type
 DEVICE_STATUS = ("enabled", "maintaining")
 

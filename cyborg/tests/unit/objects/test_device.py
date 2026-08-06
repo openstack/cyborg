@@ -168,6 +168,34 @@ class TestDeviceObject(base.DbTestCase):
             ValueError, objects.Device, self.context, type='OTHER_TYPE'
         )
 
+    def test_device_state(self):
+        for state in [
+            'available',
+            'allocated',
+            'pending_cleaning',
+            'cleaning',
+            'error',
+        ]:
+            device = objects.Device(
+                self.context, type='NVME', device_state=state
+            )
+            self.assertEqual(state, device.device_state)
+        self.assertRaises(
+            ValueError,
+            objects.Device,
+            self.context,
+            type='NVME',
+            device_state='invalid',
+        )
+
+    def test_supports_cleaning_nvme(self):
+        device = objects.Device(self.context, type='NVME')
+        self.assertTrue(device.supports_cleaning)
+
+    def test_supports_cleaning_gpu(self):
+        device = objects.Device(self.context, type='GPU')
+        self.assertFalse(device.supports_cleaning)
+
     def test_obj_make_compatible_raises_for_mdev_pci(self):
         for type_val in (constants.DEVICE_MDEV, constants.DEVICE_PCI):
             device = objects.Device(self.context, type=type_val)
@@ -216,3 +244,10 @@ class TestDeviceObject(base.DbTestCase):
         self.assertEqual(
             constants.DEVICE_GPU, primitive['cyborg_object.data']['type']
         )
+
+    def test_obj_make_compatible_drops_device_state(self):
+        device = objects.Device(
+            self.context, type='NVME', device_state='available'
+        )
+        primitive = device.obj_to_primitive(target_version='1.4')
+        self.assertNotIn('device_state', primitive['cyborg_object.data'])

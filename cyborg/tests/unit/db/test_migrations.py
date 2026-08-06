@@ -337,6 +337,14 @@ class CyborgMigrationsCheckers:
         }
         self.assertEqual(expected_types, set(type_enum.enums))
 
+    def _check_b47c8f2d1e3a(self, engine, data):
+        devices = db_utils.get_table(engine, 'devices')
+        col_names = [column.name for column in devices.c]
+        self.assertIn('device_state', col_names)
+        self.assertIsInstance(
+            devices.c.device_state.type, sqlalchemy.types.Enum
+        )
+
     def test_upgrade_and_version(self):
         with patch_with_engine(self.engine):
             self.migration_api.upgrade('head')

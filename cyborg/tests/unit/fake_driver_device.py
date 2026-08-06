@@ -29,6 +29,8 @@ def get_fake_driver_devices_as_dict():
         "stub": False,
         "controlpath_id": get_fake_driver_controlpath_objs()[0],
         "deployable_list": get_fake_driver_deployable_objs()[:1],
+        # device_state exercises the v1.4 field added to DriverDevice.
+        "device_state": "available",
     }
     driver_device2 = {
         "vendor": "0xDCBA",
@@ -39,6 +41,7 @@ def get_fake_driver_devices_as_dict():
         "stub": False,
         "controlpath_id": get_fake_driver_controlpath_objs()[1],
         "deployable_list": get_fake_driver_deployable_objs()[1:],
+        # device_state is nullable; omitting it here covers the unset path.
     }
     return [driver_device1, driver_device2]
 
