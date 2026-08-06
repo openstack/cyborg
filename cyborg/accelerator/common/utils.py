@@ -16,7 +16,10 @@ import collections
 import os
 import re
 
+from oslo_concurrency import processutils
 from oslo_serialization import jsonutils
+
+import cyborg.privsep
 
 from cyborg.common import exception
 
@@ -25,6 +28,15 @@ _PCI_ADDRESS_PATTERN = "^(hex{4}):(hex{2}):(hex{2}).(oct{1})$".replace(
     "hex", r"[\da-fA-F]"
 ).replace("oct", "[0-7]")
 _PCI_ADDRESS_REGEX = re.compile(_PCI_ADDRESS_PATTERN)
+
+_PCI_DEVICE_PATTERN = re.compile(
+    r"(?P<address>[0-9a-fA-F]{4}:[0-9a-fA-F]{2}:"
+    r"[0-9a-fA-F]{2}\.[0-9a-fA-F]) "
+    r"(?P<class_name>.*?) \[(?P<class_id>[0-9a-fA-F]{4})\]: "
+    r"(?P<device_name>.*?) "
+    r"\[(?P<vendor_id>[0-9a-fA-F]{4}):(?P<device_id>[0-9a-fA-F]{4})\]"
+    r"(?:.*?\(rev (?P<revision>[0-9a-fA-F]{2})\))?"
+)
 
 
 def pci_str_to_json(pci_address, physnet=None):
@@ -142,3 +154,32 @@ def parse_address(address):
     if not m:
         raise exception.PciDeviceWrongAddressFormat(address=address)
     return m.groups()
+
+
+@cyborg.privsep.sys_admin_pctxt.entrypoint
+def lspci_privileged():
+    return processutils.execute('lspci', '-nn', '-D')[0]
+
+
+def parse_lspci_line(line):
+    """Parse one 'lspci -nn -D' line into a normalized dict, or None.
+
+    Hex IDs are lowercased; the original line is kept under 'raw_line'.
+    """
+    match = _PCI_DEVICE_PATTERN.match(line)
+    if not match:
+        return None
+    data = match.groupdict()
+    data["raw_line"] = line
+    for key in ("vendor_id", "device_id", "class_id", "revision"):
+        if data.get(key):
+            data[key] = data[key].lower()
+    return data
+
+
+def get_pci_devices():
+    """Yield parsed PCI device dicts, skipping non-matching lines."""
+    for line in lspci_privileged().splitlines():
+        dev = parse_lspci_line(line)
+        if dev:
+            yield dev
