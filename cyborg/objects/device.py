@@ -17,6 +17,7 @@ from oslo_utils import versionutils
 from oslo_versionedobjects import base as object_base
 
 from cyborg.common import constants
+from cyborg.common import data_migrations
 from cyborg.db import api as dbapi
 from cyborg.objects import base
 from cyborg.objects import fields as object_fields
@@ -92,9 +93,32 @@ class Device(base.CyborgObject, object_base.VersionedObjectDictCompat):
                 (constants.DEVICE_AICHIP,),
             )
 
+    @classmethod
+    def _from_db_object(cls, obj, db_obj):
+        obj = base.CyborgObject._from_db_object(obj, db_obj)
+        # Heal device_state on load for devices that pre-date the column.
+        # Avoids relying solely on the backfill migration or conductor startup.
+        if obj.device_state is None and obj._context is not None:
+            try:
+                new_state = data_migrations._device_state_from_attach_handles(
+                    obj._context, obj.dbapi, obj.id
+                )
+                obj.dbapi.device_update(
+                    obj._context, obj.uuid, {'device_state': new_state}
+                )
+                obj.device_state = new_state
+                obj.obj_reset_changes(['device_state'])
+            except Exception:
+                LOG.warning(
+                    'Failed to heal device_state for device %s', obj.uuid
+                )
+        return obj
+
     def create(self, context):
         """Create a device record in the DB."""
         values = self.obj_get_changes()
+        if values.get('device_state') is None:
+            values['device_state'] = constants.DEVICE_STATE_AVAILABLE
         db_device = self.dbapi.device_create(context, values)
         self._from_db_object(self, db_device)
 

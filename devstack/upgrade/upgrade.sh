@@ -77,6 +77,8 @@ if [ "$ret_val" -gt 1 ] ; then
         "apply the schema update and then re-evaluate."
     "$CYBORG_BIN_DIR/cyborg-dbsync" \
         --config-file="$CYBORG_CONF" upgrade
+    "$CYBORG_BIN_DIR/cyborg-dbsync" \
+        --config-file="$CYBORG_CONF" online_data_migrations
     "$CYBORG_BIN_DIR/cyborg-status" upgrade check && ret_val=$? || ret_val=$?
     if [ "$ret_val" -gt 1 ] ; then
         die "$LINENO" "Cyborg DB Status check failed, returned: $ret_val"

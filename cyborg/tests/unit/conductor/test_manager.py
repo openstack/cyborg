@@ -222,3 +222,29 @@ class ConductorManagerTest(base.TestCase):
         mock_heal.side_effect = Exception('Nova unavailable')
         self.cm.init_host()
         mock_heal.assert_called_once()
+
+    @mock.patch(
+        'cyborg.common.data_migrations.heal_arq_project_ids', autospec=True
+    )
+    @mock.patch(
+        'cyborg.common.data_migrations.backfill_device_state', autospec=True
+    )
+    def test_init_host_backfills_device_state(self, mock_backfill, mock_heal):
+        mock_heal.return_value = 0
+        mock_backfill.return_value = (5, 5)
+        self.cm.init_host()
+        mock_backfill.assert_called_once()
+
+    @mock.patch(
+        'cyborg.common.data_migrations.heal_arq_project_ids', autospec=True
+    )
+    @mock.patch(
+        'cyborg.common.data_migrations.backfill_device_state', autospec=True
+    )
+    def test_init_host_backfill_handles_failure(
+        self, mock_backfill, mock_heal
+    ):
+        mock_heal.return_value = 0
+        mock_backfill.side_effect = Exception('DB error')
+        self.cm.init_host()
+        mock_backfill.assert_called_once()

@@ -1,0 +1,22 @@
+---
+upgrade:
+  - |
+    A new ``cyborg-dbsync online_data_migrations`` step backfills the
+    ``device_state`` column for devices added before this release. Each
+    device with a NULL ``device_state`` is set to ``allocated`` if it has
+    in-use attach handles, or ``available`` otherwise. Expected upgrade
+    order:
+
+    1. Run ``cyborg-dbsync upgrade`` to apply the schema migration that
+       adds the ``device_state`` column.
+    2. Run ``cyborg-dbsync online_data_migrations`` to backfill existing
+       devices.
+    3. Upgrade Cyborg services (conductor, API, agents).
+
+    ``cyborg-status upgrade check`` will now report a **FAILURE** result
+    named *Device state backfill* if any devices still have a NULL
+    ``device_state``. Resolve it by running step 2 above.
+
+    The cyborg-conductor service also runs this backfill automatically on
+    startup as a safety net, so a manual run is only strictly required
+    to avoid long startup times on larger deployments.

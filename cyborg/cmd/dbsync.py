@@ -45,8 +45,28 @@ class DBCommand:
         migration.create_schema()
 
     def online_data_migrations(self):
-        count = data_migrations.heal_arq_project_ids()
-        print('Migrated %d ARQ(s)' % count)
+        exceptions = False
+
+        try:
+            count = data_migrations.heal_arq_project_ids()
+            print('Migrated %d ARQ(s)' % count)
+        except Exception as exc:
+            print('Failed to migrate ARQ project_ids: %s' % exc)
+            exceptions = True
+
+        try:
+            found, done = data_migrations.backfill_device_state()
+            print('Backfilled device_state on %d/%d devices' % (done, found))
+        except Exception as exc:
+            print('Failed to backfill device_state: %s' % exc)
+            exceptions = True
+
+        if exceptions:
+            print(
+                'Some migrations failed unexpectedly. Check log for details.'
+            )
+            return 2
+        return 0
 
 
 def add_command_parsers(subparsers):
@@ -92,8 +112,8 @@ def add_command_parsers(subparsers):
         'online_data_migrations',
         help=_(
             "Perform online data migrations. "
-            "Currently backfills project_id on existing ARQs "
-            "by querying Nova for instance details."
+            "Backfills project_id on existing ARQs and "
+            "device_state on existing devices."
         ),
     )
     parser.set_defaults(func=command_object.online_data_migrations)
@@ -110,4 +130,5 @@ def main():
     CONF.register_cli_opt(command_opt)
 
     service.prepare_service(sys.argv)
-    CONF.command.func()
+    ret = CONF.command.func()
+    sys.exit(ret or 0)

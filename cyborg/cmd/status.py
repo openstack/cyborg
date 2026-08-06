@@ -18,7 +18,9 @@ from oslo_config import cfg
 from oslo_upgradecheck import common_checks
 from oslo_upgradecheck import upgradecheck
 
+from cyborg import context as cyborg_context
 from cyborg.common.i18n import _
+from cyborg.db import api as dbapi
 
 
 CONF = cfg.CONF
@@ -29,12 +31,45 @@ class Checks(upgradecheck.UpgradeCommands):
     and added to _upgrade_checks tuple.
     """
 
+    def _check_device_state_backfill(self):
+        context = cyborg_context.get_admin_context()
+        db = dbapi.get_instance()
+        try:
+            devices = db.device_list_by_filters(
+                context,
+                {'device_state': dbapi.NULL_FILTER},
+            )
+        except Exception:
+            return upgradecheck.Result(
+                upgradecheck.Code.FAILURE,
+                _(
+                    'Unable to query device_state column. '
+                    'Run: cyborg-dbsync upgrade'
+                ),
+            )
+        null_count = len(devices)
+        if null_count:
+            return upgradecheck.Result(
+                upgradecheck.Code.FAILURE,
+                _(
+                    '%d device(s) still have NULL device_state. '
+                    'Run: cyborg-dbsync online_data_migrations'
+                )
+                % null_count,
+            )
+        return upgradecheck.Result(
+            upgradecheck.Code.SUCCESS,
+            _('All device_state values backfilled.'),
+        )
+
     _upgrade_checks = (
         # Added in Victoria
         (
             _('Policy File JSON to YAML Migration'),
             (common_checks.check_policy_json, {'conf': CONF}),
         ),
+        # Added in 2026.2
+        (_('Device state backfill'), _check_device_state_backfill),
     )
 
 

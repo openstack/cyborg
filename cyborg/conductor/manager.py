@@ -49,7 +49,10 @@ class ConductorManager:
         self.placement_client = placement_client.PlacementClient()
 
     def init_host(self):
-        """Hook called on service startup. Heals NULL project_id ARQs."""
+        """Hook called on service startup.
+
+        Heals NULL project_id ARQs and backfills device_state.
+        """
         try:
             count = data_migrations.heal_arq_project_ids()
             if count:
@@ -59,6 +62,20 @@ class ConductorManager:
         except Exception:
             LOG.exception(
                 'Conductor startup: failed to heal ARQ project_ids. '
+                'Run cyborg-dbsync online_data_migrations manually.'
+            )
+
+        try:
+            found, done = data_migrations.backfill_device_state()
+            if found:
+                LOG.info(
+                    'Conductor startup: backfilled %d/%d device_state rows.',
+                    done,
+                    found,
+                )
+        except Exception:
+            LOG.exception(
+                'Conductor startup: failed to backfill device_state. '
                 'Run cyborg-dbsync online_data_migrations manually.'
             )
 

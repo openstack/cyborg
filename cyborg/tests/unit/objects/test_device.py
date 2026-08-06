@@ -115,12 +115,31 @@ class TestDeviceObject(base.DbTestCase):
             self.dbapi, 'device_create', autospec=True
         ) as mock_device_create:
             mock_device_create.return_value = self.fake_device
-            device = objects.Device(self.context, **self.fake_device)
+            device_dict = fake_device.get_fake_devices_as_dict()[0].copy()
+            device_dict.pop('device_state', None)
+            device = objects.Device(self.context, **device_dict)
             device.create(self.context)
-            mock_device_create.assert_called_once_with(
-                self.context, self.fake_device
-            )
+            expected = device_dict.copy()
+            expected['device_state'] = constants.DEVICE_STATE_AVAILABLE
+            mock_device_create.assert_called_once_with(self.context, expected)
             self.assertEqual(self.context, device._context)
+
+    def test_create_preserves_explicit_device_state(self):
+        with mock.patch.object(
+            self.dbapi, 'device_create', autospec=True
+        ) as mock_device_create:
+            mock_device_create.return_value = self.fake_device
+            device_fields = self.fake_device.copy()
+            device_fields.pop('device_state', None)
+            device = objects.Device(
+                self.context,
+                **device_fields,
+                device_state=constants.DEVICE_STATE_ALLOCATED,
+            )
+            device.create(self.context)
+            expected = self.fake_device.copy()
+            expected['device_state'] = constants.DEVICE_STATE_ALLOCATED
+            mock_device_create.assert_called_once_with(self.context, expected)
 
     def test_destroy(self):
         uuid = self.fake_device['uuid']
@@ -251,3 +270,34 @@ class TestDeviceObject(base.DbTestCase):
         )
         primitive = device.obj_to_primitive(target_version='1.4')
         self.assertNotIn('device_state', primitive['cyborg_object.data'])
+
+    def test_from_db_object_heals_null_device_state(self):
+        db_device = self.fake_device.copy()
+        db_device['device_state'] = None
+        with (
+            mock.patch.object(
+                self.dbapi,
+                'deployable_get_by_filters',
+                autospec=True,
+                return_value=[],
+            ) as mock_dep,
+            mock.patch.object(
+                self.dbapi,
+                'device_update',
+                autospec=True,
+            ) as mock_update,
+        ):
+            device = objects.Device._from_db_object(
+                objects.Device(self.context), db_device
+            )
+            self.assertEqual(
+                constants.DEVICE_STATE_AVAILABLE, device.device_state
+            )
+            mock_dep.assert_called_once_with(
+                self.context, {'device_id': db_device['id']}
+            )
+            mock_update.assert_called_once_with(
+                self.context,
+                db_device['uuid'],
+                {'device_state': constants.DEVICE_STATE_AVAILABLE},
+            )

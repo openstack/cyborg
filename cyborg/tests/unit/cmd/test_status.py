@@ -15,6 +15,8 @@
 import os
 import tempfile
 
+from unittest import mock
+
 import fixtures
 import yaml
 
@@ -92,3 +94,31 @@ class TestUpgradeCheckPolicyJSON(base.TestCase):
         self.assertEqual(
             upgradecheck.Code.FAILURE, self._check_policy_json().code
         )
+
+
+class TestCheckDeviceStateBackfill(base.TestCase):
+    def setUp(self):
+        super().setUp()
+        self.cmd = status.Checks()
+
+    @mock.patch('cyborg.db.api.get_instance', autospec=True)
+    def test_check_passes_after_backfill(self, mock_get_db):
+        mock_db = mock.MagicMock()
+        mock_db.device_list_by_filters.return_value = []
+        mock_get_db.return_value = mock_db
+
+        result = self.cmd._check_device_state_backfill()
+        self.assertEqual(upgradecheck.Code.SUCCESS, result.code)
+
+    @mock.patch('cyborg.db.api.get_instance', autospec=True)
+    def test_check_fails_with_null(self, mock_get_db):
+        mock_db = mock.MagicMock()
+        mock_db.device_list_by_filters.return_value = [
+            {'id': 1, 'device_state': None},
+            {'id': 2, 'device_state': None},
+        ]
+        mock_get_db.return_value = mock_db
+
+        result = self.cmd._check_device_state_backfill()
+        self.assertEqual(upgradecheck.Code.FAILURE, result.code)
+        self.assertIn('2 device(s)', result.details)

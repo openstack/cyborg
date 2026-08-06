@@ -16,6 +16,7 @@ from openstack import exceptions as sdk_exc
 from oslo_log import log as logging
 
 from cyborg import context as cyborg_context
+from cyborg.common import constants
 from cyborg.common import utils
 from cyborg.db import api as dbapi
 
@@ -136,3 +137,86 @@ def heal_arq_project_ids():
 
     LOG.info('Migrated %d ARQ(s).', migrated)
     return migrated
+
+
+def _device_state_from_attach_handles(context, db, device_id):
+    """Derive the correct device_state by inspecting attach handle usage.
+
+    Walks the device -> deployable -> attach_handle hierarchy and returns
+    DEVICE_STATE_ALLOCATED if any attach handle is currently in use,
+    or DEVICE_STATE_AVAILABLE if none are.
+    """
+    deployables = db.deployable_get_by_filters(
+        context, {'device_id': device_id}
+    )
+    for dep in deployables:
+        # Stop at the first deployable that has an in-use attach handle.
+        if db.attach_handle_get_by_filters(
+            context, {'deployable_id': dep['id'], 'in_use': True}
+        ):
+            return constants.DEVICE_STATE_ALLOCATED
+    return constants.DEVICE_STATE_AVAILABLE
+
+
+def backfill_device_state(context=None, max_count=50):
+    """Backfill NULL device_state for existing devices.
+
+    For each device with device_state IS NULL:
+    - Has in-use attach handles -> device_state = 'allocated'
+    - No in-use attach handles -> device_state = 'available'
+
+    Loops internally until all NULL rows are processed.
+
+    :returns: (total_found, total_done) tuple
+    """
+    db = dbapi.get_instance()
+    if context is None:
+        context = cyborg_context.get_admin_context()
+
+    total_found = 0
+    total_done = 0
+
+    while True:
+        devices = db.device_list_by_filters(
+            context,
+            {'device_state': dbapi.NULL_FILTER},
+            limit=max_count,
+        )
+        if not devices:
+            break
+
+        done = 0
+        for db_dev in devices:
+            try:
+                new_state = _device_state_from_attach_handles(
+                    context, db, db_dev['id']
+                )
+                db.device_update(
+                    context, db_dev['uuid'], {'device_state': new_state}
+                )
+                done += 1
+            except Exception:
+                LOG.warning(
+                    'Failed to backfill device_state for device %s',
+                    db_dev['uuid'],
+                    exc_info=True,
+                )
+
+        total_found += len(devices)
+        total_done += done
+        LOG.info(
+            'Backfilled device_state on %d/%d devices.', done, len(devices)
+        )
+
+        if done == 0:
+            LOG.warning(
+                'No progress backfilling device_state in batch of %d '
+                'device(s); stopping.',
+                len(devices),
+            )
+            break
+
+        if len(devices) < max_count:
+            break
+
+    return total_found, total_done
