@@ -321,6 +321,22 @@ class CyborgMigrationsCheckers:
         actual_types = set(devices.c.type.type.enums)
         self.assertEqual(expected_types, actual_types)
 
+    def _check_a35b4295a0e5(self, engine, data):
+        devices = db_utils.get_table(engine, 'devices')
+        type_enum = devices.c.type.type
+        expected_types = {
+            'GPU',
+            'FPGA',
+            'AICHIP',
+            'QAT',
+            'NIC',
+            'SSD',
+            'MDEV',
+            'PCI',
+            'NVME',
+        }
+        self.assertEqual(expected_types, set(type_enum.enums))
+
     def test_upgrade_and_version(self):
         with patch_with_engine(self.engine):
             self.migration_api.upgrade('head')

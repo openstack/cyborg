@@ -160,7 +160,7 @@ class TestDeviceObject(base.DbTestCase):
                 self.assertEqual(self.context, device._context)
 
     def test_device_type(self):
-        for t in ["GPU", "FPGA", "AICHIP"]:
+        for t in constants.DEVICE_TYPE:
             device = objects.Device(self.context, type=t)
             self.assertEqual(self.context, device._context)
         # Invalid type will raise ValueError
@@ -176,6 +176,14 @@ class TestDeviceObject(base.DbTestCase):
                 device.obj_to_primitive,
                 target_version='1.2',
             )
+
+    def test_obj_make_compatible_raises_for_nvme(self):
+        device = objects.Device(self.context, type=constants.DEVICE_NVME)
+        self.assertRaises(
+            exception.ObjectActionError,
+            device.obj_to_primitive,
+            target_version='1.3',
+        )
 
     def test_obj_make_compatible_raises_for_aichip_on_v1_0(self):
         device = objects.Device(self.context, type=constants.DEVICE_AICHIP)

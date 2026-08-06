@@ -35,7 +35,8 @@ class DriverDevice(
     # Version 1.0: Initial version
     # Version 1.1: Add AICHIP type
     # Version 1.2: Add MDEV, PCI type
-    VERSION = '1.2'
+    # Version 1.3: Add NVMe type
+    VERSION = '1.3'
 
     fields = {
         'vendor': object_fields.StringField(nullable=False),

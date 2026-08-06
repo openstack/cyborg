@@ -31,7 +31,8 @@ class Device(base.CyborgObject, object_base.VersionedObjectDictCompat):
     # Version 1.1: Add AICHIP type
     # Version 1.2: Add status field
     # Version 1.3: Add MDEV, PCI type
-    VERSION = '1.3'
+    # Version 1.4: Add NVME type
+    VERSION = '1.4'
 
     dbapi = dbapi.get_instance()
 
@@ -56,6 +57,13 @@ class Device(base.CyborgObject, object_base.VersionedObjectDictCompat):
     def obj_make_compatible(self, primitive, target_version):
         super().obj_make_compatible(primitive, target_version)
         target_version = versionutils.convert_version_to_tuple(target_version)
+        if target_version < (1, 4):
+            base.raise_on_too_new_values(
+                target_version,
+                primitive,
+                'type',
+                (constants.DEVICE_NVME,),
+            )
         if target_version < (1, 3):
             base.raise_on_too_new_values(
                 target_version,
