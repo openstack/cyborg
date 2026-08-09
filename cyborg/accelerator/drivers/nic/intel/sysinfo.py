@@ -52,10 +52,13 @@ def _parse_config():
     try:
         pdm = utils.parse_mappings(CONF.x710_static.physical_device_mappings)
         fdm = utils.parse_mappings(CONF.x710_static.function_device_mappings)
+        da = CONF.x710_static.device_addresses
     except cfg.NoSuchOptError:
-        return None, None
+        return None, None, None
     else:
-        return pdm, fdm
+        for address in da:
+            utils.parse_address(address)
+        return pdm, fdm, da
 
 
 def get_physical_network_and_traits(
@@ -169,19 +172,28 @@ def all_vfs_in_pf(pf_path):
 
 
 def nic_tree():
-    physnet_device_mappings, function_device_mappings = _parse_config()
+    physnet_device_mappings, function_device_mappings, device_addresses = (
+        _parse_config()
+    )
     nics = []
     pfs_has_vf = all_pfs_with_vf()
     for n in find_nics_by_know_list():
         nic = nic_gen(n, physnet_device_mappings, function_device_mappings)
+        pf_allowed = not device_addresses or nic["device"] in device_addresses
         if n in pfs_has_vf:
             vfs = []
             for vf in all_vfs_in_pf(n):
                 vf_nic = nic_gen(
                     vf, physnet_device_mappings, function_device_mappings, nic
                 )
-                vfs.append(vf_nic)
+                if pf_allowed or vf_nic["device"] in device_addresses:
+                    vfs.append(vf_nic)
+            if not vfs:
+                continue
             nic["vfs"] = vfs
+        elif not pf_allowed:
+            continue
+
         nics.append(_generate_driver_device(nic))
     return nics
 

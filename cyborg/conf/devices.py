@@ -120,6 +120,21 @@ def register_dynamic_opts(conf):
             default=[],
             item_type=cfg.types.String(),
         ),
+        cfg.ListOpt(
+            'device_addresses',
+            default=[],
+            item_type=cfg.types.String(),
+            help="""
+Restricts which devices this NIC type discovers, by PCI address.
+
+Both Physical Function (PF) and Virtual Function (VF) addresses are accepted.
+Listing a PF address exposes all of its VFs, or the PF itself when it has no
+VFs, while listing a VF address exposes only that VF (its PF is still used as
+the control path). This lets operators delegate only selected VFs of an
+SR-IOV NIC to Cyborg. When empty (the default), every matching NIC is
+discovered. A malformed PCI address is rejected at startup.
+""",
+        ),
     ]
 
     # Register the '[nic_type]/physical_device_mappings' and
