@@ -18,6 +18,7 @@ import unittest
 
 from unittest import mock
 
+from cyborg import privsep
 from cyborg.accelerator.common import utils
 
 
@@ -99,3 +100,14 @@ class TestUtils(unittest.TestCase):
         self.assertEqual(result[1]["device_id"], "1db4")
         for dev in result:
             self.assertIn("raw_line", dev)
+
+    @mock.patch("cyborg.accelerator.common.utils.processutils.execute")
+    def test_pci_details(self, mock_execute):
+        mock_execute.return_value = ("driver info", "")
+        privsep.sys_admin_pctxt.set_client_mode(False)
+        self.addCleanup(privsep.sys_admin_pctxt.set_client_mode, True)
+        result = self.utils.pci_details("0000:0b:00.0")
+        mock_execute.assert_called_once_with(
+            "lspci", "-k", "-s", "0000:0b:00.0"
+        )
+        self.assertEqual(result, "driver info")

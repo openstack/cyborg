@@ -17,12 +17,7 @@
 Cyborg Inspur FPGA driver implementation.
 """
 
-import re
-
-from oslo_concurrency import processutils
 from oslo_serialization import jsonutils
-
-import cyborg.privsep
 
 from cyborg.accelerator.common import utils
 from cyborg.common import constants
@@ -38,34 +33,9 @@ INSPUR_FPGA_FLAGS = [
     "Inspur Electronic Information Industry Co., Ltd.",
     "Processing accelerators",
 ]
-INSPUR_FPGA_INFO_PATTERN = re.compile(
-    r"(?P<devices>[0-9a-fA-F]{4}:[0-9a-fA-F]{2}:"
-    r"[0-9a-fA-F]{2}\.[0-9a-fA-F]) "
-    r"(?P<controller>.*) [\[].*]: (?P<model>.*) .*"
-    r"[\[](?P<vendor_id>[0-9a-fA-F]"
-    r"{4}):(?P<product_id>[0-9a-fA-F]{4})].*"
-)
 
 VENDOR_ID = "1bd4"
 VENDOR_MAPS = {"1bd4": "inspur"}
-
-
-@cyborg.privsep.sys_admin_pctxt.entrypoint
-def lspci_privileged():
-    cmd = ['lspci', '-nnn', '-D']
-    return processutils.execute(*cmd)
-
-
-def get_pci_devices(pci_flags, vendor_id=None):
-    device_for_vendor_out = []
-    all_device_out = []
-    lspci_out = lspci_privileged()[0].split('\n')
-    for i in range(len(lspci_out)):
-        if any(x in lspci_out[i] for x in pci_flags):
-            all_device_out.append(lspci_out[i])
-            if vendor_id and vendor_id in lspci_out[i]:
-                device_for_vendor_out.append(lspci_out[i])
-    return device_for_vendor_out if vendor_id else all_device_out
 
 
 def get_traits(vendor_id, product_id):
@@ -86,28 +56,28 @@ def get_traits(vendor_id, product_id):
 
 def fpga_tree():
     fpga_list = []
-    fpgas = get_pci_devices(INSPUR_FPGA_FLAGS, vendor_id=VENDOR_ID)
+    fpgas = (
+        dev
+        for dev in utils.get_pci_devices()
+        if dev["vendor_id"] == VENDOR_ID
+        and any(flag in dev["raw_line"] for flag in INSPUR_FPGA_FLAGS)
+    )
     for fpga in fpgas:
-        m = INSPUR_FPGA_INFO_PATTERN.match(fpga)
-        if m:
-            fpga_dict = m.groupdict()
-            # generate traits info
-            traits = get_traits(
-                fpga_dict["vendor_id"], fpga_dict["product_id"]
-            )
-            fpga_dict["rc"] = constants.RESOURCES["FPGA"]
-            fpga_dict.update(traits)
-            fpga_list.append(_generate_driver_device(fpga_dict))
+        # generate traits info
+        traits = get_traits(fpga["vendor_id"], fpga["device_id"])
+        fpga["rc"] = constants.RESOURCES["FPGA"]
+        fpga.update(traits)
+        fpga_list.append(_generate_driver_device(fpga))
     return fpga_list
 
 
 def _generate_driver_device(fpga):
     driver_device_obj = driver_device.DriverDevice()
     driver_device_obj.vendor = fpga["vendor_id"]
-    driver_device_obj.model = fpga.get('model', 'miss model info')
+    driver_device_obj.model = fpga.get('device_name', 'miss model info')
     std_board_info = {
-        'product_id': fpga.get('product_id'),
-        'controller': fpga.get('controller'),
+        'product_id': fpga.get('device_id'),
+        'controller': fpga.get('class_name'),
     }
     vendor_board_info = {
         'vendor_info': fpga.get('vendor_info', 'fpga_vb_info')
@@ -124,7 +94,7 @@ def _generate_driver_device(fpga):
 def _generate_controlpath_id(fpga):
     driver_cpid = driver_controlpath_id.DriverControlPathID()
     driver_cpid.cpid_type = "PCI"
-    driver_cpid.cpid_info = utils.pci_str_to_json(fpga["devices"])
+    driver_cpid.cpid_info = utils.pci_str_to_json(fpga["address"])
     return driver_cpid
 
 
@@ -135,7 +105,7 @@ def _generate_dep_list(fpga):
     # NOTE(wenping) Now simply named as <Compute_hostname>_<Device_address>
     # once cyborg needs to support Inspur FPGA devices discovered from a
     # baremetal node, we might need to support more formats.
-    driver_dep.name = CONF.host + '_' + fpga["devices"]
+    driver_dep.name = CONF.host + '_' + fpga["address"]
     driver_dep.driver_name = VENDOR_MAPS.get(fpga["vendor_id"], '').upper()
     driver_dep.num_accelerators = 1
     driver_dep.attach_handle_list = [_generate_attach_handle(fpga)]
@@ -161,6 +131,6 @@ def _generate_attribute_list(fpga):
 def _generate_attach_handle(fpga):
     driver_ah = driver_attach_handle.DriverAttachHandle()
     driver_ah.attach_type = constants.AH_TYPE_PCI
-    driver_ah.attach_info = utils.pci_str_to_json(fpga["devices"])
+    driver_ah.attach_info = utils.pci_str_to_json(fpga["address"])
     driver_ah.in_use = False
     return driver_ah

@@ -28,18 +28,16 @@ XILINX_FPGA_INFO = [
 ]
 
 
-def fake_output(arg):
-    if arg == ['lspci', '-nnn', '-D']:
-        return XILINX_FPGA_INFO
+def fake_output(arg=('lspci', '-nnn', '-D')):
+    if list(arg) == ['lspci', '-nnn', '-D']:
+        return XILINX_FPGA_INFO[0]
 
 
 class TestXilinxFPGADriver(base.TestCase):
     def setUp(self):
         super().setUp()
 
-    @mock.patch(
-        'cyborg.accelerator.drivers.fpga.xilinx.sysinfo.lspci_privileged'
-    )
+    @mock.patch('cyborg.accelerator.common.utils.lspci_privileged')
     def test_discover(self, mock_devices_for_vendor):
         mock_devices_for_vendor.side_effect = fake_output
         self.set_defaults(host='fake-host', debug=True)

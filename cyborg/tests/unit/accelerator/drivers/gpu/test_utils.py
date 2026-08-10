@@ -95,16 +95,16 @@ class TestGPUDriverUtils(base.TestCase):
         super().setUp()
         self.p = p()
 
-    @mock.patch('cyborg.accelerator.drivers.gpu.utils.lspci_privileged')
+    @mock.patch('cyborg.accelerator.common.utils.lspci_privileged')
     def test_discover_vendors(self, mock_devices):
-        mock_devices.return_value = self.p.stdout.readlines()
+        mock_devices.return_value = self.p.stdout.readlines()[0]
         gpu_vendors = utils.discover_vendors()
         self.assertEqual(1, len(gpu_vendors))
 
-    @mock.patch('cyborg.accelerator.drivers.gpu.utils.lspci_privileged')
+    @mock.patch('cyborg.accelerator.common.utils.lspci_privileged')
     def test_discover_gpus_report_pGPU(self, mock_devices_for_vendor):
         """test nvidia pGPU discover"""
-        mock_devices_for_vendor.return_value = self.p.stdout.readlines()
+        mock_devices_for_vendor.return_value = self.p.stdout.readlines()[0]
         self.set_defaults(host='host-192-168-32-195', debug=True)
 
         nvidia = NVIDIAGPUDriver()
@@ -200,7 +200,7 @@ class TestGPUDriverUtils(base.TestCase):
     @mock.patch('builtins.open')
     @mock.patch('os.listdir')
     @mock.patch('os.path.exists')
-    @mock.patch('cyborg.accelerator.drivers.gpu.utils.lspci_privileged')
+    @mock.patch('cyborg.accelerator.common.utils.lspci_privileged')
     def test_discover_gpus_report_vGPU(
         self,
         mock_devices_for_vendor,
@@ -210,7 +210,7 @@ class TestGPUDriverUtils(base.TestCase):
         mock_is_vf,
     ):
         """test nvidia vGPU discover"""
-        mock_devices_for_vendor.return_value = self.p.stdout.readlines_T4()
+        mock_devices_for_vendor.return_value = self.p.stdout.readlines_T4()[0]
         mock_path_exists.return_value = True
         mock_supported_mdev_types.return_value = NVIDIA_T4_SUPPORTED_MDEV_TYPES
         file_content_list = ['GRID T4-1B', '1']
@@ -307,12 +307,14 @@ class TestGPUDriverUtils(base.TestCase):
         self.assertEqual(attribute_list, attribute_actual_data)
 
     @mock.patch('cyborg.accelerator.drivers.gpu.nvidia.sysinfo._is_vf')
-    @mock.patch('cyborg.accelerator.drivers.gpu.utils.lspci_privileged')
+    @mock.patch('cyborg.accelerator.common.utils.lspci_privileged')
     def test_discover_gpus_filters_vf_devices(
         self, mock_devices_for_vendor, mock_is_vf
     ):
         """Test that VF devices are filtered when filter_sriov_vfs=True."""
-        mock_devices_for_vendor.return_value = self.p.stdout.readlines_A100()
+        mock_devices_for_vendor.return_value = self.p.stdout.readlines_A100()[
+            0
+        ]
         mock_is_vf.side_effect = lambda addr: addr == '0000:3b:00.4'
         self.set_defaults(host='host-192-168-32-195', debug=True)
         self.set_defaults(filter_sriov_vfs=True, group='gpu_devices')
@@ -326,12 +328,14 @@ class TestGPUDriverUtils(base.TestCase):
         self.assertIn('0000:3b:00.0', dep_name)
 
     @mock.patch('cyborg.accelerator.drivers.gpu.nvidia.sysinfo._is_vf')
-    @mock.patch('cyborg.accelerator.drivers.gpu.utils.lspci_privileged')
+    @mock.patch('cyborg.accelerator.common.utils.lspci_privileged')
     def test_discover_gpus_vf_not_filtered_by_default(
         self, mock_devices_for_vendor, mock_is_vf
     ):
         """Test that VFs are reported when filter_sriov_vfs=False (default)."""
-        mock_devices_for_vendor.return_value = self.p.stdout.readlines_A100()
+        mock_devices_for_vendor.return_value = self.p.stdout.readlines_A100()[
+            0
+        ]
         mock_is_vf.side_effect = lambda addr: addr == '0000:3b:00.4'
         self.set_defaults(host='host-192-168-32-195', debug=True)
 
@@ -342,12 +346,14 @@ class TestGPUDriverUtils(base.TestCase):
         mock_is_vf.assert_not_called()
 
     @mock.patch('cyborg.accelerator.drivers.gpu.nvidia.sysinfo._is_vf')
-    @mock.patch('cyborg.accelerator.drivers.gpu.utils.lspci_privileged')
+    @mock.patch('cyborg.accelerator.common.utils.lspci_privileged')
     def test_discover_gpus_continues_on_is_vf_oserror(
         self, mock_devices_for_vendor, mock_is_vf
     ):
         """Test discovery continues when _is_vf raises OSError."""
-        mock_devices_for_vendor.return_value = self.p.stdout.readlines_A100()
+        mock_devices_for_vendor.return_value = self.p.stdout.readlines_A100()[
+            0
+        ]
         mock_is_vf.side_effect = OSError('device busy')
         self.set_defaults(host='host-192-168-32-195', debug=True)
         self.set_defaults(filter_sriov_vfs=True, group='gpu_devices')

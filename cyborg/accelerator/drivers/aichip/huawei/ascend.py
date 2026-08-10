@@ -10,12 +10,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import re
-
-from oslo_concurrency import processutils
 from oslo_serialization import jsonutils
-
-import cyborg.privsep
 
 from cyborg.accelerator.common import utils
 from cyborg.accelerator.drivers.driver import GenericDriver
@@ -24,22 +19,6 @@ from cyborg.objects.driver_objects import driver_attach_handle
 from cyborg.objects.driver_objects import driver_controlpath_id
 from cyborg.objects.driver_objects import driver_deployable
 from cyborg.objects.driver_objects import driver_device
-
-
-PCI_INFO_PATTERN = re.compile(
-    r"(?P<slot>[0-9a-f]{4}:[0-9a-f]{2}:"
-    r"[0-9a-f]{2}\.[0-9a-f]) "
-    r"(?P<class>.*) [\[].*]: (?P<device>.*) .*"
-    r"[\[](?P<vendor_id>[0-9a-fA-F]"
-    r"{4}):(?P<device_id>[0-9a-fA-F]{4})].*"
-    r"[(rev ](?P<revision>[0-9a-f]{2})"
-)
-
-
-@cyborg.privsep.sys_admin_pctxt.entrypoint
-def lspci_privileged():
-    cmd = ['lspci', '-nnn', '-D']
-    return processutils.execute(*cmd)
 
 
 class AscendDriver(GenericDriver):
@@ -69,22 +48,11 @@ class AscendDriver(GenericDriver):
     def _generate_dep_list(self, pci):
         driver_dep = driver_deployable.DriverDeployable()
         driver_dep.attach_handle_list = [self._generate_attach_handle(pci)]
-        pci_addr_name = pci["slot"].replace(":", "_").replace(".", "_")
-        driver_dep.name = pci.get('device', '') + '_' + pci_addr_name
+        pci_addr_name = pci["address"].replace(":", "_").replace(".", "_")
+        driver_dep.name = pci.get('device_name', '') + '_' + pci_addr_name
         driver_dep.num_accelerators = 1
         driver_dep.driver_name = self.VENDOR
         return [driver_dep]
-
-    # TODO(yikun): can be extracted into PCIDeviceDriver
-    def _get_pci_lines(self, keywords=()):
-        pci_lines = []
-        if keywords:
-            lspci_out = lspci_privileged()[0].split('\n')
-            for i in range(len(lspci_out)):
-                # filter out pci devices info that contains all keywords
-                if all([k in (lspci_out[i]) for k in keywords]):
-                    pci_lines.append(lspci_out[i])
-        return pci_lines
 
     def discover(self):
         """The PCI line would be matched as:
@@ -92,35 +60,36 @@ class AscendDriver(GenericDriver):
         0000:0c:00.0 Processing acc [1200]: Device [19e5:d100] (rev 20)
 
         {
-          'slot': '0000:0c:00.0',              # domain:bus:device.function
-          'device': 'Device',                  # Name of the device
+          'address': '0000:0c:00.0',           # domain:bus:device.function
+          'device_name': 'Device',             # Name of the device
           'vendor_id': '19e5',                 # ID of the vendor
-          'class': 'Processing accelerators',  # Name of the class
+          'class_name': 'Processing accelerators',  # Name of the class
           'device_id': 'd100',                 # ID of the device
           'revision': '20'                     # Revision number
         }
         """
-        ascends = self._get_pci_lines(('d100',))
+        ascends = (
+            dev
+            for dev in utils.get_pci_devices()
+            if dev["device_id"] == "d100"
+        )
         npu_list = []
         for ascend in ascends:
-            m = PCI_INFO_PATTERN.match(ascend)
-            if m:
-                pci_dict = m.groupdict()
-                pci_dict["slot_json"] = utils.pci_str_to_json(pci_dict["slot"])
-                device = driver_device.DriverDevice()
-                device.stub = False
-                device.vendor = pci_dict["vendor_id"]
-                device.model = pci_dict.get('model', '')
-                std_board_info = {
-                    'device_id': pci_dict.get('device_id', None),
-                    'class': pci_dict.get('class', None),
-                }
-                device.std_board_info = jsonutils.dumps(std_board_info)
-                device.vendor_board_info = ''
-                device.type = constants.DEVICE_AICHIP
-                device.controlpath_id = self._generate_controlpath_id(pci_dict)
-                device.deployable_list = self._generate_dep_list(pci_dict)
-                npu_list.append(device)
+            ascend["slot_json"] = utils.pci_str_to_json(ascend["address"])
+            device = driver_device.DriverDevice()
+            device.stub = False
+            device.vendor = ascend["vendor_id"]
+            device.model = ascend.get('device_name', '')
+            std_board_info = {
+                'device_id': ascend.get('device_id', None),
+                'class': ascend.get('class_name', None),
+            }
+            device.std_board_info = jsonutils.dumps(std_board_info)
+            device.vendor_board_info = ''
+            device.type = constants.DEVICE_AICHIP
+            device.controlpath_id = self._generate_controlpath_id(ascend)
+            device.deployable_list = self._generate_dep_list(ascend)
+            npu_list.append(device)
         return npu_list
 
     def update(self, control_path, image_path):
