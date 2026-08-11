@@ -6,8 +6,7 @@ Configuration Guide
    :maxdepth: 2
 
    config-options
+   policy
    drivers
-   sample-config
-   sample-policy
    policy-guide
    policy-concepts
