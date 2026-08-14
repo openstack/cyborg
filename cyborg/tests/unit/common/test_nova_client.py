@@ -60,8 +60,9 @@ class NovaAPITest(base.TestCase):
         )
 
     def test_send_events_422(self):
-        # If Nova returns HTTP 207 with event code 422 for all events,
-        # ignore it.
+        # Nova returns HTTP 207 with event code 422 for all events when
+        # instance.host is not yet set. This is expected for instant ARQ
+        # binds and should be logged at DEBUG, not raise.
         resp_events = copy.deepcopy(self.events)
         for ev in resp_events:
             ev.update({'status': 'failed', 'code': 422})
@@ -70,14 +71,20 @@ class NovaAPITest(base.TestCase):
         mock_ret.json.return_value = nova_resp
         self.mock_sdk.post.return_value = mock_ret
 
+        mock_log_debug = self.useFixture(
+            fixtures.MockPatch('cyborg.common.nova_client.LOG.debug')
+        ).mock
+
         nova = nova_client.NovaAPI()
         nova._send_events(self.events)
 
-        msg = (
-            'Ignoring Nova notification error that the instance %s is not '
-            'yet associated with a host.'
+        mock_log_debug.assert_called_once_with(
+            'Nova returned 422 for instance %s (host not yet '
+            'assigned). Expected for instant ARQ binds; Nova '
+            'compute will detect the bound state via polling.',
+            self.instance_uuid,
         )
-        self.mock_log_info.assert_called_once_with(msg, self.instance_uuid)
+        self.mock_log_info.assert_not_called()
 
     def test_send_events_with_event_code_422_exception(self):
         # If Nova returns HTTP 207 with event code 422 for some events,
