@@ -64,8 +64,16 @@ class WalkVersionsMixin:
                 )
 
     def _skippable_migrations(self):
-        # Some db scripts are not necessary to check
-        special = []
+        # Placeholder migrations with empty upgrade() (pass).
+        # They exist only to maintain the Alembic revision chain
+        # after older migrations were squashed/removed.
+        special = {
+            "57539722e5cf",
+            "22fb1af2d51e",
+            "7b696fd94949",
+            "62bcf2610c5d",
+            "7a4fd0fc3f8c",
+        }
         return special
 
     def _migrate_up(self, engine, config, version, with_data=False):
@@ -85,6 +93,7 @@ class WalkVersionsMixin:
                     f'DB Migration {version} does not have '
                     'a test. Please add one!',
                 )
+                check(engine, None)
 
 
 class TestWalkVersions(base.TestCase, WalkVersionsMixin):
@@ -115,11 +124,184 @@ class CyborgMigrationsCheckers:
     def test_walk_versions(self):
         self._walk_versions(self.engine, self.config)
 
+    def _check_f50980397351(self, engine, data):
+        accelerators = db_utils.get_table(engine, 'accelerators')
+        acc_col_names = [c.name for c in accelerators.c]
+        for col in (
+            'id',
+            'uuid',
+            'name',
+            'description',
+            'project_id',
+            'user_id',
+            'device_type',
+            'acc_type',
+            'acc_capability',
+            'vendor_id',
+            'product_id',
+            'remotable',
+        ):
+            self.assertIn(col, acc_col_names)
+
+        deployables = db_utils.get_table(engine, 'deployables')
+        dep_col_names = [c.name for c in deployables.c]
+        for col in (
+            'id',
+            'uuid',
+            'name',
+            'parent_uuid',
+            'root_uuid',
+            'address',
+            'host',
+            'board',
+            'vendor',
+            'version',
+            'type',
+            'interface_type',
+            'assignable',
+            'instance_uuid',
+            'availability',
+            'accelerator_id',
+        ):
+            self.assertIn(col, dep_col_names)
+
+        attributes = db_utils.get_table(engine, 'attributes')
+        attr_col_names = [c.name for c in attributes.c]
+        for col in (
+            'id',
+            'uuid',
+            'deployable_id',
+            'key',
+            'value',
+        ):
+            self.assertIn(col, attr_col_names)
+
+    def _check_d6f033d8fa5b(self, engine, data):
+        quota_usages = db_utils.get_table(engine, 'quota_usages')
+        qu_col_names = [c.name for c in quota_usages.c]
+        for col in (
+            'id',
+            'project_id',
+            'user_id',
+            'resource',
+            'in_use',
+            'reserved',
+            'until_refresh',
+        ):
+            self.assertIn(col, qu_col_names)
+
+        reservations = db_utils.get_table(engine, 'reservations')
+        res_col_names = [c.name for c in reservations.c]
+        for col in (
+            'id',
+            'uuid',
+            'usage_id',
+            'project_id',
+            'user_id',
+            'resource',
+            'delta',
+            'expire',
+        ):
+            self.assertIn(col, res_col_names)
+
+        res_idx_names = [idx.name for idx in reservations.indexes]
+        self.assertIn('reservations_uuid_idx', res_idx_names)
+
+    def _check_ede4e3f1a232(self, engine, data):
+        expected_tables = [
+            'devices',
+            'deployables',
+            'attributes',
+            'controlpath_ids',
+            'attach_handles',
+            'device_profiles',
+            'extended_accelerator_requests',
+        ]
+        for table_name in expected_tables:
+            table = db_utils.get_table(engine, table_name)
+            self.assertIsNotNone(table)
+
+        devices = db_utils.get_table(engine, 'devices')
+        dev_col_names = [c.name for c in devices.c]
+        for col in ('id', 'uuid', 'type', 'vendor', 'model', 'hostname'):
+            self.assertIn(col, dev_col_names)
+        self.assertIsInstance(devices.c.type.type, sqlalchemy.types.Enum)
+
+        deployables = db_utils.get_table(engine, 'deployables')
+        dep_col_names = [c.name for c in deployables.c]
+        for col in (
+            'id',
+            'uuid',
+            'parent_id',
+            'root_id',
+            'name',
+            'num_accelerators',
+            'device_id',
+        ):
+            self.assertIn(col, dep_col_names)
+
+        dp = db_utils.get_table(engine, 'device_profiles')
+        dp_col_names = [c.name for c in dp.c]
+        for col in ('id', 'uuid', 'name', 'profile_json'):
+            self.assertIn(col, dp_col_names)
+
+        extarqs = db_utils.get_table(engine, 'extended_accelerator_requests')
+        ea_col_names = [c.name for c in extarqs.c]
+        for col in (
+            'id',
+            'uuid',
+            'state',
+            'substate',
+            'device_profile_id',
+            'attach_handle_id',
+            'deployable_id',
+        ):
+            self.assertIn(col, ea_col_names)
+
     def _check_589ff20545b7(self, engine, data):
         devices = db_utils.get_table(engine, 'devices')
         col_names = [column.name for column in devices.c]
         self.assertIn('type', col_names)
         self.assertIsInstance(devices.c.type.type, sqlalchemy.types.Enum)
+
+    def _check_c1b5abada09c(self, engine, data):
+        deployables = db_utils.get_table(engine, 'deployables')
+        dep_col_names = [c.name for c in deployables.c]
+        for col in ('rp_uuid', 'driver_name', 'bitstream_id'):
+            self.assertIn(col, dep_col_names)
+
+        extarqs = db_utils.get_table(engine, 'extended_accelerator_requests')
+        ea_col_names = [c.name for c in extarqs.c]
+        self.assertIn('device_profile_group_id', ea_col_names)
+        self.assertIn('instance_uuid', ea_col_names)
+        self.assertNotIn('device_instance_uuid', ea_col_names)
+
+        ea_idx_names = [idx.name for idx in extarqs.indexes]
+        self.assertIn('extArqs_instance_uuid_idx', ea_idx_names)
+        self.assertNotIn('extArqs_device_instance_uuid_idx', ea_idx_names)
+
+    def _check_60d8ac91fd20(self, engine, data):
+        dp = db_utils.get_table(engine, 'device_profiles')
+        col_names = [c.name for c in dp.c]
+        self.assertIn('description', col_names)
+
+    def _check_7e6f1f107f2b(self, engine, data):
+        devices = db_utils.get_table(engine, 'devices')
+        self.assertIn('QAT', devices.c.type.type.enums)
+
+    def _check_899cead40bc9(self, engine, data):
+        devices = db_utils.get_table(engine, 'devices')
+        self.assertIn('NIC', devices.c.type.type.enums)
+
+    def _check_4cc1d79978fc(self, engine, data):
+        devices = db_utils.get_table(engine, 'devices')
+        self.assertIn('SSD', devices.c.type.type.enums)
+
+    def _check_6c77bd6afea5(self, engine, data):
+        devices = db_utils.get_table(engine, 'devices')
+        col_names = [c.name for c in devices.c]
+        self.assertIn('status', col_names)
+        self.assertIsInstance(devices.c.status.type, sqlalchemy.types.Enum)
 
     def test_upgrade_and_version(self):
         with patch_with_engine(self.engine):
