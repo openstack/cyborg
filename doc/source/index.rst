@@ -1,19 +1,37 @@
 OpenStack Accelerator (Cyborg)
 ==============================
 
-Cyborg is a general management framework for accelerators
+What is Cyborg?
+---------------
 
+Cyborg is a general management framework for accelerators.
 
-Overview
---------
+Cyborg architecture
+~~~~~~~~~~~~~~~~~~~
 
-.. toctree::
-    :maxdepth: 1
+Cyborg design can be described by following diagram:
 
-    user/introduction
-    user/architecture
-    user/using-cyborg
-    user/usage
+.. image:: figures/cyborg-architecture.png
+    :width: 700 px
+    :scale: 99 %
+    :align: center
+
+**cyborg-api** - cyborg-api is a cyborg service that provides **REST API**
+interface for the Cyborg project. It supports POST/PUT/DELETE/GET operations
+and interacts with cyborg-agent and cyborg-db via cyborg-conductor.
+
+**cyborg-conductor** - cyborg-conductor is a cyborg service that coordinates
+interaction, DB access between cyborg-api and cyborg-agent.
+
+**cyborg-agent** - cyborg-agent is a cyborg service that is responsible for
+interaction with accelerator backends via Cyborg drivers. Multiple drivers
+are supported and actively developed; see :doc:`reference/support-matrix` for
+details. It will also handle the communication with the Nova placement service.
+Cyborg-Agent will also write to a local cache for local accelerator events.
+
+**Vendor drivers** - Cyborg can be integrated with drivers for various
+accelerator device types, such as FPGA, GPU, NIC, and so forth. You are
+welcome to extend your own driver for a new type of accelerator device.
 
 Documentation for Operators
 ---------------------------
@@ -61,6 +79,14 @@ For End Users
 
 As an end user of Cyborg, you'll use Cyborg to create and
 manage accelerators with either tools or the API directly.
+
+For a step-by-step guide on creating instances with accelerators, see
+:doc:`user/using-cyborg`.
+
+.. toctree::
+   :hidden:
+
+   user/using-cyborg
 
 Tools for using Cyborg
 ~~~~~~~~~~~~~~~~~~~~~~

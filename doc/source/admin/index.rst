@@ -53,54 +53,9 @@ virt drivers.
 User Requests
 -------------
 
-The user request for accelerators is encapsulated in a device profile,
-which is created and managed by the admin via the Cyborg API.
-
-The structure overview of a ``device_profile`` is like this:
-
-.. code:: json
-
-  {
-      "device_profiles":[
-        {
-            "name":"fpga-dp1",
-            "uuid":"5518a925-1c2c-49a2-a8bf-0927d9456f3e",
-            "description": "",
-            "groups":[
-              {
-                "trait:CUSTOM_FPGA_TRAITS":"required",
-                "resources:FPGA":"1",
-                "accel:bitstream_id":"d5ca2f11-3108-4426-a11c-a959987565df"
-              }
-            ],
-            "created_at": "2020-03-10 03:52:15+00:00",
-            "updated_at": null,
-            "links":[
-              {
-                "href":"http://192.168.32.217/accelerator/v2/device_profiles/5518a925-1c2c-49a2-a8bf-0927d9456f3e",
-                "rel":"self"
-              }
-            ]
-        }
-      ]
-  }
-
-The device profile is folded into the flavor as an extra spec by the operator,
-as below:
-
-.. code:: bash
-
-    openstack flavor set --property 'accel:device_profile=<profile_name>' flavor
-
-Thus the standard Nova API can be used to create an instance with only the
-flavor (without device profiles), like this:
-
-.. code:: bash
-
-    openstack server create --flavor f ....  # instance creation
-
-In the future, device profile may be used by itself to specify accelerator
-resources for the instance creation API.
+For information on how user requests for accelerators work with device
+profiles, see the :ref:`User Requests <user-requests>` section in the
+:doc:`/user/using-cyborg` guide.
 
 Updating the Request Spec
 -------------------------

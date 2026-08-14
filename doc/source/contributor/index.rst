@@ -32,8 +32,6 @@ Contributing
 
 * :doc:`/contributor/grenade-upgrade`: Upgrade testing using grenade
 
-* :doc:`/user/using-cyborg`: Using Cyborg with instances
-
 Reviewing
 =========
 
