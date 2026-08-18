@@ -1,0 +1,60 @@
+# Sample local.conf for Cyborg Intel NIC driver with SR-IOV.
+#
+# This configures devstack with the Cyborg Intel NIC driver and the
+# Neutron SR-IOV agent for smartNIC SR-IOV VF passthrough to guests.
+#
+# Prerequisites:
+#   - Intel NIC with SR-IOV support (e.g., X710, XXV710)
+#   - IOMMU enabled: intel_iommu=on iommu=pt in kernel command line
+#   - VFs created: echo N > /sys/class/net/<iface>/device/sriov_numvfs
+#
+# Copy this file to the root of your devstack checkout as local.conf
+# and adjust HOST_IP, interface names, and passwords for your
+# environment.
+
+[[local|localrc]]
+
+ADMIN_PASSWORD=password
+DATABASE_PASSWORD=$ADMIN_PASSWORD
+RABBIT_PASSWORD=$ADMIN_PASSWORD
+SERVICE_PASSWORD=$ADMIN_PASSWORD
+
+# Set this to the host's management IP address.
+# HOST_IP=192.0.2.10
+
+LOGFILE=$DEST/logs/stack.sh.log
+LOGDAYS=2
+
+# Disable services not needed for NIC testing.
+disable_service swift etcd cinder horizon
+
+# Enable Cyborg with Intel NIC driver.
+enable_plugin cyborg https://opendev.org/openstack/cyborg
+CYBORG_ENABLED_DRIVERS=intel_nic_driver
+
+# Enable Neutron SR-IOV agent.
+# Neutron must be enabled as a devstack plugin for the SR-IOV agent
+# to get configured and started.
+enable_plugin neutron https://opendev.org/openstack/neutron
+enable_service q-sriov-agt
+
+# SR-IOV physical device mapping: <physnet>:<interface>.
+# Change ens1f1np1 to the interface that has VFs created.
+PHYSICAL_DEVICE_MAPPINGS=public:ens1f1np1
+
+# ML2 mechanism drivers — need both OVS (for overlay) and
+# sriovnicswitch (for SR-IOV ports).
+Q_ML2_PLUGIN_MECHANISM_DRIVERS=openvswitch,sriovnicswitch
+Q_AGENT=openvswitch
+Q_ML2_TENANT_NETWORK_TYPE=vxlan
+
+# Tuning (recommended for baremetal deployments).
+ENABLE_SYSCTL_MEM_TUNING="True"
+ENABLE_SYSCTL_NET_TUNING="True"
+
+[[post-config|$CYBORG_CONF]]
+[nic_devices]
+enabled_nic_types = x710_static
+
+[x710_static]
+physical_device_mappings = public:ens1f1np1

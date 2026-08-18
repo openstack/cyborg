@@ -18,6 +18,12 @@ case "$1" in
                 echo_summary "Installing Cyborg"
                 install_cyborg
                 install_cyborg_client
+                # Enable the port_device_profile ML2 extension driver so
+                # that the device_profile field on Neutron ports is
+                # processed during creation (required for smartNIC SR-IOV).
+                if [[ "$CYBORG_ENABLED_DRIVERS" =~ nic_driver ]]; then
+                    neutron_ml2_extension_driver_add port_device_profile
+                fi
                 if [[ "$ENABLE_PCI_SIM" == True ]]; then
                     install_package pciutils
                     if [[ "$PCI_SIM_BUILD" == True ]]; then
