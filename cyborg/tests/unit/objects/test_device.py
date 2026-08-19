@@ -15,6 +15,7 @@
 from unittest import mock
 
 from cyborg import objects
+from cyborg.common import constants
 from cyborg.common import exception
 from cyborg.tests.unit import fake_device
 from cyborg.tests.unit.db import base
@@ -165,4 +166,45 @@ class TestDeviceObject(base.DbTestCase):
         # Invalid type will raise ValueError
         self.assertRaises(
             ValueError, objects.Device, self.context, type='OTHER_TYPE'
+        )
+
+    def test_obj_make_compatible_raises_for_mdev_pci(self):
+        for type_val in (constants.DEVICE_MDEV, constants.DEVICE_PCI):
+            device = objects.Device(self.context, type=type_val)
+            self.assertRaises(
+                exception.ObjectActionError,
+                device.obj_to_primitive,
+                target_version='1.2',
+            )
+
+    def test_obj_make_compatible_raises_for_aichip_on_v1_0(self):
+        device = objects.Device(self.context, type=constants.DEVICE_AICHIP)
+        self.assertRaises(
+            exception.ObjectActionError,
+            device.obj_to_primitive,
+            target_version='1.0',
+        )
+
+    def test_obj_make_compatible_removes_status_below_v1_2(self):
+        device = objects.Device(
+            self.context,
+            type=constants.DEVICE_GPU,
+            status='maintaining',
+        )
+        primitive = device.obj_to_primitive()
+        device.obj_make_compatible(primitive['cyborg_object.data'], '1.1')
+        self.assertNotIn('status', primitive['cyborg_object.data'])
+
+    def test_obj_make_compatible_allows_gpu_on_v1_0(self):
+        device = objects.Device(self.context, type=constants.DEVICE_GPU)
+        primitive = device.obj_to_primitive(target_version='1.0')
+        self.assertEqual(
+            constants.DEVICE_GPU, primitive['cyborg_object.data']['type']
+        )
+
+    def test_obj_make_compatible_allows_gpu_on_v1_2(self):
+        device = objects.Device(self.context, type=constants.DEVICE_GPU)
+        primitive = device.obj_to_primitive(target_version='1.2')
+        self.assertEqual(
+            constants.DEVICE_GPU, primitive['cyborg_object.data']['type']
         )

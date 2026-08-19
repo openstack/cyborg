@@ -13,6 +13,7 @@
 #    under the License.
 
 from oslo_log import log as logging
+from oslo_utils import versionutils
 from oslo_versionedobjects import base as object_base
 
 from cyborg.common import constants
@@ -27,9 +28,10 @@ LOG = logging.getLogger(__name__)
 @base.CyborgObjectRegistry.register
 class Device(base.CyborgObject, object_base.VersionedObjectDictCompat):
     # Version 1.0: Initial version
-    # Version 1.1: Add AICHIP, GENERIC type
+    # Version 1.1: Add AICHIP type
     # Version 1.2: Add status field
-    VERSION = '1.2'
+    # Version 1.3: Add MDEV, PCI type
+    VERSION = '1.3'
 
     dbapi = dbapi.get_instance()
 
@@ -50,6 +52,26 @@ class Device(base.CyborgObject, object_base.VersionedObjectDictCompat):
             default="enabled",
         ),
     }
+
+    def obj_make_compatible(self, primitive, target_version):
+        super().obj_make_compatible(primitive, target_version)
+        target_version = versionutils.convert_version_to_tuple(target_version)
+        if target_version < (1, 3):
+            base.raise_on_too_new_values(
+                target_version,
+                primitive,
+                'type',
+                (constants.DEVICE_MDEV, constants.DEVICE_PCI),
+            )
+        if target_version < (1, 2):
+            primitive.pop('status', None)
+        if target_version < (1, 1):
+            base.raise_on_too_new_values(
+                target_version,
+                primitive,
+                'type',
+                (constants.DEVICE_AICHIP,),
+            )
 
     def create(self, context):
         """Create a device record in the DB."""

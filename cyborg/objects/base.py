@@ -22,6 +22,7 @@ from oslo_utils import versionutils
 from oslo_versionedobjects import base as object_base
 
 from cyborg import objects
+from cyborg.common import exception
 from cyborg.objects import fields as object_fields
 
 
@@ -222,6 +223,17 @@ class DriverObjectBase(CyborgObject):
 
         obj.obj_reset_changes()
         return obj
+
+
+def raise_on_too_new_values(version, primitive, field, new_values):
+    # Raise if primitive[field] holds a value that target_version does not know about.
+    value = primitive.get(field, None)
+    if value in new_values:
+        raise exception.ObjectActionError(
+            action='obj_make_compatible',
+            reason='%s=%s not supported in version %s'
+            % (field, value, version),
+        )
 
 
 def _log_backport(ovo, target_version):

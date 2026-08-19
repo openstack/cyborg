@@ -29,8 +29,13 @@ from cyborg.objects.driver_objects.driver_deployable import DriverDeployable
 class DriverDevice(
     base.DriverObjectBase, object_base.VersionedObjectDictCompat
 ):
+    # NOTE: When adding a new Device type, bump VERSION. Fields absent here
+    # are DB-only (id, uuid, hostname, status) and not reported by drivers.
+
     # Version 1.0: Initial version
-    VERSION = '1.0'
+    # Version 1.1: Add AICHIP type
+    # Version 1.2: Add MDEV, PCI type
+    VERSION = '1.2'
 
     fields = {
         'vendor': object_fields.StringField(nullable=False),
