@@ -50,3 +50,13 @@ cover
 AUTHORS
 Authors
 ChangeLog
+
+# agentic tools and files
+.tmp/
+.pi/
+.cursor/
+.cursorrules
+.claude/
+.vscode/
+.codex/
+CLAUDE.md

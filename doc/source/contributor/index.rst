@@ -18,6 +18,14 @@ Basic Information
 Contributing
 ============
 
+* :doc:`/contributor/repo-overview`: Repository structure and orientation guide
+
+* :doc:`/contributor/commit-messages`: Commit message conventions, DCO
+  sign-off, and AI attribution
+
+* :doc:`/contributor/agentic-coding`: AI-assisted development guidance and
+  conventions
+
 * :doc:`/contributor/devstack_setup`: DevStack setup guide for Cyborg
   development
 
@@ -57,6 +65,9 @@ Reviewing
 .. toctree::
    :hidden:
 
+   repo-overview
+   commit-messages
+   agentic-coding
    microversions
    releasenotes
    devstack_setup

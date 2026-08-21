@@ -27,8 +27,8 @@ OpenStack clouds. A typical deployment includes:
     Runs on compute nodes. Discovers local accelerators via drivers, reports
     inventory to the conductor, and manages device programming and attachment.
 
-Cyborg integrates with **Nova** (instance lifecycle), **Placement** (resource
-inventory and scheduling), **Neutron** (for SmartNIC flows), and **Glance**
+Cyborg integrates with ``Nova`` (instance lifecycle), ``Placement`` (resource
+inventory and scheduling), ``Neutron`` (for SmartNIC flows), and ``Glance``
 (for FPGA bitstream metadata).
 
 Prerequisites
