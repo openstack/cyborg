@@ -1,138 +1,120 @@
+==============================
 OpenStack Accelerator (Cyborg)
 ==============================
 
-What is Cyborg?
----------------
+Cyborg is a general management framework for accelerators such as FPGAs, GPUs,
+NICs, SSDs, and AI chips in OpenStack clouds.
 
-Cyborg is a general management framework for accelerators.
+Architecture Overview
+=====================
 
-Cyborg architecture
-~~~~~~~~~~~~~~~~~~~
-
-Cyborg design can be described by following diagram:
+Cyborg design can be described by the following diagram:
 
 .. image:: figures/cyborg-architecture.png
     :width: 700 px
     :scale: 99 %
     :align: center
 
-**cyborg-api** - cyborg-api is a cyborg service that provides **REST API**
-interface for the Cyborg project. It supports POST/PUT/DELETE/GET operations
-and interacts with cyborg-agent and cyborg-db via cyborg-conductor.
+``cyborg-api``
+    REST API service that handles device profile queries, ARQ creation, and
+    accelerator discovery. Supports POST/PUT/DELETE/GET operations and
+    interacts with cyborg-agent and the database via cyborg-conductor.
 
-**cyborg-conductor** - cyborg-conductor is a cyborg service that coordinates
-interaction, DB access between cyborg-api and cyborg-agent.
+``cyborg-conductor``
+    Central orchestration service that coordinates placement updates, device
+    bindings, and database access between cyborg-api and cyborg-agent.
 
-**cyborg-agent** - cyborg-agent is a cyborg service that is responsible for
-interaction with accelerator backends via Cyborg drivers. Multiple drivers
-are supported and actively developed; see :doc:`admin/support-matrix` for
-details. It will also handle the communication with the Nova placement service.
-Cyborg-Agent will also write to a local cache for local accelerator events.
+``cyborg-agent``
+    Runs on compute nodes and discovers local accelerators via drivers,
+    reports inventory to the conductor, and manages device programming and
+    attachment. See :doc:`admin/support-matrix` for supported drivers.
 
-**Vendor drivers** - Cyborg can be integrated with drivers for various
-accelerator device types, such as FPGA, GPU, NIC, and so forth. You are
-welcome to extend your own driver for a new type of accelerator device.
+``Accelerator Drivers``
+    Cyborg supports drivers for various accelerator types (FPGA, GPU, NIC,
+    SSD, AI chips). See :doc:`contributor/driver-development-guide` for
+    extending Cyborg with new device types.
 
-Documentation for Operators
----------------------------
-
-The documentation in this section is aimed at Cloud
-Operators needing to install or configure Cyborg.
-
-Installation
-~~~~~~~~~~~~
-
-The detailed install guide for Cyborg.
+Installation Guide
+==================
 
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 2
 
    install/index
-   admin/config-wsgi
+
+Installation instructions for operators deploying Cyborg from source or
+packages, including prerequisites, configuration, and post-installation steps.
+
+User Guide
+==========
+
+.. toctree::
+   :maxdepth: 2
+
+   user/using-cyborg
+
+End-user documentation for creating device profiles and requesting
+accelerators in instances.
+
+Administration
+==============
+
+Administrator Guide
+-------------------
+
+Operational guides for managing Cyborg deployments, including placement
+integration, ARQ lifecycle, upgrades, and security.
+
+.. toctree::
+   :maxdepth: 2
+
+   admin/index
 
 Configuration Reference
-~~~~~~~~~~~~~~~~~~~~~~~
+-----------------------
+
+Configuration options for Cyborg services and per-driver setup.
 
 .. toctree::
    :maxdepth: 2
 
    configuration/index
 
-Admin Documentation
-~~~~~~~~~~~~~~~~~~~
+API Documentation
+=================
 
-Once you are running cyborg, the following information is extremely useful.
-
-* :doc:`Admin Guide </admin/index>`: A collection of guides for administrating
-  cyborg.
-
-.. # NOTE(amotoki): toctree needs to be placed at the end of the section to
-   # keep the document structure in the PDF doc.
-.. toctree::
-   :hidden:
-
-   admin/index
-   admin/support-matrix
-
-User Documentation
+REST API Reference
 ------------------
 
-As an end user of Cyborg, you'll use Cyborg to create and
-manage accelerators with either tools or the API directly.
+* `Cyborg API Reference <https://docs.openstack.org/api-ref/accelerator/>`_:
+  Complete reference for the accelerator API, including all methods and
+  request/response parameters.
 
-For a step-by-step guide on creating instances with accelerators, see
-:doc:`user/using-cyborg`.
+* :doc:`contributor/rest_api_version_history`: History of API microversion
+  changes.
 
-.. toctree::
-   :hidden:
-
-   user/using-cyborg
-
-Tools for using Cyborg
-~~~~~~~~~~~~~~~~~~~~~~
-
-Information on the commands available through Cyborg's Command Line
-Interface (CLI) can be found in this section of documentation.
+Command Line Tools
+==================
 
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 2
 
    cli/index
 
-Using the API
-~~~~~~~~~~~~~
+CLI reference for cyborg-status and other command-line utilities.
 
-Following the Ussuri release, every Cyborg deployment should have the
-following endpoints:
-
-/ - list of available versions
-
-/v2 - the version 2 of the Acceleration API, it uses microversions
-
-/v2.0 - same API as v2, except uses microversions
-
-The following guide concentrates on documenting the v2 API, please note that
-the v2.0 is the first microversion of the v2 API and are also covered by this
-guide.
-
-* `Cyborg API Reference <https://docs.openstack.org/api-ref/accelerator/>`_:
-  The complete reference for the accelerator API, including all methods and
-  request / response parameters and their meaning.
-
-* :doc:`/contributor/rest_api_version_history`: The Cyborg API evolves over
-  time through Microversions. This provides the history of all those changes.
-  Consider it a "what's new" in the Cyborg API.
-
-Documentation for Developers
-----------------------------
+Developer Documentation
+=======================
 
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 2
 
    contributor/index
-   contributor/rest_api_version_history
 
-Indices and tables
+Contributor guides covering repository structure, driver development,
+testing, release notes, and agentic coding conventions.
+
+Search and Indices
 ==================
 
 * :ref:`search`
