@@ -25,7 +25,7 @@ interaction, DB access between cyborg-api and cyborg-agent.
 
 **cyborg-agent** - cyborg-agent is a cyborg service that is responsible for
 interaction with accelerator backends via Cyborg drivers. Multiple drivers
-are supported and actively developed; see :doc:`reference/support-matrix` for
+are supported and actively developed; see :doc:`admin/support-matrix` for
 details. It will also handle the communication with the Nova placement service.
 Cyborg-Agent will also write to a local cache for local accelerator events.
 
@@ -57,10 +57,9 @@ Configuration Reference
    :maxdepth: 2
 
    configuration/index
-   reference/support-matrix
 
-Maintenance
-~~~~~~~~~~~
+Admin Documentation
+~~~~~~~~~~~~~~~~~~~
 
 Once you are running cyborg, the following information is extremely useful.
 
@@ -73,9 +72,10 @@ Once you are running cyborg, the following information is extremely useful.
    :hidden:
 
    admin/index
+   admin/support-matrix
 
-For End Users
--------------
+User Documentation
+------------------
 
 As an end user of Cyborg, you'll use Cyborg to create and
 manage accelerators with either tools or the API directly.

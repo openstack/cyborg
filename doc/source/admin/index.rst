@@ -12,6 +12,9 @@ Overview
 A good understand on how Cyborg interacts with Nova and Placement help
 operators manage the acceleration service more effectively.
 
+For information about supported VM operations and driver support status,
+see the :doc:`support-matrix`.
+
 .. image:: ../figures/cyborg-nova-interaction.png
     :width: 700 px
     :scale: 99 %
@@ -197,6 +200,7 @@ calls are routed through that.
 .. toctree::
    :maxdepth: 1
 
+   support-matrix
    config-wsgi
    security
    upgrade
