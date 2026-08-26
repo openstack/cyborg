@@ -1,0 +1,14 @@
+---
+features:
+  - |
+    The Intel NIC driver now honors a ``device_addresses`` configuration
+    option under each enabled NIC type section (for example
+    ``[x710_static]``). It restricts which devices the driver discovers and
+    reports to Cyborg. Both Physical Function (PF) and Virtual Function (VF)
+    PCI addresses are accepted: listing a PF address exposes all of its VFs
+    (or the PF itself when it has no VFs), while listing a VF address exposes
+    only that VF (its PF is still used as the control path). This lets
+    operators partition SR-IOV NICs, delegating only selected VFs to Cyborg.
+    A malformed PCI address is rejected at startup. When the option is empty
+    (the default), the driver discovers every matching NIC, so existing
+    deployments are unaffected.

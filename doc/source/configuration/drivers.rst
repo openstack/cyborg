@@ -189,6 +189,10 @@ interfaces and mapping network functions to specific interfaces.
     # Format: <function_name>:<interface1>|<interface2>
     function_device_mappings = GTPv1:eth3|eth2
 
+    # Restrict which devices this profile manages, by PCI address.
+    # Accepts PF and/or VF addresses. Omit to manage all matching NICs.
+    device_addresses = 0000:05:00.0,0000:06:01.0
+
 **Configuration Options**
 
 ``physical_device_mappings``
@@ -198,6 +202,15 @@ interfaces and mapping network functions to specific interfaces.
 ``function_device_mappings``
     Maps network function names to NIC interface names for specialized
     network processing functions.
+
+``device_addresses``
+    Restricts which devices this profile discovers, by PCI address. Both
+    Physical Function (PF) and Virtual Function (VF) addresses are accepted:
+    listing a PF address exposes all of its VFs (or the PF itself when it has
+    no VFs), while listing a VF address exposes only that VF (its PF is still
+    used as the control path). This lets operators delegate only selected VFs
+    of an SR-IOV NIC to Cyborg. A malformed PCI address is rejected at
+    startup. When omitted, every matching NIC is discovered.
 
 Intel QAT Driver
 ----------------
