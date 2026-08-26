@@ -50,7 +50,7 @@ need to provide a release note :-)
     * For Cyborg api and python-cyborgclient changes, if it adds or changes a
       new command, including adding new options to existing commands
     * a new accelerator driver is provided or an existing driver impacts the
-      :doc:`DriversSupportMatrix </reference/support-matrix>`
+      :doc:`DriversSupportMatrix </admin/support-matrix>`
 
 * ``critical``
     * Bugfixes categorized as Critical in launchpad *impacting users*
