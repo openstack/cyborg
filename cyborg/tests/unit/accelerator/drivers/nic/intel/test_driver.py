@@ -161,6 +161,20 @@ class TestIntelNICDriver(base.TestCase):
             nics[0].as_dict()["controlpath_id"]["cpid_info"],
         )
 
+    def test_parse_config_normalizes_device_addresses(self):
+        # Allow-list entries are lowercased at parse time so that an address
+        # configured with uppercase hex digits still matches a discovered one.
+        self.cfg_fixture.config(
+            enabled_nic_types=["x710_static"], group="nic_devices"
+        )
+        conf_devices.register_dynamic_opts(sysinfo.CONF)
+        self.cfg_fixture.config(
+            device_addresses=["0000:AC:00.0", "0000:f3:00.1"],
+            group="x710_static",
+        )
+        _, _, device_addresses = sysinfo._parse_config()
+        self.assertEqual(["0000:ac:00.0", "0000:f3:00.1"], device_addresses)
+
     @mock.patch("cyborg.accelerator.common.utils.get_ifname_by_pci_address")
     def test_discover_vf_address_filter(self, mock_device_ifname):
         # PF0 (0000:05:00.0) owns a VF (0000:05:01.0). Listing the VF address
