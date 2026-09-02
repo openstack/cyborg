@@ -13,8 +13,10 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from oslo_utils import versionutils
 from oslo_versionedobjects import base as object_base
 
+from cyborg.common import constants
 from cyborg.objects import base
 from cyborg.objects import fields as object_fields
 from cyborg.objects.control_path import ControlpathID
@@ -36,7 +38,8 @@ class DriverDevice(
     # Version 1.1: Add AICHIP type
     # Version 1.2: Add MDEV, PCI type
     # Version 1.3: Add NVMe type
-    VERSION = '1.3'
+    # Version 1.4: Add device_state field
+    VERSION = '1.4'
 
     fields = {
         'vendor': object_fields.StringField(nullable=False),
@@ -56,7 +59,41 @@ class DriverDevice(
             'DriverDeployable', default=[], nullable=False
         ),
         'stub': object_fields.BooleanField(nullable=False, default=False),
+        # device_state tracks the cleaning lifecycle for devices that support
+        # secure cleanup (e.g. NVMe).  Drivers report it; the agent persists
+        # it onto the Device DB object.  Absent on versions < 1.4.
+        'device_state': object_fields.EnumField(
+            valid_values=constants.DEVICE_STATES,
+            nullable=True,
+        ),
     }
+
+    def obj_make_compatible(self, primitive, target_version):
+        super().obj_make_compatible(primitive, target_version)
+        target_version = versionutils.convert_version_to_tuple(target_version)
+        if target_version < (1, 4):
+            primitive.pop('device_state', None)
+        if target_version < (1, 3):
+            base.raise_on_too_new_values(
+                target_version,
+                primitive,
+                'type',
+                (constants.DEVICE_NVME,),
+            )
+        if target_version < (1, 2):
+            base.raise_on_too_new_values(
+                target_version,
+                primitive,
+                'type',
+                (constants.DEVICE_MDEV, constants.DEVICE_PCI),
+            )
+        if target_version < (1, 1):
+            base.raise_on_too_new_values(
+                target_version,
+                primitive,
+                'type',
+                (constants.DEVICE_AICHIP,),
+            )
 
     def create(self, context, host):
         """Create a driver-side Device Object into DB. This object will be
@@ -72,10 +109,12 @@ class DriverDevice(
             model=self.model,
             hostname=host,
         )
-        if hasattr(self, 'std_board_info'):
+        if self.obj_attr_is_set('std_board_info'):
             device_obj.std_board_info = self.std_board_info
-        if hasattr(self, 'vendor_board_info'):
+        if self.obj_attr_is_set('vendor_board_info'):
             device_obj.vendor_board_info = self.vendor_board_info
+        if self.obj_attr_is_set('device_state'):
+            device_obj.device_state = self.device_state
         device_obj.create(context)
 
         # for the controlpath_id, call driver_controlpath_id to create.
@@ -146,6 +185,7 @@ class DriverDevice(
                     vendor_board_info=dev_obj.vendor_board_info,
                     controlpath_id=cpid,
                     deployable_list=DriverDeployable.list(context, dev_obj.id),
+                    device_state=dev_obj.device_state,
                 )
                 driver_dev_obj_list.append(driver_dev_obj)
         return driver_dev_obj_list

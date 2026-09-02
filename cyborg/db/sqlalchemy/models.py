@@ -99,6 +99,13 @@ class Device(Base):
         default='enabled',
         nullable=False,
     )
+    device_state = Column(
+        Enum(
+            *constants.DEVICE_STATES,
+            name='device_state',
+        ),
+        nullable=True,
+    )
 
 
 class Deployable(Base):

@@ -32,7 +32,8 @@ class Device(base.CyborgObject, object_base.VersionedObjectDictCompat):
     # Version 1.2: Add status field
     # Version 1.3: Add MDEV, PCI type
     # Version 1.4: Add NVME type
-    VERSION = '1.4'
+    # Version 1.5: Add device_state field
+    VERSION = '1.5'
 
     dbapi = dbapi.get_instance()
 
@@ -52,11 +53,21 @@ class Device(base.CyborgObject, object_base.VersionedObjectDictCompat):
             nullable=False,
             default="enabled",
         ),
+        'device_state': object_fields.EnumField(
+            valid_values=constants.DEVICE_STATES,
+            nullable=True,
+        ),
     }
+
+    @property
+    def supports_cleaning(self):
+        return self.type == constants.DEVICE_NVME
 
     def obj_make_compatible(self, primitive, target_version):
         super().obj_make_compatible(primitive, target_version)
         target_version = versionutils.convert_version_to_tuple(target_version)
+        if target_version < (1, 5):
+            primitive.pop('device_state', None)
         if target_version < (1, 4):
             base.raise_on_too_new_values(
                 target_version,
