@@ -21,6 +21,9 @@ from cyborg.common import rpc
 
 def parse_args(argv, default_config_files=None):
     rpc.set_defaults(control_exchange='cyborg')
+    cfg.CONF.import_group(
+        'keystone_authtoken', 'keystonemiddleware.auth_token'
+    )
     cfg.CONF.set_default(
         'service_token_roles_required', True, group='keystone_authtoken'
     )

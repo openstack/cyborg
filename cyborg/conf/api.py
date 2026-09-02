@@ -19,42 +19,11 @@ from cyborg.common.i18n import _
 
 
 opts = [
-    cfg.HostAddressOpt(
-        'host_ip',
-        default='127.0.0.1',
-        help=_('The IP address on which cyborg-api listens.'),
-    ),
-    cfg.PortOpt(
-        'port',
-        default=6666,
-        help=_('The TCP port on which cyborg-api listens.'),
-    ),
-    cfg.IntOpt(
-        'api_workers',
-        help=_(
-            'Number of workers for OpenStack Cyborg API service. '
-            'The default is equal to the number of CPUs available '
-            'if that can be determined, else a default worker '
-            'count of 1 is returned.'
-        ),
-    ),
-    cfg.BoolOpt(
-        'enable_ssl_api',
-        default=False,
-        help=_(
-            "Enable the integrated stand-alone API to service "
-            "requests via HTTPS instead of HTTP. If there is a "
-            "front-end service performing HTTPS offloading from "
-            "the service, this option should be False; note, you "
-            "will want to change public API endpoint to represent "
-            "SSL termination URL with 'public_endpoint' option."
-        ),
-    ),
     cfg.StrOpt(
         'public_endpoint',
         help=_(
             "Public URL to use when building the links to the API "
-            "resources (for example, \"https://cyborg.rocks:6666\")."
+            "resources (for example, \"https://cyborg.rocks/accelerator\")."
             " If None the links will be built using the request's "
             "host URL. If the API is operating behind a proxy, you "
             "will want to change this to represent the proxy's URL. "

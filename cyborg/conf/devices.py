@@ -152,4 +152,8 @@ discovered. A malformed PCI address is rejected at startup.
 
 
 def list_opts():
-    return {nic_group: nic_opts, gpu_group: vgpu_opts}
+    return {
+        nic_group: nic_opts,
+        gpu_group: vgpu_opts,
+        pci_group: pci_opts,
+    }

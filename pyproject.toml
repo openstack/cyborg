@@ -34,7 +34,6 @@ dynamic = ["version", "dependencies"]
 "Source Code" = "https://opendev.org/openstack/cyborg"
 
 [project.scripts]
-cyborg-api = "cyborg.cmd.api:main"
 cyborg-conductor = "cyborg.cmd.conductor:main"
 cyborg-dbsync = "cyborg.cmd.dbsync:main"
 cyborg-agent = "cyborg.cmd.agent:main"

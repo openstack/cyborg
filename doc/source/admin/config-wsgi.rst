@@ -2,9 +2,9 @@
 Installing Cyborg API via WSGI
 ==============================
 
-Cyborg-api service can be run either as a Python command that runs a web serve
-or As a WSGI application hosted by uwsgi. This document is a guide to deploy
-cyborg-api using uwsgi. In devstack, uwsgi is used by default for development.
+The Cyborg API is provided as a WSGI application and must be hosted by a
+standard WSGI server. This document describes how to deploy it using uWSGI.
+DevStack also uses uWSGI for development.
 
 WSGI Application
 ----------------
@@ -34,7 +34,7 @@ Create a ``cyborg-api-uwsgi`` file with content below:
     die-on-term = true
     master = true
     processes = 2
-    wsgi-file = /usr/local/bin/cyborg-wsgi-api
+    module = cyborg.wsgi.api:application
 
 .. end
 
@@ -45,3 +45,45 @@ Start cyborg-api:
     # uwsgi --ini /etc/cyborg/cyborg-api-uwsgi.ini
 
 .. end
+
+This configuration listens on a Unix socket. Configure an HTTP frontend,
+such as Apache or nginx, to proxy requests to that socket. The mod_wsgi
+configuration below is an alternative that hosts the application directly.
+
+Cyborg API behind Apache mod_wsgi
+---------------------------------
+
+Unlike uWSGI, mod_wsgi does not support the ``module =
+cyborg.wsgi.api:application`` syntax. Instead, configure
+``WSGIScriptAlias`` with the path to the installed ``cyborg/wsgi/api.py``
+file. That module exports the WSGI ``application`` object.
+
+For example, the following configuration mounts the API at
+``/accelerator``:
+
+.. code-block:: apache
+
+    <VirtualHost *:80>
+        ServerName cyborg.example.com
+
+        ErrorLog /var/log/apache2/cyborg-api-error.log
+        CustomLog /var/log/apache2/cyborg-api-access.log combined
+
+        WSGIApplicationGroup %{GLOBAL}
+        WSGIDaemonProcess cyborg-api user=cyborg group=cyborg \
+            processes=2 threads=1
+        WSGIProcessGroup cyborg-api
+        WSGIScriptAlias /accelerator \
+            /usr/lib/python3/dist-packages/cyborg/wsgi/api.py
+
+        <Directory /usr/lib/python3/dist-packages/cyborg/wsgi>
+            Require all granted
+        </Directory>
+    </VirtualHost>
+
+The Python module path varies by installation. For example, RPM-based
+systems and virtual environments commonly install it below a
+``site-packages`` directory rather than the ``dist-packages`` path shown
+above. Replace the path in both directives with the path used by the Cyborg
+installation. The mod_wsgi module must also be built for the same Python
+runtime used to install Cyborg.

@@ -88,20 +88,18 @@ fi
 "$CYBORG_BIN_DIR/cyborg-dbsync" --config-file="$CYBORG_CONF" upgrade || \
     die "$LINENO" "DB migration error"
 
-# When using uWSGI: create config if missing; re-enable Apache site (stop_cyborg
-# disables it, and we only call write_uwsgi_config when conf is missing).
-if [[ "$CYBORG_USE_UWSGI" == "True" ]]; then
-    if [[ ! -f "$CYBORG_UWSGI_CONF" ]]; then
-        write_uwsgi_config "$CYBORG_UWSGI_CONF" "$CYBORG_UWSGI" "/accelerator"
-        endpoints=$(openstack endpoint list --service cyborg -c ID -f value)
-        for id in $endpoints; do
-            openstack endpoint delete "$id"
-        done
-        create_cyborg_accounts
-    fi
-    enable_apache_site cyborg-api
-    restart_apache_server
+# Create the uWSGI config if missing and re-enable the Apache site. The
+# stop_cyborg function disables the site during the upgrade.
+if [[ ! -f "$CYBORG_UWSGI_CONF" ]]; then
+    write_uwsgi_config "$CYBORG_UWSGI_CONF" "$CYBORG_UWSGI" "/accelerator"
+    endpoints=$(openstack endpoint list --service cyborg -c ID -f value)
+    for id in $endpoints; do
+        openstack endpoint delete "$id"
+    done
+    create_cyborg_accounts
 fi
+enable_apache_site cyborg-api
+restart_apache_server
 
 start_cyborg
 
