@@ -1,0 +1,11 @@
+---
+upgrade:
+  - |
+    The ``cyborg-api`` console script and the eventlet-based standalone API
+    server have been removed. Deploy the Cyborg API with a standard WSGI
+    server using the ``cyborg.wsgi.api:application`` module.
+
+    The standalone-server ``[api]`` options ``host_ip``, ``port``,
+    ``api_workers``, and ``enable_ssl_api`` have also been removed. The
+    obsolete, unmaintained Ansible deployment playbook under ``setup/`` is no
+    longer provided.
