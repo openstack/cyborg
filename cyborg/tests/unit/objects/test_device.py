@@ -301,3 +301,17 @@ class TestDeviceObject(base.DbTestCase):
                 db_device['uuid'],
                 {'device_state': constants.DEVICE_STATE_AVAILABLE},
             )
+
+    def test_from_db_object_preserves_existing_device_state(self):
+        db_device = self.fake_device.copy()
+        db_device['device_state'] = constants.DEVICE_STATE_ALLOCATED
+        with mock.patch.object(
+            self.dbapi, 'device_update', autospec=True
+        ) as mock_update:
+            device = objects.Device._from_db_object(
+                objects.Device(self.context), db_device
+            )
+            self.assertEqual(
+                constants.DEVICE_STATE_ALLOCATED, device.device_state
+            )
+            mock_update.assert_not_called()

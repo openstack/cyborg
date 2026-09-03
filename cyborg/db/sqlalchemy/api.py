@@ -484,20 +484,25 @@ class Connection(api.Connection):
             return []
 
         query_prefix = model_query(context, models.Device)
-        filters = dict(filters or {})
-        if 'device_state' in filters:
-            device_state = filters.pop('device_state')
-            if device_state is api.NULL_FILTER:
-                query_prefix = query_prefix.filter(
-                    models.Device.device_state.is_(None)
-                )
-            elif device_state is api.NOT_NULL_FILTER:
-                query_prefix = query_prefix.filter(
-                    models.Device.device_state.isnot(None)
-                )
-            else:
-                filters['device_state'] = device_state
-        filters = copy.deepcopy(filters)
+        # device_state is read from filters before deepcopy() because
+        # deepcopy() creates a new object, so the 'is' check for
+        # NULL_FILTER/NOT_NULL_FILTER fails on the copied dict. The sentinel
+        # then reaches SQLAlchemy as a literal value and raises LookupError
+        # against the device_state enum (observed in
+        # tests/unit/common/test_data_migrations.py::TestBackfillDeviceState).
+        device_state = (filters or {}).get('device_state')
+        filters = copy.deepcopy(filters or {})
+
+        if device_state is api.NULL_FILTER:
+            filters.pop('device_state', None)
+            query_prefix = query_prefix.filter(
+                models.Device.device_state.is_(None)
+            )
+        elif device_state is api.NOT_NULL_FILTER:
+            filters.pop('device_state', None)
+            query_prefix = query_prefix.filter(
+                models.Device.device_state.isnot(None)
+            )
 
         exact_match_filter_names = [
             'uuid',
