@@ -95,7 +95,7 @@ class Device(base.CyborgObject, object_base.VersionedObjectDictCompat):
 
     @classmethod
     def _from_db_object(cls, obj, db_obj):
-        obj = base.CyborgObject._from_db_object(obj, db_obj)
+        obj = super()._from_db_object(obj, db_obj)
         # Heal device_state on load for devices that pre-date the column.
         # Avoids relying solely on the backfill migration or conductor startup.
         if obj.device_state is None and obj._context is not None:
@@ -103,11 +103,11 @@ class Device(base.CyborgObject, object_base.VersionedObjectDictCompat):
                 new_state = data_migrations._device_state_from_attach_handles(
                     obj._context, obj.dbapi, obj.id
                 )
-                obj.dbapi.device_update(
-                    obj._context, obj.uuid, {'device_state': new_state}
-                )
                 obj.device_state = new_state
-                obj.obj_reset_changes(['device_state'])
+                obj._save(
+                    obj._context,
+                    {'device_state': new_state},
+                )
             except Exception:
                 LOG.warning(
                     'Failed to heal device_state for device %s', obj.uuid
@@ -116,9 +116,9 @@ class Device(base.CyborgObject, object_base.VersionedObjectDictCompat):
 
     def create(self, context):
         """Create a device record in the DB."""
+        if 'device_state' not in self:
+            self.device_state = constants.DEVICE_STATE_AVAILABLE
         values = self.obj_get_changes()
-        if values.get('device_state') is None:
-            values['device_state'] = constants.DEVICE_STATE_AVAILABLE
         db_device = self.dbapi.device_create(context, values)
         self._from_db_object(self, db_device)
 
@@ -149,10 +149,15 @@ class Device(base.CyborgObject, object_base.VersionedObjectDictCompat):
             db_devices = cls.dbapi.device_list(context)
         return cls._from_db_object_list(db_devices, context)
 
+    def _save(self, context, updates):
+        db_device = self.dbapi.device_update(context, self.uuid, updates)
+        self.obj_reset_changes(updates.keys())
+        return db_device
+
     def save(self, context):
         """Update a Device record in the DB."""
         updates = self.obj_get_changes()
-        db_device = self.dbapi.device_update(context, self.uuid, updates)
+        db_device = self._save(context, updates)
         self._from_db_object(self, db_device)
 
     def destroy(self, context):

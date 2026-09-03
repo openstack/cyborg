@@ -39,8 +39,12 @@ class TestDevicesController(v2_test.APITestV2):
 
     def _validate_device(self, in_device, out_device):
         for field in in_device.keys():
-            if field != 'id':
-                self.assertEqual(in_device[field], out_device[field])
+            if field in (
+                'id',
+                'device_state',
+            ):  # device_state not yet exposed via the v2 API
+                continue
+            self.assertEqual(in_device[field], out_device[field])
         # Check that the link is properly set up
         self._validate_links(out_device['links'], in_device['uuid'])
 
