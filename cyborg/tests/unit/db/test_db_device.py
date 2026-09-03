@@ -20,6 +20,7 @@ import sys
 from oslo_utils import uuidutils
 
 from cyborg.common import exception
+from cyborg.db import api as db_api
 from cyborg.tests.unit.db import base
 from cyborg.tests.unit.db import utils
 
@@ -79,6 +80,31 @@ class TestDbDevice(base.DbTestCase):
         )
         self.assertEqual(1, len(res))
         self.assertEqual(dev1['hostname'], res[0]['hostname'])
+
+    def test_list_by_filters_null_device_state(self):
+        dev_null = utils.create_test_device(
+            self.context,
+            id=1,
+            uuid=uuidutils.generate_uuid(),
+            hostname='null-state-host',
+        )
+        dev_available = utils.create_test_device(
+            self.context,
+            id=2,
+            uuid=uuidutils.generate_uuid(),
+            hostname='available-state-host',
+        )
+        self.dbapi.device_update(
+            self.context,
+            dev_available['uuid'],
+            {'device_state': 'available'},
+        )
+        res = self.dbapi.device_list_by_filters(
+            self.context,
+            filters={'device_state': db_api.NULL_FILTER},
+        )
+        self.assertEqual(1, len(res))
+        self.assertEqual(dev_null['uuid'], res[0]['uuid'])
 
     def test_delete(self):
         created_dev = utils.create_test_device(self.context)

@@ -186,7 +186,13 @@ class Connection(api.Connection):
         query_prefix = model_query(context, models.AttachHandle)
         filters = copy.deepcopy(filters)
 
-        exact_match_filter_names = ['uuid', 'id', 'deployable_id', 'cpid_id']
+        exact_match_filter_names = [
+            'uuid',
+            'id',
+            'deployable_id',
+            'cpid_id',
+            'in_use',
+        ]
 
         # Filter the query
         query_prefix = self._exact_filter(
@@ -478,6 +484,19 @@ class Connection(api.Connection):
             return []
 
         query_prefix = model_query(context, models.Device)
+        filters = dict(filters or {})
+        if 'device_state' in filters:
+            device_state = filters.pop('device_state')
+            if device_state is api.NULL_FILTER:
+                query_prefix = query_prefix.filter(
+                    models.Device.device_state.is_(None)
+                )
+            elif device_state is api.NOT_NULL_FILTER:
+                query_prefix = query_prefix.filter(
+                    models.Device.device_state.isnot(None)
+                )
+            else:
+                filters['device_state'] = device_state
         filters = copy.deepcopy(filters)
 
         exact_match_filter_names = [
@@ -487,6 +506,7 @@ class Connection(api.Connection):
             'vendor',
             'model',
             'hostname',
+            'device_state',
         ]
 
         # Filter the query
@@ -565,7 +585,7 @@ class Connection(api.Connection):
         except db_exc.DBDuplicateEntry as e:
             # mysql duplicate key error changed as reference link below:
             # https://review.opendev.org/c/openstack/oslo.db/+/792124
-            LOG.info('Duplicate columns are: ', e.columns)
+            LOG.info('Duplicate columns are: %s', e.columns)
             columns = [
                 column.split('0')[1] if 'uniq_' in column else column
                 for column in e.columns

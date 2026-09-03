@@ -13,6 +13,7 @@
 #    under the License.
 
 from cyborg import objects
+from cyborg.common import constants
 from cyborg.objects import device
 from cyborg.objects import fields
 
@@ -64,6 +65,8 @@ def _convert_to_db_device(device_dict):
 def get_db_devices():
     devices_list = get_fake_devices_as_dict()
     db_devices = list(map(_convert_to_db_device, devices_list))
+    for d in db_devices:
+        d['device_state'] = constants.DEVICE_STATE_AVAILABLE
     return db_devices
 
 

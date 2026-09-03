@@ -324,6 +324,144 @@ class TestHealArqProjectIds(base.TestCase):
         )
 
 
+class TestBackfillDeviceState(base.TestCase):
+    """Tests for backfill_device_state online data migration."""
+
+    @mock.patch('cyborg.db.api.get_instance', autospec=True)
+    def test_backfill_no_devices(self, mock_get_db):
+        mock_db = mock.MagicMock()
+        mock_db.device_list_by_filters.return_value = []
+        mock_get_db.return_value = mock_db
+
+        found, done = data_migrations.backfill_device_state()
+
+        self.assertEqual(0, found)
+        self.assertEqual(0, done)
+
+    @mock.patch('cyborg.db.api.get_instance', autospec=True)
+    def test_backfill_no_arqs_sets_available(self, mock_get_db):
+        fake_dev = {
+            'id': 1,
+            'uuid': str(uuids.dev1),
+            'device_state': None,
+        }
+        mock_db = mock.MagicMock()
+        mock_db.device_list_by_filters.return_value = [fake_dev]
+        mock_db.deployable_get_by_filters.return_value = [
+            {'id': 10, 'device_id': 1},
+        ]
+        mock_db.attach_handle_get_by_filters.return_value = []
+        mock_get_db.return_value = mock_db
+
+        found, done = data_migrations.backfill_device_state()
+
+        self.assertEqual(1, found)
+        self.assertEqual(1, done)
+        mock_db.device_update.assert_called_once_with(
+            mock.ANY,
+            str(uuids.dev1),
+            {'device_state': 'available'},
+        )
+
+    @mock.patch('cyborg.db.api.get_instance', autospec=True)
+    def test_backfill_with_bound_arq_sets_allocated(self, mock_get_db):
+        fake_dev = {
+            'id': 1,
+            'uuid': str(uuids.dev1),
+            'device_state': None,
+        }
+        mock_db = mock.MagicMock()
+        mock_db.device_list_by_filters.return_value = [fake_dev]
+        mock_db.deployable_get_by_filters.return_value = [
+            {'id': 10, 'device_id': 1},
+        ]
+        mock_db.attach_handle_get_by_filters.return_value = [
+            {'id': 100, 'in_use': True},
+        ]
+        mock_get_db.return_value = mock_db
+
+        found, done = data_migrations.backfill_device_state()
+
+        self.assertEqual(1, found)
+        self.assertEqual(1, done)
+        mock_db.device_update.assert_called_once_with(
+            mock.ANY,
+            str(uuids.dev1),
+            {'device_state': 'allocated'},
+        )
+
+    @mock.patch('cyborg.db.api.get_instance', autospec=True)
+    def test_backfill_idempotent(self, mock_get_db):
+        mock_db = mock.MagicMock()
+        mock_db.device_list_by_filters.side_effect = [
+            [{'id': 1, 'uuid': str(uuids.dev1), 'device_state': None}],
+            [],
+        ]
+        mock_db.deployable_get_by_filters.return_value = []
+        mock_get_db.return_value = mock_db
+
+        found1, done1 = data_migrations.backfill_device_state()
+        found2, done2 = data_migrations.backfill_device_state()
+
+        self.assertEqual(1, found1)
+        self.assertEqual(1, done1)
+        self.assertEqual(0, found2)
+        self.assertEqual(0, done2)
+
+    @mock.patch('cyborg.db.api.get_instance', autospec=True)
+    def test_backfill_respects_max_count(self, mock_get_db):
+        fake_devs = [
+            {'id': i, 'uuid': 'dev-%d' % i, 'device_state': None}
+            for i in range(3)
+        ]
+        mock_db = mock.MagicMock()
+        mock_db.device_list_by_filters.side_effect = [fake_devs, []]
+        mock_db.deployable_get_by_filters.return_value = []
+        mock_get_db.return_value = mock_db
+
+        found, done = data_migrations.backfill_device_state(max_count=3)
+
+        self.assertEqual(3, found)
+        self.assertEqual(3, done)
+        mock_db.device_list_by_filters.assert_called_with(
+            mock.ANY,
+            {'device_state': dbapi.NULL_FILTER},
+            limit=3,
+        )
+
+    @mock.patch('cyborg.db.api.get_instance', autospec=True)
+    def test_backfill_continues_after_device_update_failure(self, mock_get_db):
+        fake_devs = [
+            {'id': 1, 'uuid': str(uuids.dev1), 'device_state': None},
+            {'id': 2, 'uuid': 'dev-2', 'device_state': None},
+        ]
+        mock_db = mock.MagicMock()
+        mock_db.device_list_by_filters.side_effect = [fake_devs, []]
+        mock_db.deployable_get_by_filters.return_value = []
+        mock_db.device_update.side_effect = [Exception('DB error'), None]
+        mock_get_db.return_value = mock_db
+
+        found, done = data_migrations.backfill_device_state()
+
+        self.assertEqual(2, found)
+        self.assertEqual(1, done)
+        self.assertEqual(2, mock_db.device_update.call_count)
+
+    @mock.patch('cyborg.db.api.get_instance', autospec=True)
+    def test_backfill_stops_when_no_progress(self, mock_get_db):
+        fake_dev = {'id': 1, 'uuid': str(uuids.dev1), 'device_state': None}
+        mock_db = mock.MagicMock()
+        mock_db.device_list_by_filters.return_value = [fake_dev]
+        mock_db.deployable_get_by_filters.side_effect = Exception('DB error')
+        mock_get_db.return_value = mock_db
+
+        found, done = data_migrations.backfill_device_state()
+
+        self.assertEqual(1, found)
+        self.assertEqual(0, done)
+        mock_db.device_list_by_filters.assert_called_once()
+
+
 class TestNovaAdapterForHeal(base.TestCase):
     """Nova adapter used for ARQ project_id backfill."""
 
