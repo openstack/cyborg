@@ -38,6 +38,12 @@ class SPDKDRIVER:
     def __init__(self, *args, **kwargs):
         super().__init__()
 
+    def init_host(self):
+        pass
+
+    def cleanup(self, device):
+        pass
+
     def discover_accelerator(self):
         """Discover a backend accelerator
 

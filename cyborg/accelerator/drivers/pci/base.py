@@ -24,5 +24,11 @@ class PciDriver:
     def __init__(self, *args, **kwargs):
         pass
 
+    def init_host(self):
+        pass
+
+    def cleanup(self, device):
+        pass
+
     def discover(self):
         raise NotImplementedError()

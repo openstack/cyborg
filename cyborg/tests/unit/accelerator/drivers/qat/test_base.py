@@ -11,6 +11,8 @@
 # under the License.
 
 
+from unittest import mock
+
 from cyborg.accelerator.drivers.qat.base import QATDriver
 from cyborg.tests import base
 
@@ -27,3 +29,11 @@ class TestQATDriver(base.TestCase):
     def test_discover_vendors(self):
         d = QATDriver()
         self.assertRaises(NotImplementedError, d.discover_vendors)
+
+    def test_init_host_default_noop(self):
+        d = QATDriver()
+        d.init_host()
+
+    def test_cleanup_default_noop(self):
+        d = QATDriver()
+        d.cleanup(mock.Mock())

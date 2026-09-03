@@ -15,6 +15,24 @@ import abc
 
 
 class GenericDriver(metaclass=abc.ABCMeta):
+    def init_host(self):
+        """Hook for driver prerequisites validation at agent startup.
+
+        Intended to be called once per enabled driver before the first
+        discover(). Not yet invoked by the agent; subclasses may override
+        to check tooling.
+        """
+
+    def cleanup(self, device):
+        """Hook for device cleanup after deallocation.
+
+        Intended to be called by the agent when a device needs sanitization.
+        Not yet invoked by the agent; subclasses may override to run
+        device-specific cleanup (e.g. nvme-cli sanitize).
+
+        :param device: Device versioned object.
+        """
+
     @abc.abstractmethod
     def discover(self):
         """Discover a specified accelerator.

@@ -11,6 +11,8 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from unittest import mock
+
 from cyborg.accelerator.drivers.driver import GenericDriver
 from cyborg.tests import base
 
@@ -37,3 +39,11 @@ class TestGenericDriver(base.TestCase):
         # abstract methods get_stats, update
         result = self.assertRaises(TypeError, NotCompleteDriver)
         self.assertIn("Can't instantiate abstract class", str(result))
+
+    def test_init_host_default_noop(self):
+        drv = WellDoneDriver()
+        drv.init_host()
+
+    def test_cleanup_default_noop(self):
+        drv = WellDoneDriver()
+        drv.cleanup(mock.Mock())

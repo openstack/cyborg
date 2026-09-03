@@ -13,6 +13,8 @@
 # under the License.
 
 
+from unittest import mock
+
 from cyborg.accelerator.drivers.ssd.base import SSDDriver
 from cyborg.accelerator.drivers.ssd.inspur.driver import InspurNVMeSSDDriver
 from cyborg.tests import base
@@ -30,3 +32,11 @@ class TestSSDDriver(base.TestCase):
 
     def test_create_ssd_vendor_not_found(self):
         self.assertRaises(LookupError, SSDDriver.create, '_non-exist_vendor')
+
+    def test_init_host_default_noop(self):
+        drv = SSDDriver()
+        drv.init_host()
+
+    def test_cleanup_default_noop(self):
+        drv = SSDDriver()
+        drv.cleanup(mock.Mock())

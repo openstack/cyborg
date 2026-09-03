@@ -12,6 +12,8 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+from unittest import mock
+
 from cyborg.accelerator.drivers.fpga.base import FPGADriver
 from cyborg.accelerator.drivers.fpga.inspur.driver import (
     InspurFPGADriver,  # noqa
@@ -39,3 +41,11 @@ class TestFPGADriver(base.TestCase):
     def test_program(self):
         d = FPGADriver()
         self.assertRaises(NotImplementedError, d.program, "path", "image")
+
+    def test_init_host_default_noop(self):
+        d = FPGADriver()
+        d.init_host()
+
+    def test_cleanup_default_noop(self):
+        d = FPGADriver()
+        d.cleanup(mock.Mock())
