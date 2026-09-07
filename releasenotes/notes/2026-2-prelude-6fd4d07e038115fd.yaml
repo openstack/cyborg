@@ -1,0 +1,28 @@
+---
+prelude: |
+    The 2026.2 release addresses two access-control vulnerabilities,
+    CVE-2026-40213 and CVE-2026-40214, strengthening security, tenant
+    isolation, and operational control for accelerator resources.
+    Accelerator requests are now scoped to their owning projects. Operations
+    on accelerator requests bound to instances require service-token
+    validation, and access to hardware management APIs has been tightened.
+
+    The release also introduces opt-in persona-based policy defaults for the
+    ``reader``, ``member``, ``manager``, ``service``, and ``admin`` roles.
+    This aligns Cyborg with the OpenStack `Consistent and Secure Default RBAC
+    <https://governance.openstack.org/tc/goals/selected/consistent-and-secure-rbac.html>`_
+    community goal and provides operators with a migration path before the
+    new defaults are planned to become the default in 2027.1.
+
+    Operators also gain safer upgrade tooling for accelerator request
+    ownership and device state, along with finer-grained control over which
+    Intel SR-IOV NIC devices Cyborg manages. Standards-compliant API
+    microversion handling has been restored for compatibility with OpenStack
+    clients.
+
+    Testing and documentation were also major focuses of this release,
+    improving release confidence and making Cyborg easier to deploy, upgrade,
+    and use. As part of this work, the generic PCI driver has returned to
+    fully supported status. The project also continued to pay down
+    technical debt and improve code quality, strengthening long-term
+    maintainability and reliability.
