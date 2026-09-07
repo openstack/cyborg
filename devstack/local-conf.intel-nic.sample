@@ -52,7 +52,7 @@ Q_ML2_TENANT_NETWORK_TYPE=vxlan
 ENABLE_SYSCTL_MEM_TUNING="True"
 ENABLE_SYSCTL_NET_TUNING="True"
 
-[[post-config|$CYBORG_CONF]]
+[[post-config|$CYBORG_AGENT_CONF]]
 [nic_devices]
 enabled_nic_types = x710_static
 

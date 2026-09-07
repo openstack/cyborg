@@ -42,6 +42,7 @@ source "$TARGET_DEVSTACK_DIR/lib/apache"
 source "$TARGET_DEVSTACK_DIR/lib/tls"
 source "$TARGET_DEVSTACK_DIR/lib/keystone"
 source "$TARGET_DEVSTACK_DIR/lib/placement"
+source "$TARGET_DEVSTACK_DIR/lib/rpc_backend"
 
 TOP_DIR=${TOP_DIR:-"$TARGET_DEVSTACK_DIR"}
 
@@ -101,6 +102,17 @@ if [[ "$CYBORG_USE_UWSGI" == "True" ]]; then
     fi
     enable_apache_site cyborg-api
     restart_apache_server
+fi
+
+# The agent used cyborg.conf before it gained its own config file. Preserve
+# deployment-specific settings for that one-time transition, then configure
+# the new file through the same path as a normal DevStack installation.
+if is_service_enabled cyborg-agent && [[ ! -f "$CYBORG_AGENT_CONF" ]]; then
+    if [[ -f "$CYBORG_CONF" ]]; then
+        cp -p "$CYBORG_CONF" "$CYBORG_AGENT_CONF"
+        inidelete "$CYBORG_AGENT_CONF" database connection
+    fi
+    configure_cyborg_agent
 fi
 
 start_cyborg

@@ -51,8 +51,9 @@
     required-projects: *base_required_projects
     vars: &cyborg_grenade_vars
       <<: *cyborg_base_vars
-      devstack_localrc:
-        ENABLE_PCI_SIM: false
+      grenade_devstack_localrc:
+        shared:
+          ENABLE_PCI_SIM: false
     irrelevant-files: *base_irrelevant_files
 
 - job:
