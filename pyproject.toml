@@ -46,6 +46,9 @@ cyborg-status = "cyborg.cmd.status:main"
 [project.entry-points."oslo.config.opts"]
 cyborg = "cyborg.conf.opts:list_opts"
 
+[project.entry-points."oslo.config.opts.defaults"]
+cyborg = "cyborg.common.config:set_lib_defaults"
+
 [project.entry-points."cyborg.database.migration_backend"]
 sqlalchemy = "cyborg.db.sqlalchemy.migration"
 
