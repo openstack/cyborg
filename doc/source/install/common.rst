@@ -71,9 +71,6 @@ A database, service credentials, and API endpoints must be created.
 
 #. Create the Acceleration service API endpoints:
 
-   * If cyborg-api service is deployed using uwsgi, create the following
-     endpoints:
-
    .. code-block:: console
 
       $ openstack endpoint create --region RegionOne \
@@ -82,19 +79,6 @@ A database, service credentials, and API endpoints must be created.
         accelerator internal http://<cyborg-ip>/accelerator/v2
       $ openstack endpoint create --region RegionOne \
         accelerator admin http://<cyborg-ip>/accelerator/v2
-   ..
-
-   * Otherwise, if cyborg-api service is running as a python process, create
-     the following endpoints:
-
-   .. code-block:: console
-
-      $ openstack endpoint create --region RegionOne \
-        accelerator public http://<cyborg-ip>:6666/v2
-      $ openstack endpoint create --region RegionOne \
-        accelerator internal http://<cyborg-ip>:6666/v2
-      $ openstack endpoint create --region RegionOne \
-        accelerator admin http://<cyborg-ip>:6666/v2
    ..
 
    .. note::
@@ -117,11 +101,6 @@ Configure Cyborg
         use_syslog = False
         state_path = /var/lib/cyborg
         debug = True
-
-        ...
-
-        [api]
-        host_ip = 0.0.0.0
 
         ...
 
@@ -187,20 +166,7 @@ Configure Cyborg
         cyborg-dbsync --config-file /etc/cyborg/cyborg.conf upgrade
     ..
 
-#.  Install Cyborg API via WSGI :doc:`api-uwsgi <../admin/config-wsgi>`
-
-.. note::
-
-       Cyborg-api service can also be run as a Python command that
-       runs a web serve, which can be launched as follows with different
-       Acceleration service API endpoints as mentioned in Prerequisites part.
-       However, we would like to recommend you the uwsgi way since when a
-       project provides a WSGI application the API service gains
-       flexibility in terms of deployment, performance, configuration
-       and scaling. BYW, if you choose devstack to deploy your acceleration
-       service, uwsgi is a default choice.
-
-       cyborg-api --config-file=/etc/cyborg/cyborg.conf
+#.  Install Cyborg API via WSGI :doc:`api-uwsgi <../admin/config-wsgi>`.
 
 #.  Launch Cyborg Conductor, Cyborg Agent services. Open a separate
     terminal for each service since the console will be locked by

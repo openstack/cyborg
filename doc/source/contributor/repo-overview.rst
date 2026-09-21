@@ -42,7 +42,7 @@ cyborg/ Package
 ``cyborg/image/``
     Glance integration: image metadata for accelerator programming.
 ``cyborg/cmd/``
-    Entry points for Cyborg services (``cyborg-api``, ``cyborg-agent``,
+    Entry points for Cyborg services (``cyborg-agent``,
     ``cyborg-conductor``, ``cyborg-dbsync``, ``cyborg-status``).
 ``cyborg/conf/``
     oslo.config option declarations, one file per subsystem.
