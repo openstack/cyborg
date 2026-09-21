@@ -359,7 +359,7 @@ In your ``~/devstack/local.conf`` file, add or update the following sections:
    # Find device IDs with: lspci -nn | grep -i Non-Volatile
    # Example: Red Hat QEMU NVMe Controller [1b36:0010]
 
-   [[post-config|$CYBORG_CONF]]
+   [[post-config|$CYBORG_AGENT_CONF]]
    [pci]
    # NVMe device passthrough (vendor_id: 1b36, product_id: 0010)
    passthrough_whitelist='{"vendor_id":"1b36","product_id":"0010"}'
@@ -371,8 +371,8 @@ In your ``~/devstack/local.conf`` file, add or update the following sections:
 
 * ``CYBORG_ENABLED_DRIVERS``: Enables both the fake driver (for testing) and
   the PCI driver
-* ``[[post-config|$CYBORG_CONF]]``: Adds configuration to ``cyborg.conf``
-  after DevStack generates it
+* ``[[post-config|$CYBORG_AGENT_CONF]]``: Adds configuration to
+  ``cyborg-agent.conf`` after DevStack generates it
 * ``[pci]``: Configuration section for the PCI driver
 * ``passthrough_whitelist``: JSON string specifying which PCI devices to manage
 
@@ -386,7 +386,7 @@ entries as a JSON array:
 
 .. code-block:: ini
 
-   [[post-config|$CYBORG_CONF]]
+   [[post-config|$CYBORG_AGENT_CONF]]
    [pci]
    # Whitelist both NVMe and virtio-rng devices
    passthrough_whitelist='[{"vendor_id":"1b36","product_id":"0010"},{"vendor_id":"1af4","product_id":"1044"}]'
@@ -500,7 +500,7 @@ If the device doesn't appear in ``openstack accelerator device list``:
 
    .. code-block:: console
 
-      $ sudo grep -i "enabled_drivers" /etc/cyborg/cyborg.conf
+      $ sudo grep -i "enabled_drivers" /etc/cyborg/cyborg-agent.conf
       enabled_drivers = fake_driver,pci_driver
 
 4. Check Cyborg agent logs:

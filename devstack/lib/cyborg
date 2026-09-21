@@ -100,6 +100,10 @@ function create_cyborg_accounts {
 # configure_cyborg() - Set config files, create data dirs, etc
 function configure_cyborg {
     if is_service_enabled cyborg; then
+        configure_cyborg_dirs
+    fi
+
+    if is_service_enabled cyborg-api || is_service_enabled cyborg-cond; then
         configure_cyborg_common
     fi
 
@@ -117,12 +121,9 @@ function configure_cyborg {
         configure_cyborg_agent
     fi
 
-    # NOTE(crushil) Need to add logging
-
 }
 
 function configure_cyborg_common {
-    configure_cyborg_dirs
     # Copy over cyborg configuration file and configure common parameters.
     iniset $CYBORG_CONF DEFAULT debug True
     inicomment $CYBORG_CONF DEFAULT log_file
@@ -134,16 +135,27 @@ function configure_cyborg_common {
 
 function configure_cyborg_agent {
     # set up drivers / hardware types
-    iniset $CYBORG_CONF agent enabled_drivers $CYBORG_ENABLED_DRIVERS
+    iniset $CYBORG_AGENT_CONF agent enabled_drivers $CYBORG_ENABLED_DRIVERS
 
-    # Configure placement client auth for multinode deployments
-    configure_keystoneauth $CYBORG_CONF cyborg placement
+    # Configure auth
+    configure_keystoneauth $CYBORG_AGENT_CONF cyborg placement
+    configure_keystone_authtoken_middleware $CYBORG_AGENT_CONF cyborg
+    # this one is needed for lookup of Cyborg API endpoint via Keystone
+    # FIXME(sean-k-mooney) why? cyborg should never call itself via the rest api.
+    # copy this for now and see if we can delete this later
+    configure_auth_for service_catalog $CYBORG_AGENT_CONF
 
     # Add retries so that placement registers the resource provider
     # Set higher than the default (3) because in CI the subnode agent
     # starts before nova-compute has registered its resource provider
     # with Placement. 6 retries gives ~63s of tolerance (1+2+4+8+16+32).
-    iniset $CYBORG_CONF agent resource_provider_startup_retries 6
+    iniset $CYBORG_AGENT_CONF agent resource_provider_startup_retries 6
+    # configure common parameters.
+    iniset $CYBORG_AGENT_CONF DEFAULT debug True
+    inicomment $CYBORG_AGENT_CONF DEFAULT log_file
+    iniset $CYBORG_AGENT_CONF DEFAULT state_path $CYBORG_STATE_PATH
+    iniset $CYBORG_AGENT_CONF DEFAULT use_syslog $SYSLOG
+    iniset_rpc_backend cyborg $CYBORG_AGENT_CONF
 }
 
 # configure_cyborg_api() - Is used by configure_cyborg(). Performs
@@ -164,14 +176,16 @@ function configure_cyborg_api {
 function configure_auth_for {
     local service_config_section
     service_config_section=$1
-    iniset $CYBORG_CONF $service_config_section auth_type password
-    iniset $CYBORG_CONF $service_config_section auth_url $KEYSTONE_SERVICE_URI
-    iniset $CYBORG_CONF $service_config_section username cyborg
-    iniset $CYBORG_CONF $service_config_section password $SERVICE_PASSWORD
-    iniset $CYBORG_CONF $service_config_section project_name $SERVICE_PROJECT_NAME
-    iniset $CYBORG_CONF $service_config_section user_domain_id default
-    iniset $CYBORG_CONF $service_config_section project_domain_id default
-    iniset $CYBORG_CONF $service_config_section cafile $SSL_BUNDLE_FILE
+    local config_file
+    config_file=${2:-$CYBORG_CONF}
+    iniset $config_file $service_config_section auth_type password
+    iniset $config_file $service_config_section auth_url $KEYSTONE_SERVICE_URI
+    iniset $config_file $service_config_section username cyborg
+    iniset $config_file $service_config_section password $SERVICE_PASSWORD
+    iniset $config_file $service_config_section project_name $SERVICE_PROJECT_NAME
+    iniset $config_file $service_config_section user_domain_id default
+    iniset $config_file $service_config_section project_domain_id default
+    iniset $config_file $service_config_section cafile $SSL_BUNDLE_FILE
 }
 
 # configure_cyborg_conductor() - Is used by configure_cyborg().
@@ -182,6 +196,10 @@ function configure_cyborg_conductor {
     iniset $CYBORG_CONF keystone region_name $REGION_NAME
 
     # this one is needed for lookup of Cyborg API endpoint via Keystone
+    # FIXME(sean-k-mooney) why? cyborg should never call itself via the rest api.
+    # we should look at deleting this or the code that depend on it.
+    # we may want to find our endpoint id for unified limits but we should not need
+    # this in general.
     configure_auth_for service_catalog
     configure_keystoneauth $CYBORG_CONF cyborg nova
     configure_keystoneauth $CYBORG_CONF cyborg placement
@@ -253,7 +271,7 @@ function start_cyborg_conductor {
 # start_cyborg_agent() - Used by start_cyborg().
 # Starts Cyborg agent.
 function start_cyborg_agent {
-    run_process cyborg-agent "$CYBORG_BIN_DIR/cyborg-agent --config-file=$CYBORG_CONF"
+    run_process cyborg-agent "$CYBORG_BIN_DIR/cyborg-agent --config-file=$CYBORG_AGENT_CONF"
 }
 
 # stop_cyborg() - Stop running processes

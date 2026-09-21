@@ -302,16 +302,15 @@ function configure_pci_sim_cyborg {
 
     [[ "$PCI_SIM_CONFIGURE_CYBORG_PCI" == True ]] || return 0
 
-    CYBORG_CONF_FILE=${CYBORG_CONF_FILE:-/etc/cyborg/cyborg.conf}
-    [[ -f $CYBORG_CONF_FILE ]] || die $LINENO "CYBORG_CONF_FILE does not exist: $CYBORG_CONF_FILE"
+    [[ -f $CYBORG_AGENT_CONF ]] || die $LINENO "CYBORG_AGENT_CONF does not exist: $CYBORG_AGENT_CONF"
 
-    current_drivers=$(iniget "$CYBORG_CONF_FILE" agent enabled_drivers || true)
+    current_drivers=$(iniget "$CYBORG_AGENT_CONF" agent enabled_drivers || true)
     # Enable the generic PCI driver without dropping any other accelerator
     # drivers the local DevStack environment already requested.
     if [[ -z $current_drivers ]]; then
-        iniset "$CYBORG_CONF_FILE" agent enabled_drivers pci_driver
+        iniset "$CYBORG_AGENT_CONF" agent enabled_drivers pci_driver
     elif [[ ,$current_drivers, != *,pci_driver,* ]]; then
-        iniset "$CYBORG_CONF_FILE" agent enabled_drivers "$current_drivers,pci_driver"
+        iniset "$CYBORG_AGENT_CONF" agent enabled_drivers "$current_drivers,pci_driver"
     fi
 
     for vf in "$@"; do
@@ -319,7 +318,7 @@ function configure_pci_sim_cyborg {
     done
 
     if (( ${#specs[@]} > 0 )); then
-        iniset_multiline "$CYBORG_CONF_FILE" pci passthrough_whitelist "${specs[@]}"
+        iniset_multiline "$CYBORG_AGENT_CONF" pci passthrough_whitelist "${specs[@]}"
     fi
 }
 
