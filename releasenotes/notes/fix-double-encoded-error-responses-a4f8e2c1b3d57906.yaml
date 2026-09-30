@@ -1,0 +1,11 @@
+---
+upgrade:
+  - |
+    The ``error_message`` field in API error responses has changed
+    shape. Previously, ``ParsableErrorMiddleware`` double-encoded
+    WSME fault bodies, so ``error_message`` was a JSON-encoded
+    string that clients had to parse a second time. It is now a
+    JSON object with ``faultcode``, ``faultstring``, and
+    ``debuginfo`` keys. Clients that called ``json.loads()`` on the
+    ``error_message`` value should access it directly as a dict
+    (e.g. ``response['error_message']['faultstring']``).

@@ -316,13 +316,16 @@ class TestDeviceProfileController(v2_test.APITestV2):
         test_unsupported_dp['created_at'] = str(
             test_unsupported_dp['created_at']
         )
-        self.assertRaisesRegex(
-            webtest.app.AppError,
-            ".*Device profile group must contain at least one.*",
-            self.post_json,
+        response = self.post_json(
             self.DP_URL,
             [test_unsupported_dp],
             headers=self.headers,
+            expect_errors=True,
+        )
+        self.assertEqual(400, response.status_int)
+        self.assertIn(
+            "Device profile group must contain at least one 'resources:' key",
+            response.json['error_message']['faultstring'],
         )
 
     def test_create_with_invalid_resource_value(self):

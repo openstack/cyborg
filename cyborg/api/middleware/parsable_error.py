@@ -46,9 +46,9 @@ class ParsableErrorMiddleware:
                 )
 
             if (state['status_code'] // 100) not in (2, 3):
-                # Remove some headers so we can replace them later
-                # when we have the full error message and can
-                # compute the length.
+                # Capture the content type before stripping so we
+                # can avoid double-encoding JSON error bodies.
+                state['content_type'] = dict(headers).get('Content-Type', '')
                 headers = [
                     (h, v)
                     for (h, v) in headers
@@ -62,9 +62,19 @@ class ParsableErrorMiddleware:
         app_iter = self.app(environ, replacement_start_response)
 
         if (state['status_code'] // 100) not in (2, 3):
-            app_iter = [i.decode('utf-8') for i in app_iter]
-            body = [jsonutils.dumps({'error_message': '\n'.join(app_iter)})]
-            body = [i.encode('utf-8') for i in body]
+            raw_body = b''.join(app_iter)
+            err_message = raw_body.decode('utf-8')
+            # WSME encodes error bodies as JSON before they reach
+            # here; decode first to avoid double-encoding in dumps().
+            content_type = state.get('content_type', '')
+            media_type = content_type.split(';', 1)[0].strip().lower()
+            if media_type == 'application/json' or media_type.endswith(
+                '+json'
+            ):
+                err_message = jsonutils.loads(err_message)
+            body = [
+                jsonutils.dumps({'error_message': err_message}).encode('utf-8')
+            ]
             state['headers'].append(('Content-Type', 'application/json'))
             state['headers'].append(('Content-Length', str(len(body[0]))))
         else:
