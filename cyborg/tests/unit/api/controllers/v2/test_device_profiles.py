@@ -183,8 +183,8 @@ class TestDeviceProfileController(v2_test.APITestV2):
     def test_create_with_unsupported_group_key(self):
         test_unsupported_dp = self.fake_dps[0]
 
-        # generate special dp group key for test
-        del test_unsupported_dp['groups'][0]['resources:FPGA']
+        # Add an invalid-prefix key alongside the existing resources: key so
+        # the group remains structurally valid while the key format is bad.
         test_unsupported_dp['groups'][0]['fake:FPGA'] = 'required'
         test_unsupported_dp['created_at'] = str(
             test_unsupported_dp['created_at']
@@ -302,6 +302,23 @@ class TestDeviceProfileController(v2_test.APITestV2):
         self.assertRaisesRegex(
             webtest.app.AppError,
             ".*Unsupported resource class FAKE_RC.*",
+            self.post_json,
+            self.DP_URL,
+            [test_unsupported_dp],
+            headers=self.headers,
+        )
+
+    def test_create_with_no_resources_key_in_group(self):
+        test_unsupported_dp = self.fake_dps[0]
+
+        # Remove the resources: key so the group has only trait: entries
+        del test_unsupported_dp['groups'][0]['resources:FPGA']
+        test_unsupported_dp['created_at'] = str(
+            test_unsupported_dp['created_at']
+        )
+        self.assertRaisesRegex(
+            webtest.app.AppError,
+            ".*Device profile group must contain at least one.*",
             self.post_json,
             self.DP_URL,
             [test_unsupported_dp],
