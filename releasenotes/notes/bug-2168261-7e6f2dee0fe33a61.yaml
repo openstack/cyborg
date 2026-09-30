@@ -1,0 +1,12 @@
+---
+fixes:
+  - |
+    Device profile groups that contained only ``trait:`` or ``accel:`` keys
+    and no ``resources:`` key were previously accepted by
+    ``POST /v2/device_profiles`` and stored successfully. Any attempt to bind
+    an accelerator request against such a profile would then fail at runtime
+    with an opaque ``InvalidParameterValue`` error inside the conductor,
+    giving the user no actionable feedback at the point where the mistake was
+    made. The API now rejects such requests immediately with HTTP 400 and a
+    clear error message.
+    (`Bug #2168261 <https://bugs.launchpad.net/openstack-cyborg/+bug/2168261>`_)

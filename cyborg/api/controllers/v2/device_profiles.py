@@ -196,6 +196,11 @@ class DeviceProfilesController(base.CyborgController, DeviceProfileCollection):
             raise exception.DeviceProfileGroupsExpected()
 
         for group in groups:
+            if not any(k.startswith("resources:") for k in group):
+                raise exception.InvalidParameterValue(
+                    err="Device profile group must contain at least one "
+                    "'resources:' key."
+                )
             tmp_group = copy.deepcopy(group)
             for key, value in tmp_group.items():
                 # check resource and trait prefix format
