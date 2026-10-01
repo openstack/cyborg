@@ -60,6 +60,9 @@ doc/ Structure
     Operator guides: deployment, configuration, driver support matrix.
 ``doc/source/contributor/``
     Developer guides: process, testing, driver development, agentic coding.
+    Maintainer roles, delegated permissions, review conventions, and the
+    development process are documented in
+    :doc:`/contributor/maintainers-guide`.
     Also contains REST API microversion history
     (``rest_api_version_history.rst``) and release notes documentation
     (``releasenotes.rst``).

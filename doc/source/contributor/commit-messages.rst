@@ -26,6 +26,25 @@ Use ASCII-safe printable characters in commit messages. Prefer ``<=``, ``>=``,
 ``…``, and ``—``. This keeps messages readable across terminals, mail clients,
 and review tools used in the OpenStack workflow.
 
+Change subject prefixes
+=======================
+
+Cyborg uses the following subject prefixes to communicate a change's intent:
+
+``[WIP]``
+    The change is still a work in progress and is not ready to merge. Remove
+    the prefix when it is ready for approval.
+``[DNM]``
+    The change is not intended to merge, for example when testing a CI job.
+``[stable-only]``
+    The exceptional case where a change applies directly to a stable branch
+    but not to the default branch. Explain why in the commit message. Normal
+    backports use the provenance line added by ``git cherry-pick -x`` instead.
+
+These prefixes are human-facing conventions and do not mechanically block
+submission. See :ref:`gerrit-change-conventions` for the corresponding Gerrit
+state and topic conventions.
+
 Gerrit Change-Id
 ================
 
@@ -103,14 +122,10 @@ Common trailers
 ``Implements: blueprint NAME``
     The change implements or partially implements the named blueprint.
 
-``DocImpact``
-    The change requires documentation updates.
-
-``APIImpact``
-    The change modifies the REST API.
-
-``UpgradeImpact``
-    The change affects upgrades and should be noted in release notes.
+Cyborg does not use ``DocImpact``, ``APIImpact``, ``UpgradeImpact``, or other
+``*Impact`` commit-message markers. Include required documentation and release
+notes with the implementation, based on the behavior and impact of the change.
+See :doc:`/contributor/releasenotes` for release-note guidance.
 
 Amending commits
 ================

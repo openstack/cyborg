@@ -52,10 +52,12 @@ in two ways:
 PTL Coordination
 -----------------
 
-The release liaison works under the PTL to manage release activities.
-The release liaison has authority for release-specific decisions (FFE
-approvals, release timing, etc.) while major process changes and strategic
-decisions are made by the PTL with team input.
+Under the PTL model, the release liaison manages release activities through
+authority delegated by the PTL. The PTL retains final responsibility for
+Feature Freeze Exception (FFE) decisions and release timing. Under the
+distributed leadership model, where there is no PTL, the release liaison has
+final authority for those release-specific decisions. Major process changes
+and strategic decisions are made with team input.
 
 This coordination approach ensures that:
 
@@ -92,7 +94,7 @@ Cyborg Tempest Plugin
     `Integration tests <https://opendev.org/openstack/cyborg-tempest-plugin>`__ (follows tempest cycle)
 
 Cyborg Launchpad (Main)
-    `Primary bug and feature tracking <https://launchpad.net/cyborg>`__
+    `Primary bug and feature tracking <https://launchpad.net/openstack-cyborg>`__
 
 Python Cyborg Client Launchpad
     `Client library tracking <https://launchpad.net/python-cyborgclient>`__
@@ -160,30 +162,37 @@ After PTG
 * Update IRC #openstack-cyborg channel topic to point to new
   development-planning etherpad.
 
-.. __: https://bugs.launchpad.net/cyborg/+bugs?field.tag=rfe
+.. __: https://bugs.launchpad.net/openstack-cyborg/+bugs?field.tag=rfe
 
 A few weeks before milestone 1
 ------------------------------
+
+* Remind contributors that specifications should ideally be proposed before
+  milestone 1 so there is sufficient time for review before spec freeze
 
 * Plan a spec review day
 
 * Periodically check the series goals others have proposed in the “Set series
   goals” link:
 
-  * Example: https://blueprints.launchpad.net/cyborg/<current-release>/+setgoals
+  * Example: https://blueprints.launchpad.net/openstack-cyborg/<current-release>/+setgoals
 
 Milestone 1
 -----------
 
-* Release cyborg and python-cyborgclient via the openstack/releases repo.
-  Cyborg follows the `cycle-with-intermediary`__ release model:
+* Propose development releases through the ``openstack/releases`` repository:
 
-.. __: https://releases.openstack.org/reference/release_models.html#cycle-with-intermediary
+  * The Cyborg service follows the `cycle-with-rc`_ model. Development
+    milestone releases are optional, but the service must publish at least one
+    release candidate near the end of the cycle.
+  * ``python-cyborgclient`` follows the `cycle-with-intermediary`_ model.
+    Create actual releases, rather than Launchpad bookkeeping, at appropriate
+    milestone points.
+  * When releasing the first version of the client library for the cycle, bump
+    the minor version to leave room for future stable branch releases.
 
-  * Create actual releases (not just launchpad bookkeeping) at milestone points
-  * No launchpad milestone releases are created for intermediary releases
-  * When releasing the first version of a library for the cycle, bump
-    the minor version to leave room for future stable branch releases
+.. _`cycle-with-rc`: https://releases.openstack.org/reference/release_models.html#cycle-with-rc
+.. _`cycle-with-intermediary`: https://releases.openstack.org/reference/release_models.html#cycle-with-intermediary
 
 * Release stable branches of cyborg
 
@@ -261,7 +270,8 @@ Milestone 2
 
 * Spec freeze (unless changed by team agreement at PTG)
 
-* Release cyborg and python-cyborgclient (if needed)
+* Publish another Cyborg development milestone or ``python-cyborgclient``
+  release if needed
 
 * Stable branch releases of cyborg
 
@@ -295,20 +305,20 @@ Milestone 3
 Week following milestone 3
 --------------------------
 
-* If warranted, announce the FFE (feature freeze exception process) to
-  have people propose FFE requests to a special etherpad where they will
-  be reviewed.
-  FFE requests should first be discussed in the IRC meeting with the
-  requester present.
-  The release liaison has final decision on granting exceptions.
+* Prefer to grant no Feature Freeze Exceptions (FFEs). Features should normally
+  be complete by milestone 3 and incomplete work should be deferred to the next
+  cycle.
 
-  .. note::
+* If an FFE may be warranted, discuss it at the first IRC meeting after feature
+  freeze with the requester present. The exception extends only until the next
+  IRC meeting, normally one week later, and never beyond RC1.
 
-    if there is only a short time between FF and RC1 (lately it’s been 2
-    weeks), then the only likely candidates will be low-risk things that are
-    almost done. In general Feature Freeze exceptions should not be granted,
-    instead features should be deferred and reproposed for the next
-    development cycle. FFE never extend beyond RC1.
+  Under the PTL model, the PTL makes the final decision and may delegate that
+  decision to the release liaison. Under distributed leadership, the release
+  liaison makes the final decision.
+
+  The code freeze between feature freeze and RC1 is normally about two weeks,
+  so only low-risk work that is almost complete is likely to qualify.
 
 * Mark the max microversion for the release in the
   :doc:`/contributor/rest_api_version_history`
@@ -339,9 +349,18 @@ RC
 
     * https://review.opendev.org/#/q/status:open+project:openstack/cyborg+branch:master+topic:zanata/translations
 
-* Should NOT plan to have more than one RC if possible. RC2 should only happen
-  if there was a mistake and something was missed for RC, or a new regression
-  was discovered
+* Plan to produce only one release candidate. After RC1, only regressions
+  introduced during the current development cycle are eligible for another
+  release candidate. Anyone may nominate a current-cycle regression as an RC2
+  candidate, regardless of how it was discovered, but eligibility does not
+  guarantee another release candidate.
+
+  RC1 creates the stable branch and ``master`` reopens for the next cycle.
+  Longer-standing bugs can be fixed on ``master`` and backported after the
+  coordinated release; they are not RC2 candidates. Distributions and
+  packagers may already be validating RC1, so avoid additional candidates
+  unless fixing an eligible regression justifies disrupting and restarting
+  that work.
 
 * Write the reno prelude for the release GA
 
@@ -438,10 +457,11 @@ Miscellaneous Notes
 How to track launchpad blueprint approvals
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Core team approves blueprints through team consensus. The release liaison
-ensures launchpad status is updated correctly after core team approval:
+Maintainers with approval rights for ``cyborg-specs`` approve blueprints after
+consulting the team. The release liaison updates the Launchpad status after
+approval:
 
-* Set the approver as the core team member who approved the spec
+* Set the approver to the maintainer who approved the specification
 
 * Set the Direction => Approved and Definition => Approved and make sure the
   Series goal is set to the current release. If code is already proposed, set

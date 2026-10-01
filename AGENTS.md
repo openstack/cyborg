@@ -17,6 +17,8 @@ Agents: explore the repo directly; this file is a routing index, not a contribut
 
 ``Routing:``
 - Repo layout: [repo-overview.rst](doc/source/contributor/repo-overview.rst)
+- Maintainer roles, review conventions, and development process:
+  [maintainers-guide.rst](doc/source/contributor/maintainers-guide.rst)
 - Style, hacking, checks: [HACKING.rst](HACKING.rst)
 - Driver development: [driver-development-guide.rst](doc/source/contributor/driver-development-guide.rst)
 - API microversions: [microversions.rst](doc/source/contributor/microversions.rst)

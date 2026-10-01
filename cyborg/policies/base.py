@@ -17,8 +17,8 @@ from oslo_log import versionutils
 from oslo_policy import policy
 
 
-# All legacy policy and new policy mapping for all V2 APIs can be found
-# here:https://wiki.openstack.org/wiki/Cyborg/Policy
+# Current endpoint policy mappings and compatibility bridges are documented at
+# https://docs.openstack.org/cyborg/latest/configuration/policy-concepts.html
 
 DEPRECATED_REASON = """
 Cyborg API policies are introducing new default roles with scope_type

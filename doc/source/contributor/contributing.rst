@@ -19,40 +19,48 @@ We use the #openstack-cyborg channel on the `OFTC <http://oftc.net>`_ IRC networ
 The weekly meetings happen in this channel. You can find the meeting times,
 previous meeting logs and proposed meeting agendas at
 `Cyborg Team Meeting Page
-<https://wiki.openstack.org/wiki/Meetings/CyborgTeamMeeting>`_.
+<https://etherpad.opendev.org/p/openstack-cyborg-irc-meeting>`_.
 
 The openstack-discuss mailing list is another way we make announcement and
 discuss some topics in public. Cyborg related discussions usually start with
 tag:[cyborg].
 `<The openstack-discuss Archives http://lists.openstack.org/pipermail/openstack-discuss/>`_
 
-Contacting the Core Team
-~~~~~~~~~~~~~~~~~~~~~~~~
+Contacting the Maintainers
+~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The core reviewers of Cyborg and their emails are listed in
-`Cyborg core team <https://review.opendev.org/#/admin/groups/1243,members>`_.
+Beginning with the 2027.1 cycle, Cyborg uses a tiered maintainer model that
+delegates review and approval rights by repository and responsibility. The
+model gives contributors a path to take on wider responsibilities without
+requiring immediate membership in the project-wide core team.
+
+Contact maintainers through Gerrit, the ``#openstack-cyborg`` IRC channel,
+or the openstack-discuss mailing list. If the first person you contact cannot
+help, they can direct you to an appropriate maintainer or subject-matter
+expert. See
+:doc:`/contributor/maintainers-guide` for the team structure, membership
+expectations, review policy, and advice on getting a change reviewed.
 
 New Feature Planning
 ~~~~~~~~~~~~~~~~~~~~
 
-To propose or plan new features, we add a new story in the
-`Cyborg Launchpad
-<https://blueprints.launchpad.net/openstack-cyborg>`_
-and/or propose a specification in the
-`cyborg-specs <https://opendev.org/openstack/cyborg-specs>`_ repository.
+Track a proposed feature with a `Cyborg Launchpad blueprint
+<https://blueprints.launchpad.net/openstack-cyborg>`_. With team agreement, a
+small feature may instead use a wishlist bug. API, database, and RPC changes
+require a specification in the
+`cyborg-specs <https://opendev.org/openstack/cyborg-specs>`_ repository. Most
+other non-trivial features should also have one. See
+:doc:`/contributor/maintainers-guide` for planning and approval guidance.
 
 Task Tracking
 ~~~~~~~~~~~~~
 
 We track our tasks in the `Launchpad <https://bugs.launchpad.net/openstack-cyborg>`_.
 
-We also have our planned goals and schedule for each OpenStack official release.
-If you are a new contributor who are looking for tasks, please take a look.
-we have tasks from low-hanging-fruit to middle, and advanced levels.
-`Development_Release_Schedule
-<https://wiki.openstack.org/wiki/Cyborg#Development_Release_Schedule>`_
-If you're looking for some smaller, easier work item to pick up and get started
-on, ask in the IRC meeting.
+Planned goals follow the `OpenStack release schedule
+<https://releases.openstack.org/>`_ and are tracked as `Cyborg blueprints
+<https://blueprints.launchpad.net/openstack-cyborg>`_. If you are looking for
+a smaller introductory task, ask in the IRC meeting.
 
 Reporting a Bug
 ~~~~~~~~~~~~~~~
@@ -70,16 +78,13 @@ Or mail PTL if IRC is not convenient for you.
 Getting Your Patch Merged
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-To merge a patch, it must pass all voting Zuul checks and get two +2s from
-core reviewers. We strive to avoid scenarios where one person from a company
-or organization proposes a patch, and two other core reviewers from the
-same organization approve it to get it merged. In other words, at least
-one among the patch author and the two approving reviewers must be from
-another organization.
+Changes must pass the required Zuul checks and receive ``Code-Review +2``
+and ``Workflow +1`` from maintainers authorized for the repository and branch.
+Independent review is encouraged; one authorized approver may provide both
+votes.
 
-We are constantly striving to improve quality. Proposed patches must
-generally have unit tests and/or functional tests that cover the changes,
-and strive to improve code coverage.
+See :doc:`/contributor/maintainers-guide` for approval conventions, guidance
+on preparing changes, and help getting review attention.
 
 Project Team Lead Duties
 ~~~~~~~~~~~~~~~~~~~~~~~~
@@ -90,8 +95,7 @@ All common PTL duties are enumerated in the `PTL guide
 API Policy Targets
 ~~~~~~~~~~~~~~~~~~
 
-Cyborg API controllers use the request context as the policy target.
-This mirrors Nova's default policy target behaviour. The
+Cyborg API controllers use the request context as the policy target. The
 ``@authorize_wsgi.authorize_wsgi`` decorator must be the outermost (first)
 decorator on an API method. Policy checks receive a target containing the
 caller's ``project_id`` and ``user_id``::
