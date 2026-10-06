@@ -1,0 +1,9 @@
+---
+fixes:
+  - |
+    The Intel NIC and NVIDIA GPU drivers now compare ``device_addresses``
+    allow-list entries against discovered PCI addresses case-insensitively.
+    Previously, an entry that differed only in case from the discovered
+    address was silently treated as not matching; for the GPU driver this
+    could cause a configured vGPU-capable device to be registered as a
+    plain pGPU instead.

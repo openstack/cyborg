@@ -196,7 +196,9 @@ def _get_supported_vgpu_types():
                 reason="Missing device addresses config for vgpu type %s"
                 % vgpu_type
             )
-        for device_address in group.device_addresses:
+        for device_address in utils.normalize_addresses(
+            group.device_addresses
+        ):
             if device_address in pgpu_type_mapping:
                 raise exception.InvalidvGPUConfig(
                     reason="Duplicate types for PCI address %s"
@@ -220,7 +222,7 @@ def _get_vgpu_type_per_pgpu(
 ):
     """Provides the vGPU type the pGPU supports.
 
-    :param device_address: the PCI device address in config,
+    :param device_address: the discovered PCI device address of the pGPU,
                            eg.'0000:af:00.0'
     """
     supported_vgpu_types, pgpu_type_mapping = _get_supported_vgpu_types()
@@ -243,7 +245,7 @@ def _get_vgpu_type_per_pgpu(
             device_address,
         )
         return
-    return pgpu_type_mapping.get(device_address)
+    return pgpu_type_mapping.get(utils.normalize_address(device_address))
 
 
 def _is_vf(pci_address):

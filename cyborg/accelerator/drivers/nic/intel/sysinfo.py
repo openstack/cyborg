@@ -58,7 +58,7 @@ def _parse_config():
     else:
         for address in da:
             utils.parse_address(address)
-        return pdm, fdm, da
+        return pdm, fdm, utils.normalize_addresses(da)
 
 
 def get_physical_network_and_traits(

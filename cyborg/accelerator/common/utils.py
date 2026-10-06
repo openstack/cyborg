@@ -156,6 +156,16 @@ def parse_address(address):
     return m.groups()
 
 
+def normalize_address(address):
+    """Lowercase a PCI address; its casing carries no information."""
+    return address.lower()
+
+
+def normalize_addresses(addresses):
+    """Lowercase a list of PCI addresses for case-insensitive comparison."""
+    return [normalize_address(address) for address in addresses]
+
+
 @cyborg.privsep.sys_admin_pctxt.entrypoint
 def lspci_privileged():
     return processutils.execute('lspci', '-nn', '-D')[0]

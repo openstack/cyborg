@@ -62,6 +62,23 @@ class TestUtils(unittest.TestCase):
         result = self.utils.parse_address('0000:0b:00.1')
         self.assertEqual(result, ('0000', '0b', '00', '1'))
 
+    def test_normalize_address(self):
+        result = self.utils.normalize_address('0000:AF:00.0')
+        self.assertEqual(result, '0000:af:00.0')
+
+    def test_normalize_address_already_lower(self):
+        result = self.utils.normalize_address('0000:af:00.0')
+        self.assertEqual(result, '0000:af:00.0')
+
+    def test_normalize_addresses(self):
+        result = self.utils.normalize_addresses(
+            ['0000:AF:00.0', '0000:af:01.0']
+        )
+        self.assertEqual(result, ['0000:af:00.0', '0000:af:01.0'])
+
+    def test_normalize_addresses_empty(self):
+        self.assertEqual(self.utils.normalize_addresses([]), [])
+
     def test_parse_lspci_line(self):
         line = (
             "0000:00:02.0 VGA compatible controller [0300]: "
