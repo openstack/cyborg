@@ -74,7 +74,7 @@ def discover_servers():
     :returns: server list.
     """
     servers = set()
-    for p in glob.glob1(SPDK_SERVER_APP_DIR, "*"):
+    for p in glob.glob("*", root_dir=SPDK_SERVER_APP_DIR):
         m = SERVERS_PATTERN.match(p)
         if m:
             servers.add(m.group())

@@ -269,7 +269,7 @@ def create_devices_path_and_files(
 
 
 def create_devices_soft_link(class_fpga_path):
-    devs = glob.glob1(class_fpga_path, "*")
+    devs = glob.glob("*", root_dir=class_fpga_path)
     for dev in devs:
         path = os.path.realpath("%s/%s/device" % (class_fpga_path, dev))
         softlinks = copy.copy(PGFA_DEVICE_COMMON_SOFT_LINK)

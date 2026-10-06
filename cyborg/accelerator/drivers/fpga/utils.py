@@ -29,7 +29,7 @@ VENDORS_PATTERN = re.compile("|".join(["(%s)" % v for v in VENDORS]))
 
 def discover_vendors():
     vendors = set()
-    for p in glob.glob1(SYS_FPGA_PATH, "*"):
+    for p in glob.glob("*", root_dir=SYS_FPGA_PATH):
         m = VENDORS_PATTERN.match(p)
         if m:
             vendors.add(m.group())
