@@ -12,8 +12,6 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import sys
-
 from unittest import mock
 
 from oslo_serialization import jsonutils
@@ -67,8 +65,6 @@ NVIDIA_T4_SUPPORTED_MDEV_TYPES = [
     'nvidia-320',
     'nvidia-321',
 ]
-
-BUILTIN = '__builtin__' if (sys.version_info[0] < 3) else '__builtins__'
 
 
 class stdout:
