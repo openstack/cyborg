@@ -50,7 +50,13 @@ class FPGADriver:
     def discover(self):
         raise NotImplementedError()
 
-    def program(self, device_path, image):
+    def update(self, control_path, image_path):
+        """Update the device firmware with a specific image.
+
+        :param control_path: the control path of the device.
+        :param image_path: path to the firmware image file.
+        :returns: True if successful, False otherwise.
+        """
         raise NotImplementedError()
 
     @classmethod

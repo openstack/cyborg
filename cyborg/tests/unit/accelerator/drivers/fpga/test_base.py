@@ -38,9 +38,9 @@ class TestFPGADriver(base.TestCase):
         d = FPGADriver()
         self.assertRaises(NotImplementedError, d.discover)
 
-    def test_program(self):
+    def test_update(self):
         d = FPGADriver()
-        self.assertRaises(NotImplementedError, d.program, "path", "image")
+        self.assertRaises(NotImplementedError, d.update, "path", "image")
 
     def test_init_host_default_noop(self):
         d = FPGADriver()

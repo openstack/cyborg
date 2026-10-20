@@ -160,5 +160,5 @@ class TestXilinxFPGADriver(base.TestCase):
 
         # program PF
         mock_prog.return_value = bytes([0])
-        xilinx_driver.program(cpid, "/path/image")
+        xilinx_driver.update(cpid, "/path/image")
         mock_prog.assert_called_with(expect_cmd_args)

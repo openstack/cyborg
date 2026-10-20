@@ -181,8 +181,8 @@ class AgentManager(periodic_task.PeriodicTasks):
         )
         try:
             driver = self.fpga_driver.create(driver_name)
-            ret = driver.program(controlpath_id, download_path.name)
-            LOG.info('Driver program() API returned %s', ret)
+            ret = driver.update(controlpath_id, download_path.name)
+            LOG.info('Driver update() API returned %s', ret)
         finally:
             LOG.debug('Remove tmp bitstream file: %s', download_path.name)
             os.remove(download_path.name)
