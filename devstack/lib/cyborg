@@ -138,10 +138,6 @@ function configure_cyborg_agent {
     # Configure auth
     configure_keystoneauth $CYBORG_AGENT_CONF cyborg placement
     configure_keystone_authtoken_middleware $CYBORG_AGENT_CONF cyborg
-    # this one is needed for lookup of Cyborg API endpoint via Keystone
-    # FIXME(sean-k-mooney) why? cyborg should never call itself via the rest api.
-    # copy this for now and see if we can delete this later
-    configure_auth_for service_catalog $CYBORG_AGENT_CONF
 
     # Add retries so that placement registers the resource provider
     # Set higher than the default (3) because in CI the subnode agent
@@ -169,21 +165,6 @@ function configure_cyborg_api {
     sudo cp -p $CYBORG_DIR/etc/cyborg/api-paste.ini $CYBORG_API_PASTE_INI
 }
 
-function configure_auth_for {
-    local service_config_section
-    service_config_section=$1
-    local config_file
-    config_file=${2:-$CYBORG_CONF}
-    iniset $config_file $service_config_section auth_type password
-    iniset $config_file $service_config_section auth_url $KEYSTONE_SERVICE_URI
-    iniset $config_file $service_config_section username cyborg
-    iniset $config_file $service_config_section password $SERVICE_PASSWORD
-    iniset $config_file $service_config_section project_name $SERVICE_PROJECT_NAME
-    iniset $config_file $service_config_section user_domain_id default
-    iniset $config_file $service_config_section project_domain_id default
-    iniset $config_file $service_config_section cafile $SSL_BUNDLE_FILE
-}
-
 # configure_cyborg_conductor() - Is used by configure_cyborg().
 # Sets conductor specific settings.
 function configure_cyborg_conductor {
@@ -191,12 +172,6 @@ function configure_cyborg_conductor {
     # set keystone region for all services
     iniset $CYBORG_CONF keystone region_name $REGION_NAME
 
-    # this one is needed for lookup of Cyborg API endpoint via Keystone
-    # FIXME(sean-k-mooney) why? cyborg should never call itself via the rest api.
-    # we should look at deleting this or the code that depend on it.
-    # we may want to find our endpoint id for unified limits but we should not need
-    # this in general.
-    configure_auth_for service_catalog
     configure_keystoneauth $CYBORG_CONF cyborg nova
     configure_keystoneauth $CYBORG_CONF cyborg placement
 

@@ -109,18 +109,6 @@ Configure Cyborg
 
         ...
 
-        [service_catalog]
-        cafile = /opt/stack/data/ca-bundle.pem
-        project_domain_id = default
-        user_domain_id = default
-        project_name = service
-        password = cyborg
-        username = cyborg
-        auth_url = http://%OPENSTACK_HOST_IP%/identity
-        auth_type = password
-
-        ...
-
         [placement]
         project_domain_name = Default
         project_name = service
