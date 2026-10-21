@@ -18,11 +18,11 @@
 Cyborg NVIDIA GPU driver implementation.
 """
 
-from cyborg.accelerator.drivers.gpu.base import GPUDriver
+from cyborg.accelerator.drivers.gpu import base
 from cyborg.accelerator.drivers.gpu.nvidia import sysinfo
 
 
-class NVIDIAGPUDriver(GPUDriver):
+class NVIDIAGPUDriver(base.GPUDriver):
     """Class for Nvidia GPU drivers.
     Vendor should implement their specific drivers in this class.
     """

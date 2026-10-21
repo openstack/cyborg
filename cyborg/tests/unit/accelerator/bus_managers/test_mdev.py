@@ -18,11 +18,9 @@ from unittest import mock
 
 import fixtures
 
-from cyborg.accelerator.bus_managers.mdev import MdevBusManager
-from cyborg.accelerator.bus_managers.mdev import MdevParentDevice
-from cyborg.accelerator.bus_managers.mdev import MdevType
+from cyborg.accelerator.bus_managers import mdev
 from cyborg.tests import base
-from cyborg.tests.local_fixtures.mdev_sysfs import MdevSysfsFixture
+from cyborg.tests.local_fixtures import mdev_sysfs
 
 
 class TestMdevBusManagerDiscover(base.TestCase):
@@ -31,14 +29,14 @@ class TestMdevBusManagerDiscover(base.TestCase):
     def setUp(self):
         super().setUp()
         self.sysfs = self.useFixture(
-            MdevSysfsFixture(
+            mdev_sysfs.MdevSysfsFixture(
                 devices=[
-                    MdevParentDevice(address='0000:06:00.0'),
-                    MdevParentDevice(address='0000:07:00.0'),
+                    mdev.MdevParentDevice(address='0000:06:00.0'),
+                    mdev.MdevParentDevice(address='0000:07:00.0'),
                 ],
             ),
         ).path
-        self.mgr = MdevBusManager(sysfs_path=self.sysfs)
+        self.mgr = mdev.MdevBusManager(sysfs_path=self.sysfs)
 
     def test_filter_none_returns_empty(self):
         result = self.mgr.discover_parent_devices(pci_filter=None)
@@ -68,7 +66,7 @@ class TestMdevBusManagerDiscover(base.TestCase):
         self.assertEqual([], result)
 
     def test_nonexistent_sysfs_path(self):
-        mgr = MdevBusManager(
+        mgr = mdev.MdevBusManager(
             sysfs_path=self.sysfs + '/nonexistent/path',
         )
         result = mgr.discover_parent_devices(
@@ -78,7 +76,7 @@ class TestMdevBusManagerDiscover(base.TestCase):
 
     def test_empty_sysfs_directory(self):
         empty_sysfs = self.useFixture(fixtures.TempDir()).path
-        mgr = MdevBusManager(sysfs_path=empty_sysfs)
+        mgr = mdev.MdevBusManager(sysfs_path=empty_sysfs)
         result = mgr.discover_parent_devices(
             pci_filter=['*'],
         )
@@ -126,12 +124,12 @@ class TestMdevBusManagerTypes(base.TestCase):
         super().setUp()
         self.pci_addr = '0000:06:00.0'
         self.sysfs = self.useFixture(
-            MdevSysfsFixture(
+            mdev_sysfs.MdevSysfsFixture(
                 devices=[
-                    MdevParentDevice(
+                    mdev.MdevParentDevice(
                         address=self.pci_addr,
                         mdev_types=[
-                            MdevType(
+                            mdev.MdevType(
                                 type_name='nvidia-319',
                                 name='GRID V100-1Q',
                                 available_instances=16,
@@ -139,7 +137,7 @@ class TestMdevBusManagerTypes(base.TestCase):
                                 device_api='vfio-pci',
                                 description='num_heads=4, ram=1024M',
                             ),
-                            MdevType(
+                            mdev.MdevType(
                                 type_name='nvidia-320',
                                 name='GRID V100-2Q',
                                 available_instances=8,
@@ -152,7 +150,7 @@ class TestMdevBusManagerTypes(base.TestCase):
                 ],
             ),
         ).path
-        self.mgr = MdevBusManager(sysfs_path=self.sysfs)
+        self.mgr = mdev.MdevBusManager(sysfs_path=self.sysfs)
 
     def test_filter_none_returns_empty(self):
         result = self.mgr.get_mdev_types(
@@ -208,12 +206,12 @@ class TestMdevBusManagerTypes(base.TestCase):
     def test_created_instances_counting(self):
         addr = '0000:07:00.0'
         sysfs = self.useFixture(
-            MdevSysfsFixture(
+            mdev_sysfs.MdevSysfsFixture(
                 devices=[
-                    MdevParentDevice(
+                    mdev.MdevParentDevice(
                         address=addr,
                         mdev_types=[
-                            MdevType(
+                            mdev.MdevType(
                                 type_name='nvidia-319',
                                 name='GRID V100-1Q',
                                 available_instances=13,
@@ -226,7 +224,7 @@ class TestMdevBusManagerTypes(base.TestCase):
                 ],
             ),
         ).path
-        mgr = MdevBusManager(sysfs_path=sysfs)
+        mgr = mdev.MdevBusManager(sysfs_path=sysfs)
         result = mgr.get_mdev_types(
             addr,
             type_filter=['nvidia-319'],

@@ -19,18 +19,11 @@ import oslo_messaging as messaging
 
 from oslo_log import log as logging
 
+from cyborg import objects
 from cyborg.common import data_migrations
 from cyborg.common import exception
 from cyborg.common import placement_client
 from cyborg.conf import CONF
-from cyborg.objects.attach_handle import AttachHandle
-from cyborg.objects.attribute import Attribute
-from cyborg.objects.control_path import ControlpathID
-from cyborg.objects.deployable import Deployable
-from cyborg.objects.device import Device
-from cyborg.objects.driver_objects.driver_device import DriverDeployable
-from cyborg.objects.driver_objects.driver_device import DriverDevice
-from cyborg.objects.ext_arq import ExtARQ
 
 
 LOG = logging.getLogger(__name__)
@@ -124,7 +117,7 @@ class ConductorManager:
         :param arqs: ARQ UUIDs joined with ','
         """
         arqlist = arqs.split(',')
-        ExtARQ.delete_by_uuid(context, arqlist)
+        objects.ExtARQ.delete_by_uuid(context, arqlist)
 
     def arq_delete_by_instance_uuid(self, context, instance):
         """Signal to conductor service to delete accelerator requests by
@@ -133,7 +126,7 @@ class ConductorManager:
         :param context: request context.
         :param instance: UUID of instance whose ARQs need to be deleted
         """
-        ExtARQ.delete_by_instance(context, instance)
+        objects.ExtARQ.delete_by_instance(context, instance)
 
     def arq_apply_patch(self, context, patch_list, valid_fields):
         """Signal to conductor service to apply patch accelerator requests.
@@ -142,7 +135,7 @@ class ConductorManager:
         :param patch_list: A map from ARQ UUIDs to their JSON patches
         :param valid_fields: Dict of valid fields
         """
-        ExtARQ.apply_patch(context, patch_list, valid_fields)
+        objects.ExtARQ.apply_patch(context, patch_list, valid_fields)
 
     def report_data(self, context, hostname, driver_device_list):
         """Update the Cyborg DB in one hostname according to the
@@ -154,7 +147,7 @@ class ConductorManager:
         """
         # TODO(): Every time get from the DB?
         # First retrieve the old_device_list from the DB.
-        old_driver_device_list = DriverDevice.list(context, hostname)
+        old_driver_device_list = objects.DriverDevice.list(context, hostname)
         # TODO(wangzhh): Remove invalid driver_devices without controlpath_id.
         # Then diff two driver device list.
         self.drv_device_make_diff(
@@ -232,12 +225,14 @@ class ConductorManager:
             new_driver_dev_obj = new_driver_device_list[new_cpid_list.index(s)]
             old_driver_dev_obj = old_driver_device_list[old_cpid_list.index(s)]
             # First, get dev_obj_list from hostname
-            device_obj_list = Device.get_list_by_hostname(context, host)
+            device_obj_list = objects.Device.get_list_by_hostname(
+                context, host
+            )
             # Then, use controlpath_id.cpid_info to identify one Device.
             cpid_info = new_driver_dev_obj.controlpath_id.cpid_info
             for dev_obj in device_obj_list:
                 # get cpid_obj, could be empty or only one value.
-                cpid_obj = ControlpathID.get_by_device_id_cpidinfo(
+                cpid_obj = objects.ControlpathID.get_by_device_id_cpidinfo(
                     context, dev_obj.id, cpid_info
                 )
                 # find the one cpid_obj with cpid_info
@@ -322,7 +317,9 @@ class ConductorManager:
             new_driver_dep_obj = new_driver_dep_list[new_name_list.index(s)]
             old_driver_dep_obj = old_driver_dep_list[old_name_list.index(s)]
             # get dep_obj, it won't be None because it stored before.
-            dep_obj = Deployable.get_by_name_deviceid(context, s, device_id)
+            dep_obj = objects.Deployable.get_by_name_deviceid(
+                context, s, device_id
+            )
             # update the driver_dep num_accelerators field
             if dep_obj.num_accelerators != new_driver_dep_obj.num_accelerators:
                 dep_obj.num_accelerators = new_driver_dep_obj.num_accelerators
@@ -358,8 +355,10 @@ class ConductorManager:
     ):
         """Diff new driver-side Attribute Object lists with the old one."""
         LOG.info("Start differing attributes.")
-        dep_obj = Deployable.get_by_id(context, dep_id)
-        driver_dep = DriverDeployable.get_by_name(context, dep_obj.name)
+        dep_obj = objects.Deployable.get_by_id(context, dep_id)
+        driver_dep = objects.DriverDeployable.get_by_name(
+            context, dep_obj.name
+        )
         rp_uuid = self.get_rp_uuid_from_obj(driver_dep)
         new_key_list = [
             driver_attr_obj.key for driver_attr_obj in new_driver_attr_list
@@ -390,7 +389,7 @@ class ConductorManager:
             new_driver_attr_obj = new_driver_attr_list[new_key_list.index(s)]
             old_driver_attr_obj = old_driver_attr_list[old_key_list.index(s)]
             if new_driver_attr_obj.value != old_driver_attr_obj.value:
-                attr_obj = Attribute.get_by_dep_key(context, dep_id, s)
+                attr_obj = objects.Attribute.get_by_dep_key(context, dep_id, s)
                 attr_obj.value = new_driver_attr_obj.value
                 attr_obj.save(context)
                 # Update traits here.
@@ -445,7 +444,7 @@ class ConductorManager:
             new_driver_ah_obj = new_driver_ah_list[new_info_list.index(s)]
             old_driver_ah_obj = old_driver_ah_list[old_info_list.index(s)]
             changed_key = ['attach_type']
-            ah_obj = AttachHandle.get_ah_by_depid_attachinfo(
+            ah_obj = objects.AttachHandle.get_ah_by_depid_attachinfo(
                 context, dep_id, s
             )
             for c_k in changed_key:
@@ -505,7 +504,7 @@ class ConductorManager:
         rp_uuid = self.provider_report(
             context, pr_name, resource_class, traits, total, parent_uuid
         )
-        dep_obj = Deployable.get_by_name(context, pr_name)
+        dep_obj = objects.Deployable.get_by_name(context, pr_name)
         dep_obj["rp_uuid"] = rp_uuid
         dep_obj.save(context)
 

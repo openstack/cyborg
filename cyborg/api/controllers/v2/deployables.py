@@ -20,7 +20,7 @@ from oslo_serialization import jsonutils
 from wsme import types as wtypes
 
 from cyborg import objects
-from cyborg.agent.rpcapi import AgentAPI
+from cyborg.agent import rpcapi
 from cyborg.api import expose
 from cyborg.api.controllers import base
 from cyborg.api.controllers import link
@@ -158,7 +158,7 @@ class DeployablesController(base.CyborgController, DeployableCollection):
         controlpath_id['cpid_info'] = jsonutils.loads(
             cpid_list[0]['cpid_info']
         )
-        self.agent_rpcapi = AgentAPI()
+        self.agent_rpcapi = rpcapi.AgentAPI()
         ret = self.agent_rpcapi.fpga_program(
             pecan.request.context,
             hostname,

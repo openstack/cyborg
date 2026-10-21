@@ -24,13 +24,13 @@ from oslo_service import periodic_task
 from oslo_utils import uuidutils
 
 from cyborg.accelerator.drivers.gpu import utils as gpu_utils
-from cyborg.agent.resource_tracker import ResourceTracker
-from cyborg.agent.rpcapi import AgentAPI
+from cyborg.agent import resource_tracker
+from cyborg.agent import rpcapi
 from cyborg.common import exception
 from cyborg.common import placement_client as placement
 from cyborg.conductor import rpcapi as cond_api
 from cyborg.conf import CONF
-from cyborg.image.api import API as ImageAPI
+from cyborg.image import api
 
 
 LOG = logging.getLogger(__name__)
@@ -91,9 +91,11 @@ class AgentManager(periodic_task.PeriodicTasks):
                     raise
 
         self.cond_api = cond_api.ConductorAPI()
-        self.agent_api = AgentAPI()
-        self.image_api = ImageAPI()
-        self._rt = ResourceTracker(self.resource_provider_name, self.cond_api)
+        self.agent_api = rpcapi.AgentAPI()
+        self.image_api = api.API()
+        self._rt = resource_tracker.ResourceTracker(
+            self.resource_provider_name, self.cond_api
+        )
 
     def init_host(self):
         """Hook called by RPCService.start() after the RPC server is up."""

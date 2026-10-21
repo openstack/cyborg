@@ -18,16 +18,16 @@ SPDK NVMFDRIVER module implementation.
 from oslo_log import log as logging
 
 from cyborg.accelerator.common import exception
-from cyborg.accelerator.drivers.spdk.spdk import SPDKDRIVER
+from cyborg.accelerator.drivers.spdk import spdk
 from cyborg.accelerator.drivers.spdk.util import common_fun
-from cyborg.accelerator.drivers.spdk.util.pyspdk.nvmf_client import NvmfTgt
-from cyborg.accelerator.drivers.spdk.util.pyspdk.py_spdk import PySPDK
+from cyborg.accelerator.drivers.spdk.util.pyspdk import nvmf_client
+from cyborg.accelerator.drivers.spdk.util.pyspdk import py_spdk
 
 
 LOG = logging.getLogger(__name__)
 
 
-class NVMFDRIVER(SPDKDRIVER):
+class NVMFDRIVER(spdk.SPDKDRIVER):
     """NVMFDRIVER class.
 
     nvmf_tgt server app should be able to implement this driver.
@@ -45,7 +45,7 @@ class NVMFDRIVER(SPDKDRIVER):
             return self.get_one_accelerator()
 
     def get_one_accelerator(self):
-        acc_client = NvmfTgt(self.py)
+        acc_client = nvmf_client.NvmfTgt(self.py)
         bdevs = acc_client.get_bdevs()
         # Display current blockdev list
         subsystems = acc_client.get_nvmf_subsystems()
@@ -70,7 +70,7 @@ class NVMFDRIVER(SPDKDRIVER):
         accelerators = []
         for accelerator_i in range(len(self.servers)):
             accelerator = self.servers[accelerator_i]
-            py_tmp = PySPDK(accelerator)
+            py_tmp = py_spdk.PySPDK(accelerator)
             if py_tmp.is_alive():
                 accelerators.append(self.get_one_accelerator())
         return accelerators
@@ -91,7 +91,7 @@ class NVMFDRIVER(SPDKDRIVER):
         :raise exception: Invalid
         """
         if nqn == "":
-            acc_client = NvmfTgt(self.py)
+            acc_client = nvmf_client.NvmfTgt(self.py)
             acc_client.delete_nvmf_subsystem(nqn)
         else:
             raise exception.Invalid('Delete nvmf subsystem failed.')
@@ -118,7 +118,7 @@ class NVMFDRIVER(SPDKDRIVER):
             (namespaces != '' and listen != '')
             and (hosts != '' and serial_number != '')
         ) and nqn != '':
-            acc_client = NvmfTgt(self.py)
+            acc_client = nvmf_client.NvmfTgt(self.py)
             acc_client.construct_nvmf_subsystem(
                 nqn, listen, hosts, serial_number, namespaces
             )

@@ -17,16 +17,16 @@ SPDK VHOSTDRIVER module implementation.
 
 from oslo_log import log as logging
 
-from cyborg.accelerator.drivers.spdk.spdk import SPDKDRIVER
+from cyborg.accelerator.drivers.spdk import spdk
 from cyborg.accelerator.drivers.spdk.util import common_fun
-from cyborg.accelerator.drivers.spdk.util.pyspdk.py_spdk import PySPDK
-from cyborg.accelerator.drivers.spdk.util.pyspdk.vhost_client import VhostTgt
+from cyborg.accelerator.drivers.spdk.util.pyspdk import py_spdk
+from cyborg.accelerator.drivers.spdk.util.pyspdk import vhost_client
 
 
 LOG = logging.getLogger(__name__)
 
 
-class VHOSTDRIVER(SPDKDRIVER):
+class VHOSTDRIVER(spdk.SPDKDRIVER):
     """VHOSTDRIVER class.
 
     vhost server app should be able to implement this driver.
@@ -44,7 +44,7 @@ class VHOSTDRIVER(SPDKDRIVER):
             return self.get_one_accelerator()
 
     def get_one_accelerator(self):
-        acc_client = VhostTgt(self.py)
+        acc_client = vhost_client.VhostTgt(self.py)
         bdevs = acc_client.get_bdevs()
         # Display current blockdev list
         scsi_devices = acc_client.get_scsi_devices()
@@ -75,7 +75,7 @@ class VHOSTDRIVER(SPDKDRIVER):
         accelerators = []
         for accelerator_i in range(len(self.servers)):
             accelerator = self.servers[accelerator_i]
-            py_tmp = PySPDK(accelerator)
+            py_tmp = py_spdk.PySPDK(accelerator)
             if py_tmp.is_alive():
                 accelerators.append(self.get_one_accelerator())
         return accelerators
@@ -96,7 +96,7 @@ class VHOSTDRIVER(SPDKDRIVER):
         :param ip_addr: ip address will be added.
         :return: ip_address
         """
-        acc_client = VhostTgt(self.py)
+        acc_client = vhost_client.VhostTgt(self.py)
         return acc_client.add_ip_address(ifc_index, ip_addr)
 
     def delete_ip_address(self, ifc_index, ip_addr):
@@ -106,5 +106,5 @@ class VHOSTDRIVER(SPDKDRIVER):
         :param ip_addr: ip address will be added.
         :return: ip_address
         """
-        acc_client = VhostTgt(self.py)
+        acc_client = vhost_client.VhostTgt(self.py)
         return acc_client.delete_ip_address(ifc_index, ip_addr)

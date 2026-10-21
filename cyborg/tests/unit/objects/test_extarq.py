@@ -16,7 +16,7 @@
 from unittest import mock
 
 from oslo_utils.fixture import uuidsentinel as uuids
-from testtools.matchers import HasLength
+from testtools import matchers
 
 from cyborg import context as cyborg_context
 from cyborg import objects
@@ -61,7 +61,7 @@ class TestExtARQObject(base.DbTestCase):
             mock_get_list.return_value = [db_extarq]
             obj_extarqs = objects.ExtARQ.list(self.context)
             self.assertEqual(1, mock_get_list.call_count)
-            self.assertThat(obj_extarqs, HasLength(1))
+            self.assertThat(obj_extarqs, matchers.HasLength(1))
             self.assertIsInstance(obj_extarqs[0], objects.ExtARQ)
             for obj_extarq in obj_extarqs:
                 self.assertEqual(obj_extarqs[0].arq.uuid, db_extarq['uuid'])

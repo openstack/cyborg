@@ -14,7 +14,7 @@ import json
 
 from unittest import mock
 
-from cyborg.accelerator.drivers.aichip.huawei.ascend import AscendDriver
+from cyborg.accelerator.drivers.aichip.huawei import ascend
 from cyborg.tests import base
 
 
@@ -30,20 +30,20 @@ class TestAscendDriver(base.TestCase):
         return_value=d100_pci_res,
     )
     def test_discover(self, mock_pci):
-        ascend_driver = AscendDriver()
+        ascend_driver = ascend.AscendDriver()
         npu_list = ascend_driver.discover()
         self.assertEqual(2, len(npu_list))
-        for ascend in npu_list:
-            self.assertEqual('AICHIP', ascend.type)
-            self.assertEqual('Device', ascend.model)
-            self.assertEqual('PCI', ascend.controlpath_id.cpid_type)
+        for npu in npu_list:
+            self.assertEqual('AICHIP', npu.type)
+            self.assertEqual('Device', npu.model)
+            self.assertEqual('PCI', npu.controlpath_id.cpid_type)
             self.assertEqual(
                 json.loads(
                     '{"class": "Processing accelerators", "device_id": "d100"}'
                 ),
-                json.loads(ascend.std_board_info),
+                json.loads(npu.std_board_info),
             )
-            self.assertEqual('19e5', ascend.vendor)
+            self.assertEqual('19e5', npu.vendor)
 
         self.assertEqual(
             {"device": "0c", "bus": "00", "domain": "0000", "function": "0"},

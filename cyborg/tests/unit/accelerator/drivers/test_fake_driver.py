@@ -17,7 +17,7 @@ import copy
 
 from oslo_serialization import jsonutils
 
-from cyborg.accelerator.drivers.fake import FakeDriver
+from cyborg.accelerator.drivers import fake
 from cyborg.tests import base
 
 
@@ -118,7 +118,7 @@ class TestFakeDriver(base.TestCase):
             'controlpath_id': cpid,
         }
 
-        fake_drv = FakeDriver()
+        fake_drv = fake.FakeDriver()
         devices = fake_drv.discover()
         self.assertEqual(1, len(devices))
         for field in ['vendor', 'type', 'model']:
@@ -148,11 +148,11 @@ class TestFakeDriver(base.TestCase):
         The fake driver returns True so the full program API flow can be
         exercised in CI without real hardware.
         """
-        fake_drv = FakeDriver()
+        fake_drv = fake.FakeDriver()
         self.assertTrue(fake_drv.update(None, None))
 
     def test_generate_attach_handles(self):
-        fake_drv = FakeDriver()
+        fake_drv = fake.FakeDriver()
         pci_addr = '{"domain":"0000","bus":"0c","device":"00","function":"0"}'
         pci = {'slot': pci_addr}
         num_accelerators = 255  # Largest value that will fit within a bus

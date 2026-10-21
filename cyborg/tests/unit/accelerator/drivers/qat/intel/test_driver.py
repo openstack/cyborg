@@ -14,8 +14,8 @@ import os
 
 import fixtures
 
+from cyborg.accelerator.drivers.qat.intel import driver
 from cyborg.accelerator.drivers.qat.intel import sysinfo
-from cyborg.accelerator.drivers.qat.intel.driver import IntelQATDriver
 from cyborg.tests import base
 from cyborg.tests.unit.accelerator.drivers.qat.intel import prepare_test_data
 
@@ -96,7 +96,7 @@ class TestIntelQATDriver(base.TestCase):
                 },
             },
         ]
-        intel = IntelQATDriver()
+        intel = driver.IntelQATDriver()
         qats = intel.discover()
         list.sort(qats, key=lambda x: x._obj_deployable_list[0].name)
         self.assertEqual(2, len(qats))

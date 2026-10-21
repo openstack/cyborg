@@ -15,9 +15,9 @@
 
 from unittest import mock
 
-from cyborg.accelerator.drivers.spdk.nvmf.nvmf import NVMFDRIVER
+from cyborg.accelerator.drivers.spdk.nvmf import nvmf
 from cyborg.accelerator.drivers.spdk.util import common_fun
-from cyborg.accelerator.drivers.spdk.util.pyspdk.nvmf_client import NvmfTgt
+from cyborg.accelerator.drivers.spdk.util.pyspdk import nvmf_client
 from cyborg.tests import base
 
 
@@ -26,13 +26,13 @@ class TestNVMFDRIVER(base.TestCase):
         self,
     ):
         super().setUp()
-        self.nvmf_driver = NVMFDRIVER()
+        self.nvmf_driver = nvmf.NVMFDRIVER()
 
     def tearDown(self):
         super().tearDown()
         self.vhost_driver = None
 
-    @mock.patch.object(NVMFDRIVER, 'get_one_accelerator')
+    @mock.patch.object(nvmf.NVMFDRIVER, 'get_one_accelerator')
     def test_discover_accelerator(self, mock_get_one_accelerator):
         expect_accelerator = {
             'server': 'nvmf',
@@ -59,7 +59,7 @@ class TestNVMFDRIVER(base.TestCase):
         self.nvmf_driver.py.is_alive = alive
         check_error = mock.Mock(return_value=True)
         common_fun.check_for_setup_error = check_error
-        acce_client = NvmfTgt(self.nvmf_driver.py)
+        acce_client = nvmf_client.NvmfTgt(self.nvmf_driver.py)
         bdevs_fake = [
             {"num_blocks": 131072, "name": "nvme1", "block_size": 512}
         ]

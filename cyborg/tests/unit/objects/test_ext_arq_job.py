@@ -232,12 +232,16 @@ class TestExtARQJobMixin(base.DbTestCase):
             self.class_objects["no_program"]: None,
         }
         arq_binds.update(arq_job_binds)
-        objects.ext_arq.ExtARQJobMixin.master(self.context, arq_binds)
+        objects.extarq.ext_arq_job.ExtARQJobMixin.master(
+            self.context, arq_binds
+        )
         mock_get_result.return_value = "Jobs_Generator"
         mock_get_result.assert_called_once()
         mock_spawn.assert_called_once()
 
-    @mock.patch('cyborg.objects.ext_arq.ExtARQJobMixin.check_bindings_result')
+    @mock.patch(
+        'cyborg.objects.extarq.ext_arq_job.ExtARQJobMixin.check_bindings_result'
+    )
     def test_master_with_instant(self, mock_result):
         # There are no async job, so will not start to monitor the job status
         arq_binds = {
@@ -321,7 +325,9 @@ class TestExtARQJobMixin(base.DbTestCase):
         objects.ExtARQ.check_bindings_result(self.context, extarqs)
         mock_notify.assert_called_once_with(instance_uuid, bind_status)
 
-    @mock.patch('cyborg.objects.ext_arq.ExtARQJobMixin.check_bindings_result')
+    @mock.patch(
+        'cyborg.objects.extarq.ext_arq_job.ExtARQJobMixin.check_bindings_result'
+    )
     def test_job_monitor_with_job_exception(self, mock_result):
         works = utils.ThreadWorks()
         err_job = works.spawn(lambda x: x / 0, 1)
@@ -340,7 +346,9 @@ class TestExtARQJobMixin(base.DbTestCase):
         )
         mock_result.assert_called_once_with(self.context, extarqs)
 
-    @mock.patch('cyborg.objects.ext_arq.ExtARQJobMixin.check_bindings_result')
+    @mock.patch(
+        'cyborg.objects.extarq.ext_arq_job.ExtARQJobMixin.check_bindings_result'
+    )
     def test_job_monitor_with_job_successful(self, mock_result):
         works = utils.ThreadWorks()
         job1 = works.spawn(lambda x: x, 1)
@@ -359,7 +367,9 @@ class TestExtARQJobMixin(base.DbTestCase):
         )
         mock_result.assert_called_once_with(self.context, extarqs)
 
-    @mock.patch('cyborg.objects.ext_arq.ExtARQJobMixin.check_bindings_result')
+    @mock.patch(
+        'cyborg.objects.extarq.ext_arq_job.ExtARQJobMixin.check_bindings_result'
+    )
     def test_job_monitor_without_jobs(self, mock_result):
         works = utils.ThreadWorks()
         works_generator = works.get_workers_result(
@@ -376,7 +386,9 @@ class TestExtARQJobMixin(base.DbTestCase):
         )
         mock_result.assert_called_once_with(self.context, extarqs)
 
-    @mock.patch('cyborg.objects.ext_arq.ExtARQJobMixin.check_bindings_result')
+    @mock.patch(
+        'cyborg.objects.extarq.ext_arq_job.ExtARQJobMixin.check_bindings_result'
+    )
     def test_job_monitor_with_empty_arq(self, mock_result):
         works = utils.ThreadWorks()
         good_job = works.spawn(lambda x: x, 1)
@@ -396,7 +408,7 @@ class TestExtARQJobMixin(base.DbTestCase):
         mock_api.return_value = type(
             "NovaAPI", (object,), {"notify_binding": mock_notify}
         )
-        objects.ext_arq.ExtARQJobMixin.bind_notify(
+        objects.extarq.ext_arq_job.ExtARQJobMixin.bind_notify(
             '5922a70f-1e06-4cfd-88dd-a332120d7144',
             [('a097fefa-da62-4630-8e8b-424c0e3426dc', 'completed')],
         )
@@ -407,7 +419,9 @@ class TestExtARQJobMixin(base.DbTestCase):
         )
 
     @mock.patch('cyborg.objects.ExtARQ.unbind')
-    @mock.patch('cyborg.objects.ext_arq.ExtARQJobMixin.get_suitable_ext_arq')
+    @mock.patch(
+        'cyborg.objects.extarq.ext_arq_job.ExtARQJobMixin.get_suitable_ext_arq'
+    )
     def test_apply_patch_with_op_remove(self, mock_get, mock_unbind):
         patch_list = {}
         host_binding = {'path': '/hostname', 'op': 'remove', 'value': 'myhost'}

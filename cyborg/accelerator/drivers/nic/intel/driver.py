@@ -17,11 +17,11 @@
 Cyborg Intel NIC driver implementation.
 """
 
-from cyborg.accelerator.drivers.nic.base import NICDriver
+from cyborg.accelerator.drivers.nic import base
 from cyborg.accelerator.drivers.nic.intel import sysinfo
 
 
-class IntelNICDriver(NICDriver):
+class IntelNICDriver(base.NICDriver):
     """Class for Intel NIC drivers.
     Vendor should implement their specific drivers in this class.
     """

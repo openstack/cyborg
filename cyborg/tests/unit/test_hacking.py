@@ -149,3 +149,96 @@ class HackingTestCase(base.TestCase):
             LOG.info(msg, {"fruit", fruit})
         """
         self._assert_has_no_errors(code, checker)
+
+    def test_direct_class_import_first_party(self):
+        checker = checks.CheckDirectClassImport
+        code = """
+            from cyborg.objects.device import Device
+        """
+        self._assert_has_errors(
+            code, checker, expected_errors=[(1, 0, "C301")]
+        )
+
+    def test_direct_class_import_third_party(self):
+        checker = checks.CheckDirectClassImport
+        code = """
+            from stevedore.extension import ExtensionManager
+        """
+        self._assert_has_errors(
+            code, checker, expected_errors=[(1, 0, "C301")]
+        )
+
+    def test_direct_class_import_aliased(self):
+        checker = checks.CheckDirectClassImport
+        code = """
+            from cyborg.agent.rpcapi import AgentAPI as rpc
+        """
+        self._assert_has_errors(
+            code, checker, expected_errors=[(1, 0, "C301")]
+        )
+
+    def test_import_exception_submodule_no_error(self):
+        # A submodule of a whitelisted module (sqlalchemy) is exempt too.
+        checker = checks.CheckDirectClassImport
+        code = """
+            from sqlalchemy.orm.exc import NoResultFound
+        """
+        self._assert_has_no_errors(code, checker)
+
+    def test_module_import_no_error(self):
+        checker = checks.CheckDirectClassImport
+        code = """
+            from cyborg.objects import device
+        """
+        self._assert_has_no_errors(code, checker)
+
+    def test_tox_import_exception_no_error(self):
+        # http and io are configured in [hacking] import_exceptions.
+        checker = checks.CheckDirectClassImport
+        code = """
+            from http import HTTPStatus
+            from io import BytesIO
+        """
+        self._assert_has_no_errors(code, checker)
+
+    def test_configured_import_exception_no_error(self):
+        # A module made exempt via import_exceptions is not flagged.
+        checker = checks.CheckDirectClassImport
+        code = """
+            from example_ext.widgets import FancyWidget
+        """
+        with mock.patch.object(checks, 'IMPORT_EXCEPTIONS', ['example_ext']):
+            self._assert_has_no_errors(code, checker)
+
+    def test_is_import_exception_helper(self):
+        with mock.patch.object(
+            checks, 'IMPORT_EXCEPTIONS', ['sqlalchemy', 'http']
+        ):
+            self.assertTrue(checks.is_import_exception('sqlalchemy'))
+            self.assertTrue(checks.is_import_exception('sqlalchemy.orm.exc'))
+            self.assertTrue(checks.is_import_exception('http.HTTPStatus'))
+            self.assertFalse(
+                checks.is_import_exception('cyborg.objects.device.Device')
+            )
+
+    def test_sqlalchemy_dsl_import_no_error(self):
+        checker = checks.CheckDirectClassImport
+        code = """
+            from sqlalchemy import Column
+        """
+        self._assert_has_no_errors(code, checker)
+
+    def test_constant_import_no_error(self):
+        checker = checks.CheckDirectClassImport
+        code = """
+            from cyborg.conf import CONF
+            from cyborg.common.constants import ARQ_STATES_TRANSFORM_MATRIX
+        """
+        self._assert_has_no_errors(code, checker)
+
+    def test_relative_import_no_error(self):
+        checker = checks.CheckDirectClassImport
+        code = """
+            from . import base
+        """
+        self._assert_has_no_errors(code, checker)

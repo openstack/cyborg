@@ -40,9 +40,11 @@ class TestAgentManager(base.TestCase):
         """Create an AgentManager with all dependencies mocked."""
         with (
             mock.patch('cyborg.agent.manager.cond_api.ConductorAPI'),
-            mock.patch('cyborg.agent.manager.AgentAPI'),
-            mock.patch('cyborg.agent.manager.ImageAPI'),
-            mock.patch('cyborg.agent.manager.ResourceTracker'),
+            mock.patch('cyborg.agent.manager.rpcapi.AgentAPI'),
+            mock.patch('cyborg.agent.manager.api.API'),
+            mock.patch(
+                'cyborg.agent.manager.resource_tracker.ResourceTracker'
+            ),
         ):
             return manager.AgentManager('cyborg-agent-topic')
 

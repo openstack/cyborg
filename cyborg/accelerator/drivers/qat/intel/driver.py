@@ -17,11 +17,11 @@
 Cyborg Intel QAT driver implementation.
 """
 
-from cyborg.accelerator.drivers.qat.base import QATDriver
+from cyborg.accelerator.drivers.qat import base
 from cyborg.accelerator.drivers.qat.intel import sysinfo
 
 
-class IntelQATDriver(QATDriver):
+class IntelQATDriver(base.QATDriver):
     """Class for Intel QAT drivers.
     Vendor should implement their specific drivers in this class.
     """

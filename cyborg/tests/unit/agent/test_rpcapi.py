@@ -17,7 +17,7 @@ from unittest import mock
 import oslo_messaging as messaging
 
 from cyborg import context as cyborg_context
-from cyborg.agent.rpcapi import AgentAPI
+from cyborg.agent import rpcapi
 from cyborg.common import constants
 from cyborg.common import rpc
 from cyborg.objects import base as objects_base
@@ -35,7 +35,7 @@ class TestRPCAPI(base.TestCase):
         target = messaging.Target(
             topic=self.topic, version=self.RPC_API_VERSION
         )
-        self.agent_rpcapi = AgentAPI()
+        self.agent_rpcapi = rpcapi.AgentAPI()
         self.serializer = objects_base.CyborgObjectSerializer()
         self.client = rpc.get_client(
             target,

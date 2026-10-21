@@ -15,25 +15,25 @@
 
 from unittest import mock
 
-from cyborg.accelerator.drivers.gpu.base import GPUDriver
-from cyborg.accelerator.drivers.gpu.nvidia.driver import NVIDIAGPUDriver
+from cyborg.accelerator.drivers.gpu import base as gpu_base
+from cyborg.accelerator.drivers.gpu.nvidia import driver
 from cyborg.tests import base
 
 
 class TestGPUDriver(base.TestCase):
     def test_create(self):
         # NVIDIAGPUDriver.VENDOR == 'nvidia'
-        GPUDriver.create(NVIDIAGPUDriver.VENDOR)
-        self.assertRaises(LookupError, GPUDriver.create, "matrox")
+        gpu_base.GPUDriver.create(driver.NVIDIAGPUDriver.VENDOR)
+        self.assertRaises(LookupError, gpu_base.GPUDriver.create, "matrox")
 
     def test_discover(self):
-        d = GPUDriver()
+        d = gpu_base.GPUDriver()
         self.assertRaises(NotImplementedError, d.discover)
 
     def test_init_host_default_noop(self):
-        d = GPUDriver()
+        d = gpu_base.GPUDriver()
         d.init_host()
 
     def test_cleanup_default_noop(self):
-        d = GPUDriver()
+        d = gpu_base.GPUDriver()
         d.cleanup(mock.Mock())

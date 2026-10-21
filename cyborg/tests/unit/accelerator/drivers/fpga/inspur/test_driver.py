@@ -16,7 +16,7 @@ from unittest import mock
 
 from oslo_serialization import jsonutils
 
-from cyborg.accelerator.drivers.fpga.inspur.driver import InspurFPGADriver
+from cyborg.accelerator.drivers.fpga.inspur import driver
 from cyborg.tests import base
 
 
@@ -49,7 +49,7 @@ class TestInspurFPGADriver(base.TestCase):
     def test_discover(self, mock_devices_for_vendor):
         mock_devices_for_vendor.return_value = self.p.stdout.readlines()[0]
         self.set_defaults(host='host-192-168-32-195', debug=True)
-        fpga_list = InspurFPGADriver().discover()
+        fpga_list = driver.InspurFPGADriver().discover()
         self.assertEqual(1, len(fpga_list))
         attach_handle_list = [
             {

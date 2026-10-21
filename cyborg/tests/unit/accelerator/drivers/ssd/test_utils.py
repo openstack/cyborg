@@ -16,9 +16,9 @@ from unittest import mock
 
 from oslo_serialization import jsonutils
 
+from cyborg.accelerator.drivers.ssd import base as ssd_base
 from cyborg.accelerator.drivers.ssd import utils
-from cyborg.accelerator.drivers.ssd.base import SSDDriver
-from cyborg.accelerator.drivers.ssd.inspur.driver import InspurNVMeSSDDriver
+from cyborg.accelerator.drivers.ssd.inspur import driver
 from cyborg.tests import base
 
 
@@ -60,7 +60,7 @@ class TestSSDDriverUtils(base.TestCase):
         mock_devices_for_vendor.return_value = self.p.stdout.readlines()[0]
         self.set_defaults(host='host-192-168-32-195', debug=True)
         vendor_id = '1bd4'
-        ssd_list = InspurNVMeSSDDriver.discover(vendor_id)
+        ssd_list = driver.InspurNVMeSSDDriver.discover(vendor_id)
         self.assertEqual(2, len(ssd_list))
         attach_handle_list = [
             {
@@ -145,7 +145,7 @@ class TestSSDDriverUtils(base.TestCase):
     def test_discover_with_base_ssd_driver(self, mock_devices_for_vendor):
         mock_devices_for_vendor.return_value = self.p.stdout.readlines()[0]
         with self.assertLogs(None, level='INFO') as cm:
-            d = SSDDriver.create()
+            d = ssd_base.SSDDriver.create()
             ssd_list = d.discover()
         self.assertEqual(
             cm.output,

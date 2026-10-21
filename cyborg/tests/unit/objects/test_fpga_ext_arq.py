@@ -22,7 +22,7 @@ import requests
 
 from requests import structures
 from requests import utils
-from testtools.matchers import HasLength
+from testtools import matchers
 
 from cyborg import objects
 from cyborg.common import constants
@@ -178,7 +178,7 @@ class TestFPGAExtARQObject(base.DbTestCase):
             mock_get_list.return_value = db_extarqs
             obj_extarqs = objects.FPGAExtARQ.list(self.context)
             self.assertEqual(1, mock_get_list.call_count)
-            self.assertThat(obj_extarqs, HasLength(4))
+            self.assertThat(obj_extarqs, matchers.HasLength(4))
             self.assertIsInstance(obj_extarqs[0], objects.FPGAExtARQ)
             for i, obj_extarq in enumerate(obj_extarqs):
                 self.assertEqual(obj_extarq.arq.uuid, db_extarqs[i]['uuid'])

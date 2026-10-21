@@ -25,7 +25,7 @@ from oslo_db.sqlalchemy import test_fixtures
 from cyborg.db import api as dbapi
 from cyborg.db.sqlalchemy import api as sqlalchemy_api
 from cyborg.db.sqlalchemy import models
-from cyborg.tests.local_fixtures.db_lock_fixture import DatabaseWriteLock
+from cyborg.tests.local_fixtures import db_lock_fixture
 
 
 CONF = cfg.CONF
@@ -68,5 +68,5 @@ class DatabaseFixture(fixtures.Fixture):
 
         self.engine = local_ef.writer.get_engine()
         models.Base.metadata.create_all(self.engine)
-        self.useFixture(DatabaseWriteLock())
+        self.useFixture(db_lock_fixture.DatabaseWriteLock())
         self.dbapi = dbapi.get_instance()

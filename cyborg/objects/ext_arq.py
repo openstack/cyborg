@@ -21,7 +21,7 @@ from oslo_utils import versionutils
 from oslo_versionedobjects import base as object_base
 
 from cyborg import objects
-from cyborg.agent.rpcapi import AgentAPI
+from cyborg.agent import rpcapi
 from cyborg.common import constants
 from cyborg.common import exception
 from cyborg.common import utils
@@ -30,9 +30,7 @@ from cyborg.conf import CONF
 from cyborg.db import api as dbapi
 from cyborg.objects import base
 from cyborg.objects import fields as object_fields
-from cyborg.objects.attach_handle import AttachHandle
-from cyborg.objects.device_profile import DeviceProfile
-from cyborg.objects.extarq.ext_arq_job import ExtARQJobMixin
+from cyborg.objects.extarq import ext_arq_job
 
 
 LOG = logging.getLogger(__name__)
@@ -43,7 +41,7 @@ class ExtARQ(
     base.CyborgObject,
     object_base.VersionedObjectDictCompat,
     utils.FactoryMixin,
-    ExtARQJobMixin,
+    ext_arq_job.ExtARQJobMixin,
 ):
     """ExtARQ is a wrapper around ARQ with Cyborg-private fields.
     Each ExtARQ object contains exactly one ARQ object as a field.
@@ -87,7 +85,7 @@ class ExtARQ(
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.agent = AgentAPI()
+        self.agent = rpcapi.AgentAPI()
 
     def create(self, context, device_profile_id=None):
         """Create an ExtARQ record in the DB."""
@@ -239,7 +237,7 @@ class ExtARQ(
 
     def _allocate_attach_handle(self, context, deployable):
         try:
-            ah = AttachHandle.allocate(context, deployable.id)
+            ah = objects.AttachHandle.allocate(context, deployable.id)
             self.attach_handle_id = ah.id
             # if attach_handle is a vgpu, create the mdev in the sys path
             if ah.attach_type == 'MDEV':
@@ -286,7 +284,7 @@ class ExtARQ(
 
     def _deallocate_attach_handle(self, context, ah_id, hostname):
         try:
-            attach_handle = AttachHandle.get_by_id(context, ah_id)
+            attach_handle = objects.AttachHandle.get_by_id(context, ah_id)
             if attach_handle.attach_type == 'MDEV':
                 attach_info = json.loads(attach_handle.attach_info)
                 pci_addr = "{}:{}:{}.{}".format(
@@ -343,7 +341,7 @@ class ExtARQ(
         devprof_id = db_extarq['device_profile_id']
         devprof_group_id = db_extarq['device_profile_group_id']
 
-        devprof = DeviceProfile.get_by_id(context, devprof_id)
+        devprof = objects.DeviceProfile.get_by_id(context, devprof_id)
         db_extarq['device_profile_name'] = devprof['name']
 
         db_extarq['attach_handle_type'] = ''

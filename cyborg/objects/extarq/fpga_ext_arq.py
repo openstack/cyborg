@@ -21,21 +21,21 @@ from openstack import connection
 from oslo_log import log as logging
 from oslo_serialization import jsonutils
 
-from cyborg.agent.rpcapi import AgentAPI
+from cyborg.agent import rpcapi
 from cyborg.common import constants
 from cyborg.common import exception
 from cyborg.common import placement_client
 from cyborg.common import utils
 from cyborg.objects import base
-from cyborg.objects.ext_arq import ExtARQ
+from cyborg.objects import ext_arq
 
 
 LOG = logging.getLogger(__name__)
 
 
-@utils.factory_register(ExtARQ, constants.FPGA)
+@utils.factory_register(ext_arq.ExtARQ, constants.FPGA)
 @base.CyborgObjectRegistry.register
-class FPGAExtARQ(ExtARQ):
+class FPGAExtARQ(ext_arq.ExtARQ):
     """FPGA Extra ARQ."""
 
     def _get_bitstream_id(self):
@@ -267,7 +267,7 @@ class FPGAExtARQ(ExtARQ):
         )
         # TODO(Shaohe) do this asynchronously, do this in conductor or agent?
         try:
-            agent = AgentAPI()
+            agent = rpcapi.AgentAPI()
             agent.fpga_program(
                 context, hostname, controlpath_id, bitstream_id, driver_name
             )

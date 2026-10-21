@@ -13,27 +13,27 @@
 
 from unittest import mock
 
-from cyborg.accelerator.drivers.qat.base import QATDriver
+from cyborg.accelerator.drivers.qat import base as qat_base
 from cyborg.tests import base
 
 
 class TestQATDriver(base.TestCase):
     def test_create(self):
-        QATDriver.create("intel")
-        self.assertRaises(LookupError, QATDriver.create, "other")
+        qat_base.QATDriver.create("intel")
+        self.assertRaises(LookupError, qat_base.QATDriver.create, "other")
 
     def test_discover(self):
-        d = QATDriver()
+        d = qat_base.QATDriver()
         self.assertRaises(NotImplementedError, d.discover)
 
     def test_discover_vendors(self):
-        d = QATDriver()
+        d = qat_base.QATDriver()
         self.assertRaises(NotImplementedError, d.discover_vendors)
 
     def test_init_host_default_noop(self):
-        d = QATDriver()
+        d = qat_base.QATDriver()
         d.init_host()
 
     def test_cleanup_default_noop(self):
-        d = QATDriver()
+        d = qat_base.QATDriver()
         d.cleanup(mock.Mock())

@@ -24,9 +24,9 @@ from oslo_log import log as logging
 
 from cyborg.accelerator import configuration
 from cyborg.accelerator.common import exception
-from cyborg.accelerator.drivers.spdk.util.pyspdk.nvmf_client import NvmfTgt
-from cyborg.accelerator.drivers.spdk.util.pyspdk.py_spdk import PySPDK
-from cyborg.accelerator.drivers.spdk.util.pyspdk.vhost_client import VhostTgt
+from cyborg.accelerator.drivers.spdk.util.pyspdk import nvmf_client
+from cyborg.accelerator.drivers.spdk.util.pyspdk import py_spdk
+from cyborg.accelerator.drivers.spdk.util.pyspdk import vhost_client
 from cyborg.common.i18n import _
 
 
@@ -176,7 +176,7 @@ def get_py_client(server):
     :raise: InvalidAccelerator.
     """
     if server in SERVERS:
-        py = PySPDK(server)
+        py = py_spdk.PySPDK(server)
         return py
     else:
         msg = _("Could not find %s accelerator") % server
@@ -208,10 +208,10 @@ def get_accelerator_client(py, accelerator):
     """
     acc_client = None
     if accelerator == 'vhost':
-        acc_client = VhostTgt(py)
+        acc_client = vhost_client.VhostTgt(py)
         return acc_client
     elif accelerator == 'nvmf':
-        acc_client = NvmfTgt(py)
+        acc_client = nvmf_client.NvmfTgt(py)
         return acc_client
     else:
         exc_msg = _("accelerator_client %(acc_client) is missing") % acc_client

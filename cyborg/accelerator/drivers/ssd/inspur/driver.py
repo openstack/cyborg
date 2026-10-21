@@ -17,11 +17,11 @@
 Cyborg Inspur NVMe SSD driver implementation.
 """
 
-from cyborg.accelerator.drivers.ssd.base import SSDDriver
+from cyborg.accelerator.drivers.ssd import base
 from cyborg.accelerator.drivers.ssd.inspur import sysinfo
 
 
-class InspurNVMeSSDDriver(SSDDriver):
+class InspurNVMeSSDDriver(base.SSDDriver):
     VENDOR = "inspur"
 
     def discover(self):

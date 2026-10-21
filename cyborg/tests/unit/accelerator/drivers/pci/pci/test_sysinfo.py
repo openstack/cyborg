@@ -14,8 +14,8 @@ from unittest import mock
 
 import cyborg
 
+from cyborg.accelerator.drivers.pci.pci import driver as pci_driver
 from cyborg.accelerator.drivers.pci.pci import sysinfo
-from cyborg.accelerator.drivers.pci.pci.driver import PCIDriver
 from cyborg.common import constants
 from cyborg.tests import base
 
@@ -257,7 +257,7 @@ class TestDiscoverPcis(base.TestCase):
     def test_discover_via_driver_class(self, mock_pci):
         mock_pci.return_value = (NVIDIA_PCI_LINE, '')
         self._set_whitelist(['{"vendor_id":"10de"}'])
-        driver = PCIDriver()
+        driver = pci_driver.PCIDriver()
         devs = driver.discover()
         self.assertEqual(1, len(devs))
         self.assertEqual('10de', devs[0].as_dict()['vendor'])

@@ -21,11 +21,11 @@ from cyborg import objects
 from cyborg.common import exception
 from cyborg.tests.unit import fake_deployable
 from cyborg.tests.unit import fake_device
-from cyborg.tests.unit.db.base import DbTestCase
+from cyborg.tests.unit.db import base
 from cyborg.tests.unit.objects import test_objects
 
 
-class TestDeployableObject(DbTestCase):
+class TestDeployableObject(base.DbTestCase):
     @property
     def fake_device(self):
         db_device = fake_device.get_fake_devices_as_dict()[0]

@@ -14,23 +14,23 @@
 
 from unittest import mock
 
-from cyborg.accelerator.drivers.fpga.base import FPGADriver
+from cyborg.accelerator.drivers.fpga import base as fpga_base
 from cyborg.tests import base
 
 
 class TestFPGADriver(base.TestCase):
     def test_discover(self):
-        d = FPGADriver()
+        d = fpga_base.FPGADriver()
         self.assertRaises(NotImplementedError, d.discover)
 
     def test_update(self):
-        d = FPGADriver()
+        d = fpga_base.FPGADriver()
         self.assertRaises(NotImplementedError, d.update, "path", "image")
 
     def test_init_host_default_noop(self):
-        d = FPGADriver()
+        d = fpga_base.FPGADriver()
         d.init_host()
 
     def test_cleanup_default_noop(self):
-        d = FPGADriver()
+        d = fpga_base.FPGADriver()
         d.cleanup(mock.Mock())

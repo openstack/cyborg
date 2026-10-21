@@ -21,10 +21,10 @@ from unittest import mock
 
 from oslo_serialization import jsonutils
 
+from cyborg.accelerator.drivers import driver
 from cyborg.accelerator.drivers import fake
-from cyborg.accelerator.drivers.driver import GenericDriver
-from cyborg.accelerator.drivers.pci.pci import driver
-from cyborg.agent.resource_tracker import ResourceTracker
+from cyborg.accelerator.drivers.pci.pci import driver as pci_driver
+from cyborg.agent import resource_tracker
 from cyborg.common import constants
 from cyborg.common import exception
 from cyborg.conductor import rpcapi as cond_api
@@ -40,7 +40,7 @@ class TestResourceTracker(base.TestCase):
         super().setUp()
         self.host = CONF.host
         self.cond_api = cond_api.ConductorAPI()
-        self.rt = ResourceTracker(self.host, self.cond_api)
+        self.rt = resource_tracker.ResourceTracker(self.host, self.cond_api)
 
     def test_update_usage(self):
         """Update the resource usage and stats after a change in an
@@ -85,12 +85,12 @@ class TestResourceTracker(base.TestCase):
         gpu.controlpath_id.cpid_info = (
             '{"domain":"0000","bus":"0d","device":"00","function":"0"}'
         )
-        pci_driver = driver.PCIDriver()
-        self.rt.acc_drivers = {'pci': pci_driver, 'fake': fake_driver}
+        pci_drv = pci_driver.PCIDriver()
+        self.rt.acc_drivers = {'pci': pci_drv, 'fake': fake_driver}
 
         with (
             mock.patch.object(
-                pci_driver, 'discover', return_value=[gpu], autospec=True
+                pci_drv, 'discover', return_value=[gpu], autospec=True
             ),
             mock.patch.object(
                 self.rt.conductor_api, 'report_data', autospec=True
@@ -112,7 +112,7 @@ class TestResourceTracker(base.TestCase):
             'cpid_info': jsonutils.loads(fpga.controlpath_id.cpid_info),
         }
         self.assertIs(
-            pci_driver, self.rt.get_driver_for_controlpath(gpu_controlpath)
+            pci_drv, self.rt.get_driver_for_controlpath(gpu_controlpath)
         )
         self.assertIs(
             fake_driver, self.rt.get_driver_for_controlpath(fpga_controlpath)
@@ -229,7 +229,7 @@ class TestResourceTracker(base.TestCase):
             group='agent',
         )
         with mock.patch(
-            'cyborg.agent.resource_tracker.ExtensionManager'
+            'cyborg.agent.resource_tracker.extension.ExtensionManager'
         ) as extensions:
             exc = self.assertRaises(
                 exception.InvalidConfiguration,
@@ -251,9 +251,7 @@ class TestResourceTracker(base.TestCase):
     @mock.patch(
         'cyborg.agent.resource_tracker.driver.DriverManager', autospec=True
     )
-    @mock.patch(
-        'cyborg.agent.resource_tracker.ExtensionManager', autospec=True
-    )
+    @mock.patch('stevedore.extension.ExtensionManager', autospec=True)
     def test_initialize_drivers_does_not_call_init_host(
         self, mock_extension_manager, mock_driver_manager
     ):
@@ -280,15 +278,15 @@ class TestResourceTracker(base.TestCase):
         )
 
     def test_init_drivers_calls_each(self):
-        drv1 = mock.create_autospec(GenericDriver, instance=True)
-        drv2 = mock.create_autospec(GenericDriver, instance=True)
+        drv1 = mock.create_autospec(driver.GenericDriver, instance=True)
+        drv2 = mock.create_autospec(driver.GenericDriver, instance=True)
         self.rt.acc_drivers = {'a': drv1, 'b': drv2}
         self.rt.init_drivers()
         drv1.init_host.assert_called_once()
         drv2.init_host.assert_called_once()
 
     def test_init_drivers_propagates_exception(self):
-        drv = mock.create_autospec(GenericDriver, instance=True)
+        drv = mock.create_autospec(driver.GenericDriver, instance=True)
         drv.init_host.side_effect = exception.InvalidConfiguration(
             reason='nvme-cli not found'
         )
@@ -299,8 +297,8 @@ class TestResourceTracker(base.TestCase):
         )
 
     def test_init_host_rejects_duplicate_devices(self):
-        drv1 = mock.create_autospec(GenericDriver, instance=True)
-        drv2 = mock.create_autospec(GenericDriver, instance=True)
+        drv1 = mock.create_autospec(driver.GenericDriver, instance=True)
+        drv2 = mock.create_autospec(driver.GenericDriver, instance=True)
         drv1.discover.return_value = [
             fake_driver_device.make_fake_driver_device('0000:01:00.0')
         ]

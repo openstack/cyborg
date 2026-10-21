@@ -17,11 +17,11 @@
 Cyborg PCI driver implementation.
 """
 
-from cyborg.accelerator.drivers.pci.base import PciDriver
+from cyborg.accelerator.drivers.pci import base
 from cyborg.accelerator.drivers.pci.pci import sysinfo
 
 
-class PCIDriver(PciDriver):
+class PCIDriver(base.PciDriver):
     """Class for Pci drivers.
     Vendor should implement their specific drivers in this class.
     """

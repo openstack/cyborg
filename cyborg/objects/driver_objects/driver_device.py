@@ -16,15 +16,10 @@
 from oslo_utils import versionutils
 from oslo_versionedobjects import base as object_base
 
+from cyborg import objects
 from cyborg.common import constants
 from cyborg.objects import base
 from cyborg.objects import fields as object_fields
-from cyborg.objects.control_path import ControlpathID
-from cyborg.objects.device import Device
-from cyborg.objects.driver_objects.driver_controlpath_id import (
-    DriverControlPathID,
-)
-from cyborg.objects.driver_objects.driver_deployable import DriverDeployable
 
 
 @base.CyborgObjectRegistry.register
@@ -102,7 +97,7 @@ class DriverDevice(
         """
         # first store in device table through Device Object.
 
-        device_obj = Device(
+        device_obj = objects.Device(
             context=context,
             type=self.type,
             vendor=self.vendor,
@@ -134,7 +129,7 @@ class DriverDevice(
         for driver_deployable in self.deployable_list:
             driver_deployable.destroy(context, device_obj.id)
         if hasattr(self.controlpath_id, 'cpid_info'):
-            cpid_obj = ControlpathID.get_by_device_id_cpidinfo(
+            cpid_obj = objects.ControlpathID.get_by_device_id_cpidinfo(
                 context, device_obj.id, self.controlpath_id.cpid_info
             )
             # delete controlpath_id
@@ -151,11 +146,11 @@ class DriverDevice(
         return on value because it has controlpath_id.
         """
         # get dev_obj_list from hostname
-        device_obj_list = Device.get_list_by_hostname(context, host)
+        device_obj_list = objects.Device.get_list_by_hostname(context, host)
         # use controlpath_id.cpid_info to identify one Device.
         for device_obj in device_obj_list:
             # get cpid_obj, could be empty or only one value.
-            cpid_obj = ControlpathID.get_by_device_id_cpidinfo(
+            cpid_obj = objects.ControlpathID.get_by_device_id_cpidinfo(
                 context, device_obj.id, self.controlpath_id.cpid_info
             )
             # find the one cpid_obj with cpid_info
@@ -170,10 +165,10 @@ class DriverDevice(
         devices stores successfully.)
         """
         # get dev_obj_list from hostname
-        dev_obj_list = Device.get_list_by_hostname(context, host)
+        dev_obj_list = objects.Device.get_list_by_hostname(context, host)
         driver_dev_obj_list = []
         for dev_obj in dev_obj_list:
-            cpid = DriverControlPathID.get(context, dev_obj.id)
+            cpid = objects.DriverControlPathID.get(context, dev_obj.id)
             # NOTE: will not return device without controlpath_id.
             if cpid is not None:
                 driver_dev_obj = cls(
@@ -184,7 +179,9 @@ class DriverDevice(
                     std_board_info=dev_obj.std_board_info,
                     vendor_board_info=dev_obj.vendor_board_info,
                     controlpath_id=cpid,
-                    deployable_list=DriverDeployable.list(context, dev_obj.id),
+                    deployable_list=objects.DriverDeployable.list(
+                        context, dev_obj.id
+                    ),
                     device_state=dev_obj.device_state,
                 )
                 driver_dev_obj_list.append(driver_dev_obj)
@@ -199,10 +196,10 @@ class DriverDevice(
         return on value because it has controlpath_id.
         """
         # get dev_obj_list from hostname
-        device_obj = Device.get_by_device_id(context, device_id)
+        device_obj = objects.Device.get_by_device_id(context, device_id)
         # use controlpath_id.cpid_info to identify one Device.
         # get cpid_obj, could be empty or only one value.
-        ControlpathID.get_by_device_id_cpidinfo(
+        objects.ControlpathID.get_by_device_id_cpidinfo(
             context, device_obj.id, self.controlpath_id.cpid_info
         )
         # find the one cpid_obj with cpid_info

@@ -19,14 +19,14 @@ Cyborg Inspur FPGA driver implementation.
 
 from oslo_log import log as logging
 
-from cyborg.accelerator.drivers.fpga.base import FPGADriver
+from cyborg.accelerator.drivers.fpga import base
 from cyborg.accelerator.drivers.fpga.inspur import sysinfo
 
 
 LOG = logging.getLogger(__name__)
 
 
-class InspurFPGADriver(FPGADriver):
+class InspurFPGADriver(base.FPGADriver):
     """Class for Inspur FPGA drivers.
     Vendor should implement their specific drivers in this class.
     """

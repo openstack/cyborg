@@ -19,8 +19,8 @@ from unittest import mock
 
 import fixtures
 
+from cyborg.accelerator.drivers.fpga.intel import driver
 from cyborg.accelerator.drivers.fpga.intel import sysinfo
-from cyborg.accelerator.drivers.fpga.intel.driver import IntelFPGADriver
 from cyborg.tests import base
 from cyborg.tests.unit.accelerator.drivers.fpga.intel import prepare_test_data
 
@@ -113,7 +113,7 @@ class TestIntelFPGADriver(base.TestCase):
                 },
             },
         ]
-        intel = IntelFPGADriver()
+        intel = driver.IntelFPGADriver()
         fpgas = intel.discover()
         list.sort(fpgas, key=lambda x: x._obj_deployable_list[0].name)
         self.assertEqual(2, len(fpgas))
@@ -152,7 +152,7 @@ class TestIntelFPGADriver(base.TestCase):
             '/path/image',
         ]
 
-        intel = IntelFPGADriver()
+        intel = driver.IntelFPGADriver()
         cpid_info = {
             "domain": "0000",
             "bus": "5e",

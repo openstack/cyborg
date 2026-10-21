@@ -19,8 +19,8 @@ from oslo_serialization import jsonutils
 import cyborg
 
 from cyborg.accelerator.drivers.gpu import utils
+from cyborg.accelerator.drivers.gpu.nvidia import driver
 from cyborg.accelerator.drivers.gpu.nvidia import sysinfo
-from cyborg.accelerator.drivers.gpu.nvidia.driver import NVIDIAGPUDriver
 from cyborg.tests import base
 
 
@@ -103,7 +103,7 @@ class TestGPUDriverUtils(base.TestCase):
         mock_devices_for_vendor.return_value = self.p.stdout.readlines()[0]
         self.set_defaults(host='host-192-168-32-195', debug=True)
 
-        nvidia = NVIDIAGPUDriver()
+        nvidia = driver.NVIDIAGPUDriver()
         gpu_list = nvidia.discover()
 
         self.assertEqual(1, len(gpu_list))
@@ -217,7 +217,7 @@ class TestGPUDriverUtils(base.TestCase):
         self.set_defaults(
             device_addresses=['0000:af:00.0'], group='vgpu_nvidia-223'
         )
-        nvidia = NVIDIAGPUDriver()
+        nvidia = driver.NVIDIAGPUDriver()
         gpu_list = nvidia.discover()
 
         self.assertEqual(1, len(gpu_list))
@@ -315,7 +315,7 @@ class TestGPUDriverUtils(base.TestCase):
         self.set_defaults(host='host-192-168-32-195', debug=True)
         self.set_defaults(filter_sriov_vfs=True, group='gpu_devices')
 
-        nvidia = NVIDIAGPUDriver()
+        nvidia = driver.NVIDIAGPUDriver()
         gpu_list = nvidia.discover()
 
         self.assertEqual(1, len(gpu_list))
@@ -335,7 +335,7 @@ class TestGPUDriverUtils(base.TestCase):
         mock_is_vf.side_effect = lambda addr: addr == '0000:3b:00.4'
         self.set_defaults(host='host-192-168-32-195', debug=True)
 
-        nvidia = NVIDIAGPUDriver()
+        nvidia = driver.NVIDIAGPUDriver()
         gpu_list = nvidia.discover()
 
         self.assertEqual(2, len(gpu_list))
@@ -354,7 +354,7 @@ class TestGPUDriverUtils(base.TestCase):
         self.set_defaults(host='host-192-168-32-195', debug=True)
         self.set_defaults(filter_sriov_vfs=True, group='gpu_devices')
 
-        nvidia = NVIDIAGPUDriver()
+        nvidia = driver.NVIDIAGPUDriver()
         gpu_list = nvidia.discover()
 
         self.assertEqual(2, len(gpu_list))

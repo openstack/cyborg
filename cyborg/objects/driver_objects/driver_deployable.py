@@ -15,13 +15,9 @@
 
 from oslo_versionedobjects import base as object_base
 
+from cyborg import objects
 from cyborg.objects import base
 from cyborg.objects import fields as object_fields
-from cyborg.objects.deployable import Deployable
-from cyborg.objects.driver_objects.driver_attach_handle import (
-    DriverAttachHandle,
-)
-from cyborg.objects.driver_objects.driver_attribute import DriverAttribute
 
 
 @base.CyborgObjectRegistry.register
@@ -52,7 +48,7 @@ class DriverDeployable(
         """
 
         # first store in deployable table through Deployable Object.
-        deployable_obj = Deployable(
+        deployable_obj = objects.Deployable(
             context=context,
             name=self.name,
             num_accelerators=self.num_accelerators,
@@ -79,7 +75,7 @@ class DriverDeployable(
         """
 
         # get deployable_id by name, get only one value.
-        dep_obj = Deployable.get_by_name_deviceid(
+        dep_obj = objects.Deployable.get_by_name_deviceid(
             context, self.name, device_id
         )
         # delete attach_handle
@@ -89,7 +85,7 @@ class DriverDeployable(
                 driver_ah_obj.destroy(context, dep_obj.id)
         # delete attribute_list
         if hasattr(self, 'attribute_list'):
-            DriverAttribute.destroy(context, dep_obj.id)
+            objects.DriverAttribute.destroy(context, dep_obj.id)
         # delete dep_obj
         if dep_obj is not None:
             dep_obj.destroy(context)
@@ -98,13 +94,19 @@ class DriverDeployable(
     def list(cls, context, device_id):
         """Form driver-side Deployable object list from DB for one device."""
         # get deployable_obj_list for one device_id
-        dep_obj_list = Deployable.get_list_by_device_id(context, device_id)
+        dep_obj_list = objects.Deployable.get_list_by_device_id(
+            context, device_id
+        )
         driver_dep_obj_list = []
         for dep_obj in dep_obj_list:
             # get driver_ah_obj_list for this dep_obj
-            driver_ah_obj_list = DriverAttachHandle.list(context, dep_obj.id)
+            driver_ah_obj_list = objects.DriverAttachHandle.list(
+                context, dep_obj.id
+            )
             # get driver_attr_obj_list for this dep_obj
-            driver_attr_obj_list = DriverAttribute.list(context, dep_obj.id)
+            driver_attr_obj_list = objects.DriverAttribute.list(
+                context, dep_obj.id
+            )
             driver_dep_obj = cls(
                 context=context,
                 name=dep_obj.name,
@@ -119,10 +121,14 @@ class DriverDeployable(
     def get_by_name(cls, context, name):
         """Form driver-side Deployable object list from DB for one device."""
         # get deployable_obj_list for one device_id
-        dep_obj = Deployable.get_by_name(context, name)
-        driver_ah_obj_list = DriverAttachHandle.list(context, dep_obj.id)
+        dep_obj = objects.Deployable.get_by_name(context, name)
+        driver_ah_obj_list = objects.DriverAttachHandle.list(
+            context, dep_obj.id
+        )
         # get driver_attr_obj_list for this dep_obj
-        driver_attr_obj_list = DriverAttribute.list(context, dep_obj.id)
+        driver_attr_obj_list = objects.DriverAttribute.list(
+            context, dep_obj.id
+        )
         driver_dep_obj = cls(
             context=context,
             name=dep_obj.name,

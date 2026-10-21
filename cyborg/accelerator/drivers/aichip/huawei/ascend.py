@@ -13,7 +13,7 @@
 from oslo_serialization import jsonutils
 
 from cyborg.accelerator.common import utils
-from cyborg.accelerator.drivers.driver import GenericDriver
+from cyborg.accelerator.drivers import driver
 from cyborg.common import constants
 from cyborg.objects.driver_objects import driver_attach_handle
 from cyborg.objects.driver_objects import driver_controlpath_id
@@ -21,7 +21,7 @@ from cyborg.objects.driver_objects import driver_deployable
 from cyborg.objects.driver_objects import driver_device
 
 
-class AscendDriver(GenericDriver):
+class AscendDriver(driver.GenericDriver):
     """The class for Ascend AI Chip drivers.
 
     This is the Huawei Ascend AI Chip drivers.

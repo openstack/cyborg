@@ -16,7 +16,7 @@ from unittest import mock
 
 from oslo_serialization import jsonutils
 
-from cyborg.accelerator.drivers.fpga.xilinx.driver import XilinxFPGADriver
+from cyborg.accelerator.drivers.fpga.xilinx import driver
 from cyborg.tests import base
 
 
@@ -41,7 +41,7 @@ class TestXilinxFPGADriver(base.TestCase):
     def test_discover(self, mock_devices_for_vendor):
         mock_devices_for_vendor.side_effect = fake_output
         self.set_defaults(host='fake-host', debug=True)
-        fpga_list = XilinxFPGADriver().discover()
+        fpga_list = driver.XilinxFPGADriver().discover()
         self.assertEqual(1, len(fpga_list))
         attach_handle_list = [
             {
@@ -149,7 +149,7 @@ class TestXilinxFPGADriver(base.TestCase):
             '/path/image',
         ]
 
-        xilinx_driver = XilinxFPGADriver()
+        xilinx = driver.XilinxFPGADriver()
         cpid_info = {
             "domain": "0000",
             "bus": "3b",
@@ -160,5 +160,5 @@ class TestXilinxFPGADriver(base.TestCase):
 
         # program PF
         mock_prog.return_value = bytes([0])
-        xilinx_driver.update(cpid, "/path/image")
+        xilinx.update(cpid, "/path/image")
         mock_prog.assert_called_with(expect_cmd_args)

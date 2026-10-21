@@ -16,8 +16,8 @@ from unittest import mock
 
 import fixtures
 
+from cyborg.accelerator.drivers.nic.intel import driver
 from cyborg.accelerator.drivers.nic.intel import sysinfo
-from cyborg.accelerator.drivers.nic.intel.driver import IntelNICDriver
 from cyborg.common import exception
 from cyborg.conf import devices as conf_devices
 from cyborg.tests import base
@@ -114,7 +114,7 @@ class TestIntelNICDriver(base.TestCase):
                 },
             },
         ]
-        intel = IntelNICDriver()
+        intel = driver.IntelNICDriver()
         nics = intel.discover()
         list.sort(nics, key=lambda x: x._obj_deployable_list[0].name)
         self.assertEqual(2, len(nics))
@@ -153,7 +153,7 @@ class TestIntelNICDriver(base.TestCase):
         self.cfg_fixture.config(
             device_addresses=["0000:05:00.0"], group="x710_static"
         )
-        intel = IntelNICDriver()
+        intel = driver.IntelNICDriver()
         nics = intel.discover()
         self.assertEqual(1, len(nics))
         self.assertEqual(
@@ -188,7 +188,7 @@ class TestIntelNICDriver(base.TestCase):
         self.cfg_fixture.config(
             device_addresses=["0000:05:01.0"], group="x710_static"
         )
-        intel = IntelNICDriver()
+        intel = driver.IntelNICDriver()
         nics = intel.discover()
         self.assertEqual(1, len(nics))
         nic = nics[0].as_dict()
@@ -218,7 +218,7 @@ class TestIntelNICDriver(base.TestCase):
         self.cfg_fixture.config(
             device_addresses=["0000:06:00.0"], group="x710_static"
         )
-        intel = IntelNICDriver()
+        intel = driver.IntelNICDriver()
         nics = intel.discover()
         self.assertEqual(1, len(nics))
         nic = nics[0].as_dict()
@@ -244,7 +244,7 @@ class TestIntelNICDriver(base.TestCase):
         self.cfg_fixture.config(
             device_addresses=["not-a-pci-address"], group="x710_static"
         )
-        intel = IntelNICDriver()
+        intel = driver.IntelNICDriver()
         self.assertRaises(
             exception.PciDeviceWrongAddressFormat, intel.discover
         )

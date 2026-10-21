@@ -22,7 +22,7 @@ from oslo_log import log as logging
 
 import cyborg.privsep
 
-from cyborg.accelerator.drivers.fpga.base import FPGADriver
+from cyborg.accelerator.drivers.fpga import base
 from cyborg.accelerator.drivers.fpga.intel import sysinfo
 from cyborg.common import exception
 
@@ -45,7 +45,7 @@ def _fpga_program_privileged(cmd_args):
     return processutils.execute(*cmd)
 
 
-class IntelFPGADriver(FPGADriver):
+class IntelFPGADriver(base.FPGADriver):
     """Class for Intel FPGA drivers.
     Vendor should implement their specific drivers in this class.
     """

@@ -13,28 +13,28 @@
 
 from unittest import mock
 
-from cyborg.accelerator.drivers.nic.base import NICDriver
-from cyborg.accelerator.drivers.nic.intel.driver import IntelNICDriver  # noqa
+from cyborg.accelerator.drivers.nic import base as nic_base
+from cyborg.accelerator.drivers.nic.intel import driver  # noqa
 from cyborg.tests import base
 
 
 class TestNICDriver(base.TestCase):
     def test_create(self):
-        NICDriver.create("intel")
-        self.assertRaises(LookupError, NICDriver.create, "other")
+        nic_base.NICDriver.create("intel")
+        self.assertRaises(LookupError, nic_base.NICDriver.create, "other")
 
     def test_discover(self):
-        d = NICDriver()
+        d = nic_base.NICDriver()
         self.assertRaises(NotImplementedError, d.discover)
 
     def test_discover_vendors(self):
-        d = NICDriver()
+        d = nic_base.NICDriver()
         self.assertRaises(NotImplementedError, d.discover_vendors)
 
     def test_init_host_default_noop(self):
-        d = NICDriver()
+        d = nic_base.NICDriver()
         d.init_host()
 
     def test_cleanup_default_noop(self):
-        d = NICDriver()
+        d = nic_base.NICDriver()
         d.cleanup(mock.Mock())

@@ -18,7 +18,7 @@ from oslo_db.sqlalchemy import enginefacade
 try:
     # NOTE(whaom): This is to register the DB2 alembic code which
     # is an optional runtime dependency.
-    from ibm_db_alembic.ibm_db import IbmDbImpl  # noqa
+    from ibm_db_alembic import ibm_db  # noqa
 except ImportError:
     pass
 

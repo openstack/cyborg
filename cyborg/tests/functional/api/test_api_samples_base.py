@@ -80,7 +80,7 @@ class ApiSampleTestBase(base.TestCase):
     def seed_programable_deployable(self):
         self.useFixture(
             fixtures.MockPatch(
-                'cyborg.api.controllers.v2.deployables.AgentAPI',
+                'cyborg.api.controllers.v2.deployables.rpcapi.AgentAPI',
                 autospec=True,
             )
         )
@@ -90,7 +90,7 @@ class ApiSampleTestBase(base.TestCase):
     def seed_arqs(self):
         self.useFixture(
             fixtures.MockPatch(
-                'cyborg.objects.ext_arq.AgentAPI', autospec=True
+                'cyborg.objects.ext_arq.rpcapi.AgentAPI', autospec=True
             )
         )
         self.seed_device_profiles()

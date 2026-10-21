@@ -21,7 +21,7 @@ from oslo_concurrency import processutils
 
 import cyborg.privsep
 
-from cyborg.accelerator.drivers.fpga.base import FPGADriver
+from cyborg.accelerator.drivers.fpga import base
 from cyborg.accelerator.drivers.fpga.xilinx import sysinfo
 from cyborg.common import exception
 
@@ -35,7 +35,7 @@ def _fpga_program_privileged(cmd_args):
     return processutils.execute(*cmd)
 
 
-class XilinxFPGADriver(FPGADriver):
+class XilinxFPGADriver(base.FPGADriver):
     """Class for Xilinx FPGA drivers.
     Vendor should implement their specific drivers in this class.
     """

@@ -17,7 +17,7 @@
 
 import alembic.migration as alembic_migration
 
-from alembic.script import ScriptDirectory
+from alembic import script as alembic_script
 
 from cyborg.db.sqlalchemy import migration
 from cyborg.tests import base
@@ -33,7 +33,7 @@ class DbTestCase(base.TestCase):
         # Stamp Alembic to head so migration-aware tests see the
         # correct version.
         alembic_cfg = migration._alembic_config()
-        script = ScriptDirectory.from_config(alembic_cfg)
+        script = alembic_script.ScriptDirectory.from_config(alembic_cfg)
         with db_fix.engine.connect() as conn:
             context = alembic_migration.MigrationContext.configure(conn)
             context.stamp(script, 'head')

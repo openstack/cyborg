@@ -22,7 +22,7 @@ model.
 from oslo_log import log as logging
 from oslo_serialization import jsonutils
 from stevedore import driver
-from stevedore.extension import ExtensionManager
+from stevedore import extension
 
 from cyborg.common import exception
 from cyborg.common import utils
@@ -64,7 +64,7 @@ class ResourceTracker:
                     "enabled_drivers" % name
                 )
             seen.add(name)
-        valid_drivers = ExtensionManager(
+        valid_drivers = extension.ExtensionManager(
             namespace='cyborg.accelerator.driver'
         ).names()
         for d in enabled_drivers:

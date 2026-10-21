@@ -16,9 +16,9 @@
 from oslo_serialization import jsonutils
 from oslo_versionedobjects import base as object_base
 
+from cyborg import objects
 from cyborg.objects import base
 from cyborg.objects import fields as object_fields
-from cyborg.objects.control_path import ControlpathID
 
 
 @base.CyborgObjectRegistry.register
@@ -61,7 +61,7 @@ class DriverControlPathID(
         """Create a driver-side ControlPathID for drivers. Call
         ControlpathID object to store in DB.
         """
-        cpid_obj = ControlpathID(
+        cpid_obj = objects.ControlpathID(
             context=context,
             device_id=device_id,
             cpid_type=self.cpid_type,
@@ -71,7 +71,7 @@ class DriverControlPathID(
         return cpid_obj
 
     def destroy(self, context, device_id):
-        cpid_obj = ControlpathID.get_by_device_id_cpidinfo(
+        cpid_obj = objects.ControlpathID.get_by_device_id_cpidinfo(
             context, device_id, self.cpid_info
         )
         if cpid_obj is not None:
@@ -80,7 +80,7 @@ class DriverControlPathID(
     @classmethod
     def get(cls, context, device_id):
         # return None when can't found any.
-        cpid_obj = ControlpathID.get_by_device_id(context, device_id)
+        cpid_obj = objects.ControlpathID.get_by_device_id(context, device_id)
         driver_cpid_obj = None
         if cpid_obj is not None:
             driver_cpid_obj = cls(

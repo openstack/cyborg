@@ -16,21 +16,21 @@
 from unittest import mock
 
 from cyborg.accelerator.drivers.spdk.util import common_fun
-from cyborg.accelerator.drivers.spdk.util.pyspdk.vhost_client import VhostTgt
-from cyborg.accelerator.drivers.spdk.vhost.vhost import VHOSTDRIVER
+from cyborg.accelerator.drivers.spdk.util.pyspdk import vhost_client
+from cyborg.accelerator.drivers.spdk.vhost import vhost
 from cyborg.tests import base
 
 
 class TestVHOSTDRIVER(base.TestCase):
     def setUp(self):
         super().setUp()
-        self.vhost_driver = VHOSTDRIVER()
+        self.vhost_driver = vhost.VHOSTDRIVER()
 
     def tearDown(self):
         super().tearDown()
         self.vhost_driver = None
 
-    @mock.patch.object(VHOSTDRIVER, 'get_one_accelerator')
+    @mock.patch.object(vhost.VHOSTDRIVER, 'get_one_accelerator')
     def test_discover_accelerator(self, mock_get_one_accelerator):
         expect_accelerator = {
             'server': 'vhost',
@@ -55,7 +55,7 @@ class TestVHOSTDRIVER(base.TestCase):
             mock_get_one_accelerator.called,
             "Failed to discover_accelerator if py not alive.",
         )
-        acce_client = VhostTgt(self.vhost_driver.py)
+        acce_client = vhost_client.VhostTgt(self.vhost_driver.py)
         bdevs_fake = [
             {"num_blocks": 131072, "name": "nvme1", "block_size": 512}
         ]

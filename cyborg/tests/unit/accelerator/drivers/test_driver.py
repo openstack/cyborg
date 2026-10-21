@@ -13,11 +13,11 @@
 
 from unittest import mock
 
-from cyborg.accelerator.drivers.driver import GenericDriver
+from cyborg.accelerator.drivers import driver
 from cyborg.tests import base
 
 
-class WellDoneDriver(GenericDriver):
+class WellDoneDriver(driver.GenericDriver):
     def discover(self):
         pass
 
@@ -28,7 +28,7 @@ class WellDoneDriver(GenericDriver):
         pass
 
 
-class NotCompleteDriver(GenericDriver):
+class NotCompleteDriver(driver.GenericDriver):
     def discover(self):
         pass
 
