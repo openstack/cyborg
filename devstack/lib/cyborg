@@ -232,37 +232,8 @@ function init_cyborg {
 
 # start_cyborg() - Start running processes, including screen
 function start_cyborg {
-    # Start Cyborg API server, if enabled.
-    if is_service_enabled cyborg-api; then
-        start_cyborg_api
-    fi
-
-    # Start Cyborg conductor, if enabled.
-    if is_service_enabled cyborg-cond; then
-        start_cyborg_conductor
-    fi
-
-    # Start Cyborg agent, if enabled.
-    if is_service_enabled cyborg-agent; then
-        start_cyborg_agent
-    fi
-}
-
-# start_cyborg_api() - Used by start_cyborg().
-# Starts Cyborg API server.
-function start_cyborg_api {
     run_process cyborg-api "$(which uwsgi) --ini $CYBORG_UWSGI_CONF --procname-prefix cyborg-api"
-}
-
-# start_cyborg_conductor() - Used by start_cyborg().
-# Starts Cyborg conductor.
-function start_cyborg_conductor {
     run_process cyborg-cond "$CYBORG_BIN_DIR/cyborg-conductor --config-file=$CYBORG_CONF"
-}
-
-# start_cyborg_agent() - Used by start_cyborg().
-# Starts Cyborg agent.
-function start_cyborg_agent {
     run_process cyborg-agent "$CYBORG_BIN_DIR/cyborg-agent --config-file=$CYBORG_AGENT_CONF"
 }
 
