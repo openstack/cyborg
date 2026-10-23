@@ -223,6 +223,23 @@ class TestResourceTracker(base.TestCase):
         drivers = self.rt.acc_drivers
         self.assertEqual(len(drivers), len(enabled_drivers))
 
+    def test_initialize_duplicate_enabled_driver(self):
+        self.flags(
+            enabled_drivers=['fake_driver', 'pci_driver', 'fake_driver'],
+            group='agent',
+        )
+        with mock.patch(
+            'cyborg.agent.resource_tracker.ExtensionManager'
+        ) as extensions:
+            exc = self.assertRaises(
+                exception.InvalidConfiguration,
+                self.rt._initialize_drivers,
+            )
+
+        extensions.assert_not_called()
+        self.assertIn('fake_driver', str(exc))
+        self.assertIn('[agent] enabled_drivers', str(exc))
+
     def test_initialize_invalid_driver(self):
         enabled_drivers = ['invalid_driver']
         self.assertRaises(

@@ -56,6 +56,14 @@ class ResourceTracker:
         acc_drivers = {}
         if not enabled_drivers:
             enabled_drivers = CONF.agent.enabled_drivers
+        seen = set()
+        for name in enabled_drivers:
+            if name in seen:
+                raise exception.InvalidConfiguration(
+                    reason="Duplicate driver name %s in [agent] "
+                    "enabled_drivers" % name
+                )
+            seen.add(name)
         valid_drivers = ExtensionManager(
             namespace='cyborg.accelerator.driver'
         ).names()

@@ -11,6 +11,7 @@ Enabling Drivers
 
 Drivers are enabled in the ``[agent]`` section of ``cyborg.conf`` using the
 ``enabled_drivers`` option. This is a comma-separated list of driver names.
+Each driver name may appear only once; duplicate names prevent agent startup.
 
 .. code-block:: ini
 
