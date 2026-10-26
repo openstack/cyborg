@@ -231,3 +231,12 @@ class TestAgentManager(base.TestCase):
             exception.PlacementResourceProviderNotFound,
             self._create_manager_with_mocks,
         )
+
+    def test_init_host_calls_rt(self):
+        self.placement_mock.get.return_value.json.return_value = {
+            'resource_providers': [{'uuid': 'test-uuid'}]
+        }
+        am = self._create_manager_with_mocks()
+        am.init_host()
+        am._rt.init_host.assert_called_once_with()
+        self.assertEqual([mock.call.init_host()], am._rt.method_calls)

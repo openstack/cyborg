@@ -109,6 +109,10 @@ class ConfigInvalid(CyborgException):
     _msg_fmt = _("Invalid configuration file. %(error_msg)s")
 
 
+class InvalidConfiguration(CyborgException):
+    _msg_fmt = _("Invalid configuration: %(reason)s")
+
+
 class DeviceAlreadyExists(CyborgException):
     _msg_fmt = _("Device with uuid %(uuid)s already exists.")
 

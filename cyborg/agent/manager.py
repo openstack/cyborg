@@ -99,7 +99,7 @@ class AgentManager(periodic_task.PeriodicTasks):
 
     def init_host(self):
         """Hook called by RPCService.start() after the RPC server is up."""
-        pass
+        self._rt.init_host()
 
     def _get_resource_provider_name(self):
         """Determine the correct resource provider name by querying Placement.

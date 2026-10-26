@@ -12,6 +12,8 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from cyborg.accelerator.common import utils as acc_utils
+from cyborg.common import constants
 from cyborg.objects.driver_objects import driver_attach_handle
 from cyborg.objects.driver_objects import driver_attribute
 from cyborg.objects.driver_objects import driver_controlpath_id
@@ -55,6 +57,24 @@ def get_fake_driver_devices_objs():
             obj_driver_device[field] = device[field]
         obj_devices.append(obj_driver_device)
     return obj_devices
+
+
+def make_fake_driver_device(pci_address='0000:01:00.0', cpid_info=None):
+    """Return a DriverDevice with a controlpath_id for the given PCI address.
+
+    Pass cpid_info to supply a raw serialization (e.g. to exercise drivers
+    that serialize the same address differently); otherwise it is derived
+    from pci_address via pci_str_to_json.
+    """
+    data = get_fake_driver_devices_as_dict()[0]
+    cpid = driver_controlpath_id.DriverControlPathID()
+    cpid.cpid_type = constants.CPID_TYPE_PCI
+    cpid.cpid_info = cpid_info or acc_utils.pci_str_to_json(pci_address)
+    data['controlpath_id'] = cpid
+    dev = driver_device.DriverDevice()
+    for field, value in data.items():
+        dev[field] = value
+    return dev
 
 
 def get_fake_driver_controlpath_as_dict():
