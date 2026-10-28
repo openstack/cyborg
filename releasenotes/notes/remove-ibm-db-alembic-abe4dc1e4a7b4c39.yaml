@@ -1,0 +1,7 @@
+---
+upgrade:
+  - |
+    Support for running the database schema migrations against IBM DB2 has
+    been removed. The optional ``ibm_db_alembic`` integration was never
+    tested and the package has not seen a release since 2018. Cyborg only
+    supports MySQL/MariaDB and SQLite.
