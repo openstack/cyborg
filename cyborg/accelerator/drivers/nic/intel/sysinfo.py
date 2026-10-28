@@ -25,8 +25,7 @@ from oslo_config import cfg
 from oslo_log import log as logging
 from oslo_serialization import jsonutils
 
-import cyborg.conf
-
+from cyborg import conf
 from cyborg.accelerator.common import utils
 from cyborg.objects.driver_objects import driver_attach_handle
 from cyborg.objects.driver_objects import driver_attribute
@@ -43,12 +42,12 @@ DRIVER_NAME = "intel"
 
 VF = "virtfn*"
 _SRIOV_TOTALVFS = "sriov_totalvfs"
-CONF = cyborg.conf.CONF
+CONF = conf.CONF
 
 
 def _parse_config():
     # parse nic config.
-    cyborg.conf.devices.register_dynamic_opts(CONF)
+    conf.devices.register_dynamic_opts(CONF)
     try:
         pdm = utils.parse_mappings(CONF.x710_static.physical_device_mappings)
         fdm = utils.parse_mappings(CONF.x710_static.function_device_mappings)

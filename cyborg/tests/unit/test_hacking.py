@@ -16,6 +16,8 @@ from unittest import mock
 
 import pycodestyle
 
+from hacking import core
+
 from cyborg.hacking import checks
 from cyborg.tests import base
 
@@ -193,11 +195,12 @@ class HackingTestCase(base.TestCase):
         self._assert_has_no_errors(code, checker)
 
     def test_tox_import_exception_no_error(self):
-        # http and io are configured in [hacking] import_exceptions.
+        # collections.abc and typing are configured in
+        # [hacking] import_exceptions.
         checker = checks.CheckDirectClassImport
         code = """
-            from http import HTTPStatus
-            from io import BytesIO
+            from collections.abc import Mapping
+            from typing import Optional
         """
         self._assert_has_no_errors(code, checker)
 
@@ -207,19 +210,8 @@ class HackingTestCase(base.TestCase):
         code = """
             from example_ext.widgets import FancyWidget
         """
-        with mock.patch.object(checks, 'IMPORT_EXCEPTIONS', ['example_ext']):
+        with mock.patch.object(core, 'IMPORT_EXCEPTIONS', ['example_ext']):
             self._assert_has_no_errors(code, checker)
-
-    def test_is_import_exception_helper(self):
-        with mock.patch.object(
-            checks, 'IMPORT_EXCEPTIONS', ['sqlalchemy', 'http']
-        ):
-            self.assertTrue(checks.is_import_exception('sqlalchemy'))
-            self.assertTrue(checks.is_import_exception('sqlalchemy.orm.exc'))
-            self.assertTrue(checks.is_import_exception('http.HTTPStatus'))
-            self.assertFalse(
-                checks.is_import_exception('cyborg.objects.device.Device')
-            )
 
     def test_sqlalchemy_dsl_import_no_error(self):
         checker = checks.CheckDirectClassImport
@@ -228,13 +220,16 @@ class HackingTestCase(base.TestCase):
         """
         self._assert_has_no_errors(code, checker)
 
-    def test_constant_import_no_error(self):
+    def test_constant_import_error(self):
+        # Constants are not modules, so importing them directly is flagged.
         checker = checks.CheckDirectClassImport
         code = """
             from cyborg.conf import CONF
             from cyborg.common.constants import ARQ_STATES_TRANSFORM_MATRIX
         """
-        self._assert_has_no_errors(code, checker)
+        self._assert_has_errors(
+            code, checker, expected_errors=[(1, 0, "C301"), (2, 0, "C301")]
+        )
 
     def test_relative_import_no_error(self):
         checker = checks.CheckDirectClassImport

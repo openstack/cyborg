@@ -19,14 +19,17 @@ from oslo_serialization import jsonutils
 from oslo_utils import timeutils
 from oslo_utils import uuidutils
 
+from cyborg import conf
 from cyborg import objects
 from cyborg.common import constants
 from cyborg.common import exception
 from cyborg.common import utils
-from cyborg.conf import CONF
 from cyborg.tests.unit import fake_deployable
 from cyborg.tests.unit import fake_extarq
 from cyborg.tests.unit.db import base
+
+
+CONF = conf.CONF
 
 
 class TestExtARQJobMixin(base.DbTestCase):

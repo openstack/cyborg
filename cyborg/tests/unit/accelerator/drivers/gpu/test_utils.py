@@ -16,15 +16,14 @@ from unittest import mock
 
 from oslo_serialization import jsonutils
 
-import cyborg
-
+from cyborg import conf
 from cyborg.accelerator.drivers.gpu import utils
 from cyborg.accelerator.drivers.gpu.nvidia import driver
 from cyborg.accelerator.drivers.gpu.nvidia import sysinfo
 from cyborg.tests import base
 
 
-CONF = cyborg.conf.CONF
+CONF = conf.CONF
 
 NVIDIA_GPU_INFO = (
     "0000:00:06.0 3D controller [0302]: NVIDIA Corporation "
@@ -213,7 +212,7 @@ class TestGPUDriverUtils(base.TestCase):
         mock_open.side_effect = multi_mock_open(*file_content_list)
         self.set_defaults(host='host-192-168-32-195', debug=True)
         self.set_defaults(enabled_vgpu_types='nvidia-223', group='gpu_devices')
-        cyborg.conf.devices.register_dynamic_opts(CONF)
+        conf.devices.register_dynamic_opts(CONF)
         self.set_defaults(
             device_addresses=['0000:af:00.0'], group='vgpu_nvidia-223'
         )

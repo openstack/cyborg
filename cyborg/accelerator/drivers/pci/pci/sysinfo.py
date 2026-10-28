@@ -22,8 +22,7 @@ import re
 from oslo_log import log as logging
 from oslo_serialization import jsonutils
 
-import cyborg.conf
-
+from cyborg import conf
 from cyborg.accelerator.common import utils
 from cyborg.accelerator.drivers.pci import utils as pci_utils
 from cyborg.accelerator.drivers.pci import whitelist
@@ -36,7 +35,7 @@ from cyborg.objects.driver_objects import driver_device
 
 
 LOG = logging.getLogger(__name__)
-CONF = cyborg.conf.CONF
+CONF = conf.CONF
 
 # Regex to parse lspci -nnn -D output format:
 # 0000:00:00.0 Host bridge [0600]: Intel Corporation ... [8086:2020] (rev 07)
@@ -137,7 +136,7 @@ def _generate_driver_device(pci):
 
 
 def _discover_pcis():
-    cyborg.conf.devices.register_dynamic_opts(CONF)
+    conf.devices.register_dynamic_opts(CONF)
     # discover pci devices by "lspci"
     pci_list = []
     stdout, _stderr = pci_utils.get_pci_devices()

@@ -32,11 +32,12 @@ from sqlalchemy import Text
 from sqlalchemy import orm
 from sqlalchemy import schema
 
+from cyborg import conf
 from cyborg.common import constants
 from cyborg.common import paths
-from cyborg.conf import CONF
 
 
+CONF = conf.CONF
 _DEFAULT_SQL_CONNECTION = 'sqlite:///' + paths.state_path_def('cyborg.sqlite')
 db_options.set_defaults(CONF, connection=_DEFAULT_SQL_CONNECTION)
 

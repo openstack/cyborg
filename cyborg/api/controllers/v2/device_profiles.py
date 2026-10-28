@@ -31,9 +31,8 @@ The objects layer does the conversion.
 """
 
 import copy
+import http
 import re
-
-from http import HTTPStatus
 
 import pecan
 import wsme
@@ -144,7 +143,7 @@ class DeviceProfilesController(base.CyborgController, DeviceProfileCollection):
 
     @authorize_wsgi.authorize_wsgi("cyborg:device_profile", "create")
     @expose.expose(
-        DeviceProfile, body=types.jsontype, status_code=HTTPStatus.CREATED
+        DeviceProfile, body=types.jsontype, status_code=http.HTTPStatus.CREATED
     )
     def post(self, req_devprof_list):
         """Create one or more device_profiles.
@@ -322,11 +321,13 @@ class DeviceProfilesController(base.CyborgController, DeviceProfileCollection):
         LOG.info('[device_profiles] get_one returned: %s', ret)
         # TODO(Sundar) Replace this with convert_with_links()
         return wsme.api.Response(
-            ret, status_code=HTTPStatus.OK, return_type=wsme.types.DictType
+            ret,
+            status_code=http.HTTPStatus.OK,
+            return_type=wsme.types.DictType,
         )
 
     @authorize_wsgi.authorize_wsgi("cyborg:device_profile", "delete")
-    @expose.expose(None, wtypes.text, status_code=HTTPStatus.NO_CONTENT)
+    @expose.expose(None, wtypes.text, status_code=http.HTTPStatus.NO_CONTENT)
     def delete(self, value):
         """Delete one or more device_profiles.
 

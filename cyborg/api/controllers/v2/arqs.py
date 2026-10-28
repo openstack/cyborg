@@ -13,7 +13,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from http import HTTPStatus
+import http
 
 import pecan
 import wsme
@@ -148,7 +148,7 @@ class ARQsController(base.CyborgController):
 
     @authorize_wsgi.authorize_wsgi("cyborg:arq", "create")
     @expose.expose(
-        ARQCollection, body=types.jsontype, status_code=HTTPStatus.CREATED
+        ARQCollection, body=types.jsontype, status_code=http.HTTPStatus.CREATED
     )
     def post(self, req):
         """Create one or more ARQs for a single device profile.
@@ -261,7 +261,7 @@ class ARQsController(base.CyborgController):
                             instance,
                         )
                         return wsme.api.Response(
-                            None, status_code=HTTPStatus.LOCKED
+                            None, status_code=http.HTTPStatus.LOCKED
                         )
         elif bind_state:
             arqs = [arq for arq in arqs if arq['state'] in valid_bind_states]
@@ -272,7 +272,7 @@ class ARQsController(base.CyborgController):
 
     @authorize_wsgi.authorize_wsgi("cyborg:arq", "delete")
     @expose.expose(
-        None, wtypes.text, types.uuid, status_code=HTTPStatus.NO_CONTENT
+        None, wtypes.text, types.uuid, status_code=http.HTTPStatus.NO_CONTENT
     )
     def delete(self, arqs=None, instance=None):
         """Delete one or more ARQS.
@@ -393,7 +393,9 @@ class ARQsController(base.CyborgController):
             raise exception.PatchError(reason=reason)
 
     @authorize_wsgi.authorize_wsgi("cyborg:arq", "update")
-    @expose.expose(None, body=types.jsontype, status_code=HTTPStatus.ACCEPTED)
+    @expose.expose(
+        None, body=types.jsontype, status_code=http.HTTPStatus.ACCEPTED
+    )
     def patch(self, patch_list):
         """Bind/Unbind one or more ARQs.
 

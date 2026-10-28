@@ -15,7 +15,10 @@
 
 import os
 
-from cyborg.conf import CONF
+from cyborg import conf
+
+
+CONF = conf.CONF
 
 
 def basedir_def(*args):

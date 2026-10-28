@@ -20,13 +20,12 @@ from oslo_log import log as logging
 from oslo_utils import versionutils
 from oslo_versionedobjects import base as object_base
 
+from cyborg import conf
 from cyborg import objects
 from cyborg.agent import rpcapi
 from cyborg.common import constants
 from cyborg.common import exception
 from cyborg.common import utils
-from cyborg.common.constants import ARQ_STATES_TRANSFORM_MATRIX
-from cyborg.conf import CONF
 from cyborg.db import api as dbapi
 from cyborg.objects import base
 from cyborg.objects import fields as object_fields
@@ -34,6 +33,7 @@ from cyborg.objects.extarq import ext_arq_job
 
 
 LOG = logging.getLogger(__name__)
+CONF = conf.CONF
 
 
 @base.CyborgObjectRegistry.register
@@ -152,7 +152,7 @@ class ExtARQ(
             )
             return False
         old = self.arq.state
-        scope = scope or ARQ_STATES_TRANSFORM_MATRIX[state]
+        scope = scope or constants.ARQ_STATES_TRANSFORM_MATRIX[state]
         self.update_state(context, state, scope)
         ea = ExtARQ.get(context, self.arq.uuid, lock=True)
         if not ea:

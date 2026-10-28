@@ -21,14 +21,13 @@ from oslo_config import cfg
 from oslo_log import log
 from paste import deploy
 
-import cyborg.conf
-
+from cyborg import conf
 from cyborg.api import config
 from cyborg.api import hooks
 from cyborg.api import middleware
 
 
-CONF = cyborg.conf.CONF
+CONF = conf.CONF
 LOG = log.getLogger(__name__)
 
 

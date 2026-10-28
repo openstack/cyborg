@@ -24,13 +24,14 @@ from oslo_serialization import jsonutils
 from stevedore import driver
 from stevedore import extension
 
+from cyborg import conf
 from cyborg.common import exception
 from cyborg.common import utils
-from cyborg.conf import CONF
 from cyborg.objects.driver_objects import driver_controlpath_id
 
 
 LOG = logging.getLogger(__name__)
+CONF = conf.CONF
 
 AGENT_RESOURCE_SEMAPHORE = "agent_resources"
 

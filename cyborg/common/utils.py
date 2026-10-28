@@ -29,8 +29,7 @@ from os_service_types import service_types
 from oslo_concurrency import lockutils
 from oslo_log import log
 
-import cyborg.conf
-
+from cyborg import conf
 from cyborg.common import exception
 from cyborg.common.i18n import _
 
@@ -39,7 +38,7 @@ LOG = log.getLogger(__name__)
 
 synchronized = lockutils.synchronized_with_prefix('cyborg-')
 _SERVICE_TYPES = service_types.ServiceTypes()
-CONF = cyborg.conf.CONF
+CONF = conf.CONF
 
 
 def safe_rstrip(value, chars=None):

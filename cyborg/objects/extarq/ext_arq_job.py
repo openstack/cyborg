@@ -15,16 +15,16 @@
 
 from oslo_log import log as logging
 
+from cyborg import conf
 from cyborg import objects
 from cyborg.common import constants
 from cyborg.common import exception
 from cyborg.common import nova_client
 from cyborg.common import utils
-from cyborg.common.constants import ARQ_STATES_TRANSFORM_MATRIX
-from cyborg.conf import CONF
 
 
 LOG = logging.getLogger(__name__)
+CONF = conf.CONF
 
 
 class ExtARQJobMixin:
@@ -57,7 +57,9 @@ class ExtARQJobMixin:
 
     def start_bind_job(self, context, valid_fields):
         """Check and start bind jobs for ARQ."""
-        expected = ARQ_STATES_TRANSFORM_MATRIX[constants.ARQ_BIND_STARTED]
+        expected = constants.ARQ_STATES_TRANSFORM_MATRIX[
+            constants.ARQ_BIND_STARTED
+        ]
         # Check whether ARQ can be bound.
         if self.arq.state not in expected:
             raise exception.ARQBadState(

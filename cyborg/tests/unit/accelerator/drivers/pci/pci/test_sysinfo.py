@@ -12,15 +12,14 @@
 
 from unittest import mock
 
-import cyborg
-
+from cyborg import conf
 from cyborg.accelerator.drivers.pci.pci import driver as pci_driver
 from cyborg.accelerator.drivers.pci.pci import sysinfo
 from cyborg.common import constants
 from cyborg.tests import base
 
 
-CONF = cyborg.conf.CONF
+CONF = conf.CONF
 
 NVIDIA_PCI_LINE = (
     "0000:3b:00.0 3D controller [0302]: "

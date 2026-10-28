@@ -19,15 +19,16 @@ from oslo_log import log
 from oslo_service import service
 from oslo_utils import importutils
 
+from cyborg import conf
 from cyborg import context
 from cyborg import objects
 from cyborg.common import config
 from cyborg.common import rpc
-from cyborg.conf import CONF
 from cyborg.objects import base as objects_base
 
 
 LOG = log.getLogger(__name__)
+CONF = conf.CONF
 
 
 class RPCService(service.Service):

@@ -10,6 +10,7 @@ back from the same tty.
 import argparse
 import errno
 import os
+import pathlib
 import select
 import subprocess
 import sys
@@ -17,11 +18,11 @@ import termios
 import time
 import tty
 
-from pathlib import Path
-
 
 MODULE_NAME = "fake_pci_sriov"
-DEFAULT_MODULE = str(Path(__file__).resolve().with_name("fake_pci_sriov.ko"))
+DEFAULT_MODULE = str(
+    pathlib.Path(__file__).resolve().with_name("fake_pci_sriov.ko")
+)
 
 VENDOR = "0x1d55"
 PF_DEVICE = "0x1000"
@@ -42,18 +43,18 @@ def module_loaded():
 
 
 def module_refcnt():
-    path = Path(f"/sys/module/{MODULE_NAME}/refcnt")
+    path = pathlib.Path(f"/sys/module/{MODULE_NAME}/refcnt")
     if not path.exists():
         return None
     return int(path.read_text().strip())
 
 
 def read_text(path):
-    return Path(path).read_text().strip().lower()
+    return pathlib.Path(path).read_text().strip().lower()
 
 
 def find_pf():
-    for dev in sorted(Path("/sys/bus/pci/devices").iterdir()):
+    for dev in sorted(pathlib.Path("/sys/bus/pci/devices").iterdir()):
         try:
             if (
                 read_text(dev / "vendor") == VENDOR
@@ -144,7 +145,7 @@ def load_module(module_path, timeout, reload_existing=False):
 
 def wait_for_ttys(count, timeout):
     deadline = time.monotonic() + timeout
-    paths = [Path(f"{TTY_PREFIX}{i}") for i in range(count)]
+    paths = [pathlib.Path(f"{TTY_PREFIX}{i}") for i in range(count)]
     while time.monotonic() < deadline:
         if all(p.exists() for p in paths):
             return paths

@@ -14,9 +14,12 @@ from unittest import mock
 
 import fixtures
 
+from cyborg import conf
 from cyborg.common import service as cyborg_service
-from cyborg.conf import CONF
 from cyborg.tests import base
+
+
+CONF = conf.CONF
 
 
 class TestRPCService(base.TestCase):

@@ -11,8 +11,9 @@
 # under the License.
 
 import ast
-import configparser
 import re
+
+from hacking import core
 
 
 NAMED_PLACEHOLDER_RE = re.compile(r"%\([^)]+\)[a-zA-Z%]")
@@ -102,76 +103,28 @@ class CheckSetLiteralInLogging(ast.NodeVisitor):
         self.generic_visit(node)
 
 
-# Built-in import exceptions, mirroring hacking's DEFAULT_IMPORT_EXCEPTIONS.
-# These modules legitimately export names that are imported directly.
-DEFAULT_IMPORT_EXCEPTIONS = [
-    "collections.abc",
-    "sqlalchemy",
-    "types",
-    "typing",
-]
-
-
-def _load_import_exceptions(tox_file="tox.ini"):
-    """Read ``[hacking] import_exceptions`` from tox.ini.
-
-    Mirrors hacking's mechanism: the module names configured under the
-    ``[hacking]`` section are added to a small set of built-in defaults.
-    Reading from ``[hacking]`` means the same configuration applies to
-    both the upstream hacking import checks and this one.
-    """
-    exceptions = list(DEFAULT_IMPORT_EXCEPTIONS)
-    conf = configparser.RawConfigParser()
-    conf.read(tox_file)
-    if conf.has_option("hacking", "import_exceptions"):
-        raw = conf.get("hacking", "import_exceptions")
-        for line in raw.splitlines():
-            for item in line.split(","):
-                item = item.strip()
-                if item:
-                    exceptions.append(item)
-    return exceptions
-
-
-IMPORT_EXCEPTIONS = _load_import_exceptions()
-
-
-def is_import_exception(mod):
-    """Return True if the dotted import path is whitelisted.
-
-    A module is whitelisted when it is listed explicitly or is a submodule
-    of a listed module (e.g. ``sqlalchemy`` whitelists ``sqlalchemy.orm``).
-    """
-    return mod in IMPORT_EXCEPTIONS or any(
-        mod.startswith(m + ".") for m in IMPORT_EXCEPTIONS
-    )
-
-
 class CheckDirectClassImport(ast.NodeVisitor):
     """C301: import modules, not classes.
 
-    Flags ``from x.y import SomeClass`` where ``SomeClass`` looks like a
-    class, i.e. a CamelCase name.  Import the module instead and reference
-    the class through it (``from x import y`` then ``y.SomeClass``), per the
-    OpenStack style guidelines.  This keeps import blocks terse and avoids
-    ambiguous bare class names scattered across a module.
+    Flags ``from x.y import SomeName`` where ``SomeName`` is a class or a
+    constant, i.e. a name starting with an uppercase letter.  Import the
+    module instead and reference the name through it (``from x import y``
+    then ``y.SomeName``), per the OpenStack style guidelines.  This keeps
+    import blocks terse and avoids ambiguous bare names scattered across a
+    module.
 
-    A name is treated as a class when it starts with an uppercase letter and
-    contains at least one lowercase letter.  All-caps names (constants) are
-    left alone to avoid false positives.
-
-    Modules listed in ``[hacking] import_exceptions`` in ``tox.ini`` (plus
-    a few built-in defaults such as ``sqlalchemy`` and ``typing``) are
-    exempt, matching the upstream hacking import checks.  Use
-    ``# noqa: C301`` for any other unavoidable exception.
+    The whitelist of exempt modules is shared with the upstream hacking
+    import checks: it is read from ``[hacking] import_exceptions`` in
+    ``tox.ini`` plus hacking's own built-in defaults (``sqlalchemy``,
+    ``migrate``).  Use ``# noqa: C301`` for any other unavoidable exception.
     """
 
     name = "check_direct_class_import"
     version = "0.1"
 
     CHECK_DESC = (
-        "C301 import modules, not classes; import the module and reference "
-        "the class as module.ClassName"
+        "C301 import modules, not classes or constants; import the module "
+        "and reference the name as module.Name"
     )
 
     def __init__(self, tree, filename):
@@ -195,9 +148,9 @@ class CheckDirectClassImport(ast.NodeVisitor):
             name = alias.name
             # Mirror hacking: normalize "from x import y" to "import x.y"
             # before consulting the import-exception whitelist.
-            if is_import_exception("%s.%s" % (node.module, name)):
+            if core.is_import_exception("%s.%s" % (node.module, name)):
                 continue
-            if name[:1].isupper() and any(c.islower() for c in name):
+            if name[:1].isupper():
                 self.add_error(node)
 
         self.generic_visit(node)

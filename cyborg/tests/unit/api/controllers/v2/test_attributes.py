@@ -13,7 +13,8 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from http import HTTPStatus
+import http
+
 from unittest import mock
 
 from oslo_serialization import jsonutils
@@ -103,7 +104,7 @@ class TestAttributes(v2_test.APITestV2):
             self.ATTRIBUTE_URL, self.fake_attributes, headers=self.headers
         )
         out_attribute = jsonutils.loads(response.controller_output)
-        self.assertEqual(HTTPStatus.CREATED, response.status_int)
+        self.assertEqual(http.HTTPStatus.CREATED, response.status_int)
         self._validate_attributes(self.fake_attribute_objs[0], out_attribute)
 
     @mock.patch('cyborg.objects.Attribute.get_by_filter')
@@ -126,4 +127,4 @@ class TestAttributes(v2_test.APITestV2):
         # Delete by UUID
         url = self.ATTRIBUTE_URL + '/%s' % uuid
         response = self.delete(url, headers=self.headers)
-        self.assertEqual(HTTPStatus.NO_CONTENT, response.status_int)
+        self.assertEqual(http.HTTPStatus.NO_CONTENT, response.status_int)

@@ -26,11 +26,11 @@ from oslo_serialization import jsonutils
 
 import cyborg.conf
 
+from cyborg import conf
 from cyborg.accelerator.common import utils
 from cyborg.accelerator.drivers.gpu import utils as gpu_utils
 from cyborg.common import constants
 from cyborg.common import exception
-from cyborg.conf import CONF
 from cyborg.objects.driver_objects import driver_attach_handle
 from cyborg.objects.driver_objects import driver_attribute
 from cyborg.objects.driver_objects import driver_controlpath_id
@@ -39,6 +39,7 @@ from cyborg.objects.driver_objects import driver_device
 
 
 LOG = logging.getLogger(__name__)
+CONF = conf.CONF
 
 
 def _get_traits(vendor_id, product_id, vgpu_type_name=None):

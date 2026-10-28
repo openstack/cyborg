@@ -19,15 +19,16 @@ SHOULD include dedicated exception logging.
 
 """
 
-from http import HTTPStatus
+import http
 
 from oslo_log import log
 
+from cyborg import conf
 from cyborg.common.i18n import _
-from cyborg.conf import CONF
 
 
 LOG = log.getLogger(__name__)
+CONF = conf.CONF
 
 
 class CyborgException(Exception):
@@ -42,7 +43,7 @@ class CyborgException(Exception):
     """
 
     _msg_fmt = _("An unknown exception occurred.")
-    code = HTTPStatus.INTERNAL_SERVER_ERROR
+    code = http.HTTPStatus.INTERNAL_SERVER_ERROR
     headers = {}
     safe = False
 
@@ -83,7 +84,7 @@ class CyborgException(Exception):
 
 class Forbidden(CyborgException):
     _msg_fmt = _("Forbidden")
-    code = HTTPStatus.FORBIDDEN
+    code = http.HTTPStatus.FORBIDDEN
 
 
 class ARQBadState(CyborgException):
@@ -147,7 +148,7 @@ class InUse(CyborgException):
 
 class Invalid(CyborgException):
     _msg_fmt = _("Invalid parameters.")
-    code = HTTPStatus.BAD_REQUEST
+    code = http.HTTPStatus.BAD_REQUEST
 
 
 class InvalidIdentity(Invalid):
@@ -192,7 +193,7 @@ class PatchError(Invalid):
 
 class NotAuthorized(CyborgException):
     _msg_fmt = _("Not authorized.")
-    code = HTTPStatus.UNAUTHORIZED
+    code = http.HTTPStatus.UNAUTHORIZED
 
 
 class HTTPForbidden(Forbidden):
@@ -201,7 +202,7 @@ class HTTPForbidden(Forbidden):
 
 class NotFound(CyborgException):
     _msg_fmt = _("Resource could not be found.")
-    code = HTTPStatus.NOT_FOUND
+    code = http.HTTPStatus.NOT_FOUND
 
 
 class FileNotFound(NotFound):
@@ -214,7 +215,7 @@ class DeviceBusy(CyborgException):
 
 class ServiceUnavailable(CyborgException):
     _msg_fmt = _("Service is unavailable at this time.")
-    code = HTTPStatus.SERVICE_UNAVAILABLE
+    code = http.HTTPStatus.SERVICE_UNAVAILABLE
 
 
 class ServiceNotFound(NotFound):
@@ -233,7 +234,7 @@ class InvalidDeployType(CyborgException):
 
 class Conflict(CyborgException):
     _msg_fmt = _('Conflict.')
-    code = HTTPStatus.CONFLICT
+    code = http.HTTPStatus.CONFLICT
 
 
 class DuplicateDeviceName(Conflict):
@@ -455,7 +456,7 @@ class ResourceNotFound(NotFound):
 
 class NotAcceptable(CyborgException):
     _msg_fmt = _("Request not acceptable.")
-    code = HTTPStatus.NOT_ACCEPTABLE
+    code = http.HTTPStatus.NOT_ACCEPTABLE
 
 
 class FPGAProgramError(CyborgException):

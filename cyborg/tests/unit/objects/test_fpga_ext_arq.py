@@ -13,9 +13,9 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import io
 import json
 
-from io import BytesIO
 from unittest import mock
 
 import requests
@@ -105,9 +105,9 @@ class TestFPGAExtARQObject(base.DbTestCase):
                 res.url = request.url.decode('utf-8')
 
         if stream:
-            res.raw = BytesIO(content)
+            res.raw = io.BytesIO(content)
         else:
-            res.raw = BytesIO(b'')
+            res.raw = io.BytesIO(b'')
         # normally this closes the underlying connection,
         #  but we have nothing to free.
         res.close = lambda *args, **kwargs: None

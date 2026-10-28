@@ -19,14 +19,15 @@ import oslo_messaging as messaging
 
 from oslo_log import log as logging
 
+from cyborg import conf
 from cyborg import objects
 from cyborg.common import data_migrations
 from cyborg.common import exception
 from cyborg.common import placement_client
-from cyborg.conf import CONF
 
 
 LOG = logging.getLogger(__name__)
+CONF = conf.CONF
 
 
 class ConductorManager:

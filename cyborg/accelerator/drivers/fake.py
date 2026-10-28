@@ -17,14 +17,17 @@ import os_resource_classes as orc
 
 from oslo_serialization import jsonutils
 
+from cyborg import conf
 from cyborg.accelerator.drivers import driver
 from cyborg.common import constants
-from cyborg.conf import CONF
 from cyborg.objects.driver_objects import driver_attach_handle
 from cyborg.objects.driver_objects import driver_attribute
 from cyborg.objects.driver_objects import driver_controlpath_id
 from cyborg.objects.driver_objects import driver_deployable
 from cyborg.objects.driver_objects import driver_device
+
+
+CONF = conf.CONF
 
 
 class FakeDriver(driver.GenericDriver):

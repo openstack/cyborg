@@ -23,17 +23,18 @@ from oslo_log import log as logging
 from oslo_service import periodic_task
 from oslo_utils import uuidutils
 
+from cyborg import conf
 from cyborg.accelerator.drivers.gpu import utils as gpu_utils
 from cyborg.agent import resource_tracker
 from cyborg.agent import rpcapi
 from cyborg.common import exception
 from cyborg.common import placement_client as placement
 from cyborg.conductor import rpcapi as cond_api
-from cyborg.conf import CONF
 from cyborg.image import api
 
 
 LOG = logging.getLogger(__name__)
+CONF = conf.CONF
 
 
 class AgentManager(periodic_task.PeriodicTasks):

@@ -13,7 +13,8 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from http import HTTPStatus
+import http
+
 from unittest import mock
 
 from oslo_serialization import jsonutils
@@ -197,7 +198,7 @@ class TestARQsController(v2_test.APITestV2):
             instance_uuid,
         )
         response = self.get_json(url, headers=self.headers, expect_errors=True)
-        self.assertEqual(HTTPStatus.LOCKED, response.status_int)
+        self.assertEqual(http.HTTPStatus.LOCKED, response.status_int)
 
     @mock.patch('cyborg.objects.DeviceProfile.get_by_name')
     @mock.patch('cyborg.conductor.rpcapi.ConductorAPI.arq_create')
@@ -210,7 +211,7 @@ class TestARQsController(v2_test.APITestV2):
         data = jsonutils.loads(response.__dict__['controller_output'])
         out_arqs = data['arqs']
 
-        self.assertEqual(HTTPStatus.CREATED, response.status_int)
+        self.assertEqual(http.HTTPStatus.CREATED, response.status_int)
         self.assertEqual(len(out_arqs), 3)
         for in_extarq, out_arq in zip(self.fake_extarqs, out_arqs):
             self._validate_arq(in_extarq.arq, out_arq)
@@ -230,7 +231,7 @@ class TestARQsController(v2_test.APITestV2):
         data = jsonutils.loads(response.__dict__['controller_output'])
         out_arqs = data['arqs']
 
-        self.assertEqual(HTTPStatus.CREATED, response.status_int)
+        self.assertEqual(http.HTTPStatus.CREATED, response.status_int)
         self.assertEqual(len(out_arqs), 2)
         for in_extarq, out_arq in zip(fake_xilinx_fpga_objs, out_arqs):
             self._validate_arq(in_extarq.arq, out_arq)
@@ -267,7 +268,7 @@ class TestARQsController(v2_test.APITestV2):
         mock_get.return_value = self.fake_extarqs[0]
         args = '?' + "arqs=" + str(arq['uuid'])
         response = self.delete(url + args, headers=self.headers)
-        self.assertEqual(HTTPStatus.NO_CONTENT, response.status_int)
+        self.assertEqual(http.HTTPStatus.NO_CONTENT, response.status_int)
 
     @mock.patch('cyborg.objects.ExtARQ.delete_by_instance')
     @mock.patch('cyborg.common.service_token_utils.is_service_request')
@@ -278,7 +279,7 @@ class TestARQsController(v2_test.APITestV2):
         instance = arq.instance_uuid
         args = '?' + "instance=" + instance
         response = self.delete(url + args, headers=self.headers)
-        self.assertEqual(HTTPStatus.NO_CONTENT, response.status_int)
+        self.assertEqual(http.HTTPStatus.NO_CONTENT, response.status_int)
 
     @mock.patch(
         'cyborg.api.controllers.v2.arqs.service_token_utils.is_service_request'
@@ -370,7 +371,7 @@ class TestARQsController(v2_test.APITestV2):
             headers=self.headers,
             expect_errors=True,
         )
-        self.assertEqual(HTTPStatus.NOT_ACCEPTABLE, response.status_code)
+        self.assertEqual(http.HTTPStatus.NOT_ACCEPTABLE, response.status_code)
         self.assertTrue(response.json['error_message'])
 
     # TODO(all): Add exception test cases for apply_patch.
@@ -727,7 +728,7 @@ class TestARQServiceTokenProtection(v2_test.APITestV2):
             headers=headers,
             expect_errors=True,
         )
-        self.assertEqual(HTTPStatus.FORBIDDEN, response.status_int)
+        self.assertEqual(http.HTTPStatus.FORBIDDEN, response.status_int)
         mock_delete.assert_not_called()
 
     @mock.patch('cyborg.objects.ExtARQ.delete_by_uuid')
@@ -770,7 +771,7 @@ class TestARQServiceTokenProtection(v2_test.APITestV2):
             headers=headers,
             expect_errors=True,
         )
-        self.assertEqual(HTTPStatus.FORBIDDEN, response.status_int)
+        self.assertEqual(http.HTTPStatus.FORBIDDEN, response.status_int)
         mock_delete.assert_not_called()
 
     @mock.patch('cyborg.objects.ExtARQ.delete_by_instance')
@@ -796,7 +797,7 @@ class TestARQServiceTokenProtection(v2_test.APITestV2):
             headers=headers,
             expect_errors=True,
         )
-        self.assertEqual(HTTPStatus.FORBIDDEN, response.status_int)
+        self.assertEqual(http.HTTPStatus.FORBIDDEN, response.status_int)
         mock_delete.assert_not_called()
 
     # -- PATCH (bind / unbind) tests ---------------------------------
@@ -838,7 +839,7 @@ class TestARQServiceTokenProtection(v2_test.APITestV2):
             headers=headers,
             expect_errors=True,
         )
-        self.assertEqual(HTTPStatus.FORBIDDEN, response.status_int)
+        self.assertEqual(http.HTTPStatus.FORBIDDEN, response.status_int)
         mock_apply.assert_not_called()
 
     @mock.patch(
@@ -910,7 +911,7 @@ class TestARQServiceTokenProtection(v2_test.APITestV2):
             headers=headers,
             expect_errors=True,
         )
-        self.assertEqual(HTTPStatus.FORBIDDEN, response.status_int)
+        self.assertEqual(http.HTTPStatus.FORBIDDEN, response.status_int)
         mock_apply.assert_not_called()
 
     @mock.patch(

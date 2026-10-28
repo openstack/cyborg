@@ -21,6 +21,7 @@ from unittest import mock
 
 from oslo_serialization import jsonutils
 
+from cyborg import conf
 from cyborg.accelerator.drivers import driver
 from cyborg.accelerator.drivers import fake
 from cyborg.accelerator.drivers.pci.pci import driver as pci_driver
@@ -28,9 +29,11 @@ from cyborg.agent import resource_tracker
 from cyborg.common import constants
 from cyborg.common import exception
 from cyborg.conductor import rpcapi as cond_api
-from cyborg.conf import CONF
 from cyborg.tests import base
 from cyborg.tests.unit import fake_driver_device
+
+
+CONF = conf.CONF
 
 
 class TestResourceTracker(base.TestCase):

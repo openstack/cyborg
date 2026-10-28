@@ -21,11 +21,14 @@ import sys
 
 from oslo_config import cfg
 
+from cyborg import conf
 from cyborg.common import data_migrations
 from cyborg.common import service
 from cyborg.common.i18n import _
-from cyborg.conf import CONF
 from cyborg.db import migration
+
+
+CONF = conf.CONF
 
 
 class DBCommand:

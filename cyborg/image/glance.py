@@ -28,15 +28,14 @@ from keystoneauth1 import loading as ks_loading
 from oslo_log import log as logging
 from oslo_utils import excutils
 
-import cyborg.conf
-
+from cyborg import conf
 from cyborg import service_auth
 from cyborg.common import exception
 from cyborg.common import utils
 
 
 LOG = logging.getLogger(__name__)
-CONF = cyborg.conf.CONF
+CONF = conf.CONF
 
 _SESSION = None
 
@@ -47,7 +46,7 @@ def _session_and_auth(context):
 
     if not _SESSION:
         _SESSION = ks_loading.load_session_from_conf_options(
-            CONF, cyborg.conf.glance.glance_group.name
+            CONF, conf.glance.glance_group.name
         )
 
     auth = service_auth.get_auth_plugin(context)
@@ -85,7 +84,7 @@ def get_api_server(context):
     """Get the service endpoint."""
     sess, auth = _session_and_auth(context)
     ksa_adap = utils.get_ksa_adapter(
-        cyborg.conf.glance.DEFAULT_SERVICE_TYPE,
+        conf.glance.DEFAULT_SERVICE_TYPE,
         ksa_auth=auth,
         ksa_session=sess,
         min_version='2.0',

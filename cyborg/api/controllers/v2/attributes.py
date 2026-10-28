@@ -13,7 +13,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from http import HTTPStatus
+import http
 
 import pecan
 import wsme
@@ -149,7 +149,7 @@ class AttributesController(base.CyborgController, AttributeCollection):
 
     @authorize_wsgi.authorize_wsgi("cyborg:attribute", "create")
     @expose.expose(
-        Attribute, body=types.jsontype, status_code=HTTPStatus.CREATED
+        Attribute, body=types.jsontype, status_code=http.HTTPStatus.CREATED
     )
     def post(self, req_attr):
         """Create one attribute.
@@ -168,7 +168,7 @@ class AttributesController(base.CyborgController, AttributeCollection):
         return ret
 
     @authorize_wsgi.authorize_wsgi("cyborg:attribute", "delete")
-    @expose.expose(None, wtypes.text, status_code=HTTPStatus.NO_CONTENT)
+    @expose.expose(None, wtypes.text, status_code=http.HTTPStatus.NO_CONTENT)
     def delete(self, uuid):
         """Delete one attribute.
         - UUID of a attribute.

@@ -10,7 +10,8 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from http import HTTPStatus
+import http
+
 from unittest import mock
 
 from oslo_serialization import jsonutils
@@ -67,7 +68,7 @@ class TestFPGAProgramController(v2_test.APITestV2):
             [{'path': '/bitstream_id', 'value': body, 'op': 'replace'}],
             headers=self.headers,
         )
-        self.assertEqual(HTTPStatus.OK, response.status_code)
+        self.assertEqual(http.HTTPStatus.OK, response.status_code)
         data = response.json_body
         self.assertEqual(dep_uuid, data['uuid'])
 

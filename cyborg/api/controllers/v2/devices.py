@@ -13,7 +13,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from http import HTTPStatus
+import http
 
 import pecan
 import wsme
@@ -153,7 +153,9 @@ class DevicesController(base.CyborgController):
         return DeviceCollection.convert_with_links(obj_devices)
 
     @authorize_wsgi.authorize_wsgi("cyborg:device", "disable")
-    @expose.expose(None, wtypes.text, types.uuid, status_code=HTTPStatus.OK)
+    @expose.expose(
+        None, wtypes.text, types.uuid, status_code=http.HTTPStatus.OK
+    )
     def disable(self, uuid):
         context = pecan.request.context
         device = objects.Device.get(context, uuid)
@@ -179,7 +181,9 @@ class DevicesController(base.CyborgController):
         )
 
     @authorize_wsgi.authorize_wsgi("cyborg:device", "enable")
-    @expose.expose(None, wtypes.text, types.uuid, status_code=HTTPStatus.OK)
+    @expose.expose(
+        None, wtypes.text, types.uuid, status_code=http.HTTPStatus.OK
+    )
     def enable(self, uuid):
         context = pecan.request.context
         device = objects.Device.get(context, uuid)

@@ -15,10 +15,10 @@ from keystoneauth1 import loading as ks_loading
 from keystoneauth1 import service_token
 from oslo_log import log as logging
 
-import cyborg.conf
+from cyborg import conf
 
 
-CONF = cyborg.conf.CONF
+CONF = conf.CONF
 LOG = logging.getLogger(__name__)
 
 _SERVICE_AUTH = None
@@ -37,7 +37,7 @@ def get_auth_plugin(context):
         global _SERVICE_AUTH
         if not _SERVICE_AUTH:
             _SERVICE_AUTH = ks_loading.load_auth_from_conf_options(
-                CONF, group=cyborg.conf.service_token.SERVICE_USER_GROUP
+                CONF, group=conf.service_token.SERVICE_USER_GROUP
             )
             if _SERVICE_AUTH is None:
                 # This indicates a misconfiguration so log a warning and
