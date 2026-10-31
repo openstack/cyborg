@@ -1,0 +1,7 @@
+---
+upgrade:
+  - |
+    The ``python-glanceclient`` dependency has been replaced by
+    ``openstacksdk`` for all Glance image service operations. ``openstacksdk``
+    was already a dependency so no new packages are required. The ``[glance]``
+    configuration section and its ``num_retries`` option are unchanged.

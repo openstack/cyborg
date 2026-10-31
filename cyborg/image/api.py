@@ -29,12 +29,10 @@ class API:
     """
 
     def _get_session_and_image_id(self, context, id_or_uri):
-        """Returns a tuple of (session, image_id). If the supplied `id_or_uri`
-        is an image ID, then the default client session will be returned
-        for the context's user, along with the image ID. If the supplied
-        `id_or_uri` parameter is a URI, then a client session connecting to
-        the URI's image service endpoint will be returned along with a
-        parsed image ID from that URI.
+        """Returns a tuple of (image_service, image_id).
+
+        If the supplied `id_or_uri` is a URI, only the image UUID is
+        extracted; the configured catalog endpoint is always used.
 
         :param context: The `cyborg.context.Context` object for the request
         :param id_or_uri: A UUID identifier or an image URI to look up image
@@ -43,8 +41,7 @@ class API:
         return glance.get_remote_image_service(context, id_or_uri)
 
     def download(self, context, id_or_uri, data=None, dest_path=None):
-        """Transfer image bits from Glance or a known source location to the
-        supplied destination filepath.
+        """Transfer image bits from Glance to the supplied destination.
 
         :param context: The `cyborg.context.RequestContext` object for the
                         request
@@ -52,23 +49,6 @@ class API:
                           information for.
         :param data: A file object to use in downloading image data.
         :param dest_path: Filepath to transfer image bits to.
-
-        Note that because of the poor design of the
-        `glance.ImageService.download` method, the function returns different
-        things depending on what arguments are passed to it. If a data argument
-        is supplied but no dest_path is specified (only done in the XenAPI virt
-        driver's image.utils module) then None is returned from the method. If
-        the data argument is not specified but a destination path *is*
-        specified, then a writeable file handle to the destination path is
-        constructed in the method and the image bits written to that file, and
-        again, None is returned from the method. If no data argument is
-        supplied and no dest_path argument is supplied (VMWare and XenAPI virt
-        drivers), then the method returns an iterator to the image bits that
-        the caller uses to write to wherever location it wants.
-
-        I think the above points to just how hacky/wacky all of this code is,
-        and the reason it needs to be cleaned up and standardized across the
-        virt driver callers.
         """
 
         session, image_id = self._get_session_and_image_id(context, id_or_uri)
