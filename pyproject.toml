@@ -29,7 +29,7 @@ classifiers = [
 dynamic = ["version", "dependencies"]
 
 [project.urls]
-"Bug Tracker" = "https://bugs.launchpad.net/cyborg/"
+"Bug Tracker" = "https://bugs.launchpad.net/openstack-cyborg/"
 "Documentation" = "https://docs.openstack.org/cyborg/latest/"
 "Source Code" = "https://opendev.org/openstack/cyborg"
 

@@ -23,6 +23,9 @@ Contributing
 * :doc:`/contributor/commit-messages`: Commit message conventions, DCO
   sign-off, and AI attribution
 
+* :doc:`/contributor/maintainers-guide`: Maintainer roles, review policy, and
+  guidance for getting changes reviewed
+
 * :doc:`/contributor/agentic-coding`: AI-assisted development guidance and
   conventions
 
@@ -67,6 +70,7 @@ Reviewing
 
    repo-overview
    commit-messages
+   maintainers-guide
    agentic-coding
    microversions
    releasenotes

@@ -27,6 +27,15 @@ specific AI coding tools only when documenting tool-specific behavior or local
 configuration examples. Prefer general wording such as "contributors" and
 "readers" when the guidance applies to everyone.
 
+Checked-in agent skills
+-----------------------
+
+Cyborg does not accept project-local agent skill definitions checked into the
+repository. Shared project rules and reusable guidance belong in contributor
+documentation, compact routing in ``AGENTS.md``, or deterministic tooling.
+Contributors may use skills from their personal tool configuration, but project
+work must not depend on other contributors having those skills installed.
+
 Canonical human-readable docs
 -----------------------------
 
