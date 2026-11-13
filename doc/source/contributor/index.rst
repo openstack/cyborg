@@ -13,6 +13,7 @@ Basic Information
 .. toctree::
    :maxdepth: 2
 
+   project-scope
    contributing
 
 Contributing

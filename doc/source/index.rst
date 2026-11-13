@@ -5,6 +5,12 @@ OpenStack Accelerator (Cyborg)
 Cyborg is a general management framework for accelerators such as FPGAs, GPUs,
 NICs, SSDs, and AI chips in OpenStack clouds.
 
+Project scope
+=============
+
+The :doc:`Cyborg project scope <contributor/project-scope>` defines the
+project's responsibilities, design principles, and boundaries.
+
 Architecture Overview
 =====================
 
