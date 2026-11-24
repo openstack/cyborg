@@ -50,11 +50,10 @@ function install_cyborg {
     setup_develop $CYBORG_DIR
 }
 
-# cleanup_cyborg_config_files() - Remove residual cache/config/log files,
+# cleanup_cyborg_config_files() - Remove residual config/log files,
 # left over from previous runs that would need to clean up.
 function cleanup_cyborg_config_files {
     sudo rm -rf $CYBORG_CONF_DIR
-    sudo rm -rf $CYBORG_AUTH_CACHE_DIR
 }
 
 # cleanup_cyborg() - Clean everything left from Cyborg
@@ -183,15 +182,6 @@ function configure_cyborg_conductor {
     fi
 }
 
-# create_cyborg_cache_dir() - Part of the init_cyborg() process
-function create_cyborg_cache_dir {
-    # Create cache dir
-    sudo mkdir -p $CYBORG_AUTH_CACHE_DIR/api
-    sudo chown $STACK_USER $CYBORG_AUTH_CACHE_DIR/api
-    sudo mkdir -p $CYBORG_AUTH_CACHE_DIR/registry
-    sudo chown $STACK_USER $CYBORG_AUTH_CACHE_DIR/registry
-}
-
 # init_cyborg() - Initialize databases, etc.
 function init_cyborg {
     if is_service_enabled cyborg-api; then
@@ -200,7 +190,6 @@ function init_cyborg {
 
         # Migrate cyborg database
         $CYBORG_BIN_DIR/cyborg-dbsync --config-file ${CYBORG_CONF} upgrade
-        create_cyborg_cache_dir
     fi
 }
 
