@@ -218,7 +218,7 @@ def fpga_device(path):
 def fpga_tree():
     def gen_fpga_infos(path, vf=True):
         bdf = get_bdf_by_path(path)
-        names = glob.glob1(os.path.join(path, "fpga"), "*")
+        names = glob.glob("*", root_dir=os.path.join(path, "fpga"))
         fpga = {
             "type": constants.DEVICE_FPGA,
             "devices": bdf,
