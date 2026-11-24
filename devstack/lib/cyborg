@@ -32,13 +32,19 @@ function check_cyborg_service_deps {
 
 function clone_cyborg_client {
     if [[ "${CYBORG_CLIENT_INSTALL}" == "True" ]]; then
-        git_clone ${CYBORG_CLIENT_REPO} ${CYBORG_CLIENT_DIR} ${CYBORG_CLIENT_BRANCH}
+        if use_library_from_git "python-cyborgclient"; then
+            git_clone_by_name "python-cyborgclient"
+        fi
     fi
 }
 
 function install_cyborg_client {
     if [[ "${CYBORG_CLIENT_INSTALL}" == "True" ]]; then
-        setup_develop ${CYBORG_CLIENT_DIR}
+        if use_library_from_git "python-cyborgclient"; then
+            setup_dev_lib "python-cyborgclient"
+        else
+            pip_install "python-cyborgclient"
+        fi
     fi
 }
 
