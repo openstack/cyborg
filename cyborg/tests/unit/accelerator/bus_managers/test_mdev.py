@@ -24,7 +24,7 @@ from cyborg.tests.local_fixtures import mdev_sysfs
 
 
 class TestMdevBusManagerDiscover(base.TestCase):
-    """Tests for MdevBusManager.discover_parent_devices."""
+    """Tests for MdevBusManager.discover."""
 
     def setUp(self):
         super().setUp()
@@ -39,11 +39,11 @@ class TestMdevBusManagerDiscover(base.TestCase):
         self.mgr = mdev.MdevBusManager(sysfs_path=self.sysfs)
 
     def test_filter_none_returns_empty(self):
-        result = self.mgr.discover_parent_devices(pci_filter=None)
+        result = self.mgr.discover(pci_filter=None)
         self.assertEqual([], result)
 
     def test_filter_wildcard_returns_all(self):
-        result = self.mgr.discover_parent_devices(
+        result = self.mgr.discover(
             pci_filter=['*'],
         )
         addresses = [d.address for d in result]
@@ -53,14 +53,14 @@ class TestMdevBusManagerDiscover(base.TestCase):
         )
 
     def test_filter_specific_address(self):
-        result = self.mgr.discover_parent_devices(
+        result = self.mgr.discover(
             pci_filter=['0000:06:00.0'],
         )
         self.assertEqual(1, len(result))
         self.assertEqual('0000:06:00.0', result[0].address)
 
     def test_filter_specific_address_no_match(self):
-        result = self.mgr.discover_parent_devices(
+        result = self.mgr.discover(
             pci_filter=['0000:99:00.0'],
         )
         self.assertEqual([], result)
@@ -69,7 +69,7 @@ class TestMdevBusManagerDiscover(base.TestCase):
         mgr = mdev.MdevBusManager(
             sysfs_path=self.sysfs + '/nonexistent/path',
         )
-        result = mgr.discover_parent_devices(
+        result = mgr.discover(
             pci_filter=['*'],
         )
         self.assertEqual([], result)
@@ -77,7 +77,7 @@ class TestMdevBusManagerDiscover(base.TestCase):
     def test_empty_sysfs_directory(self):
         empty_sysfs = self.useFixture(fixtures.TempDir()).path
         mgr = mdev.MdevBusManager(sysfs_path=empty_sysfs)
-        result = mgr.discover_parent_devices(
+        result = mgr.discover(
             pci_filter=['*'],
         )
         self.assertEqual([], result)
@@ -88,19 +88,19 @@ class TestMdevBusManagerDiscover(base.TestCase):
         autospec=True,
     )
     def test_listdir_oserror(self, mock_listdir):
-        result = self.mgr.discover_parent_devices(
+        result = self.mgr.discover(
             pci_filter=['*'],
         )
         self.assertEqual([], result)
 
     def test_filter_empty_list_returns_empty(self):
-        result = self.mgr.discover_parent_devices(
+        result = self.mgr.discover(
             pci_filter=[],
         )
         self.assertEqual([], result)
 
     def test_filter_multiple_addresses(self):
-        result = self.mgr.discover_parent_devices(
+        result = self.mgr.discover(
             pci_filter=['0000:06:00.0', '0000:07:00.0'],
         )
         addresses = [d.address for d in result]
@@ -110,11 +110,39 @@ class TestMdevBusManagerDiscover(base.TestCase):
         )
 
     def test_filter_multiple_addresses_partial_match(self):
-        result = self.mgr.discover_parent_devices(
+        result = self.mgr.discover(
             pci_filter=['0000:06:00.0', '0000:99:00.0'],
         )
         self.assertEqual(1, len(result))
         self.assertEqual('0000:06:00.0', result[0].address)
+
+    def test_pci_ids_populated_from_sysfs(self):
+        """Vendor and model IDs are read from the sysfs tree."""
+        sysfs = self.useFixture(
+            mdev_sysfs.MdevSysfsFixture(
+                devices=[
+                    mdev.MdevParentDevice(
+                        address='0000:06:00.0',
+                        vendor='10de',
+                        model='1db4',
+                    ),
+                ],
+            ),
+        ).path
+        mgr = mdev.MdevBusManager(sysfs_path=sysfs)
+        result = mgr.discover(pci_filter=['0000:06:00.0'])
+        self.assertEqual(1, len(result))
+        self.assertEqual('10de', result[0].vendor)
+        self.assertEqual('1db4', result[0].model)
+
+    def test_pci_ids_fallback_unknown(self):
+        """Vendor and model fall back when absent from sysfs."""
+        result = self.mgr.discover(
+            pci_filter=['0000:06:00.0'],
+        )
+        self.assertEqual(1, len(result))
+        self.assertEqual(mdev.UNKNOWN_PCI_ID, result[0].vendor)
+        self.assertEqual(mdev.UNKNOWN_PCI_ID, result[0].model)
 
 
 class TestMdevBusManagerTypes(base.TestCase):

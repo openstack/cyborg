@@ -29,7 +29,10 @@ from cyborg.common import filesystem
 
 LOG = logging.getLogger(__name__)
 
-MDEV_BUS_SYSFS_PATH = '/sys/class/mdev_bus/'
+MDEV_BUS_SYSFS_PATH = filesystem.SYS / 'class/mdev_bus'
+
+# Fallback reported for PCI IDs that cannot be read from sysfs.
+UNKNOWN_PCI_ID = 'unknown'
 
 
 @dataclasses.dataclass(frozen=True)
@@ -49,6 +52,14 @@ class MdevParentDevice:
     """An mdev-capable PCI parent device."""
 
     address: str
+    # PCI vendor and product IDs, without the ``0x`` prefix, as
+    # reported by the ``vendor``/``device`` sysfs attributes.  In
+    # real sysfs the ``/sys/class/mdev_bus/<address>`` entry is a
+    # symlink to the PCI device directory, so both attributes are
+    # readable through the mdev_bus tree.  ``UNKNOWN_PCI_ID`` is
+    # used when they cannot be read.
+    vendor: str = UNKNOWN_PCI_ID
+    model: str = UNKNOWN_PCI_ID
     mdev_types: list[MdevType] = dataclasses.field(
         default_factory=list,
     )
@@ -72,11 +83,16 @@ class MdevBusManager:
             sysfs_path or MDEV_BUS_SYSFS_PATH,
         )
 
-    def discover_parent_devices(
+    def discover(
         self,
         pci_filter: list[str] | None = None,
     ) -> list[MdevParentDevice]:
         """Enumerate mdev-capable PCI parent devices.
+
+        For each discovered device the PCI vendor and product IDs
+        are read from sysfs and reported on the returned
+        :class:`MdevParentDevice` objects, so that drivers do not
+        need to know about sysfs paths or attribute formats.
 
         :param pci_filter: Controls which devices are returned.
 
@@ -118,7 +134,14 @@ class MdevBusManager:
             'Discovered %d mdev-capable parent device(s)',
             len(addresses),
         )
-        return [MdevParentDevice(address=a) for a in addresses]
+        return [
+            MdevParentDevice(
+                address=a,
+                vendor=self._read_pci_id(a, 'vendor'),
+                model=self._read_pci_id(a, 'device'),
+            )
+            for a in addresses
+        ]
 
     def get_mdev_types(
         self,
@@ -245,6 +268,32 @@ class MdevBusManager:
             device_api=device_api,
             description=description,
         )
+
+    def _read_pci_id(
+        self,
+        pci_address: str,
+        filename: str,
+    ) -> str:
+        """Read a hex PCI ID attribute, stripping the ``0x`` prefix.
+
+        In real sysfs the ``mdev_bus`` entry of a parent device is
+        a symlink to its PCI device directory, so attributes such
+        as ``vendor`` and ``device`` are readable through the
+        mdev_bus tree.
+
+        :param pci_address: PCI address of the parent device.
+        :param filename: Sysfs file to read (e.g. ``'vendor'``,
+            ``'device'``).
+        :returns: The ID without the ``0x`` prefix, or
+            ``UNKNOWN_PCI_ID`` if it cannot be read.
+        """
+        try:
+            value = filesystem.read_sys(
+                self.sysfs_path / pci_address / filename,
+            ).strip()
+            return value.removeprefix('0x')
+        except (exception.DeviceBusy, exception.FileNotFound):
+            return UNKNOWN_PCI_ID
 
     @staticmethod
     def _read_sysfs_attr(

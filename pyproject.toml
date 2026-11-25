@@ -63,6 +63,7 @@ intel_qat_driver = "cyborg.accelerator.drivers.qat.intel.driver:IntelQATDriver"
 intel_nic_driver = "cyborg.accelerator.drivers.nic.intel.driver:IntelNICDriver"
 inspur_nvme_ssd_driver = "cyborg.accelerator.drivers.ssd.inspur.driver:InspurNVMeSSDDriver"
 pci_driver = "cyborg.accelerator.drivers.pci.pci.driver:PCIDriver"
+mdev_driver = "cyborg.accelerator.drivers.mdev.driver:GenericMdevDriver"
 
 [tool.setuptools.packages.find]
 # pci-sim/ is an out-of-tree kernel module and must not be packaged in

@@ -471,6 +471,14 @@ class PciConfigInvalidWhitelist(Invalid):
     _msg_fmt = _("Invalid PCI devices whitelist config: %(reason)s.")
 
 
+class InvalidDevSpecConfig(Invalid):
+    _msg_fmt = _("Invalid DevSpec config: %(reason)s.")
+
+
+class InvalidMdevDevSpecConfig(InvalidDevSpecConfig):
+    _msg_fmt = _("Invalid Mdev DevSpec config: %(reason)s.")
+
+
 class PciDeviceInvalidDeviceName(CyborgException):
     _msg_fmt = _(
         "Invalid PCI whitelist: The PCI whitelist can specify "

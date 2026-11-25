@@ -1,0 +1,16 @@
+---
+features:
+  - |
+    Added a new ``[mdev]`` configuration section with a
+    ``device_spec`` option (``MultiStrOpt``) that allows operators
+    to specify which mediated devices Cyborg should manage. Each
+    entry is a JSON object with ``address``, ``mdev_type``, and
+    optional ``max_instances``, ``resource_class``, and ``traits``
+    keys. A PCI address can only be configured with a
+    single ``mdev_type``; configuring the same address with
+    different types is a fatal configuration error.
+  - |
+    Added a new generic mdev driver for managing Linux mediated
+    devices (mdev). The driver discovers mdev-capable parent PCI
+    devices and their supported mdev types via sysfs and reports
+    them to Placement as accelerator resources.

@@ -8,5 +8,6 @@ Configuration Guide
    config-options
    policy
    drivers
+   mdev-driver
    policy-guide
    policy-concepts
