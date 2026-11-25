@@ -120,17 +120,12 @@ def _generate_dep_list(gpu):
         driver_dep.num_accelerators = 1
         driver_dep.attach_handle_list = [_generate_attach_handle(gpu)]
     else:
-        # if is vGPU, num_accelerators is the total vGPU capability of
-        # the asked vGPU type
-        vGPU_path = os.path.expandvars(
-            '/sys/bus/pci/devices/{}/mdev_supported_types/{}/'.format(
-                gpu["address"], gpu["vGPU_type"]
-            )
-        )
-        num_available = 0
-        with open(vGPU_path + 'available_instances') as f:
-            num_available = int(f.read().strip())
-        num_created = len(os.listdir(vGPU_path + 'devices'))
+        # For a vGPU, num_accelerators is the total vGPU
+        # capacity of the asked vGPU type (available + created
+        # instances). These values are populated by
+        # MdevBusManager during discovery.
+        num_available = gpu.get("available_instances", 0)
+        num_created = gpu.get("created_instances", 0)
         driver_dep.num_accelerators = num_available + num_created
         # example: 1 pGPU has 16 vGPUs is represented as
         # 16 attach_handles, 1 deployable, 1 resource_provider
@@ -268,7 +263,7 @@ def _is_vf(pci_address):
         return False
 
 
-def _discover_gpus(vendor_id):
+def _discover_gpus(vendor_id, mdev_bus_manager):
     """param: vendor_id=VENDOR_ID means only discover Nvidia GPU on the host"""
     # init vGPU conf
     cyborg.conf.devices.register_dynamic_opts(CONF)
@@ -328,24 +323,20 @@ def _discover_gpus(vendor_id):
         else:
             # get rc
             gpu["rc"] = constants.RESOURCES["VGPU"]
-            mdev_path = os.path.expandvars(
-                '/sys/bus/pci/devices/{}/mdev_supported_types'.format(
-                    gpu["address"]
-                )
+            mdev_types = mdev_bus_manager.get_mdev_types(
+                gpu["address"],
+                type_filter=[vgpu_type],
             )
-            valid_types = os.listdir(mdev_path)
-            if vgpu_type not in valid_types:
+            if not mdev_types:
                 raise exception.InvalidVGPUType(name=vgpu_type)
+
+            mdev_type_info = mdev_types[0]
             gpu["vGPU_type"] = vgpu_type
-            vGPU_path = os.path.expandvars(
-                '/sys/bus/pci/devices/{}/mdev_supported_types/{}/'.format(
-                    gpu["address"], gpu["vGPU_type"]
-                )
-            )
+            gpu["available_instances"] = mdev_type_info.available_instances
+            gpu["created_instances"] = mdev_type_info.created_instances
             # transfer vgpu_type to vgpu_type_name.
             # eg. transfer 'nvidia-223' to 'T4_1B'
-            with open(vGPU_path + 'name') as f:
-                name = f.read().strip()
+            name = mdev_type_info.name
             vgpu_type_name = name.split(' ')[1].replace('-', '_')
             traits = _get_traits(
                 gpu["vendor_id"],
@@ -357,6 +348,6 @@ def _discover_gpus(vendor_id):
     return gpu_list
 
 
-def discover(vendor_id):
-    devs = _discover_gpus(vendor_id)
+def discover(vendor_id, mdev_bus_manager):
+    devs = _discover_gpus(vendor_id, mdev_bus_manager)
     return devs

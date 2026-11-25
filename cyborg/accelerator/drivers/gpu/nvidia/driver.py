@@ -18,6 +18,7 @@
 Cyborg NVIDIA GPU driver implementation.
 """
 
+from cyborg.accelerator.bus_managers import mdev
 from cyborg.accelerator.drivers.gpu import base
 from cyborg.accelerator.drivers.gpu.nvidia import sysinfo
 
@@ -30,5 +31,13 @@ class NVIDIAGPUDriver(base.GPUDriver):
     VENDOR = "nvidia"
     VENDOR_ID = "10de"
 
+    def __init__(self, mdev_bus_manager: mdev.MdevBusManager | None = None):
+        self._mdev_bus_manager: mdev.MdevBusManager = (
+            mdev_bus_manager or mdev.MdevBusManager()
+        )
+
     def discover(self):
-        return sysinfo.discover(self.VENDOR_ID)
+        return sysinfo.discover(
+            self.VENDOR_ID,
+            mdev_bus_manager=self._mdev_bus_manager,
+        )
