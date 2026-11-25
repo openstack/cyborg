@@ -107,6 +107,11 @@ for pf in "${pfs[@]}"; do
 done
 
 for pf in "${pfs[@]}"; do
+    msg "set uart personality on PF=$pf"
+    echo uart | sudo -n tee "/sys/bus/pci/devices/$pf/vf_personality" >/dev/null
+done
+
+for pf in "${pfs[@]}"; do
     msg "enable VF on PF=$pf"
     echo 1 | sudo -n tee "/sys/bus/pci/devices/$pf/sriov_numvfs" >/dev/null
 done

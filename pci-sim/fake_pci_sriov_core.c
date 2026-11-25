@@ -362,6 +362,7 @@ static int __init fake_pci_sriov_init(void)
 			goto err_hosts;
 		}
 		INIT_LIST_HEAD(&host->list);
+		host->personality = PCI_SIM_VF_PERS_UNSET;
 
 		host->pdev = platform_device_register_full(&pdevinfo);
 		if (IS_ERR(host->pdev)) {

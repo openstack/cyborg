@@ -18,6 +18,31 @@ or from this directory with::
 
 The built module is ``fake_pci_sriov.ko``.
 
+VF personality
+--------------
+
+Each PF exposes a ``vf_personality`` sysfs file that controls what type of
+VF device the PF will create.  A companion ``vf_personality_available``
+file lists all supported personalities, with the current one in brackets.
+
+PFs start with personality ``unset``; the user must assign a personality
+before the PF can create VFs.  Currently supported personalities are
+``uart``; additional types (e.g. NVMe, mdev) may be added in the future.
+Example::
+
+    # Read the current personality (unset until explicitly assigned)
+    cat /sys/bus/pci/devices/<PF>/vf_personality        # -> unset
+
+    # List available personalities
+    cat /sys/bus/pci/devices/<PF>/vf_personality_available  # -> [unset] uart
+
+    # Assign the uart personality (required before enabling VFs)
+    echo uart > /sys/bus/pci/devices/<PF>/vf_personality
+
+A PF whose personality is not ``uart`` will reject ``sriov_numvfs`` writes
+with ``-ENODEV``.  Personality changes are rejected with ``-EBUSY`` while
+VFs are active.
+
 Local helpers
 -------------
 
@@ -37,6 +62,12 @@ relative paths work in standalone development checkouts and DevStack jobs.
 ``run_fake_pci_multi_pf_smoke.sh``
    Host-side multi-PF smoke test.  It verifies multiple fake PFs, expected
    class codes, VF creation, and cleanup.
+
+``run_fake_pci_personality_smoke.sh``
+   Per-PF personality sysfs smoke test.  It loads two PFs, verifies the
+   ``vf_personality`` and ``vf_personality_available`` sysfs files, tests
+   VF creation under the uart personality, and confirms that personality
+   changes are rejected while VFs are active.
 
 ``run_fake_pci_qemu_vfio_smoke.sh``
    Bounded QEMU/VFIO smoke test.  It verifies that a fake VF can bind to

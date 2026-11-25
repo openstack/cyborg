@@ -594,7 +594,8 @@ Source map
 
 ``pci-sim/fake_pci_sriov_cfg.c``
   Fake PCI config-space helpers, PCIe capability setup, SR-IOV capability
-  setup, custom ``pci_ops``, PF driver, and ``sriov_configure`` callback.
+  setup, custom ``pci_ops``, PF driver, ``sriov_configure`` callback, and
+  the ``vf_personality``/``vf_personality_available`` sysfs attributes.
 
 ``pci-sim/fake_pci_sriov_iommu.c``
   Software IOMMU implementation. Claims fake PCI domains, creates groups, and
@@ -639,7 +640,8 @@ The init path is ordered so that dependencies exist before devices appear:
 #. Register the TTY driver.
 #. Register the override-only VFIO PCI driver.
 #. Register the normal VF host loopback driver.
-#. Register the PF driver.
+#. Register the PF driver (with ``vf_personality`` sysfs attributes
+   attached via ``dev_groups``).
 #. Allocate each fake host and register its platform device.
 #. Create each PCI host bridge and call ``pci_host_probe()``.
 
@@ -675,6 +677,42 @@ core then scans the VF functions and creates normal ``pci_dev`` objects.
 
 When ``sriov_numvfs`` is written with ``0``, the PF driver calls
 ``pci_disable_sriov()`` and marks all VFs not present.
+
+VF personality
+--------------
+
+Each PF exposes two sysfs files via the PF driver's ``dev_groups``:
+
+``vf_personality`` (read-write)
+  Shows the current personality name.  Writing a new name changes the
+  PF's personality.  Writes are rejected with ``-EBUSY`` while VFs are
+  active and with ``-EINVAL`` for unknown personality names.
+
+``vf_personality_available`` (read-only)
+  Lists all supported personality names, with the currently active one
+  enclosed in square brackets (following the ``scaling_available_governors``
+  convention from cpufreq).
+
+The personality is stored in ``host->personality`` (an
+``enum pci_sim_vf_personality`` value) and checked in
+``fake_pci_sriov_configure()`` before enabling VFs.  A PF whose
+personality is not ``PCI_SIM_VF_PERS_UART`` will reject
+``sriov_numvfs`` writes with ``-ENODEV``.
+
+PFs start with personality ``unset`` (``PCI_SIM_VF_PERS_UNSET``); the user
+must assign a personality before the PF can create VFs.  Currently
+supported personalities are ``uart`` (SR-IOV VFs with UART payload);
+additional types (e.g. NVMe, mdev) may be added in the future.
+
+Example: load two PFs and assign the uart personality::
+
+    insmod fake_pci_sriov.ko num_pfs=2
+    echo uart > /sys/bus/pci/devices/<PF0>/vf_personality
+    echo uart > /sys/bus/pci/devices/<PF1>/vf_personality
+
+The personality smoke test ``run_fake_pci_personality_smoke.sh`` validates
+the sysfs interface by verifying reads, writes, rejection while VFs are
+active, and rejection of invalid personality names.
 
 IOMMU group creation
 --------------------
