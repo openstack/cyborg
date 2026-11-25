@@ -6,7 +6,8 @@ fake_pci_sriov-y := \
 	fake_pci_sriov_cfg.o \
 	fake_pci_sriov_iommu.o \
 	fake_pci_sriov_uart.o \
-	fake_pci_sriov_vfio.o
+	fake_pci_sriov_vfio.o \
+	fake_pci_sriov_mdev.o
 
 KDIR ?= /lib/modules/$(shell uname -r)/build
 PWD := $(CURDIR)

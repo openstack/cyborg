@@ -27,8 +27,8 @@ file lists all supported personalities, with the current one in brackets.
 
 PFs start with personality ``unset``; the user must assign a personality
 before the PF can create VFs.  Currently supported personalities are
-``uart``; additional types (e.g. NVMe, mdev) may be added in the future.
-Example::
+``uart`` and ``mdev`` (mediated devices via ``/sys/class/mdev_bus/``).
+Additional types (e.g. NVMe) may be added in the future.  Example::
 
     # Read the current personality (unset until explicitly assigned)
     cat /sys/bus/pci/devices/<PF>/vf_personality        # -> unset
@@ -42,6 +42,29 @@ Example::
 A PF whose personality is not ``uart`` will reject ``sriov_numvfs`` writes
 with ``-ENODEV``.  Personality changes are rejected with ``-EBUSY`` while
 VFs are active.
+
+mdev support
+------------
+
+When a PF is configured with an mdev personality, it is registered as
+an mdev parent via the kernel mdev framework.  The ``mdev`` kernel module must
+be loaded first::
+
+    modprobe mdev
+    insmod fake_pci_sriov.ko
+
+mdev support is compiled in only when the kernel provides the mdev
+framework (``CONFIG_VFIO_MDEV``).  On kernels without it the module
+still loads, but writing ``mdev`` to ``vf_personality`` is rejected.
+
+Each mdev PF advertises two mdev type groups:
+
+- ``sim_accel_small`` — "PCI-SIM Small Accelerator" (default 8 instances)
+- ``sim_accel_large`` — "PCI-SIM Large Accelerator" (default 2 instances)
+
+The type directory names are auto-prefixed by the kernel with the PF driver
+name, so they appear as ``fake_pci_sriov_pf-sim_accel_small`` and
+``fake_pci_sriov_pf-sim_accel_large`` under ``mdev_supported_types/``.
 
 Local helpers
 -------------
@@ -69,9 +92,23 @@ relative paths work in standalone development checkouts and DevStack jobs.
    VF creation under the uart personality, and confirms that personality
    changes are rejected while VFs are active.
 
+``run_fake_pci_mdev_smoke.sh``
+   Host-side mdev smoke test.  It loads the module, assigns an mdev personality
+   to the pf, verifies the mdev sysfs tree, creates and removes an mdev
+   instance, and checks available instance counts.
+
 ``run_fake_pci_qemu_vfio_smoke.sh``
    Bounded QEMU/VFIO smoke test.  It verifies that a fake VF can bind to
    ``pci_sim_vfio_pci`` and that QEMU can start with the VF assigned.
+
+``run_fake_pci_mixed_mode_smoke.sh``
+   Mixed SR-IOV/mdev smoke test.  It loads two PFs (one sriov, one mdev) and
+   verifies VF creation on the SR-IOV PF, mdev types on the mdev PF, and that
+   each PF rejects the other mode's operations.
+
+``run_fake_pci_qemu_mdev_smoke.sh``
+   Bounded QEMU/mdev smoke test.  It creates a fake mdev instance and verifies
+   that QEMU can start with it assigned via ``sysfsdev``.
 
 ``run_cirros_vfio_guest_probe.sh``
    CirrOS guest probe test.  It logs in over the serial console and runs
@@ -90,3 +127,7 @@ module::
 
    make test-loopback
    make test-multi-pf
+
+The mdev smoke test can be run directly::
+
+   bash run_fake_pci_mdev_smoke.sh

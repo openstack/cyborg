@@ -32,6 +32,10 @@
 
 #include "fake_pci_sriov_compat.h"
 
+#if PCI_SIM_HAS_MDEV
+#include <linux/mdev.h>
+#endif
+
 #ifdef CONFIG_X86
 #include <asm/pci.h>
 #elif defined(CONFIG_ACPI)
@@ -43,6 +47,7 @@
 #define FAKE_PCI_VENDOR_ID 0x1d55
 #define FAKE_PCI_PF_DEVICE_ID 0x1000
 #define FAKE_PCI_VF_DEVICE_ID 0x1001
+#define FAKE_PCI_MDEV_DEVICE_ID 0x2000
 #define FAKE_PCI_SERIAL_CLASS 0x070002 /* Serial controller, 16550 */
 #define FAKE_PCI_VENDOR_CLASS 0xff0000
 #define FAKE_PCI_SUBSYS_VENDOR FAKE_PCI_VENDOR_ID
@@ -76,8 +81,16 @@
 enum pci_sim_vf_personality {
 	PCI_SIM_VF_PERS_UNSET = 0,
 	PCI_SIM_VF_PERS_UART,
+	PCI_SIM_VF_PERS_MDEV,
 	PCI_SIM_VF_PERS_COUNT,
 };
+
+/* mdev type configuration */
+
+#define PCI_SIM_MDEV_NUM_TYPES 2
+#define PCI_SIM_MDEV_SMALL_IDX 0
+#define PCI_SIM_MDEV_LARGE_IDX 1
+#define PCI_SIM_MDEV_CONFIG_SIZE 256
 
 /* Data structures */
 
@@ -106,6 +119,9 @@ struct fake_pci_host {
 	int num_vfs_enabled;
 	int domain_nr;
 	struct mutex lock; /* Protects VF enable/disable state. */
+#if PCI_SIM_HAS_MDEV
+	struct pci_sim_mdev_parent *mdev_parent;
+#endif
 };
 
 struct pci_sim_uart {
@@ -137,6 +153,23 @@ struct pci_sim_vfio_vf {
 	struct pci_sim_uart uart;
 };
 
+#if PCI_SIM_HAS_MDEV
+struct pci_sim_mdev_state {
+	struct vfio_device vdev;
+	struct pci_sim_uart uart;
+	u8 config[PCI_SIM_MDEV_CONFIG_SIZE];
+	struct mutex lock; /* Serializes config and BAR0 access. */
+	int type_idx;
+};
+
+struct pci_sim_mdev_parent {
+	struct mdev_parent parent;
+	struct mdev_type types[PCI_SIM_MDEV_NUM_TYPES];
+	struct mdev_type *type_ptrs[PCI_SIM_MDEV_NUM_TYPES];
+	atomic_t avail[PCI_SIM_MDEV_NUM_TYPES];
+};
+#endif
+
 /* Cross-file globals (defined in the owning .c, declared extern here) */
 
 /* fake_pci_sriov_core.c */
@@ -144,6 +177,7 @@ extern struct list_head fake_hosts;
 extern struct mutex fake_hosts_lock;
 
 /* Module parameters that multiple files read */
+extern unsigned int mdev_instances;
 extern bool vf_serial_class;
 extern bool vfio_guest_8250_compat;
 extern bool vfio_uart_trace;
@@ -175,6 +209,14 @@ u8 pci_sim_uart_lsr(struct pci_sim_uart *uart);
 u8 pci_sim_uart_read_data(struct pci_sim_uart *uart);
 u8 pci_sim_uart_read_reg(struct pci_sim_uart *uart, u8 reg);
 void pci_sim_uart_write_reg(struct pci_sim_uart *uart, u8 reg, u8 val);
+
+/* fake_pci_sriov_mdev.c */
+#if PCI_SIM_HAS_MDEV
+int pci_sim_mdev_register_driver(void);
+void pci_sim_mdev_unregister_driver(void);
+int pci_sim_mdev_register_parent(struct fake_pci_host *host);
+void pci_sim_mdev_unregister_parent(struct fake_pci_host *host);
+#endif
 
 /* fake_pci_sriov_iommu.c (ops table used by core init) */
 extern const struct iommu_ops fake_iommu_ops;

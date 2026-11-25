@@ -422,7 +422,8 @@ The module Makefile is a kbuild wrapper:
        fake_pci_sriov_cfg.o \
        fake_pci_sriov_iommu.o \
        fake_pci_sriov_uart.o \
-       fake_pci_sriov_vfio.o
+       fake_pci_sriov_vfio.o \
+       fake_pci_sriov_mdev.o
 
 ``obj-m`` tells kbuild to build ``fake_pci_sriov`` as a loadable module.
 The ``fake_pci_sriov-y`` line tells kbuild that the final module is a
@@ -609,6 +610,14 @@ Source map
   Override-only VFIO PCI variant. Reuses ``vfio-pci-core`` and emulates BAR0
   UART access for QEMU/guest tests.
 
+``pci-sim/fake_pci_sriov_mdev.c``
+  Mdev parent registration for fake PFs.  When a PF's personality is set
+  to ``mdev`` via the ``vf_personality`` sysfs attribute, the PF registers
+  as an mdev parent and exposes two mdev types (``sim_accel_small`` and
+  ``sim_accel_large``) via ``/sys/class/mdev_bus/``.  This file
+  implements the mdev parent callbacks, type attribute groups, and
+  instance lifecycle.
+
 ``pci-sim/test_pci_sim_loopback.py``
   Host loopback smoke test.
 
@@ -644,6 +653,9 @@ The init path is ordered so that dependencies exist before devices appear:
    attached via ``dev_groups``).
 #. Allocate each fake host and register its platform device.
 #. Create each PCI host bridge and call ``pci_host_probe()``.
+#. Register the mdev driver (if ``PCI_SIM_HAS_MDEV``).  No mdev parents
+   are registered at load time; parents are registered dynamically when a
+   PF's ``vf_personality`` is set to ``mdev``.
 
 Drivers are registered before fake hosts are probed so that newly discovered
 PFs and VFs can bind immediately through the normal driver model.
@@ -653,6 +665,8 @@ Module unload order
 
 Unload runs in the reverse direction:
 
+#. Unregister mdev parents for any PF whose personality is ``mdev``, then
+   unregister the mdev driver.
 #. Remove fake host bridges first. This removes PF/VF ``pci_dev`` objects
    while the PCI drivers still exist.
 #. Unregister the PF, VF, and VFIO PCI drivers.
@@ -701,8 +715,9 @@ personality is not ``PCI_SIM_VF_PERS_UART`` will reject
 
 PFs start with personality ``unset`` (``PCI_SIM_VF_PERS_UNSET``); the user
 must assign a personality before the PF can create VFs.  Currently
-supported personalities are ``uart`` (SR-IOV VFs with UART payload);
-additional types (e.g. NVMe, mdev) may be added in the future.
+supported personalities are ``uart`` (SR-IOV VFs with UART payload) and
+``mdev`` (mediated devices via ``/sys/class/mdev_bus/``).  Additional
+types (e.g. NVMe) may be added in the future.
 
 Example: load two PFs and assign the uart personality::
 
@@ -886,6 +901,78 @@ or subsystem.
 
 Extension workflows
 ===================
+
+Mdev parameters
+---------------
+
+``mdev_instances``
+  Integer module parameter.  Controls the number of
+  ``sim_accel_small`` instances each mdev-personality PF
+  advertises; defaults to ``8``.  The ``sim_accel_large`` count is
+  derived as ``mdev_instances / 4`` (minimum ``1``).
+
+Mdev mode is activated per PF through the ``vf_personality`` sysfs
+attribute rather than a module parameter.  All PFs start with the
+``unset`` personality and can be switched to ``mdev`` at runtime
+while no VFs are active.
+
+Example — single mdev PF:
+
+.. code-block:: console
+
+   $ sudo modprobe mdev
+   $ sudo insmod pci-sim/fake_pci_sriov.ko
+   $ echo mdev | sudo tee /sys/bus/pci/devices/<PF>/vf_personality
+
+Example — mixed mode (first PF keeps uart, second becomes mdev):
+
+.. code-block:: console
+
+   $ sudo modprobe mdev
+   $ sudo insmod pci-sim/fake_pci_sriov.ko num_pfs=2
+   $ echo mdev | sudo tee /sys/bus/pci/devices/<PF1>/vf_personality
+
+The two mdev types appear in sysfs with composite names that
+include both the parent device name and the type:
+
+* ``fake_pci_sriov_pf-sim_accel_small``
+* ``fake_pci_sriov_pf-sim_accel_large``
+
+These names are what Cyborg's ``GenericMdevDriver`` discovers
+when scanning ``/sys/class/mdev_bus/``.
+
+Mdev lifecycle
+--------------
+
+The mdev driver is registered unconditionally at module init (when
+``PCI_SIM_HAS_MDEV`` is set).  Individual PFs become mdev parents
+dynamically when their ``vf_personality`` is set to ``mdev``:
+
+#. All normal init steps run first (IOMMU, TTY, VFIO,
+   PF/VF drivers, host bridges, mdev driver).
+#. When ``echo mdev > .../vf_personality`` is written, the
+   store callback registers the PF as an mdev parent, making it
+   visible under ``/sys/class/mdev_bus/``.
+#. The kernel exposes ``mdev_supported_types/`` with two
+   entries per PF: ``fake_pci_sriov_pf-sim_accel_small`` and
+   ``fake_pci_sriov_pf-sim_accel_large``.
+#. Each type directory contains ``available_instances``,
+   ``device_api``, ``name``, and ``description`` attributes.
+
+When a PF's personality is changed away from ``mdev``, the
+store callback unregisters the mdev parent.  The personality
+change is rejected with ``-EBUSY`` if VFs are active.
+
+The mdev parent callbacks handle create, remove, and instance
+accounting.  When an mdev instance is created (by writing a
+UUID to the type's ``create`` attribute), the module allocates
+a software-only device context and decrements
+``available_instances``.  Removal reverses the process.
+
+During module unload, mdev parents are unregistered for any PF
+whose personality is ``mdev`` before host bridges are torn down,
+following the reverse-init-order convention used throughout the
+module.
 
 Change module parameters
 ------------------------

@@ -13,6 +13,7 @@
 const char *pci_sim_personality_names[PCI_SIM_VF_PERS_COUNT] = {
 	[PCI_SIM_VF_PERS_UNSET] = "unset",
 	[PCI_SIM_VF_PERS_UART] = "uart",
+	[PCI_SIM_VF_PERS_MDEV] = "mdev",
 };
 
 /* Config-space byte helpers */
@@ -538,7 +539,11 @@ static ssize_t vf_personality_store(struct device *dev,
 {
 	struct pci_dev *pdev = to_pci_dev(dev);
 	struct fake_pci_host *host = pci_get_drvdata(pdev);
+	enum pci_sim_vf_personality old_pers, new_pers;
 	int i;
+#if PCI_SIM_HAS_MDEV
+	int err;
+#endif
 
 	if (!host)
 		return -ENODEV;
@@ -550,16 +555,56 @@ static ssize_t vf_personality_store(struct device *dev,
 		return -EBUSY;
 	}
 
+	new_pers = PCI_SIM_VF_PERS_COUNT;
 	for (i = 0; i < PCI_SIM_VF_PERS_COUNT; i++) {
 		if (sysfs_streq(buf, pci_sim_personality_names[i])) {
-			host->personality = i;
-			mutex_unlock(&host->lock);
-			return count;
+			new_pers = i;
+			break;
 		}
 	}
 
+	if (new_pers == PCI_SIM_VF_PERS_COUNT) {
+		mutex_unlock(&host->lock);
+		return -EINVAL;
+	}
+
+#if !PCI_SIM_HAS_MDEV
+	if (new_pers == PCI_SIM_VF_PERS_MDEV) {
+		mutex_unlock(&host->lock);
+		pci_info(pdev, "fake_pci: no mdev support (CONFIG_VFIO_MDEV)\n");
+		return -ENODEV;
+	}
+#endif
+
+	old_pers = host->personality;
+	if (new_pers == old_pers) {
+		mutex_unlock(&host->lock);
+		return count;
+	}
+
+	/*
+	 * Hold host->lock across the mdev parent transition and the
+	 * personality update so a concurrent sriov_numvfs write cannot
+	 * enable VFs on a PF that is mid-transition, matching the
+	 * contract documented in fake_pci_sriov_configure().  A mutex
+	 * can be held across the sleeping mdev registration calls.
+	 */
+#if PCI_SIM_HAS_MDEV
+	if (old_pers == PCI_SIM_VF_PERS_MDEV)
+		pci_sim_mdev_unregister_parent(host);
+
+	if (new_pers == PCI_SIM_VF_PERS_MDEV) {
+		err = pci_sim_mdev_register_parent(host);
+		if (err) {
+			mutex_unlock(&host->lock);
+			return err;
+		}
+	}
+#endif
+
+	host->personality = new_pers;
 	mutex_unlock(&host->lock);
-	return -EINVAL;
+	return count;
 }
 
 static DEVICE_ATTR_RW(vf_personality);
